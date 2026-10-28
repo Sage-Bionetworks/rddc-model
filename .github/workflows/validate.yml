@@ -1,0 +1,55 @@
+name: Validate LinkML
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install LinkML
+        run: pip install "linkml==1.11.1"
+
+      - name: Collect schema files
+        id: files
+        run: |
+          shopt -s nullglob
+          files=(header.yaml schema/*.yaml)
+          echo "Schema files: ${files[*]}"
+          echo "list=${files[*]}" >> "$GITHUB_OUTPUT"
+
+      - name: Validate against the LinkML metamodel
+        run: |
+          for f in ${{ steps.files.outputs.list }}; do
+            echo "::group::linkml validate $f"
+            linkml validate "$f"
+            echo "::endgroup::"
+          done
+
+      - name: Lint
+        run: |
+          for f in ${{ steps.files.outputs.list }}; do
+            echo "::group::linkml-lint $f"
+            linkml-lint "$f"
+            echo "::endgroup::"
+          done
+
+      - name: Check schemas load and generate
+        run: |
+          for f in ${{ steps.files.outputs.list }}; do
+            echo "::group::gen-yaml $f"
+            gen-yaml "$f" > /dev/null
+            echo "::endgroup::"
+          done

@@ -1,0 +1,49 @@
+id: https://w3id.org/rddc/
+name: rddc
+title: Rare Disease Data Commons (RDDC) data model
+license: https://creativecommons.org/publicdomain/zero/1.0/
+
+default_curi_maps:
+  - semweb_context
+prefixes:
+  rddc: https://w3id.org/rddc/vocab/
+  linkml: https://w3id.org/linkml/
+  schema: http://schema.org/
+  dcterms: http://purl.org/dc/terms/
+  rdfs: http://www.w3.org/2000/01/rdf-schema#
+  skos: http://www.w3.org/2004/02/skos/core#
+  prov: http://www.w3.org/ns/prov#
+  # Ontology and terminology prefixes for CURIE support.
+  # Namespaces follow the LinkML linter's canonical prefix map.
+  # Clinical terminologies
+  SNOMEDCT: http://identifiers.org/snomedct/
+  LOINC: https://loinc.org/
+  ICD10CM: https://icd.codes/icd10cm/
+  UCUM: https://units-of-measurement.org/
+  # Phenotype, disease and medical action ontologies
+  HP: http://purl.obolibrary.org/obo/HP_
+  MONDO: http://purl.obolibrary.org/obo/MONDO_
+  DOID: http://purl.obolibrary.org/obo/DOID_
+  IDO: http://purl.obolibrary.org/obo/IDO_
+  ORPHA: http://www.orpha.net/ORDO/Orphanet_
+  MAXO: http://purl.obolibrary.org/obo/MAXO_
+  # Medications
+  RXNORM: http://purl.bioontology.org/ontology/RXNORM/
+  DRUGBANK: http://identifiers.org/drugbank/
+  CHEMBL.COMPOUND: http://identifiers.org/chembl.compound/
+  # Genomic variation
+  SO: http://purl.obolibrary.org/obo/SO_
+  # Not given prefixes: HL7 FHIR and GA4GH Phenopackets are exchange standards,
+  # HGVS is variant expression syntax rather than coded terms, and the Patient
+  # Journey Ontology (PJO) has no registered namespace yet.
+
+default_prefix: rddc
+default_range: string
+
+emit_prefixes:
+  - rdf
+  - rdfs
+  - xsd
+  - skos
+imports:
+  - linkml:types
