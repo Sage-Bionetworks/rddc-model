@@ -1,0 +1,1646 @@
+{
+    "$defs": {
+        "Agent": {
+            "additionalProperties": false,
+            "description": "The tool, pipeline or person that produced a sidecar or a file.",
+            "properties": {
+                "agent_type": {
+                    "$ref": "#/$defs/AgentTypeEnum",
+                    "description": "software, pipeline, or person."
+                },
+                "name": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "name"
+            ],
+            "title": "Agent",
+            "type": "object"
+        },
+        "AgentTypeEnum": {
+            "description": "",
+            "enum": [
+                "software",
+                "pipeline",
+                "person"
+            ],
+            "title": "AgentTypeEnum",
+            "type": "string"
+        },
+        "BatchDescriptor": {
+            "additionalProperties": false,
+            "description": "Identity of the deposit the sidecar describes.",
+            "properties": {
+                "batch_id": {
+                    "description": "Contributor-assigned batch ID, unique within the source.",
+                    "pattern": "^[A-Za-z0-9._:-]+$",
+                    "type": "string"
+                },
+                "contributor_id": {
+                    "description": "The contributor's registered ID.",
+                    "pattern": "^[A-Za-z0-9._:-]+$",
+                    "type": "string"
+                },
+                "description": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "interaction": {
+                    "$ref": "#/$defs/InteractionEnum"
+                },
+                "location": {
+                    "$ref": "#/$defs/StorageLocation"
+                },
+                "register_version": {
+                    "description": "Version or snapshot identifier of the source register the descriptor was issued from. On a sidecar: the register version the batch was drafted against.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "source_id": {
+                    "description": "The source register ID. Must match the delivery role used for upload.",
+                    "pattern": "^[A-Za-z0-9._:-]+$",
+                    "type": "string"
+                },
+                "supersedes_batch": {
+                    "description": "batch_id of the batch that this batch corrects or extends.",
+                    "pattern": "^[A-Za-z0-9._:-]+$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "contributor_id",
+                "source_id",
+                "batch_id",
+                "interaction",
+                "location"
+            ],
+            "title": "BatchDescriptor",
+            "type": "object"
+        },
+        "CcdaConformance": {
+            "additionalProperties": false,
+            "description": "Helper class for rules. Conformance with standard CCDA.",
+            "properties": {
+                "cdm_source": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/CdmSource"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "profiles": {
+                    "description": "Implementation guides or profiles pinned, e.g. \"http://hl7.org/fhir/us/core|6.1.0\".",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "standard": {
+                    "$ref": "#/$defs/StandardEnum",
+                    "const": "CCDA"
+                },
+                "version": {
+                    "type": "string"
+                },
+                "vocabulary_version": {
+                    "description": "OHDSI vocabulary release, e.g. \"v5.0 25-AUG-2026\".",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "standard",
+                "version"
+            ],
+            "title": "CcdaConformance",
+            "type": "object"
+        },
+        "CdmSource": {
+            "additionalProperties": false,
+            "description": "Fields of the OMOP cdm_source table that a lane 1 load needs.",
+            "properties": {
+                "cdm_etl_reference": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "cdm_holder": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "cdm_release_date": {
+                    "format": "date",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "cdm_source_abbreviation": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "cdm_source_name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "cdm_version": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "source_release_date": {
+                    "format": "date",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "vocabulary_version": {
+                    "description": "OHDSI vocabulary release, e.g. \"v5.0 25-AUG-2026\".",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "title": "CdmSource",
+            "type": "object"
+        },
+        "Checksum": {
+            "additionalProperties": false,
+            "description": "",
+            "properties": {
+                "algorithm": {
+                    "$ref": "#/$defs/ChecksumAlgorithmEnum"
+                },
+                "value": {
+                    "pattern": "^[0-9a-f]+$",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "algorithm",
+                "value"
+            ],
+            "title": "Checksum",
+            "type": "object"
+        },
+        "ChecksumAlgorithmEnum": {
+            "description": "",
+            "enum": [
+                "sha256",
+                "md5",
+                "sha1",
+                "sha512",
+                "crc32c",
+                "blake3"
+            ],
+            "title": "ChecksumAlgorithmEnum",
+            "type": "string"
+        },
+        "CompanionRef": {
+            "additionalProperties": false,
+            "description": "A companion file that holds part of the sidecar (file entries or subject rows) as JSON Lines.",
+            "properties": {
+                "checksums": {
+                    "items": {
+                        "$ref": "#/$defs/Checksum"
+                    },
+                    "type": "array"
+                },
+                "key": {
+                    "description": "Object key relative to the batch prefix.",
+                    "pattern": "^(?!/)(?!.*(^|/)\\.\\.?(/|$)).+$",
+                    "type": "string"
+                },
+                "record_count": {
+                    "description": "Rows, resources or documents in the file, when counted.",
+                    "minimum": 0,
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "size_bytes": {
+                    "minimum": 0,
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "key",
+                "checksums"
+            ],
+            "title": "CompanionRef",
+            "type": "object"
+        },
+        "Conformance": {
+            "additionalProperties": false,
+            "description": "The standard a group follows and the version and profiles pinned for it.",
+            "properties": {
+                "cdm_source": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/CdmSource"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "profiles": {
+                    "description": "Implementation guides or profiles pinned, e.g. \"http://hl7.org/fhir/us/core|6.1.0\".",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "standard": {
+                    "$ref": "#/$defs/StandardEnum"
+                },
+                "version": {
+                    "type": "string"
+                },
+                "vocabulary_version": {
+                    "description": "OHDSI vocabulary release, e.g. \"v5.0 25-AUG-2026\".",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "standard",
+                "version"
+            ],
+            "title": "Conformance",
+            "type": "object"
+        },
+        "Extension": {
+            "additionalProperties": false,
+            "description": "A namespaced, project-specific key-value pair. Unknown fields anywhere else fail validation; tools that rewrite sidecars preserve extensions.",
+            "properties": {
+                "key": {
+                    "description": "Form \"ext:<namespace>:<key>\", e.g. \"ext:ta2_fdna:cohort\".",
+                    "pattern": "^ext:[a-z][a-z0-9_]*:[A-Za-z][A-Za-z0-9_.]*$",
+                    "type": "string"
+                },
+                "value": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "key"
+            ],
+            "title": "Extension",
+            "type": "object"
+        },
+        "ExternalId": {
+            "additionalProperties": false,
+            "description": "An identifier assigned to a file by another system.",
+            "properties": {
+                "system": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "system",
+                "value"
+            ],
+            "title": "ExternalId",
+            "type": "object"
+        },
+        "FhirConformance": {
+            "additionalProperties": false,
+            "description": "Helper class for rules. Conformance with standard FHIR.",
+            "properties": {
+                "cdm_source": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/CdmSource"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "profiles": {
+                    "description": "Implementation guides or profiles pinned, e.g. \"http://hl7.org/fhir/us/core|6.1.0\".",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "standard": {
+                    "$ref": "#/$defs/StandardEnum",
+                    "const": "FHIR"
+                },
+                "version": {
+                    "type": "string"
+                },
+                "vocabulary_version": {
+                    "description": "OHDSI vocabulary release, e.g. \"v5.0 25-AUG-2026\".",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "standard",
+                "version"
+            ],
+            "title": "FhirConformance",
+            "type": "object"
+        },
+        "FileEntry": {
+            "additionalProperties": false,
+            "description": "One data object in the batch.",
+            "properties": {
+                "checksums": {
+                    "items": {
+                        "$ref": "#/$defs/Checksum"
+                    },
+                    "type": "array"
+                },
+                "extensions": {
+                    "items": {
+                        "$ref": "#/$defs/Extension"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "external_ids": {
+                    "items": {
+                        "$ref": "#/$defs/ExternalId"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "file_format": {
+                    "$ref": "#/$defs/FileFormatEnum"
+                },
+                "file_id": {
+                    "description": "Stable UUID for the file. See FR-6.",
+                    "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                    "type": "string"
+                },
+                "key": {
+                    "description": "Object key relative to the batch prefix.",
+                    "pattern": "^(?!/)(?!.*(^|/)\\.\\.?(/|$)).+$",
+                    "type": "string"
+                },
+                "media_type": {
+                    "description": "IANA media type, when known.",
+                    "pattern": "^[a-z]+/[A-Za-z0-9.+_-]+$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "modality": {
+                    "$ref": "#/$defs/ModalityEnum"
+                },
+                "processing_hints": {
+                    "items": {
+                        "$ref": "#/$defs/ProcessingHint"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "provenance": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/Provenance"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "record_count": {
+                    "description": "Rows, resources or documents in the file, when counted.",
+                    "minimum": 0,
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "sensitivity": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/SensitivityDeclaration"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Sensitivity facts. On the header they apply to every file; on an entry they override."
+                },
+                "size_bytes": {
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "subject_ids": {
+                    "description": "Subject IDs the file contains. Each must appear in the subject table.",
+                    "items": {
+                        "pattern": "^[A-Za-z0-9._:-]+$",
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "supersedes_file": {
+                    "description": "file_id of the entry this file replaces when content changed.",
+                    "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "value_origins": {
+                    "items": {
+                        "$ref": "#/$defs/ValueOrigin"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "file_id",
+                "key",
+                "size_bytes",
+                "checksums",
+                "file_format",
+                "modality"
+            ],
+            "title": "FileEntry",
+            "type": "object"
+        },
+        "FileFormatEnum": {
+            "description": "The physical format of a file, as detected or declared.",
+            "enum": [
+                "fhir_json_bundle",
+                "fhir_json_resource",
+                "fhir_ndjson",
+                "csv",
+                "tsv",
+                "parquet",
+                "json",
+                "jsonl",
+                "xml",
+                "ccda_xml",
+                "txt",
+                "pdf",
+                "fastq",
+                "bam",
+                "cram",
+                "vcf",
+                "bed",
+                "dicom",
+                "png",
+                "jpeg",
+                "tiff",
+                "mp4",
+                "wav",
+                "gzip",
+                "zip",
+                "binary",
+                "unknown"
+            ],
+            "title": "FileFormatEnum",
+            "type": "string"
+        },
+        "FileGroup": {
+            "additionalProperties": false,
+            "allOf": [
+                {
+                    "if": {
+                        "properties": {
+                            "group_type": {
+                                "anyOf": [
+                                    {
+                                        "const": "fhir_bulk_export"
+                                    },
+                                    {
+                                        "const": "fhir_bundle_collection"
+                                    }
+                                ]
+                            }
+                        },
+                        "required": [
+                            "group_type"
+                        ]
+                    },
+                    "then": {
+                        "properties": {
+                            "conformance": {}
+                        },
+                        "required": [
+                            "conformance"
+                        ]
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "group_type": {
+                                "const": "omop_cdm_instance"
+                            }
+                        },
+                        "required": [
+                            "group_type"
+                        ]
+                    },
+                    "then": {
+                        "properties": {
+                            "conformance": {}
+                        },
+                        "required": [
+                            "conformance"
+                        ]
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "group_type": {
+                                "const": "ccda_document_set"
+                            }
+                        },
+                        "required": [
+                            "group_type"
+                        ]
+                    },
+                    "then": {
+                        "properties": {
+                            "conformance": {}
+                        },
+                        "required": [
+                            "conformance"
+                        ]
+                    }
+                }
+            ],
+            "description": "A set of files that together form one collection defined by a spec or by the contributor.",
+            "properties": {
+                "conformance": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/Conformance"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "derived_from_groups": {
+                    "items": {
+                        "pattern": "^[A-Za-z0-9._:-]+$",
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "export_time": {
+                    "description": "For FHIR bulk exports, the transactionTime of the export.",
+                    "format": "date-time",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "extensions": {
+                    "items": {
+                        "$ref": "#/$defs/Extension"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "group_id": {
+                    "pattern": "^[A-Za-z0-9._:-]+$",
+                    "type": "string"
+                },
+                "group_type": {
+                    "$ref": "#/$defs/GroupTypeEnum"
+                },
+                "members": {
+                    "items": {
+                        "$ref": "#/$defs/GroupMember"
+                    },
+                    "type": "array"
+                },
+                "name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "provenance": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/Provenance"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "subject_count": {
+                    "minimum": 0,
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "value_origins": {
+                    "items": {
+                        "$ref": "#/$defs/ValueOrigin"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "group_id",
+                "group_type",
+                "members"
+            ],
+            "title": "FileGroup",
+            "type": "object"
+        },
+        "FileLink": {
+            "additionalProperties": false,
+            "description": "A relation between two files that no declared spec defines.",
+            "properties": {
+                "from_field": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "from_file_id": {
+                    "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                    "type": "string"
+                },
+                "link_type": {
+                    "$ref": "#/$defs/LinkTypeEnum"
+                },
+                "origin": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ValueOrigin"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Origin of the link: declared, detected (from a data dictionary), or inferred (needs confirmation)."
+                },
+                "to_field": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "to_file_id": {
+                    "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "from_file_id",
+                "to_file_id",
+                "link_type"
+            ],
+            "title": "FileLink",
+            "type": "object"
+        },
+        "GroupMember": {
+            "additionalProperties": false,
+            "description": "",
+            "properties": {
+                "file_id": {
+                    "description": "Stable UUID for the file. See FR-6.",
+                    "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                    "type": "string"
+                },
+                "record_count": {
+                    "description": "Rows, resources or documents in the file, when counted.",
+                    "minimum": 0,
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "role": {
+                    "description": "The member's role in the group: OMOP table name, FHIR resource type, FHIR bundle type (transaction, collection, batch, document), C-CDA document type, or a free table name for tabular datasets.",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "file_id",
+                "role"
+            ],
+            "title": "GroupMember",
+            "type": "object"
+        },
+        "GroupTypeEnum": {
+            "description": "The kind of collection a group of files forms.",
+            "enum": [
+                "fhir_bulk_export",
+                "fhir_bundle_collection",
+                "omop_cdm_instance",
+                "ccda_document_set",
+                "tabular_dataset",
+                "document_set",
+                "file_collection"
+            ],
+            "title": "GroupTypeEnum",
+            "type": "string"
+        },
+        "IdSystemEnum": {
+            "description": "How subject IDs in the subject table were obtained.",
+            "enum": [
+                "contributor",
+                "fhir_patient_id",
+                "fhir_patient_identifier",
+                "omop_person_source_value",
+                "omop_person_id",
+                "ccda_record_target"
+            ],
+            "title": "IdSystemEnum",
+            "type": "string"
+        },
+        "InteractionEnum": {
+            "description": "The payload interaction a batch requests (plan section 3.2 and 7.5).",
+            "enum": [
+                "upsert",
+                "withdraw",
+                "restrict",
+                "consent"
+            ],
+            "title": "InteractionEnum",
+            "type": "string"
+        },
+        "LinkTypeEnum": {
+            "description": "",
+            "enum": [
+                "foreign_key",
+                "pairing",
+                "index_of",
+                "derived_from",
+                "describes"
+            ],
+            "title": "LinkTypeEnum",
+            "type": "string"
+        },
+        "ModalityEnum": {
+            "description": "The kind of data a file carries. Decides the NORMALIZE lane together with the group conformance. Values match the modality table in the requirements.",
+            "enum": [
+                "clinical_fhir",
+                "clinical_omop",
+                "clinical_ccda",
+                "clinical_tabular",
+                "clinical_text",
+                "consent",
+                "genomics",
+                "imaging",
+                "video",
+                "audio",
+                "wearable",
+                "metadata",
+                "other"
+            ],
+            "title": "ModalityEnum",
+            "type": "string"
+        },
+        "OmopConformance": {
+            "additionalProperties": false,
+            "description": "Helper class for rules. Conformance with standard OMOP_CDM.",
+            "properties": {
+                "cdm_source": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/CdmSource"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "profiles": {
+                    "description": "Implementation guides or profiles pinned, e.g. \"http://hl7.org/fhir/us/core|6.1.0\".",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "standard": {
+                    "$ref": "#/$defs/StandardEnum",
+                    "const": "OMOP_CDM"
+                },
+                "version": {
+                    "type": "string"
+                },
+                "vocabulary_version": {
+                    "description": "OHDSI vocabulary release, e.g. \"v5.0 25-AUG-2026\".",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "standard",
+                "version"
+            ],
+            "title": "OmopConformance",
+            "type": "object"
+        },
+        "Parameter": {
+            "additionalProperties": false,
+            "description": "",
+            "properties": {
+                "key": {
+                    "description": "Object key relative to the batch prefix.",
+                    "pattern": "^(?!/)(?!.*(^|/)\\.\\.?(/|$)).+$",
+                    "type": "string"
+                },
+                "value": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "key"
+            ],
+            "title": "Parameter",
+            "type": "object"
+        },
+        "ProcessingHint": {
+            "additionalProperties": false,
+            "description": "An informational key-value pair for a pipeline. Pipelines may read hints but must not branch on them (FR-5); anything decision-bearing is a schema field.",
+            "properties": {
+                "key": {
+                    "description": "Namespaced key, e.g. \"fhir_to_omop:source_vocabulary\".",
+                    "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_.]*$",
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "key",
+                "value"
+            ],
+            "title": "ProcessingHint",
+            "type": "object"
+        },
+        "Provenance": {
+            "additionalProperties": false,
+            "description": "How a file, group or sidecar was derived. Maps to W3C PROV.",
+            "properties": {
+                "derived_from": {
+                    "description": "file_ids of inputs.",
+                    "items": {
+                        "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "derived_from_batches": {
+                    "description": "batch_ids (as \"source_id/batch_id\") of input batches.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "ended_at": {
+                    "format": "date-time",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "parameters": {
+                    "items": {
+                        "$ref": "#/$defs/Parameter"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "pipeline": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "pipeline_version": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "run_id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "started_at": {
+                    "format": "date-time",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "title": "Provenance",
+            "type": "object"
+        },
+        "SensitivityDeclaration": {
+            "additionalProperties": false,
+            "description": "Facts about the payload that de-identification and routing need. Policy (use terms, access tier, date policy) is not declared here; it comes from the source register. Defaults, where a flag is absent, are the most restrictive reading.",
+            "properties": {
+                "contains_biometric_identifiers": {
+                    "description": "Payload holds biometric identifiers, full-face images, voice or similar. Held in the TRE only.",
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                },
+                "contains_dates": {
+                    "description": "Payload holds dates finer than year (accepted, masked at release).",
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                },
+                "contains_free_text": {
+                    "description": "Payload holds unstructured text that de-identification must scan.",
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                },
+                "contains_zip_codes": {
+                    "description": "Payload holds postal codes (accepted, masked at release).",
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                },
+                "direct_identifiers_removed": {
+                    "description": "Contributor attestation that Safe Harbor direct identifiers (plan Table 3, group one) were removed before transmission. Must be true for non-synthetic data.",
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                },
+                "notes": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "synthetic": {
+                    "description": "Payload is synthetic data with no real persons. Relaxes identifier checks to warnings.",
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                }
+            },
+            "title": "SensitivityDeclaration",
+            "type": "object"
+        },
+        "Sidecar": {
+            "additionalProperties": false,
+            "description": "The metadata sidecar for one batch. Serialized as _rddc_sidecar.json.",
+            "properties": {
+                "batch": {
+                    "$ref": "#/$defs/BatchDescriptor"
+                },
+                "created_at": {
+                    "description": "When the sidecar was written.",
+                    "format": "date-time",
+                    "type": "string"
+                },
+                "extensions": {
+                    "items": {
+                        "$ref": "#/$defs/Extension"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "files": {
+                    "description": "File entries, inline. Mutually exclusive with files_ref.",
+                    "items": {
+                        "$ref": "#/$defs/FileEntry"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "files_ref": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/CompanionRef"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Companion JSON Lines file holding the file entries, with its checksum."
+                },
+                "generated_by": {
+                    "$ref": "#/$defs/Agent",
+                    "description": "The tool or pipeline that wrote the sidecar, with its version."
+                },
+                "groups": {
+                    "items": {
+                        "$ref": "#/$defs/FileGroup"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "links": {
+                    "items": {
+                        "$ref": "#/$defs/FileLink"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "provenance": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/Provenance"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "schema_name": {
+                    "const": "rddc-sidecar",
+                    "description": "Name of the schema this document conforms to. Always rddc-sidecar.",
+                    "type": "string"
+                },
+                "schema_version": {
+                    "description": "Version of the sidecar schema the document conforms to.",
+                    "pattern": "^\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z.-]+)?$",
+                    "type": "string"
+                },
+                "sensitivity": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/SensitivityDeclaration"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Sensitivity facts. On the header they apply to every file; on an entry they override."
+                },
+                "sidecar_id": {
+                    "description": "Unique ID of this sidecar document. Referenced by supersedes in later sidecars.",
+                    "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                    "type": "string"
+                },
+                "subjects": {
+                    "description": "Subject table rows, inline. Mutually exclusive with subjects_ref.",
+                    "items": {
+                        "$ref": "#/$defs/SubjectEntry"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "subjects_ref": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/CompanionRef"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Companion JSON Lines file holding the subject table, with its checksum."
+                },
+                "supersedes": {
+                    "description": "sidecar_id of the sidecar this one replaces (correction, rectification or addition).",
+                    "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "schema_name",
+                "schema_version",
+                "sidecar_id",
+                "created_at",
+                "generated_by",
+                "batch"
+            ],
+            "then": {
+                "anyOf": [
+                    {
+                        "properties": {
+                            "subjects": {
+                                "items": {},
+                                "type": "array"
+                            }
+                        },
+                        "required": [
+                            "subjects"
+                        ]
+                    },
+                    {
+                        "properties": {
+                            "subjects_ref": {}
+                        },
+                        "required": [
+                            "subjects_ref"
+                        ]
+                    }
+                ]
+            },
+            "title": "Sidecar",
+            "type": "object"
+        },
+        "SourceDescriptor": {
+            "additionalProperties": false,
+            "description": "Register values for one source, issued by the ACT at onboarding and consumed by the generator and the local validator (FR-28). Serialized as rddc_source.yaml or .json. Not part of the sidecar document.",
+            "properties": {
+                "bucket": {
+                    "description": "S3 bucket name.",
+                    "type": "string"
+                },
+                "contributor_id": {
+                    "description": "The contributor's registered ID.",
+                    "pattern": "^[A-Za-z0-9._:-]+$",
+                    "type": "string"
+                },
+                "delivery_role": {
+                    "description": "Identifier of the delivery role (for example an IAM role ARN) the source uploads with. Informational for the contributor; enforced by the platform.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "description": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "issued_at": {
+                    "description": "When the descriptor was issued.",
+                    "format": "date-time",
+                    "type": "string"
+                },
+                "issued_by": {
+                    "$ref": "#/$defs/Agent",
+                    "description": "Who issued the descriptor (the ACT, or the register export job)."
+                },
+                "modalities": {
+                    "description": "Modalities the source is registered to deposit. A sidecar file with another modality fails the registry check.",
+                    "items": {
+                        "$ref": "#/$defs/ModalityEnum"
+                    },
+                    "type": "array"
+                },
+                "prefix_pattern": {
+                    "description": "Template for batch prefixes under the bucket, with {source_id} and {batch_id} placeholders, ending with a slash. Example: \"{source_id}/{batch_id}/\".",
+                    "pattern": "^(|.*/)$",
+                    "type": "string"
+                },
+                "region": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "register_version": {
+                    "description": "Version or snapshot identifier of the source register the descriptor was issued from. On a sidecar: the register version the batch was drafted against.",
+                    "type": "string"
+                },
+                "schema_name": {
+                    "const": "rddc-source-descriptor",
+                    "description": "Always rddc-source-descriptor.",
+                    "type": "string"
+                },
+                "schema_version": {
+                    "description": "Version of the sidecar schema the document conforms to.",
+                    "pattern": "^\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z.-]+)?$",
+                    "type": "string"
+                },
+                "source_id": {
+                    "description": "The source register ID. Must match the delivery role used for upload.",
+                    "pattern": "^[A-Za-z0-9._:-]+$",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "schema_name",
+                "schema_version",
+                "contributor_id",
+                "source_id",
+                "bucket",
+                "prefix_pattern",
+                "modalities",
+                "register_version",
+                "issued_at",
+                "issued_by"
+            ],
+            "title": "SourceDescriptor",
+            "type": "object"
+        },
+        "StandardEnum": {
+            "description": "Standards a group can declare conformance to.",
+            "enum": [
+                "FHIR",
+                "OMOP_CDM",
+                "CCDA",
+                "PHENOPACKETS",
+                "DICOM",
+                "NONE"
+            ],
+            "title": "StandardEnum",
+            "type": "string"
+        },
+        "StorageLocation": {
+            "additionalProperties": false,
+            "description": "Where the batch lives. The prefix ends with a slash and the sidecar sits directly under it.",
+            "properties": {
+                "bucket": {
+                    "description": "S3 bucket name.",
+                    "type": "string"
+                },
+                "prefix": {
+                    "description": "Key prefix of the batch, ending with a slash. Empty string for bucket root.",
+                    "pattern": "^(|.*/)$",
+                    "type": "string"
+                },
+                "region": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "bucket",
+                "prefix"
+            ],
+            "title": "StorageLocation",
+            "type": "object"
+        },
+        "SubjectEntry": {
+            "additionalProperties": false,
+            "description": "One row of the subject table.",
+            "properties": {
+                "consent_ref": {
+                    "description": "Reference to a consent record or version for this subject, for consent batches.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "extensions": {
+                    "items": {
+                        "$ref": "#/$defs/Extension"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "id_system": {
+                    "$ref": "#/$defs/IdSystemEnum"
+                },
+                "identifier_system_uri": {
+                    "description": "For fhir_patient_identifier, the identifier system URI.",
+                    "format": "uri",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "subject_id": {
+                    "description": "The contributor's coded ID for one person.",
+                    "pattern": "^[A-Za-z0-9._:-]+$",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "subject_id"
+            ],
+            "title": "SubjectEntry",
+            "type": "object"
+        },
+        "ValueOrigin": {
+            "additionalProperties": false,
+            "description": "Provenance of one auto-filled field value in an entry or group.",
+            "properties": {
+                "confidence": {
+                    "maximum": 1,
+                    "minimum": 0,
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                },
+                "confirmed": {
+                    "description": "A human confirmed the value. Required true for inferred values before validation passes.",
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                },
+                "field": {
+                    "description": "JSON pointer or dotted path to the field within the entry or group.",
+                    "type": "string"
+                },
+                "method": {
+                    "description": "Detector or rule that produced the value.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "origin": {
+                    "$ref": "#/$defs/ValueOriginEnum"
+                }
+            },
+            "required": [
+                "field",
+                "origin"
+            ],
+            "title": "ValueOrigin",
+            "type": "object"
+        },
+        "ValueOriginEnum": {
+            "description": "Where an auto-filled value came from.",
+            "enum": [
+                "declared",
+                "detected",
+                "inferred"
+            ],
+            "title": "ValueOriginEnum",
+            "type": "string"
+        }
+    },
+    "$id": "https://w3id.org/rddc/sidecar",
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "additionalProperties": false,
+    "description": "The metadata sidecar for one batch. Serialized as _rddc_sidecar.json.",
+    "metamodel_version": "1.11.0",
+    "properties": {
+        "batch": {
+            "$ref": "#/$defs/BatchDescriptor"
+        },
+        "created_at": {
+            "description": "When the sidecar was written.",
+            "format": "date-time",
+            "type": "string"
+        },
+        "extensions": {
+            "items": {
+                "$ref": "#/$defs/Extension"
+            },
+            "type": [
+                "array",
+                "null"
+            ]
+        },
+        "files": {
+            "description": "File entries, inline. Mutually exclusive with files_ref.",
+            "items": {
+                "$ref": "#/$defs/FileEntry"
+            },
+            "type": [
+                "array",
+                "null"
+            ]
+        },
+        "files_ref": {
+            "anyOf": [
+                {
+                    "$ref": "#/$defs/CompanionRef"
+                },
+                {
+                    "type": "null"
+                }
+            ],
+            "description": "Companion JSON Lines file holding the file entries, with its checksum."
+        },
+        "generated_by": {
+            "$ref": "#/$defs/Agent",
+            "description": "The tool or pipeline that wrote the sidecar, with its version."
+        },
+        "groups": {
+            "items": {
+                "$ref": "#/$defs/FileGroup"
+            },
+            "type": [
+                "array",
+                "null"
+            ]
+        },
+        "links": {
+            "items": {
+                "$ref": "#/$defs/FileLink"
+            },
+            "type": [
+                "array",
+                "null"
+            ]
+        },
+        "provenance": {
+            "anyOf": [
+                {
+                    "$ref": "#/$defs/Provenance"
+                },
+                {
+                    "type": "null"
+                }
+            ]
+        },
+        "schema_name": {
+            "const": "rddc-sidecar",
+            "description": "Name of the schema this document conforms to. Always rddc-sidecar.",
+            "type": "string"
+        },
+        "schema_version": {
+            "description": "Version of the sidecar schema the document conforms to.",
+            "pattern": "^\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z.-]+)?$",
+            "type": "string"
+        },
+        "sensitivity": {
+            "anyOf": [
+                {
+                    "$ref": "#/$defs/SensitivityDeclaration"
+                },
+                {
+                    "type": "null"
+                }
+            ],
+            "description": "Sensitivity facts. On the header they apply to every file; on an entry they override."
+        },
+        "sidecar_id": {
+            "description": "Unique ID of this sidecar document. Referenced by supersedes in later sidecars.",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            "type": "string"
+        },
+        "subjects": {
+            "description": "Subject table rows, inline. Mutually exclusive with subjects_ref.",
+            "items": {
+                "$ref": "#/$defs/SubjectEntry"
+            },
+            "type": [
+                "array",
+                "null"
+            ]
+        },
+        "subjects_ref": {
+            "anyOf": [
+                {
+                    "$ref": "#/$defs/CompanionRef"
+                },
+                {
+                    "type": "null"
+                }
+            ],
+            "description": "Companion JSON Lines file holding the subject table, with its checksum."
+        },
+        "supersedes": {
+            "description": "sidecar_id of the sidecar this one replaces (correction, rectification or addition).",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            "type": [
+                "string",
+                "null"
+            ]
+        }
+    },
+    "required": [
+        "schema_name",
+        "schema_version",
+        "sidecar_id",
+        "created_at",
+        "generated_by",
+        "batch"
+    ],
+    "then": {
+        "anyOf": [
+            {
+                "properties": {
+                    "subjects": {
+                        "items": {},
+                        "type": "array"
+                    }
+                },
+                "required": [
+                    "subjects"
+                ]
+            },
+            {
+                "properties": {
+                    "subjects_ref": {}
+                },
+                "required": [
+                    "subjects_ref"
+                ]
+            }
+        ]
+    },
+    "title": "rddc-sidecar",
+    "type": "object",
+    "version": "0.2.0"
+}
+

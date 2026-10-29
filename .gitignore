@@ -1,0 +1,5 @@
+# review copy of the infrastructure plan; the Google Doc is the source
+*.docx
+__pycache__/
+.pytest_cache/
+.deepeval/
