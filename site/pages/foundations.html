@@ -1,0 +1,166 @@
+<h1>Foundations</h1>
+<p class="lede">The sidecar uses JSON-LD, schema.org and Croissant. This page explains the parts used to read and write a sidecar.</p>
+
+<div class="note"><strong>Background for the format</strong>
+<p>The RDDC tool can generate sidecars without detailed knowledge of these standards. This page explains terms such as <code>cr:FileObject</code> and <code>@context</code>.</p></div>
+
+<h2>Why build on standards at all</h2>
+<p>Shared standards give familiar names and structures to the parts of a sidecar:</p>
+<ul>
+<li>fields such as <code>contentUrl</code> have a shared definition;</li>
+<li>Croissant tools such as <code>mlcroissant</code> can read the standard fields;</li>
+<li>the RDDC only has to define and maintain the parts that are specific to clinical data.</li>
+</ul>
+
+<h2>JSON-LD: JSON with meaning attached</h2>
+<p><strong>JSON-LD</strong> (JSON for Linked Data) connects JSON keys to shared definitions. A key such as <code>"name"</code> gets a unique identifier called an <em>IRI</em>. Documents that use the same IRI refer to the same term.</p>
+
+<h3 id="the-four-keywords-you-will-meet">Four JSON-LD keywords</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>Keyword</th><th>What it does</th><th>In a sidecar</th></tr></thead>
+<tbody>
+<tr><td><code>@context</code></td><td>A dictionary that maps short keys to IRIs.</td><td>An embedded object at the top, copied unchanged from the generated context file.</td></tr>
+<tr><td><code>@id</code></td><td>A unique identifier for the thing described, so other objects can point to it.</td><td>The sidecar's and every file's <code>urn:uuid:…</code>; short local IDs for file sets and record sets.</td></tr>
+<tr><td><code>@type</code></td><td>What kind of thing the object is.</td><td><code>sc:Dataset</code>, <code>cr:FileObject</code>, <code>cr:FileSet</code> and a few others.</td></tr>
+<tr><td><code>{"@id": …}</code></td><td>A reference to another object by its ID.</td><td>Linking a file set to its files, an index to its BAM, a field to its source file.</td></tr>
+</tbody></table></div>
+
+<h3>A context in miniature</h3>
+<p>Here is a tiny JSON-LD document. The context says that <code>name</code> means <code>https://schema.org/name</code> and declares <code>sc</code> as shorthand for the schema.org address.</p>
+<rddc-code title="A minimal JSON-LD document">{
+  "@context": {
+    "@vocab": "https://schema.org/",
+    "sc": "https://schema.org/",
+    "cr": "http://mlcommons.org/croissant/"
+  },
+  "@type": "sc:Dataset",
+  "@id": "https://example.org/datasets/clinic-visits",
+  "name": "Clinic visits"
+}</rddc-code>
+<p>Two ideas carry over directly to the sidecar:</p>
+<ul>
+<li><strong>Prefixes (CURIEs).</strong> <code>sc:Dataset</code> is short for <code>https://schema.org/Dataset</code>, and <code>cr:FileObject</code> for <code>http://mlcommons.org/croissant/FileObject</code>. The sidecar also uses <code>rddc:</code> (<code>https://w3id.org/rddc/sidecar/</code>), <code>prov:</code> and <code>dct:</code>.</li>
+<li><strong>A default vocabulary.</strong> <code>@vocab</code> means that any key without its own mapping is read as a schema.org term. That is why so many sidecar keys, such as <code>name</code>, <code>url</code> and <code>dateCreated</code>, need no prefix.</li>
+</ul>
+
+<div class="note"><strong>Reading a sidecar as plain JSON</strong>
+<p>An ordinary JSON parser can read a sidecar. The RDDC validator uses JSON Schema. Linked-data tools such as <code>mlcroissant</code> also use the context to interpret the fields.</p></div>
+
+<h2>schema.org: the shared vocabulary</h2>
+<p><a href="https://schema.org">schema.org</a> defines terms for structured data on the web. The sidecar uses its <code>Dataset</code> type and these properties:</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Term</th><th>Meaning</th><th>Used for</th></tr></thead>
+<tbody>
+<tr><td><code class="k o-sc">name</code>, <code class="k o-sc">description</code></td><td>Human-readable label and summary</td><td>The batch, files, file sets, fields</td></tr>
+<tr><td><code class="k o-sc">url</code></td><td>Where the thing lives</td><td>The batch's S3 prefix</td></tr>
+<tr><td><code class="k o-sc">dateCreated</code></td><td>Creation timestamp</td><td>When the sidecar was written</td></tr>
+<tr><td><code class="k o-sc">distribution</code></td><td>The downloadable parts of a dataset</td><td>The list of every file and file set</td></tr>
+<tr><td><code class="k o-sc">contentUrl</code>, <code class="k o-sc">contentSize</code>, <code class="k o-sc">encodingFormat</code>, <code class="k o-sc">sha256</code></td><td>Where a file is, how big it is, its media type and checksum</td><td>Every file</td></tr>
+<tr><td><code class="k o-sc">hasPart</code></td><td>Membership</td><td>A file set's member files</td></tr>
+<tr><td><code class="k o-sc">additionalType</code></td><td>A more specific type alongside <code>@type</code></td><td>The RDDC class of a file or file set</td></tr>
+<tr><td><code class="k o-sc">additionalProperty</code>, <code class="k o-sc">identifier</code></td><td>Extra key-value pairs, external IDs</td><td>Extensions, contributor-supplied IDs</td></tr>
+</tbody></table></div>
+
+<h2 id="croissant">Croissant: datasets that machines can load</h2>
+<p><strong>Croissant</strong> is a metadata format from <a href="https://mlcommons.org/working-groups/data/croissant/">MLCommons</a>. It extends schema.org's <code>Dataset</code> with the details software needs to find, check and load data files. The <code>mlcroissant</code> Python library reads this format.</p>
+<p>The sidecar follows <a href="https://docs.mlcommons.org/croissant/docs/croissant-spec-1.1.html">Croissant 1.1</a>. Croissant organizes a description into four layers. The sidecar uses the first three.</p>
+
+<h3>Layer 1: dataset metadata</h3>
+<p>Ordinary schema.org properties on an <code>sc:Dataset</code>: name, description, URL, creation date, license, and a <code>conformsTo</code> value announcing the Croissant version.</p>
+
+<h3>Layer 2: resources</h3>
+<p>The <code>distribution</code> list describes the actual files, using two Croissant classes:</p>
+<ul>
+<li><strong><code>cr:FileObject</code></strong>: one file, with <code>contentUrl</code>, <code>contentSize</code>, <code>encodingFormat</code> and a checksum.</li>
+<li><strong><code>cr:FileSet</code></strong>: a group of files selected by glob patterns in <code>includes</code> (and optionally <code>excludes</code>), such as every CSV in a folder.</li>
+</ul>
+
+<h3>Layer 3: structure</h3>
+<p>A <strong><code>cr:RecordSet</code></strong> describes the records in the data, much like a table schema. Each <strong><code>cr:Field</code></strong> is a column with a data type, a <code>source</code> that says which file and column it is read from, and optionally <code>references</code>, which points to another field like a foreign key.</p>
+
+<h3>Layer 4: ML semantics (not used)</h3>
+<p>Croissant also defines ML-specific types, such as <code>cr:Split</code> for training, validation and test splits, <code>cr:Label</code>, <code>cr:BoundingBox</code> and <code>cr:SegmentationMask</code>. The specification marks them as experimental. The sidecar describes data at intake, not ML training sets, so it does not use them.</p>
+
+<h3>A small Croissant dataset</h3>
+<p>This example describes one CSV file with two columns in Croissant. Its context is shortened for readability. The same fields appear in an RDDC sidecar.</p>
+<rddc-code title="Plain Croissant 1.1 (illustrative, context shortened)">{
+  "@context": {
+    "@vocab": "https://schema.org/",
+    "sc": "https://schema.org/",
+    "cr": "http://mlcommons.org/croissant/",
+    "dct": "http://purl.org/dc/terms/",
+    "conformsTo": "dct:conformsTo",
+    "recordSet": "cr:recordSet",
+    "field": "cr:field",
+    "dataType": { "@id": "cr:dataType", "@type": "@vocab" },
+    "source": "cr:source",
+    "fileObject": "cr:fileObject",
+    "extract": "cr:extract",
+    "column": "cr:column"
+  },
+  "@type": "sc:Dataset",
+  "conformsTo": "http://mlcommons.org/croissant/1.1",
+  "name": "clinic-visits",
+  "description": "Outpatient visit counts by month.",
+  "license": "https://creativecommons.org/licenses/by/4.0/",
+  "url": "https://example.org/clinic-visits",
+  "distribution": [
+    {
+      "@type": "cr:FileObject",
+      "@id": "visits.csv",
+      "name": "visits.csv",
+      "contentUrl": "https://example.org/clinic-visits/visits.csv",
+      "encodingFormat": "text/csv",
+      "sha256": "5e0bd1a5b2c4f86f2b9e0b3c1d2a4e6f8091a2b3c4d5e6f708192a3b4c5d6e7f"
+    }
+  ],
+  "recordSet": [
+    {
+      "@type": "cr:RecordSet",
+      "@id": "visits",
+      "name": "visits",
+      "field": [
+        {
+          "@type": "cr:Field",
+          "@id": "visits/month",
+          "name": "month",
+          "dataType": "sc:Date",
+          "source": { "fileObject": { "@id": "visits.csv" }, "extract": { "column": "month" } }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "visits/count",
+          "name": "count",
+          "dataType": "sc:Integer",
+          "source": { "fileObject": { "@id": "visits.csv" }, "extract": { "column": "count" } }
+        }
+      ]
+    }
+  ]
+}</rddc-code>
+<p>Turn on <strong>Term origins</strong> in the header, if it is off, and notice the colours: blue keys come from schema.org and amber keys from Croissant. On the RDDC pages a third colour, teal, marks the terms the RDDC adds.</p>
+
+<h3>What Croissant does not cover</h3>
+<p>The RDDC adds fields for clinical intake that the Croissant core does not define:</p>
+<ul>
+<li>who the data is about, or how to withdraw one person's data later;</li>
+<li>whether the batch carries data, a withdrawal, a restriction or consent;</li>
+<li>clinical standards such as FHIR, OMOP or C-CDA and their versions;</li>
+<li>de-identification facts, such as whether a file contains dates or faces;</li>
+<li>pipeline provenance in a form that matches how the RDDC stores it.</li>
+</ul>
+<p><a href="croissant.html">RDDC and Croissant</a> compares the standard fields with the RDDC additions.</p>
+
+<h2>W3C PROV: where data came from</h2>
+<p><a href="https://www.w3.org/TR/prov-o/">PROV-O</a> is the W3C vocabulary for recording where data came from. It describes <em>entities</em> such as files, <em>activities</em> such as pipeline runs, and the <em>agents</em> responsible for them. The sidecar uses two terms, shown in plum:</p>
+<ul>
+<li><code class="k o-prov">wasAttributedTo</code>: the tool that wrote the sidecar;</li>
+<li><code class="k o-prov">wasDerivedFrom</code>: the files or file sets in the same batch that a file or file set was derived from.</li>
+</ul>
+
+<h2>LinkML: where the rules live</h2>
+<p><code>schema/rddc_sidecar.yaml</code> defines the sidecar's fields, types and rules in <a href="https://linkml.io">LinkML</a>. That file generates the JSON Schema, JSON-LD context and <a href="reference.html">schema reference</a>. Propose changes to the model in the YAML file.</p>
+
+<h2>Putting it together</h2>
+<p>An RDDC sidecar combines a schema.org dataset, JSON-LD, Croissant file and table descriptions, RDDC clinical fields, and PROV terms for lineage. This example header shows the four vocabularies:</p>
+<rddc-json src="examples/deposit_fhir_omop.json" keys="@context,@id,@type,conformsTo,name,url,dateCreated,wasAttributedTo,contributorId,sourceId,batchId,interaction,sensitivity" title="examples/deposit_fhir_omop.json (header only)"></rddc-json>

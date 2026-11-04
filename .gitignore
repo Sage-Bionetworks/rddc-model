@@ -3,3 +3,5 @@
 __pycache__/
 .pytest_cache/
 .deepeval/
+# built documentation site (make site)
+site/dist/

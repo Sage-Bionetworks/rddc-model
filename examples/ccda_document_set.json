@@ -1,0 +1,235 @@
+{
+  "@context": {
+    "@language": "en",
+    "@vocab": "https://schema.org/",
+    "arrayShape": "cr:arrayShape",
+    "citeAs": "cr:citeAs",
+    "column": "cr:column",
+    "conformsTo": "dct:conformsTo",
+    "containedIn": "cr:containedIn",
+    "cr": "http://mlcommons.org/croissant/",
+    "rai": "http://mlcommons.org/croissant/RAI/",
+    "data": {
+      "@id": "cr:data",
+      "@type": "@json"
+    },
+    "dataType": {
+      "@id": "cr:dataType",
+      "@type": "@vocab"
+    },
+    "dct": "http://purl.org/dc/terms/",
+    "description": {
+      "@container": "@language"
+    },
+    "equivalentProperty": "cr:equivalentProperty",
+    "examples": {
+      "@id": "cr:examples",
+      "@type": "@json"
+    },
+    "extract": "cr:extract",
+    "field": "cr:field",
+    "fileProperty": "cr:fileProperty",
+    "fileObject": "cr:fileObject",
+    "fileSet": "cr:fileSet",
+    "format": "cr:format",
+    "includes": "cr:includes",
+    "isArray": "cr:isArray",
+    "isLiveDataset": "cr:isLiveDataset",
+    "jsonPath": "cr:jsonPath",
+    "key": "cr:key",
+    "md5": "cr:md5",
+    "name": {
+      "@container": "@language"
+    },
+    "parentField": "cr:parentField",
+    "path": "cr:path",
+    "recordSet": "cr:recordSet",
+    "references": "cr:references",
+    "regex": "cr:regex",
+    "repeated": "cr:repeated",
+    "replace": "cr:replace",
+    "samplingRate": "cr:samplingRate",
+    "sc": "https://schema.org/",
+    "separator": "cr:separator",
+    "source": "cr:source",
+    "subField": "cr:subField",
+    "transform": "cr:transform",
+    "rddc": "https://w3id.org/rddc/sidecar/",
+    "prov": "http://www.w3.org/ns/prov#",
+    "additionalType": {
+      "@id": "sc:additionalType",
+      "@type": "@id"
+    },
+    "assay": "rddc:assay",
+    "batchId": "rddc:batchId",
+    "bucket": "rddc:bucket",
+    "bundleType": "rddc:bundleType",
+    "cdmEtlReference": "rddc:cdmEtlReference",
+    "cdmHolder": "rddc:cdmHolder",
+    "cdmReleaseDate": "rddc:cdmReleaseDate",
+    "cdmSource": "rddc:cdmSource",
+    "cdmSourceAbbreviation": "rddc:cdmSourceAbbreviation",
+    "cdmSourceName": "rddc:cdmSourceName",
+    "cdmTable": "rddc:cdmTable",
+    "cdmVersion": "rddc:cdmVersion",
+    "compression": "rddc:compression",
+    "confidence": "rddc:confidence",
+    "confirmed": "rddc:confirmed",
+    "consentRef": "rddc:consentRef",
+    "containsBiometricIdentifiers": "rddc:containsBiometricIdentifiers",
+    "containsDates": "rddc:containsDates",
+    "containsFreeText": "rddc:containsFreeText",
+    "containsZipCodes": "rddc:containsZipCodes",
+    "contributorId": "rddc:contributorId",
+    "deliveryRole": "rddc:deliveryRole",
+    "directIdentifiersRemoved": "rddc:directIdentifiersRemoved",
+    "excludes": "cr:excludes",
+    "exportTime": "rddc:exportTime",
+    "fieldPath": "rddc:fieldPath",
+    "idSystem": "rddc:idSystem",
+    "identifierSystemUri": "rddc:identifierSystemUri",
+    "indexOf": "rddc:indexOf",
+    "interaction": "rddc:interaction",
+    "issuedAt": "rddc:issuedAt",
+    "issuedBy": "rddc:issuedBy",
+    "method": "rddc:method",
+    "modalities": "rddc:modalities",
+    "modality": "rddc:modality",
+    "notes": "rddc:notes",
+    "noticeRef": "rddc:noticeRef",
+    "origin": "rddc:origin",
+    "pairedWith": "rddc:pairedWith",
+    "platform": "rddc:platform",
+    "prefixPattern": "rddc:prefixPattern",
+    "processingHints": "rddc:processingHints",
+    "recordCount": "rddc:recordCount",
+    "referenceGenome": "rddc:referenceGenome",
+    "region": "rddc:region",
+    "registerVersion": "rddc:registerVersion",
+    "resourceType": "rddc:resourceType",
+    "sensitivity": "rddc:sensitivity",
+    "sourceId": "rddc:sourceId",
+    "sourceReleaseDate": "rddc:sourceReleaseDate",
+    "subjectCount": "rddc:subjectCount",
+    "subjectId": "rddc:subjectId",
+    "subjectIds": "rddc:subjectIds",
+    "subjects": "rddc:subjects",
+    "synthetic": "rddc:synthetic",
+    "tableName": "rddc:tableName",
+    "templateIds": "rddc:templateIds",
+    "valueOrigins": "rddc:valueOrigins",
+    "vocabularyVersion": "rddc:vocabularyVersion",
+    "wasAttributedTo": "prov:wasAttributedTo",
+    "wasDerivedFrom": "prov:wasDerivedFrom"
+  },
+  "@id": "urn:uuid:00000004-0000-4000-8000-000000000004",
+  "@type": "sc:Dataset",
+  "conformsTo": [
+    "http://mlcommons.org/croissant/1.1",
+    "https://w3id.org/rddc/sidecar/0.1.0"
+  ],
+  "name": "src-ta2-01/2026-12-ccda",
+  "url": "s3://rddc-deposit-ta2/src-ta2-01/2026-12-ccda/",
+  "dateCreated": "2026-10-28T12:00:00Z",
+  "wasAttributedTo": {
+    "@type": "sc:SoftwareApplication",
+    "name": "rddc-sidecar",
+    "softwareVersion": "0.1.0"
+  },
+  "contributorId": "ta2-site-a",
+  "sourceId": "src-ta2-01",
+  "batchId": "2026-12-ccda",
+  "interaction": "add",
+  "sensitivity": {
+    "directIdentifiersRemoved": true,
+    "containsDates": true,
+    "containsZipCodes": false,
+    "containsFreeText": true,
+    "containsBiometricIdentifiers": false
+  },
+  "description": "HIE C-CDA documents. Large sets list every file inline and select the set by glob.",
+  "subjects": [
+    {
+      "subjectId": "P0001",
+      "idSystem": "ccda_record_target"
+    },
+    {
+      "subjectId": "P0002",
+      "idSystem": "ccda_record_target"
+    },
+    {
+      "subjectId": "P0003",
+      "idSystem": "ccda_record_target"
+    }
+  ],
+  "distribution": [
+    {
+      "@id": "ccda",
+      "@type": "cr:FileSet",
+      "additionalType": "rddc:CcdaDocumentSet",
+      "name": "HIE C-CDA documents",
+      "encodingFormat": "application/xml",
+      "includes": [
+        "ccda/**/*.xml"
+      ],
+      "conformsTo": [
+        "http://hl7.org/cda/us/ccda/2.1"
+      ],
+      "subjectCount": 3
+    },
+    {
+      "@id": "urn:uuid:00000029-0000-4000-8000-000000000029",
+      "@type": "cr:FileObject",
+      "additionalType": "rddc:CcdaDocumentFile",
+      "name": "ccda/0000/doc_0000001.xml",
+      "contentUrl": "ccda/0000/doc_0000001.xml",
+      "contentSize": "1041 B",
+      "encodingFormat": "application/xml",
+      "sha256": "38fbfdfdab53f39ecb0ef6ebab32768a74163a243c3d2e87faf769eb8828014e",
+      "md5": "38fbfdfdab53f39ecb0ef6ebab32768a",
+      "modality": "clinical_ccda",
+      "subjectIds": [
+        "P0001"
+      ],
+      "templateIds": [
+        "2.16.840.1.113883.10.20.22.1.2:2015-08-01"
+      ]
+    },
+    {
+      "@id": "urn:uuid:0000002a-0000-4000-8000-00000000002a",
+      "@type": "cr:FileObject",
+      "additionalType": "rddc:CcdaDocumentFile",
+      "name": "ccda/0000/doc_0000002.xml",
+      "contentUrl": "ccda/0000/doc_0000002.xml",
+      "contentSize": "1042 B",
+      "encodingFormat": "application/xml",
+      "sha256": "d71fcfaf1d95870510bf2041c4f5d8a3176f26176b288723818ea566769f21c0",
+      "md5": "d71fcfaf1d95870510bf2041c4f5d8a3",
+      "modality": "clinical_ccda",
+      "subjectIds": [
+        "P0002"
+      ],
+      "templateIds": [
+        "2.16.840.1.113883.10.20.22.1.2:2015-08-01"
+      ]
+    },
+    {
+      "@id": "urn:uuid:0000002b-0000-4000-8000-00000000002b",
+      "@type": "cr:FileObject",
+      "additionalType": "rddc:CcdaDocumentFile",
+      "name": "ccda/0000/doc_0000003.xml",
+      "contentUrl": "ccda/0000/doc_0000003.xml",
+      "contentSize": "1043 B",
+      "encodingFormat": "application/xml",
+      "sha256": "720cf72e066cfdebd12f78cb95cb2ab5bc7619b935df6202fec302c3c0c08ba6",
+      "md5": "720cf72e066cfdebd12f78cb95cb2ab5",
+      "modality": "clinical_ccda",
+      "subjectIds": [
+        "P0003"
+      ],
+      "templateIds": [
+        "2.16.840.1.113883.10.20.22.1.2:2015-08-01"
+      ]
+    }
+  ]
+}

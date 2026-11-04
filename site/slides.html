@@ -1,0 +1,750 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Ten slides on the Croissant foundation of the RDDC metadata sidecar.">
+<title>RDDC and Croissant — slides</title>
+<style>
+  :root {
+    color-scheme: light;
+    --paper: #faf9f6;
+    --ink: #202a29;
+    --muted: #586560;
+    --accent: #176c5a;
+    --line: #d8ddd6;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: var(--ink);
+    background: var(--paper);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  button, a { -webkit-tap-highlight-color: transparent; }
+  a { color: inherit; text-underline-offset: .2em; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 5px; }
+  .masthead, .controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 20px 4vw;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .masthead { height: 48px; padding-top: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  .brand { color: var(--ink); font-weight: 650; letter-spacing: .03em; }
+  main { max-width: 1600px; margin: auto; }
+  .slide {
+    min-height: calc(100svh - 104px);
+    padding: clamp(24px, 4vh, 50px) 6vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .slide[hidden] { display: none; }
+  .eyebrow { margin: 0 0 18px; font-size: 13px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+  h1 { max-width: 1100px; margin: 0; font-size: clamp(34px, 4.7vw, 72px); font-weight: 550; line-height: 1.08; letter-spacing: -.045em; }
+  .lede { max-width: 980px; margin: 24px 0 0; font-size: clamp(19px, 2vw, 30px); line-height: 1.4; color: var(--muted); }
+  .points { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3vw; margin: 64px 0 0; }
+  #why-standards .lede { max-width: 1180px; font-size: clamp(18px, 1.7vw, 26px); }
+  #why-standards .points { margin-top: 40px; }
+  .flow { margin: 36px 0 0; }
+  .flow ol { display: flex; align-items: center; gap: 0; list-style: none; margin: 0; padding: 0; }
+  .flow li { flex: 1; padding: 12px 14px; text-align: center; font-size: clamp(14px, 1.15vw, 18px); font-weight: 600; letter-spacing: .04em; color: var(--ink); background: #e3f0eb; border: 1px solid #b9d8cd; border-radius: 6px; }
+  .flow li.key { background: var(--accent); border-color: var(--accent); color: #fff; letter-spacing: 0; }
+  .flow li + li { margin-left: 34px; position: relative; }
+  .flow li + li::before { content: "→"; position: absolute; left: -26px; top: 50%; transform: translateY(-50%); color: var(--accent); font-size: 22px; font-weight: 400; }
+  .flow figcaption { position: relative; margin-top: 12px; padding-top: 10px; text-align: center; font-size: 14px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); border-top: 2px solid var(--accent); }
+  .flow figcaption::before, .flow figcaption::after { content: ""; position: absolute; top: -8px; width: 2px; height: 8px; background: var(--accent); }
+  .flow figcaption::before { left: 0; } .flow figcaption::after { right: 0; }
+  .points > div { border-top: 2px solid var(--accent); padding-top: 22px; }
+  h2 { margin: 0 0 14px; font-size: clamp(21px, 2vw, 30px); font-weight: 550; letter-spacing: -.02em; }
+  .points p, .needs p { margin: 0; font-size: clamp(17px, 1.5vw, 23px); line-height: 1.5; color: var(--muted); }
+  code { font-family: ui-monospace, "SFMono-Regular", Consolas, monospace; font-size: .86em; }
+  .layers { list-style: none; padding: 0; margin: 28px 0 0; }
+  .layers li { display: grid; grid-template-columns: 45px 240px 1fr auto; align-items: baseline; gap: 24px; padding: 18px 0; border-top: 1px solid var(--line); }
+  .layers .number { color: var(--accent); font-size: 18px; }
+  .layers h2 { margin: 0; }
+  .layers p { margin: 0; font-size: clamp(17px, 1.5vw, 23px); line-height: 1.4; color: var(--muted); }
+  .layers .badge { width: 8.4em; font-size: clamp(12px, .95vw, 15px); }
+  .layers .optional h2 { color: #3d4a46; }
+  .layers .optional small { color: #3d4a46; }
+  .layers .unused :is(h2, small, .number) { color: var(--muted); }
+  .layers .unused :is(h2, p) { opacity: .75; }
+  .layers small { display: block; margin-top: 8px; font-size: .8em; color: var(--ink); }
+  .needs { display: grid; grid-template-columns: 1fr 1fr; column-gap: 6vw; row-gap: 20px; margin-top: 32px; }
+  .needs > div { border-top: 1px solid var(--line); padding-top: 16px; }
+  .needs h2 { margin-bottom: 8px; }
+  .comparison { padding-top: 24px; padding-bottom: 20px; }
+  .comparison h1 { font-size: clamp(30px, 3vw, 46px); }
+  .comparison .eyebrow { margin-bottom: 10px; }
+  table { border-collapse: collapse; width: 100%; margin-top: 18px; font-size: clamp(12px, 1.12vw, 18px); line-height: 1.2; }
+  caption { text-align: left; margin-bottom: 8px; font-size: .9em; color: var(--muted); }
+  th, td { padding: 3px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  thead th { color: var(--accent); font-weight: 650; border-bottom: 2px solid var(--accent); }
+  tbody th { width: 20%; font-weight: 550; }
+  th:first-child { padding-left: 0; }
+  td:nth-child(2) { width: 32%; color: var(--muted); }
+  td:last-child { width: 48%; padding-right: 0; }
+  .tradeoffs :is(th, td) { padding-top: 6px; padding-bottom: 6px; }
+  .tradeoffs tbody th { width: 4%; color: var(--accent); font-weight: 650; }
+  .tradeoffs td:nth-child(2) { width: 30%; color: var(--ink); font-weight: 550; }
+  .tradeoffs td:nth-child(3) { width: 13%; color: var(--muted); white-space: nowrap; }
+  .tradeoffs td:last-child { width: auto; color: var(--muted); }
+  tr.emph > * { background: #e3f0eb; }
+  tr.emph th { color: var(--accent); box-shadow: inset 4px 0 0 var(--accent); padding-left: 12px; }
+  tr.emph td:last-child { color: var(--ink); font-weight: 550; }
+  .badge { display: inline-block; width: 5.6em; padding: 1px 0; border: 1px solid var(--accent); border-radius: 999px; font-size: .82em; font-weight: 600; line-height: 1.5; text-align: center; }
+  .badge.high { background: var(--accent); color: #fff; }
+  .badge.medium { background: #d5e8e1; color: #0f4d40; border-color: #9cc8b9; }
+  .badge.low { background: #eceeeb; color: #4a5551; border-color: #dcdfdb; }
+  .arrow { margin: 0 4px; color: var(--muted); }
+  .tag { display: inline-block; margin-left: 10px; padding: 2px 10px; border-radius: 999px; background: #fbe8c4; color: #6e4500; font-size: .6em; font-weight: 650; letter-spacing: .01em; vertical-align: middle; }
+  .tag[hidden] { display: none; }
+  .tag:not([hidden]) { animation: tag-in .4s cubic-bezier(.34, 1.56, .64, 1) both; }
+  @keyframes tag-in {
+    from { opacity: 0; transform: translateX(-6px) scale(.7); }
+    to { opacity: 1; transform: none; }
+  }
+  #annotations { opacity: .35; }
+  #annotations:hover, #annotations:focus-visible, #annotations[aria-pressed="true"] { opacity: 1; }
+  @media (prefers-reduced-motion: reduce) { .tag:not([hidden]) { animation: none; } }
+  .example { padding-top: 16px; padding-bottom: 12px; }
+  .example h1 { font-size: clamp(30px, 3vw, 46px); }
+  .example .eyebrow { margin-bottom: 10px; }
+  .legend { display: flex; gap: 18px; list-style: none; margin: 14px 0 0; padding: 0; font-size: 14px; font-weight: 600; }
+  .legend li::before { content: ""; display: inline-block; width: 10px; height: 10px; margin-right: 6px; border-radius: 2px; background: currentColor; }
+  .code-pair { display: grid; grid-template-columns: 1fr 1.3fr; gap: 2.5vw; margin-top: 12px; }
+  .code-trio { display: grid; grid-template-columns: 1fr 1.15fr 1fr; gap: 2vw; margin-top: 12px; align-items: start; }
+  .code-pair figure, .code-trio figure { margin: 0; min-width: 0; }
+  .code-pair figcaption, .code-trio figcaption { margin-bottom: 6px; font-size: 14px; color: var(--muted); }
+  .code-pair pre, .code-trio pre { margin: 0; padding: 12px 16px; overflow: hidden; background: #f1f2ee; border: 1px solid var(--line); border-radius: 6px; font-size: clamp(9px, min(.78vw, 1.42vh), 13px); line-height: 1.3; }
+  .code-pair pre code, .code-trio pre code { font-size: 1em; }
+  .example .note { margin: 10px 0 0; font-size: 13px; color: var(--muted); }
+  .o-sc { color: #3a56a3; } .o-cr { color: #a35f00; } .o-rddc { color: #0b7566; } .o-prov { color: #873d8c; }
+  pre .cls { color: var(--ink); font-weight: 700; } pre .yk { color: var(--muted); }
+  .generated { margin-top: 18px; border-top: 2px solid var(--accent); padding-top: 12px; }
+  .generated h2 { font-size: clamp(16px, 1.3vw, 21px); margin-bottom: 8px; }
+  .generated ul { margin: 0; padding-left: 1.1em; color: var(--muted); font-size: clamp(13px, 1.05vw, 17px); line-height: 1.45; }
+  pre .k { font-weight: 600; } pre .k.o-kw { color: var(--muted); font-weight: 400; }
+  pre .s { color: var(--ink); } pre .n, pre .l { color: #9a3b2f; } pre .p, pre .elided { color: var(--muted); }
+  .bigpicture { padding-top: 20px; padding-bottom: 16px; }
+  .bigpicture h1 { font-size: clamp(30px, 3vw, 46px); }
+  .bp { margin: 18px 0 0; }
+  .bp svg { display: block; width: 100%; max-height: 54vh; height: auto; overflow: visible; }
+  .bp .node rect.card { fill: #e3f0eb; stroke: #b9d8cd; stroke-width: 1.5; transition: fill .3s, stroke .3s, stroke-width .3s; }
+  .bp .node { transition: opacity .3s; }
+  .bp .node.key rect.card { stroke: var(--accent); stroke-width: 2; }
+  .bp .node rect.stack { fill: #eef4f1; stroke: #b9d8cd; stroke-width: 1.5; }
+  .bp text { text-anchor: middle; fill: var(--ink); font-family: inherit; transition: opacity .3s; }
+  .bp text[text-anchor="start"] { text-anchor: start; } .bp text[text-anchor="end"] { text-anchor: end; }
+  .bp .nt { font-size: 24px; font-weight: 650; }
+  .bp .ns { font-size: 18px; fill: var(--muted); font-weight: 400; }
+  .bp .ns.sm { font-size: 16px; }
+  .bp .nc { font-size: 16px; font-family: ui-monospace, "SFMono-Regular", Consolas, monospace; fill: var(--accent); }
+  .bp .el, .bp .ei { font-size: 15px; fill: var(--muted); font-style: italic; }
+  .bp g.el .nc { font-style: normal; font-size: 15px; }
+  .bp .pg { fill: #fff; stroke: #9fc4b7; stroke-width: 1.5; stroke-linejoin: round; }
+  .bp .pg.side { stroke: var(--accent); stroke-width: 2; }
+  .bp .brace { font: 600 20px ui-monospace, "SFMono-Regular", Consolas, monospace; fill: var(--accent); }
+  .bp .brace.sm { font-size: 14px; }
+  .bp .ln { fill: none; stroke: #b9d8cd; stroke-width: 4; stroke-linecap: round; }
+  .bp .ln.thin { stroke: #8fbfae; stroke-width: 2; }
+  .bp .ln.arrowln { stroke: var(--accent); stroke-width: 2.5; }
+  .bp .tick { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+  .bp .gear-teeth { fill: none; stroke: var(--accent); stroke-width: 8; stroke-dasharray: 7.46 7.46; }
+  .bp .gear { fill: var(--accent); }
+  .bp .gear-hole { fill: #e3f0eb; }
+  .bp .tbl { fill: #fff; stroke: var(--accent); stroke-width: 2; }
+  .bp .tbl-h { fill: #9fc4b7; }
+  .bp .grid { stroke: #9fc4b7; stroke-width: 1.5; }
+  .bp .dot { fill: #fff; stroke: var(--accent); stroke-width: 2.5; }
+  .bp .dot.hub { fill: var(--accent); }
+  .bp .win { fill: #b9d8cd; }
+  .bp .dt { font-size: 22px; }
+  .bp .screen { fill: #fff; }
+  .bp .kpi { fill: #f1f5f3; }
+  .bp .kn { font-size: 24px; font-weight: 650; }
+  .bp .kl, .bp .bv { font-size: 13px; fill: var(--muted); }
+  .bp .dh { font-size: 14px; font-weight: 600; fill: var(--muted); }
+  .bp .bl { font-size: 14px; }
+  .bp .bl.note { font-size: 12px; font-style: italic; fill: var(--muted); }
+  .bp .bar { fill: var(--accent); }
+  .bp .track { fill: #dce9e4; }
+  .bp .panel { fill: #f4f7f5; stroke: #dce9e4; stroke-width: 1.5; }
+  .bp .base { stroke: var(--line); stroke-width: 1; }
+  .bp .spark { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linejoin: round; }
+  .bp .spark-end { fill: var(--accent); stroke: #fff; stroke-width: 2; }
+  .bp .edges path { fill: none; stroke: var(--accent); stroke-width: 2.5; marker-end: url(#arrow); transition: opacity .3s; }
+  .bp marker path { fill: var(--accent); }
+  .bp.running .node, .bp.running .edges path, .bp.running .el { opacity: .28; }
+  .bp.running .node.done, .bp.running .edges path.done, .bp.running .el.done { opacity: 1; }
+  .bp .node.now rect.card { fill: #cfe6dd; stroke: var(--accent); stroke-width: 4; }
+  .bp-controls { display: flex; align-items: center; gap: 20px; margin-top: 16px; }
+  .bp-controls button { flex: none; padding: 8px 16px; border: 1px solid var(--accent); border-radius: 6px; background: transparent; color: var(--accent); font-weight: 600; }
+  .bp-controls button:hover { background: #e3f0eb; }
+  .bp-controls p { margin: 0; font-size: clamp(16px, 1.35vw, 21px); color: var(--muted); }
+  @media (prefers-reduced-motion: reduce) { .bp .node, .bp .node rect.card, .bp text, .bp .edges path { transition: none; } }
+  .baker { display: grid; grid-template-columns: 1fr 1.05fr; gap: 4vw; align-items: start; margin-top: 24px; }
+  .baker figure { margin: 0; }
+  .baker img { display: block; width: 100%; height: auto; border: 1px solid var(--line); }
+  .baker figcaption, .baker .note { margin: 12px 0 0; font-size: clamp(13px, 1vw, 16px); line-height: 1.45; color: var(--muted); }
+  .baker table { margin-top: 0; font-size: clamp(12px, .95vw, 16px); }
+  .baker :is(th, td) { padding-top: 4px; padding-bottom: 4px; }
+  .baker tbody th { width: 34%; }
+  .baker td:last-child { width: auto; color: var(--muted); }
+  .controls { height: 56px; padding-top: 8px; padding-bottom: 8px; border-top: 1px solid var(--line); }
+  .controls[hidden] { display: none; }
+  .controls nav, .tools { display: flex; align-items: center; gap: 10px; }
+  .controls button, .controls a { display: inline-flex; align-items: center; justify-content: center; min-height: 38px; min-width: 38px; border: 1px solid transparent; background: transparent; border-radius: 4px; text-decoration: none; }
+  .controls button:hover, .controls a:hover { border-color: var(--line); }
+  .controls a[aria-current="step"] { color: var(--accent); border-color: var(--accent); font-weight: 700; }
+  .controls button:disabled { opacity: .35; cursor: default; }
+  .tools button { padding: 0 10px; }
+  .sr-only { position: fixed; top: 0; left: 0; margin: 0; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  @media (max-height: 820px) and (min-width: 761px) {
+    #layers h1 { font-size: min(4.7vw, 7vh); }
+    .layers { margin-top: 16px; }
+    .layers li { padding: 12px 0; }
+    .example { padding-top: 8px; padding-bottom: 6px; }
+    .example .eyebrow { margin-bottom: 4px; }
+    .example h1 { font-size: 32px; }
+    .legend { margin-top: 8px; }
+    .code-pair, .code-trio { margin-top: 8px; }
+    .code-pair figcaption, .code-trio figcaption { margin-bottom: 4px; font-size: 13px; }
+    .code-pair pre, .code-trio pre { padding: 8px 14px; font-size: 1.36vh; line-height: 1.27; }
+    .example .note { display: none; }
+  }
+  @media (max-width: 760px) {
+    .code-pair, .code-trio { grid-template-columns: 1fr; }
+    .code-pair pre, .code-trio pre { overflow-x: auto; }
+    .baker { grid-template-columns: 1fr; }
+    .masthead, .controls { padding: 14px 5vw; }
+    .masthead { font-size: 11px; height: auto; }
+    .slide { padding: 34px 6vw; min-height: calc(100svh - 135px); }
+    .points, .needs { grid-template-columns: 1fr; gap: 24px; margin-top: 32px; }
+    .flow ol { flex-direction: column; align-items: stretch; gap: 22px; }
+    .flow li + li { margin-left: 0; }
+    .flow li + li::before { content: "↓"; left: 50%; top: -20px; transform: translateX(-50%); }
+    .points > div, .needs > div { padding-top: 16px; }
+    .layers li { grid-template-columns: 28px 1fr; gap: 12px; padding: 20px 0; }
+    .layers p, .layers .badge { grid-column: 2; }
+    .layers .badge { justify-self: start; }
+    .controls { flex-wrap: wrap; height: auto; }
+    .key-hint { display: none; }
+    table { font-size: 12px; margin-top: 20px; }
+    th, td { padding: 8px 5px; overflow-wrap: anywhere; }
+    .comparison { justify-content: flex-start; }
+  }
+  @media print {
+    @page { size: 1600px 900px; margin: 0; }
+    :root { background: white; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    .masthead, .controls, .sr-only { display: none !important; }
+    main { max-width: none; }
+    .slide, .slide[hidden] { display: flex !important; width: 1600px; height: 900px; min-height: 0; padding: 64px 96px; break-after: page; break-inside: avoid; }
+    .slide:last-child { break-after: auto; }
+    .points, .needs { grid-template-columns: repeat(3, 1fr); }
+    .needs { grid-template-columns: 1fr 1fr; }
+    .layers li { grid-template-columns: 45px 240px 1fr auto; }
+    .layers p { grid-column: auto; }
+    .comparison, .example, .bigpicture { padding: 36px 96px; }
+    .bp-controls button { display: none; }
+    .code-pair pre, .code-trio pre { font-size: 13px; }
+    table { font-size: 18px; }
+    th, td { padding: 6px 12px; }
+    h1 { font-size: 72px; }
+    .comparison h1 { font-size: 46px; }
+    .tag { animation: none !important; }
+  }
+</style>
+</head>
+<body>
+<header class="masthead">
+  <span class="brand">RDDC / Croissant</span>
+  <span>Sidecar schema {{version}} · Draft</span>
+</header>
+<main aria-label="RDDC and Croissant presentation">
+  <section class="slide" id="why-standards" aria-labelledby="title-standards">
+    <p class="eyebrow">01 / A shared foundation</p>
+    <h1 id="title-standards">Why build the sidecar on Croissant?</h1>
+    <p class="lede"><code>_sidecar.json</code> is one metadata file per deposit batch. It is used for receipt events and provides file metadata for routing, processing and validation.</p>
+    <figure class="flow">
+      <ol aria-label="Where the sidecar goes">
+        <li>Deposit batch</li>
+        <li class="key"><code>_sidecar.json</code></li>
+        <li>INTAKE</li>
+        <li>NORMALIZE</li>
+        <li>BENCHMARK</li>
+      </ol>
+      <figcaption>Croissant 1.1 + RDDC terms</figcaption>
+    </figure>
+    <div class="points">
+      <div><h2>One vocabulary</h2><p>Intake and <strong>BENCHMARK</strong> datasets share one format.</p></div>
+      <div><h2>Native to AI and ML tools</h2><p>Designed so ML pipelines can load data directly and AI agents can read and evaluate datasets.</p></div>
+      <div><h2>Graph-ready</h2><p>Sidecars can load as RDF into the knowledge graph.</p></div>
+    </div>
+  </section>
+
+  <section class="slide" id="layers" aria-labelledby="title-layers">
+    <p class="eyebrow">02 / Croissant at a glance</p>
+    <h1 id="title-layers">Four layers, not all needed</h1>
+    <ol class="layers">
+      <li><span class="number" aria-hidden="true">01</span><h2>Dataset metadata</h2><p>Name, description, location and standards.<small><code>sc:Dataset</code></small></p><span class="badge high">Always</span></li>
+      <li><span class="number" aria-hidden="true">02</span><h2>Resources</h2><p>Files and file groups, with formats and checksums.<small><code>cr:FileObject</code> · <code>cr:FileSet</code></small></p><span class="badge high">Always</span></li>
+      <li class="optional"><span class="number" aria-hidden="true">03</span><h2>Structure</h2><p>Records, typed fields, data sources and joins. Used for dictionaries and joins of tables no standard governs.<small><code>cr:RecordSet</code> · <code>cr:Field</code></small></p><span class="badge medium">When needed</span></li>
+      <li class="unused"><span class="number" aria-hidden="true">04</span><h2>ML semantics</h2><p>Splits, labels, bounding boxes and segmentation masks. Experimental in Croissant.<small><code>cr:Split</code> · <code>cr:Label</code> · <code>cr:BoundingBox</code></small></p><span class="badge low">Not planned</span></li>
+    </ol>
+  </section>
+
+  <section class="slide" id="rddc-needs" aria-labelledby="title-needs">
+    <p class="eyebrow">03 / Clinical intake</p>
+    <h1 id="title-needs">What the Croissant core<br>does not cover</h1>
+    <div class="needs">
+      <div><h2>Subjects</h2><p>Coded IDs and links between people and files.</p></div>
+      <div><h2>Interactions <span class="tag annotation" hidden>awkward <span aria-hidden="true">🤨</span></span></h2><p>Data deposits, withdrawal, restriction and consent.</p></div>
+      <div><h2>Clinical standards</h2><p>FHIR, OMOP and C-CDA versions and required fields.</p></div>
+      <div><h2>Sensitivity</h2><p>Dates, ZIP codes, free text and biometric identifiers.</p></div>
+    </div>
+  </section>
+
+  <section class="slide comparison" id="comparison" aria-labelledby="title-comparison">
+    <p class="eyebrow">04 / Side-by-side summary</p>
+    <h1 id="title-comparison">Croissant + RDDC</h1>
+    <table>
+      <caption>Croissant 1.1 and RDDC sidecar {{version}}</caption>
+      <thead><tr><th scope="col">Topic</th><th scope="col">Croissant 1.1</th><th scope="col">RDDC sidecar</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Root object</th><td><code>sc:Dataset</code></td><td>One dataset per batch</td></tr>
+        <tr><th scope="row"><code>conformsTo</code></th><td>Croissant version</td><td>Croissant + RDDC schema versions</td></tr>
+        <tr><th scope="row">JSON-LD context</th><td>Croissant terms</td><td>Croissant + RDDC terms, embedded</td></tr>
+        <tr><th scope="row">Files</th><td><code>cr:FileObject</code></td><td>Same type + RDDC class in <code>additionalType</code></td></tr>
+        <tr><th scope="row">File groups</th><td><code>cr:FileSet</code>, selected by globs</td><td>Same type + optional <code>hasPart</code>; each file stored separately</td></tr>
+        <tr><th scope="row">Identifiers</th><td>String <code>@id</code></td><td>UUID URNs for files and sidecar; local IDs for other nodes</td></tr>
+        <tr><th scope="row">File location</th><td>Usually absolute URLs</td><td>Paths relative to the batch prefix</td></tr>
+        <tr><th scope="row">Size</th><td>Optional</td><td>Required, in bytes: <code>"1010 B"</code></td></tr>
+        <tr><th scope="row">Checksums</th><td><code>sha256</code> or <code>md5</code></td><td>Lowercase <code>sha256</code> required; <code>md5</code> optional</td></tr>
+        <tr><th scope="row">Compression</th><td>Wrapper media type</td><td>Content media type + <code>compression</code></td></tr>
+        <tr><th scope="row">Record sets</th><td>Describe data structure</td><td>Optional dictionaries and joins for non-standard tables</td></tr>
+        <tr><th scope="row">License, creator, citation</th><td>Recommended</td><td>Omitted; use terms and access tiers live in the source register</td></tr>
+        <tr><th scope="row">Unknown properties</th><td>Allowed</td><td>Rejected; project extensions use <code>additionalProperty</code></td></tr>
+        <tr class="emph"><th scope="row">Subjects</th><td>Not in core</td><td>Subject table + per-file <code>subjectIds</code> (depending on data type)</td></tr>
+        <tr class="emph"><th scope="row">Payload intent</th><td>Not in core</td><td><code>add</code> · <code>withdraw</code> · <code>restrict</code> · <code>consent</code></td></tr>
+        <tr class="emph"><th scope="row">Sensitivity</th><td>Partly covered by the RAI extension</td><td>Batch flags; per-file overrides for <code>contains*</code></td></tr>
+        <tr><th scope="row">Provenance</th><td>Recommended via W3C PROV-O, on any object</td><td>Required attribution to the writing tool; derivation only within the batch</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="slide example" id="example" aria-labelledby="title-example">
+    <p class="eyebrow">05 / Example</p>
+    <h1 id="title-example">Sidecar example for FHIR bulk files</h1>
+    <ul class="legend" aria-label="Key colours">
+      <li class="o-sc">schema.org</li><li class="o-cr">Croissant</li><li class="o-rddc">RDDC</li><li class="o-prov">W3C PROV</li>
+    </ul>
+    <div class="code-pair">
+      <figure><figcaption>Batch header</figcaption><pre><code><!-- slide-example:header --><span class="p">{</span>
+  <span class="k o-kw" title="JSON-LD keyword: JSON-LD keyword @context">&quot;@context&quot;</span>: <span class="elided" title="The embedded JSON-LD context: Croissant 1.1 plus the RDDC terms. See Downloads.">{ … }</span><span class="p">,</span>
+  <span class="k o-kw" title="JSON-LD keyword: JSON-LD keyword @id">&quot;@id&quot;</span>: <span class="s">&quot;urn:uuid:00000001-0000-4000-8000-000000000001&quot;</span><span class="p">,</span>
+  <span class="k o-kw" title="JSON-LD keyword: JSON-LD keyword @type">&quot;@type&quot;</span>: <span class="s">&quot;sc:Dataset&quot;</span><span class="p">,</span>
+  <span class="k o-cr" title="Croissant: http://purl.org/dc/terms/conformsTo">&quot;conformsTo&quot;</span>: <span class="p">[</span>
+    <span class="s">&quot;http://mlcommons.org/croissant/1.1&quot;</span><span class="p">,</span>
+    <span class="s">&quot;https://w3id.org/rddc/sidecar/0.1.0&quot;</span>
+  <span class="p">]</span><span class="p">,</span>
+  <span class="k o-sc" title="schema.org: https://schema.org/name">&quot;name&quot;</span>: <span class="s">&quot;src-ta2-01/2026-10-b01&quot;</span><span class="p">,</span>
+  <span class="k o-prov" title="W3C PROV: http://www.w3.org/ns/prov#wasAttributedTo">&quot;wasAttributedTo&quot;</span>: <span class="p">{</span>
+    <span class="k o-kw" title="JSON-LD keyword: JSON-LD keyword @type">&quot;@type&quot;</span>: <span class="s">&quot;sc:SoftwareApplication&quot;</span><span class="p">,</span>
+    <span class="k o-sc" title="schema.org: https://schema.org/name">&quot;name&quot;</span>: <span class="s">&quot;rddc-sidecar&quot;</span><span class="p">,</span>
+    <span class="k o-sc" title="schema.org: https://schema.org/softwareVersion">&quot;softwareVersion&quot;</span>: <span class="s">&quot;0.1.0&quot;</span>
+  <span class="p">}</span><span class="p">,</span>
+  <span class="k o-rddc" title="RDDC: https://w3id.org/rddc/sidecar/contributorId">&quot;contributorId&quot;</span>: <span class="s">&quot;ta2-site-a&quot;</span><span class="p">,</span>
+  <span class="k o-rddc" title="RDDC: https://w3id.org/rddc/sidecar/sourceId">&quot;sourceId&quot;</span>: <span class="s">&quot;src-ta2-01&quot;</span><span class="p">,</span>
+  <span class="k o-rddc" title="RDDC: https://w3id.org/rddc/sidecar/batchId">&quot;batchId&quot;</span>: <span class="s">&quot;2026-10-b01&quot;</span><span class="p">,</span>
+  <span class="k o-rddc" title="RDDC: https://w3id.org/rddc/sidecar/interaction">&quot;interaction&quot;</span>: <span class="s">&quot;add&quot;</span><span class="p">,</span>
+  <span class="k o-rddc" title="RDDC: https://w3id.org/rddc/sidecar/sensitivity">&quot;sensitivity&quot;</span>: <span class="p">{</span>
+    <span class="k o-rddc" title="RDDC: https://w3id.org/rddc/sidecar/directIdentifiersRemoved">&quot;directIdentifiersRemoved&quot;</span>: <span class="l">true</span><span class="p">,</span>
+    <span class="k o-rddc" title="RDDC: https://w3id.org/rddc/sidecar/containsDates">&quot;containsDates&quot;</span>: <span class="l">true</span><span class="p">,</span>
+    <span class="k o-rddc" title="RDDC: https://w3id.org/rddc/sidecar/containsZipCodes">&quot;containsZipCodes&quot;</span>: <span class="l">false</span><span class="p">,</span>
+    <span class="k o-rddc" title="RDDC: https://w3id.org/rddc/sidecar/containsFreeText">&quot;containsFreeText&quot;</span>: <span class="l">false</span><span class="p">,</span>
+    <span class="k o-rddc" title="RDDC: https://w3id.org/rddc/sidecar/containsBiometricIdentifiers">&quot;containsBiometricIdentifiers&quot;</span>: <span class="l">false</span>
+  <span class="p">}</span><span class="p">,</span>
+  <span class="k o-rddc" title="RDDC: https://w3id.org/rddc/sidecar/subjects">&quot;subjects&quot;</span>: <span class="p">[</span>
+    <span class="p">{</span><span class="k o-rddc" title="RDDC: https://w3id.org/rddc/sidecar/subjectId">&quot;subjectId&quot;</span>: <span class="s">&quot;P0001&quot;</span><span class="p">,</span> <span class="k o-rddc" title="RDDC: https://w3id.org/rddc/sidecar/idSystem">&quot;idSystem&quot;</span>: <span class="s">&quot;fhir_patient_id&quot;</span><span class="p">}</span><span class="p">,</span>
+    <span class="p">{</span><span class="k o-rddc" title="RDDC: https://w3id.org/rddc/sidecar/subjectId">&quot;subjectId&quot;</span>: <span class="s">&quot;P0002&quot;</span><span class="p">,</span> <span class="k o-rddc" title="RDDC: https://w3id.org/rddc/sidecar/idSystem">&quot;idSystem&quot;</span>: <span class="s">&quot;fhir_patient_id&quot;</span><span class="p">}</span><span class="p">,</span>
+    <span class="elided" title="Omitted from this excerpt">…</span>
+  <span class="p">]</span><span class="p">,</span>
+  <span class="k o-sc" title="schema.org: https://schema.org/distribution">&quot;distribution&quot;</span>: <span class="p">[</span><span class="elided" title="Omitted from this excerpt">…</span><span class="p">]</span>
+<span class="p">}</span><!-- /slide-example --></code></pre></figure>
+      <figure><figcaption>A file set and one of its files, from <code>distribution</code></figcaption><pre><code><!-- slide-example:files --><span class="p">[</span>
+  <span class="p">{</span>
+    <span class="k o-kw" title="JSON-LD keyword: JSON-LD keyword @id">&quot;@id&quot;</span>: <span class="s">&quot;fhir_export&quot;</span><span class="p">,</span>
+    <span class="k o-kw" title="JSON-LD keyword: JSON-LD keyword @type">&quot;@type&quot;</span>: <span class="s">&quot;cr:FileSet&quot;</span><span class="p">,</span>
+    <span class="k o-sc" title="schema.org: https://schema.org/additionalType">&quot;additionalType&quot;</span>: <span class="s">&quot;rddc:FhirBulkExport&quot;</span><span class="p">,</span>
+    <span class="k o-sc" title="schema.org: https://schema.org/name">&quot;name&quot;</span>: <span class="s">&quot;FHIR bulk export&quot;</span><span class="p">,</span>
+    <span class="k o-sc" title="schema.org: https://schema.org/encodingFormat">&quot;encodingFormat&quot;</span>: <span class="s">&quot;application/fhir+ndjson&quot;</span><span class="p">,</span>
+    <span class="k o-cr" title="Croissant: http://mlcommons.org/croissant/includes">&quot;includes&quot;</span>: <span class="p">[</span><span class="s">&quot;fhir/*.ndjson&quot;</span><span class="p">,</span> <span class="s">&quot;fhir/*.ndjson.gz&quot;</span><span class="p">]</span><span class="p">,</span>
+    <span class="k o-sc" title="schema.org: https://schema.org/hasPart">&quot;hasPart&quot;</span>: <span class="p">[</span>
+      <span class="p">{</span><span class="k o-kw" title="JSON-LD keyword: JSON-LD keyword @id">&quot;@id&quot;</span>: <span class="s">&quot;urn:uuid:0000000a-0000-4000-8000-00000000000a&quot;</span><span class="p">}</span><span class="p">,</span>
+      <span class="p">{</span><span class="k o-kw" title="JSON-LD keyword: JSON-LD keyword @id">&quot;@id&quot;</span>: <span class="s">&quot;urn:uuid:0000000b-0000-4000-8000-00000000000b&quot;</span><span class="p">}</span>
+    <span class="p">]</span><span class="p">,</span>
+    <span class="k o-cr" title="Croissant: http://purl.org/dc/terms/conformsTo">&quot;conformsTo&quot;</span>: <span class="p">[</span><span class="s">&quot;http://hl7.org/fhir/R4&quot;</span><span class="p">,</span> <span class="s">&quot;http://hl7.org/fhir/us/core/STU6.1&quot;</span><span class="p">]</span><span class="p">,</span>
+    <span class="k o-rddc" title="RDDC: https://w3id.org/rddc/sidecar/exportTime">&quot;exportTime&quot;</span>: <span class="s">&quot;2026-10-27T08:00:00Z&quot;</span><span class="p">,</span>
+    <span class="k o-rddc" title="RDDC: https://w3id.org/rddc/sidecar/subjectCount">&quot;subjectCount&quot;</span>: <span class="n">2</span>
+  <span class="p">}</span><span class="p">,</span>
+  <span class="p">{</span>
+    <span class="k o-kw" title="JSON-LD keyword: JSON-LD keyword @id">&quot;@id&quot;</span>: <span class="s">&quot;urn:uuid:0000000b-0000-4000-8000-00000000000b&quot;</span><span class="p">,</span>
+    <span class="k o-kw" title="JSON-LD keyword: JSON-LD keyword @type">&quot;@type&quot;</span>: <span class="s">&quot;cr:FileObject&quot;</span><span class="p">,</span>
+    <span class="k o-sc" title="schema.org: https://schema.org/additionalType">&quot;additionalType&quot;</span>: <span class="s">&quot;rddc:FhirNdjsonFile&quot;</span><span class="p">,</span>
+    <span class="k o-sc" title="schema.org: https://schema.org/name">&quot;name&quot;</span>: <span class="s">&quot;fhir/Observation.ndjson.gz&quot;</span><span class="p">,</span>
+    <span class="k o-sc" title="schema.org: https://schema.org/contentUrl">&quot;contentUrl&quot;</span>: <span class="s">&quot;fhir/Observation.ndjson.gz&quot;</span><span class="p">,</span>
+    <span class="k o-sc" title="schema.org: https://schema.org/contentSize">&quot;contentSize&quot;</span>: <span class="s">&quot;1011 B&quot;</span><span class="p">,</span>
+    <span class="k o-sc" title="schema.org: https://schema.org/encodingFormat">&quot;encodingFormat&quot;</span>: <span class="s">&quot;application/fhir+ndjson&quot;</span><span class="p">,</span>
+    <span class="k o-sc" title="schema.org: https://schema.org/sha256">&quot;sha256&quot;</span>: <span class="s">&quot;e047db5fa705c1cd516e0939ba1e07221c45573f06accfe3c5f8a5a4bdc112f4&quot;</span><span class="p">,</span>
+    <span class="k o-rddc" title="RDDC: https://w3id.org/rddc/sidecar/modality">&quot;modality&quot;</span>: <span class="s">&quot;clinical_fhir&quot;</span><span class="p">,</span>
+    <span class="k o-rddc" title="RDDC: https://w3id.org/rddc/sidecar/resourceType">&quot;resourceType&quot;</span>: <span class="s">&quot;Observation&quot;</span><span class="p">,</span>
+    <span class="k o-rddc" title="RDDC: https://w3id.org/rddc/sidecar/compression">&quot;compression&quot;</span>: <span class="s">&quot;gzip&quot;</span><span class="p">,</span>
+    <span class="k o-rddc" title="RDDC: https://w3id.org/rddc/sidecar/recordCount">&quot;recordCount&quot;</span>: <span class="n">240</span><span class="p">,</span>
+    <span class="k o-rddc" title="RDDC: https://w3id.org/rddc/sidecar/sensitivity">&quot;sensitivity&quot;</span>: <span class="p">{</span><span class="k o-rddc" title="RDDC: https://w3id.org/rddc/sidecar/containsFreeText">&quot;containsFreeText&quot;</span>: <span class="l">true</span><span class="p">}</span>
+  <span class="p">}</span><span class="p">,</span>
+  <span class="elided" title="Omitted from this excerpt">…</span>
+<span class="p">]</span><!-- /slide-example --></code></pre></figure>
+    </div>
+    <p class="note">Excerpt of <code>examples/deposit_fhir_omop.json</code>: a FHIR bulk export, OMOP snapshot and registry tables from one TA2 site.</p>
+  </section>
+
+  <section class="slide example" id="linkml" aria-labelledby="title-linkml">
+    <p class="eyebrow">06 / Schema</p>
+    <h1 id="title-linkml">Standardized spec in LinkML</h1>
+    <ul class="legend" aria-label="Slot colours">
+      <li class="o-sc">schema.org</li><li class="o-cr">Croissant</li><li class="o-rddc">RDDC</li><li class="o-prov">W3C PROV</li>
+    </ul>
+    <div class="code-trio">
+      <figure><figcaption>Every file is a Croissant <code>FileObject</code></figcaption><pre><code><!-- slide-linkml:file --><span class="cls">FileObject</span>:
+  <span class="yk">is_a</span>: <span class="cls">DistributionItem</span>
+  <span class="yk">abstract</span>: <span class="s">true</span>
+  <span class="yk">class_uri</span>: <span class="s">cr:FileObject</span>
+  <span class="yk">slots</span>:
+  - <span class="k o-sc" title="schema.org: https://schema.org/contentUrl">contentUrl</span>
+  - <span class="k o-sc" title="schema.org: https://schema.org/contentSize">contentSize</span>
+  - <span class="k o-sc" title="schema.org: https://schema.org/sha256">sha256</span>
+  - <span class="k o-cr" title="Croissant: http://mlcommons.org/croissant/md5">md5</span>
+  - <span class="k o-rddc" title="RDDC: https://w3id.org/rddc/sidecar/compression">compression</span>
+  <span class="yk">slot_usage</span>:
+    <span class="k o-kw" title="JSON-LD keyword: JSON-LD keyword @id">id</span>:
+      <span class="yk">range</span>: <span class="s">UuidUrn</span>
+    <span class="k o-kw" title="JSON-LD keyword: JSON-LD keyword @type">type</span>:
+      <span class="yk">equals_string</span>: <span class="s">cr:FileObject</span>
+    <span class="k o-sc" title="schema.org: https://schema.org/contentUrl">contentUrl</span>:
+      <span class="yk">required</span>: <span class="s">true</span>
+    <span class="k o-sc" title="schema.org: https://schema.org/contentSize">contentSize</span>:
+      <span class="yk">required</span>: <span class="s">true</span>
+    <span class="k o-sc" title="schema.org: https://schema.org/encodingFormat">encodingFormat</span>:
+      <span class="yk">required</span>: <span class="s">true</span>
+    <span class="k o-sc" title="schema.org: https://schema.org/sha256">sha256</span>:
+      <span class="yk">required</span>: <span class="s">true</span><!-- /slide-linkml --></code></pre></figure>
+      <figure><figcaption>Every data file, then FHIR NDJSON</figcaption><pre><code><!-- slide-linkml:fhir --><span class="cls">DataFile</span>:
+  <span class="yk">is_a</span>: <span class="cls">FileObject</span>
+  <span class="yk">abstract</span>: <span class="s">true</span>
+  <span class="yk">slots</span>:
+  - <span class="k o-rddc" title="RDDC: https://w3id.org/rddc/sidecar/modality">modality</span>
+  - <span class="k o-rddc" title="RDDC: https://w3id.org/rddc/sidecar/subjectIds">subjectIds</span>
+  - <span class="k o-rddc" title="RDDC: https://w3id.org/rddc/sidecar/recordCount">recordCount</span>
+  - <span class="k o-sc" title="schema.org: https://schema.org/identifier">identifier</span>
+  - <span class="k o-rddc" title="RDDC: https://w3id.org/rddc/sidecar/sensitivity">sensitivity</span>
+  - <span class="k o-rddc" title="RDDC: https://w3id.org/rddc/sidecar/processingHints">processingHints</span>
+  - <span class="k o-prov" title="W3C PROV: http://www.w3.org/ns/prov#wasDerivedFrom">wasDerivedFrom</span>
+  <span class="yk">slot_usage</span>:
+    <span class="k o-rddc" title="RDDC: https://w3id.org/rddc/sidecar/modality">modality</span>:
+      <span class="yk">required</span>: <span class="s">true</span>
+    <span class="k o-rddc" title="RDDC: https://w3id.org/rddc/sidecar/sensitivity">sensitivity</span>:
+      <span class="yk">range</span>: <span class="s">FileSensitivity</span>
+
+<span class="cls">FhirNdjsonFile</span>:
+  <span class="yk">is_a</span>: <span class="cls">DataFile</span>
+  <span class="yk">slots</span>:
+  - <span class="k o-rddc" title="RDDC: https://w3id.org/rddc/sidecar/resourceType">resourceType</span>
+  <span class="yk">slot_usage</span>:
+    <span class="k o-sc" title="schema.org: https://schema.org/encodingFormat">encodingFormat</span>:
+      <span class="yk">equals_string</span>: <span class="s">application/fhir+ndjson</span>
+    <span class="k o-rddc" title="RDDC: https://w3id.org/rddc/sidecar/resourceType">resourceType</span>:
+      <span class="yk">required</span>: <span class="s">true</span><!-- /slide-linkml --></code></pre></figure>
+      <div>
+        <figure><figcaption>The FHIR file set</figcaption><pre><code><!-- slide-linkml:set --><span class="cls">FhirBulkExport</span>:
+  <span class="yk">is_a</span>: <span class="cls">FileSet</span>
+  <span class="yk">slots</span>:
+  - <span class="k o-rddc" title="RDDC: https://w3id.org/rddc/sidecar/exportTime">exportTime</span>
+  <span class="yk">slot_usage</span>:
+    <span class="k o-cr" title="Croissant: http://purl.org/dc/terms/conformsTo">conformsTo</span>:
+      <span class="yk">required</span>: <span class="s">true</span>
+    <span class="k o-rddc" title="RDDC: https://w3id.org/rddc/sidecar/exportTime">exportTime</span>:
+      <span class="yk">required</span>: <span class="s">true</span><!-- /slide-linkml --></code></pre></figure>
+        <div class="generated">
+          <h2>Generated from this one file</h2>
+          <ul>
+            <li>JSON Schemas for the sidecar and the source descriptor</li>
+            <li>JSON-LD context: Croissant 1.1 + RDDC terms</li>
+            <li>Schema reference and vocabulary pages</li>
+            <li>Vendored into <code>rddc-sidecar</code> from a tagged release</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <p class="note">Excerpt of <code>schema/rddc_sidecar.yaml</code>, descriptions omitted. These classes define the entries on slide 05.</p>
+  </section>
+
+  <section class="slide comparison" id="pros" aria-labelledby="title-pros">
+    <p class="eyebrow">07 / Trade-offs</p>
+    <h1 id="title-pros">Why Croissant: the pros</h1>
+    <table class="tradeoffs">
+      <thead><tr><th scope="col">#</th><th scope="col">Pro</th><th scope="col">Weight</th><th scope="col">Why</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">P1</th><td>One vocabulary from intake to release</td><td><span class="badge high">High</span></td><td>The common ML dataset format (NeurIPS, Hugging Face, Kaggle, OpenML); <strong>BENCHMARK</strong> datasets are expected to publish in it; release manifests can reuse it</td></tr>
+        <tr><th scope="row">P2</th><td>Precedent for governed clinical data</td><td><span class="badge medium">Medium</span></td><td><a href="https://lcp.mit.edu/croissant-baker/">Croissant Baker</a> (MIT LCP) generates Croissant locally for data under DUAs: handlers for FHIR, DICOM and NIfTI, OMOP via its CSV handler; run on full MIMIC-IV</td></tr>
+        <tr><th scope="row">P3</th><td>Less to invent</td><td><span class="badge medium">Medium</span></td><td>File identity, checksums, media types, file sets and record sets come from a reviewed specification</td></tr>
+        <tr><th scope="row">P4</th><td>Graph-native format with IRIs</td><td><span class="badge medium">Medium</span></td><td>Sidecars can load as RDF into the knowledge graph or a catalog without a mapping step</td></tr>
+        <tr><th scope="row">P5</th><td>Native to AI and ML tools</td><td><span class="badge medium">Medium</span></td><td>The format ML tooling already reads (<code>mlcroissant</code>, TensorFlow Datasets, Hugging Face); planned AI curation assistants can use sidecars directly</td></tr>
+        <tr><th scope="row">P6</th><td>Generic tooling reads a sidecar</td><td><span class="badge low">Low</span></td><td><code>mlcroissant</code> sees files, file sets and checksums; limited at intake (C3)</td></tr>
+        <tr><th scope="row">P7</th><td>Reuse existing extensions</td><td><span class="badge low">Low</span></td><td>Official MLCommons extensions (Responsible AI, GeoCroissant); BENCHMARK can reuse the RAI fields, which Croissant Baker already writes</td></tr>
+        <tr><th scope="row">P8</th><td>Shared provenance terms</td><td><span class="badge low">Low</span></td><td>W3C PROV, the format Synapse uses for pipeline provenance</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="slide comparison" id="croissant-baker" aria-labelledby="title-baker">
+    <p class="eyebrow">08 / Precedent (P2)</p>
+    <h1 id="title-baker"><a href="https://lcp.mit.edu/croissant-baker/">Croissant Baker</a></h1>
+    <div class="baker">
+      <figure>
+        <img src="assets/croissant-baker-screenshot.png" width="2790" height="1051" alt="Croissant Baker documentation home page: croissant-baker automatically generates Croissant JSON-LD metadata for ML datasets, ready for PhysioNet, NeurIPS Datasets and Benchmarks, or any platform.">
+        <figcaption>From MIT LCP, the PhysioNet group. It generates Croissant locally for repositories under data use agreements, without uploading data, has been run on full MIMIC-IV, and validates its output with <code>mlcroissant</code>.</figcaption>
+        <p class="note">Files compressed with <code>.gz</code>, <code>.bz2</code> or <code>.xz</code> are described as the underlying format (except WFDB). <code>.zip</code>, <code>.tar</code> and <code>.tgz</code> are reported as archives, not opened.</p>
+      </figure>
+      <table>
+        <caption>Supported formats (<a href="https://github.com/MIT-LCP/croissant-baker#supported-formats">project README</a>)</caption>
+        <thead><tr><th scope="col">Format</th><th scope="col">Extensions</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">CSV / TSV</th><td><code>.csv</code>, <code>.tsv</code></td></tr>
+          <tr><th scope="row">Parquet</th><td><code>.parquet</code></td></tr>
+          <tr><th scope="row">Spreadsheets</th><td><code>.xlsx</code>, <code>.xlsm</code>, <code>.xls</code></td></tr>
+          <tr><th scope="row">FHIR</th><td><code>.ndjson</code>, <code>.json</code> (Bundle)</td></tr>
+          <tr><th scope="row">JSON / JSONL</th><td><code>.json</code>, <code>.jsonl</code></td></tr>
+          <tr><th scope="row">WFDB</th><td><code>.hea</code> (with sibling <code>.dat</code> / <code>.atr</code>)</td></tr>
+          <tr><th scope="row">Images</th><td><code>.png</code>, <code>.jpg</code>, <code>.jpeg</code>, <code>.gif</code>, <code>.bmp</code>, <code>.webp</code>, <code>.ico</code>, <code>.tiff</code>, <code>.tif</code>, <code>.btf</code></td></tr>
+          <tr><th scope="row">DICOM</th><td><code>.dcm</code>, <code>.dicom</code></td></tr>
+          <tr><th scope="row">NIfTI</th><td><code>.nii</code></td></tr>
+          <tr><th scope="row">GEO SOFT</th><td><code>.soft</code></td></tr>
+          <tr><th scope="row">HDF5</th><td><code>.h5</code>, <code>.h5ad</code>, <code>.hdf5</code></td></tr>
+          <tr><th scope="row">VCF / gVCF</th><td><code>.vcf</code></td></tr>
+          <tr><th scope="row">BCF</th><td><code>.bcf</code></td></tr>
+          <tr><th scope="row">BAM</th><td><code>.bam</code></td></tr>
+          <tr><th scope="row">CRAM</th><td><code>.cram</code></td></tr>
+          <tr><th scope="row">SAM</th><td><code>.sam</code></td></tr>
+          <tr><th scope="row">FASTQ</th><td><code>.fastq</code>, <code>.fq</code></td></tr>
+          <tr><th scope="row">FASTA</th><td><code>.fa</code>, <code>.fasta</code>, <code>.fna</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="slide comparison" id="cons" aria-labelledby="title-cons">
+    <p class="eyebrow">09 / Trade-offs</p>
+    <h1 id="title-cons">The cons, and how they are mitigated</h1>
+    <table class="tradeoffs">
+      <caption>Weight before → after mitigation · <code>rddc-sidecar</code> is proposed RDDC tooling</caption>
+      <thead><tr><th scope="col">#</th><th scope="col">Con</th><th scope="col">Weight</th><th scope="col">Mitigation</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">C1</th><td>Contributor burden</td><td><span class="badge medium">Medium</span> <span class="arrow" aria-label="to">→</span> <span class="badge low">Low</span></td><td>Clinical teams know FHIR, OMOP and C-CDA, not JSON-LD. <code>rddc-sidecar</code> generates the sidecar and names any failing rule; contributors use the CLI, docs and tutorial</td></tr>
+        <tr><th scope="row">C2</th><td>The fix for C1 creates a tool dependency</td><td><span class="badge medium">Medium</span> <span class="arrow" aria-label="to">→</span> <span class="badge medium">Medium</span></td><td>Producers who can't run <code>rddc-sidecar</code> must reimplement the rules. The generated JSON Schema checks structure; other rules are enforced only by the validator</td></tr>
+        <tr><th scope="row">C3</th><td>Off-the-shelf tools do little at intake</td><td><span class="badge medium">Medium</span> <span class="arrow" aria-label="to">→</span> <span class="badge medium">Medium</span></td><td>Accepted, not mitigated. Tools like <code>mlcroissant</code> can list the files but can't fetch them, and they ignore subjects, sensitivity and other RDDC fields. The payoff is at BENCHMARK and release (P1)</td></tr>
+        <tr><th scope="row">C4</th><td>An external dependency</td><td><span class="badge medium">Medium</span> <span class="arrow" aria-label="to">→</span> <span class="badge low">Low</span></td><td>Pinned to Croissant 1.1; moving to a later version is a deliberate RDDC schema release</td></tr>
+        <tr><th scope="row">C5</th><td>More layers to validate and maintain</td><td><span class="badge medium">Medium</span> <span class="arrow" aria-label="to">→</span> <span class="badge low">Low</span></td><td>One LinkML source generates the JSON Schema and context; examples are checked with <code>mlcroissant</code></td></tr>
+        <tr><th scope="row">C6</th><td>Metadata generation at scale</td><td><span class="badge medium">Medium</span> <span class="arrow" aria-label="to">→</span> <span class="badge low">Low</span></td><td>Every file needs its own entry and checksum. Tested on a 120,000-file C-CDA batch (generated in 2.4 s, validated in 1.5 s)</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+
+  <section class="slide bigpicture" id="big-picture" aria-labelledby="title-big-picture">
+    <p class="eyebrow">10 / Big picture · planned</p>
+    <h1 id="title-big-picture">End-to-end simulation</h1>
+    <figure class="bp">
+      <svg viewBox="0 0 1470 470" role="img" aria-labelledby="bp-title bp-desc">
+        <title id="bp-title">Planned flow of a FHIR deposit</title>
+        <desc id="bp-desc">A contributor deposits a FHIR bulk export with its sidecar. The sidecar's arrival starts one orchestrator run for the batch. The orchestrator reads the sidecar's additionalType and conformsTo, then starts the FHIR validation pipeline, then the FHIR to OMOP transformation pipeline after approval, and loads the sidecar metadata into a graph that holds every deposit. When the transformation pipeline finishes, its run provenance, as an RO-Crate, is loaded into the same graph. A dashboard app queries the graph to aggregate across deposits; the mock-up shows sample counts of deposits, subjects, sites and files; files by data type; deposits per month; and a processing panel with the share of files transformed to OMOP and the validation pass rate.</desc>
+        <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z"/></marker></defs>
+        <g class="node" id="bp-deposit"><rect class="card" x="0" y="120" width="190" height="220" rx="10"/><path class="pg" d="M28 140 h34 l12 12 v46 h-46 z"/><path class="pg" d="M38 147 h34 l12 12 v46 h-46 z"/><path class="pg front" d="M48 154 h34 l12 12 v46 h-46 z"/><path class="ln" d="M56 180 h26"/><path class="ln" d="M56 190 h26"/><path class="ln" d="M56 200 h26"/><path class="pg side" d="M108 147 h34 l12 12 v46 h-46 z"/><text class="brace" x="131" y="189">{ }</text><text class="nt" x="95" y="252">Deposit</text><text class="ns" x="95" y="282">FHIR bulk export</text><text class="nc" x="95" y="310">+ _sidecar.json</text></g>
+        <g class="node key" id="bp-orch"><rect class="card" x="255" y="95" width="230" height="270" rx="10"/><circle class="gear-teeth" cx="370" cy="138" r="19"/><circle class="gear" cx="370" cy="138" r="14"/><circle class="gear-hole" cx="370" cy="138" r="5"/><text class="nt" x="370" y="196">Orchestrator</text><text class="ns" x="370" y="226">one run per batch</text><text class="nc" x="370" y="262">reads _sidecar.json</text><text class="nc" x="370" y="292">additionalType</text><text class="nc" x="370" y="322">conformsTo</text></g>
+        <g class="node" id="bp-validate"><rect class="card" x="640" y="0" width="250" height="135" rx="10"/><path class="tick" d="M733 20 l5 5 l9 -10"/><path class="ln" d="M756 19 h46"/><path class="tick" d="M733 34 l5 5 l9 -10"/><path class="ln" d="M756 33 h36"/><path class="tick" d="M733 48 l5 5 l9 -10"/><path class="ln" d="M756 47 h42"/><text class="nt" x="765" y="88">Validation</text><text class="ns" x="765" y="118">de-id + QC · FHIR R4</text></g>
+        <g class="node" id="bp-transform"><rect class="card" x="640" y="167" width="250" height="135" rx="10"/><path class="pg side" d="M712 178 h20 l12 12 v28 h-32 z"/><text class="brace sm" x="728" y="204">{}</text><path class="ln arrowln" d="M752 198 h22"/><path class="tick" d="M769 192 l6 6 l-6 6"/><rect class="tbl" x="784" y="180" width="50" height="38" rx="3"/><rect class="tbl-h" x="784" y="180" width="50" height="11" rx="3"/><path class="grid" d="M784 204 h50 M801 180 v38 M818 180 v38"/><text class="nt" x="765" y="255">FHIR → OMOP</text><text class="ns sm" x="765" y="285">NORMALIZE · Cirro pipeline</text></g>
+        <g class="node key" id="bp-graph"><rect class="stack" x="656" y="319" width="250" height="135" rx="10"/><rect class="stack" x="648" y="327" width="250" height="135" rx="10"/><rect class="card" x="640" y="335" width="250" height="135" rx="10"/><path class="ln thin" d="M733 372 L752 352 M752 352 L776 366 M776 366 L800 350 M776 366 L796 380 M733 372 L758 384 M758 384 L776 366 M800 350 L796 380"/><circle class="dot" cx="733" cy="372" r="5"/><circle class="dot" cx="752" cy="352" r="5"/><circle class="dot hub" cx="776" cy="366" r="7"/><circle class="dot" cx="800" cy="350" r="5"/><circle class="dot" cx="796" cy="380" r="5"/><circle class="dot" cx="758" cy="384" r="5"/><text class="nt" x="765" y="423">Metadata graph</text><text class="ns" x="765" y="453">deposits and runs, as RDF</text></g>
+        <g class="node" id="bp-dashboard" transform="translate(70 0)"><rect class="card" x="980" y="0" width="420" height="470" rx="10"/><circle class="win" cx="1000" cy="19" r="5"/><circle class="win" cx="1016" cy="19" r="5"/><circle class="win" cx="1032" cy="19" r="5"/><text class="nt dt" x="1050" y="27" text-anchor="start">Dashboard<tspan class="ns"> · across deposits</tspan></text><rect class="screen" x="990" y="40" width="400" height="420" rx="6"/><rect class="kpi" x="1002" y="50" width="88" height="54" rx="6"/><text class="kn" x="1014" y="78" text-anchor="start">128</text><text class="kl" x="1014" y="96" text-anchor="start">deposits</text><rect class="kpi" x="1098" y="50" width="88" height="54" rx="6"/><text class="kn" x="1110" y="78" text-anchor="start">18.4k</text><text class="kl" x="1110" y="96" text-anchor="start">subjects</text><rect class="kpi" x="1194" y="50" width="88" height="54" rx="6"/><text class="kn" x="1206" y="78" text-anchor="start">9</text><text class="kl" x="1206" y="96" text-anchor="start">sites</text><rect class="kpi" x="1290" y="50" width="88" height="54" rx="6"/><text class="kn" x="1302" y="78" text-anchor="start">2.4M</text><text class="kl" x="1302" y="96" text-anchor="start">files</text><text class="dh" x="1002" y="128" text-anchor="start">Files by data type</text><text class="bl" x="1002" y="150" text-anchor="start">FHIR</text><rect class="bar" x="1084" y="138" width="240" height="14" rx="3"><title>FHIR: 1.2M files</title></rect><text class="bv" x="1332" y="150" text-anchor="start">1.2M</text><text class="bl" x="1002" y="171" text-anchor="start">C-CDA</text><rect class="bar" x="1084" y="159" width="128" height="14" rx="3"><title>C-CDA: 640k files</title></rect><text class="bv" x="1220" y="171" text-anchor="start">640k</text><text class="bl" x="1002" y="192" text-anchor="start">OMOP</text><rect class="bar" x="1084" y="180" width="76" height="14" rx="3"><title>OMOP: 380k files</title></rect><text class="bv" x="1168" y="192" text-anchor="start">380k</text><text class="bl" x="1002" y="213" text-anchor="start">Imaging</text><rect class="bar" x="1084" y="201" width="24" height="14" rx="3"><title>Imaging: 120k files</title></rect><text class="bv" x="1116" y="213" text-anchor="start">120k</text><text class="bl" x="1002" y="234" text-anchor="start">Genomics</text><rect class="bar" x="1084" y="222" width="12" height="14" rx="3"><title>Genomics: 60k files</title></rect><text class="bv" x="1104" y="234" text-anchor="start">60k</text><text class="dh" x="1002" y="264" text-anchor="start">Deposits per month</text><text class="bl note" x="1378" y="264" text-anchor="end">sample data</text><path class="base" d="M1002 304 H1378"/><path class="spark" d="M1002 298 L1036 296 L1070 297 L1105 293 L1139 294 L1173 290 L1207 291 L1241 287 L1275 285 L1310 286 L1344 281 L1378 277"/><circle class="spark-end" cx="1378" cy="277" r="4.5"/><rect class="panel" x="1002" y="318" width="376" height="132" rx="6"/><text class="dh" x="1014" y="340" text-anchor="start">Processing Metrics</text><text class="bl" x="1014" y="364" text-anchor="start">Transformed to OMOP</text><text class="bv" x="1366" y="364" text-anchor="end">1.6M of 2.4M files</text><rect class="track" x="1014" y="372" width="352" height="10" rx="5"/><rect class="bar" x="1014" y="372" width="235" height="10" rx="5"><title>1.6M of 2.4M files transformed to OMOP</title></rect><text class="kn" x="1014" y="414" text-anchor="start">96%</text><text class="kl" x="1014" y="434" text-anchor="start">passed validation</text></g>
+        <g class="edges"><path id="bp-e1" d="M190 230 H253"/><path id="bp-e2" d="M485 170 H545 V67 H638"/><path id="bp-e3" d="M485 234 H638"/><path id="bp-e4" d="M485 300 H545 V402 H638"/><path id="bp-e5" d="M906 402 H1048"/><path id="bp-e6" d="M890 250 H935 V368 H910"/></g>
+        <text class="el" id="bp-l1" x="222" y="216">arrives</text><text class="el" id="bp-l2" x="592" y="55">1 · validate</text><text class="el" id="bp-l3" x="562" y="222">2 · transform</text><text class="el" id="bp-l4" x="592" y="390">3 · load</text><text class="el" id="bp-l5" x="1008" y="390">query</text><g class="el" id="bp-l6"><text class="el" x="946" y="300" text-anchor="start">4 · provenance</text><text class="nc" x="946" y="322" text-anchor="start">RO-Crate</text></g>
+        </svg>
+    </figure>
+    <div class="bp-controls">
+      <button type="button" id="bp-play">▶ Simulate a FHIR deposit</button>
+      <p id="bp-caption" aria-live="polite">One orchestrator run per batch reads the sidecar, starts the right pipelines and loads its metadata, and each pipeline run’s RO-Crate provenance, into one graph.</p>
+    </div>
+  </section>
+</main>
+<footer class="controls" hidden>
+  <nav aria-label="Slide navigation">
+    <button type="button" id="previous" aria-label="Previous slide">←</button>
+    <a href="#why-standards" aria-label="Slide 1: Why build the sidecar on Croissant?">01</a>
+    <a href="#layers" aria-label="Slide 2: Croissant layers">02</a>
+    <a href="#rddc-needs" aria-label="Slide 3: RDDC needs">03</a>
+    <a href="#comparison" aria-label="Slide 4: Side-by-side summary">04</a>
+    <a href="#example" aria-label="Slide 5: Example sidecar">05</a>
+    <a href="#linkml" aria-label="Slide 6: LinkML schema">06</a>
+    <a href="#pros" aria-label="Slide 7: Pros">07</a>
+    <a href="#croissant-baker" aria-label="Slide 8: Croissant Baker">08</a>
+    <a href="#cons" aria-label="Slide 9: Cons and mitigations">09</a>
+    <a href="#big-picture" aria-label="Slide 10: End-to-end simulation">10</a>
+    <button type="button" id="next" aria-label="Next slide">→</button>
+  </nav>
+  <span class="key-hint">← → Navigate · F Fullscreen</span>
+  <div class="tools">
+    <button type="button" id="annotations" aria-pressed="false" aria-label="Show annotations" title="Toggle annotations (A)" hidden><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
+    <button type="button" id="fullscreen" hidden>Fullscreen</button>
+    <button type="button" id="print">Print / PDF</button>
+  </div>
+</footer>
+<p class="sr-only" role="status" aria-live="polite" id="status"></p>
+<script>
+(() => {
+  const slides = [...document.querySelectorAll('.slide')];
+  const links = [...document.querySelectorAll('.controls nav a')];
+  const previous = document.getElementById('previous');
+  const next = document.getElementById('next');
+  const fullscreen = document.getElementById('fullscreen');
+  const status = document.getElementById('status');
+  const annotations = document.getElementById('annotations');
+  const notesOn = slide => [...slide.querySelectorAll('.annotation')];
+  let current = 0;
+
+  function showFromHash() {
+    const index = slides.findIndex(slide => '#' + slide.id === location.hash);
+    current = index < 0 ? 0 : index;
+    const focusWasInSlide = slides.some(slide => slide.contains(document.activeElement));
+    slides.forEach((slide, i) => {
+      slide.hidden = i !== current;
+      slide.setAttribute('aria-roledescription', 'slide');
+      slide.setAttribute('aria-label', `${i + 1} of ${slides.length}`);
+    });
+    links.forEach((link, i) => {
+      if (i === current) link.setAttribute('aria-current', 'step');
+      else link.removeAttribute('aria-current');
+    });
+    const notes = notesOn(slides[current]);
+    annotations.hidden = notes.length === 0;
+    annotations.setAttribute('aria-pressed', String(notes.some(note => !note.hidden)));
+    previous.disabled = current === 0;
+    next.disabled = current === slides.length - 1;
+    if (focusWasInSlide || document.activeElement.disabled) links[current].focus();
+    status.textContent = `Slide ${current + 1} of ${slides.length}: ${slides[current].querySelector('h1').textContent}`;
+    window.scrollTo(0, 0);
+  }
+
+  function go(index) {
+    const target = Math.max(0, Math.min(slides.length - 1, index));
+    location.hash = slides[target].id;
+    showFromHash();
+  }
+
+  async function toggleFullscreen() {
+    if (!document.fullscreenEnabled) return;
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else await document.documentElement.requestFullscreen();
+    } catch {
+      status.textContent = 'Fullscreen is unavailable in this browser.';
+    }
+  }
+
+  const bp = document.querySelector('.bp');
+  const bpPlay = document.getElementById('bp-play');
+  const bpCaption = document.getElementById('bp-caption');
+  const bpIntro = bpCaption.textContent;
+  const bpSteps = [
+    [['bp-deposit'], 'A TA2 site uploads a FHIR bulk export, then _sidecar.json.'],
+    [['bp-e1', 'bp-l1', 'bp-orch'], 'The sidecar’s arrival starts one orchestrator run for the batch. It reads additionalType and conformsTo: a FHIR R4 bulk export.'],
+    [['bp-e2', 'bp-l2', 'bp-validate'], 'The orchestrator starts validation: de-identification and QC checks for FHIR R4 and US Core.'],
+    [['bp-e3', 'bp-l3', 'bp-transform'], 'Once the batch passes and a curator approves it, the orchestrator starts the FHIR → OMOP pipeline in NORMALIZE.'],
+    [['bp-e4', 'bp-l4', 'bp-graph'], 'It loads the sidecar’s metadata into the graph as RDF, next to every other deposit.'],
+    [['bp-e6', 'bp-l6', 'bp-graph'], 'When the pipeline finishes, its run provenance, an RO-Crate, goes into the graph too, linking the OMOP output back to the deposit’s files.'],
+    [['bp-e5', 'bp-l5', 'bp-dashboard'], 'A dashboard app queries the graph and aggregates across all deposits.'],
+  ];
+  let bpTimer = null;
+  function bpReset() {
+    clearTimeout(bpTimer);
+    bp.classList.remove('running');
+    bp.querySelectorAll('.done, .now').forEach(el => el.classList.remove('done', 'now'));
+  }
+  function bpRun(i = 0) {
+    if (i === 0) { bpReset(); bp.classList.add('running'); }
+    bp.querySelectorAll('.now').forEach(el => el.classList.remove('now'));
+    if (i === bpSteps.length) {
+      bp.classList.remove('running');
+      bpPlay.textContent = '↻ Replay';
+      return;
+    }
+    const [ids, text] = bpSteps[i];
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      el.classList.add('done');
+      if (el.classList.contains('node')) el.classList.add('now');
+    });
+    bpCaption.textContent = `${i + 1} / ${bpSteps.length} · ${text}`;
+    bpTimer = setTimeout(() => bpRun(i + 1), matchMedia('(prefers-reduced-motion: reduce)').matches ? 2600 : 2200);
+  }
+  bpPlay.addEventListener('click', () => { bpPlay.textContent = '■ Running…'; bpRun(0); });
+  window.addEventListener('hashchange', () => {
+    bpReset();
+    bpPlay.textContent = '▶ Simulate a FHIR deposit';
+    bpCaption.textContent = bpIntro;
+  });
+
+  function toggleAnnotations() {
+    const notes = notesOn(slides[current]);
+    if (notes.length === 0) return;
+    const show = notes.every(note => note.hidden);
+    notes.forEach(note => { note.hidden = !show; });
+    annotations.setAttribute('aria-pressed', String(show));
+  }
+
+  previous.addEventListener('click', () => go(current - 1));
+  annotations.addEventListener('click', toggleAnnotations);
+  next.addEventListener('click', () => go(current + 1));
+  fullscreen.addEventListener('click', toggleFullscreen);
+  document.getElementById('print').addEventListener('click', () => window.print());
+  document.addEventListener('fullscreenchange', () => {
+    fullscreen.textContent = document.fullscreenElement ? 'Exit fullscreen' : 'Fullscreen';
+  });
+  document.addEventListener('keydown', event => {
+    if (event.altKey || event.ctrlKey || event.metaKey || event.target.isContentEditable ||
+        event.target.closest('input, textarea, select')) return;
+    if (event.key === ' ' && event.target.closest('button, a')) return;
+    if (['ArrowRight', 'PageDown', ' '].includes(event.key)) {
+      event.preventDefault();
+      go(current + (event.shiftKey && event.key === ' ' ? -1 : 1));
+    } else if (['ArrowLeft', 'PageUp'].includes(event.key)) {
+      event.preventDefault();
+      go(current - 1);
+    } else if (event.key === 'Home' || event.key === 'End') {
+      event.preventDefault();
+      go(event.key === 'Home' ? 0 : slides.length - 1);
+    } else if (event.key.toLowerCase() === 'f') {
+      toggleFullscreen();
+    } else if (event.key.toLowerCase() === 'a' && !annotations.hidden) {
+      toggleAnnotations();
+    }
+  });
+  window.addEventListener('hashchange', showFromHash);
+  document.querySelector('.controls').hidden = false;
+  fullscreen.hidden = !document.fullscreenEnabled;
+  showFromHash();
+})();
+</script>
+</body>
+</html>

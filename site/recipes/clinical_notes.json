@@ -1,0 +1,96 @@
+{
+  "@id": "urn:uuid:0000a003-0000-4000-8000-00000000a003",
+  "@type": "sc:Dataset",
+  "conformsTo": [
+    "http://mlcommons.org/croissant/1.1",
+    "https://w3id.org/rddc/sidecar/0.1.0"
+  ],
+  "name": "src-ta2-01/2026-11-notes",
+  "description": "De-identified discharge summaries and scanned genetics reports.",
+  "url": "s3://rddc-deposit-ta2/src-ta2-01/2026-11-notes/",
+  "dateCreated": "2026-10-28T12:00:00Z",
+  "wasAttributedTo": {
+    "@type": "sc:SoftwareApplication",
+    "name": "rddc-sidecar",
+    "softwareVersion": "0.1.0"
+  },
+  "contributorId": "ta2-site-a",
+  "sourceId": "src-ta2-01",
+  "batchId": "2026-11-notes",
+  "interaction": "add",
+  "registerVersion": "2026-10-20",
+  "sensitivity": {
+    "directIdentifiersRemoved": true,
+    "containsDates": true,
+    "containsZipCodes": false,
+    "containsFreeText": true,
+    "containsBiometricIdentifiers": false
+  },
+  "subjects": [
+    {
+      "subjectId": "P0001",
+      "idSystem": "contributor"
+    },
+    {
+      "subjectId": "P0002",
+      "idSystem": "contributor"
+    }
+  ],
+  "distribution": [
+    {
+      "@id": "notes",
+      "@type": "cr:FileSet",
+      "additionalType": "rddc:DocumentSet",
+      "name": "Clinical notes",
+      "includes": [
+        "notes/**/*"
+      ],
+      "hasPart": [
+        {
+          "@id": "urn:uuid:0000a301-0000-4000-8000-00000000a301"
+        },
+        {
+          "@id": "urn:uuid:0000a302-0000-4000-8000-00000000a302"
+        }
+      ],
+      "subjectCount": 2
+    },
+    {
+      "@id": "urn:uuid:0000a301-0000-4000-8000-00000000a301",
+      "@type": "cr:FileObject",
+      "additionalType": "rddc:ClinicalDocumentFile",
+      "name": "notes/P0001/discharge_2026-03.txt",
+      "contentUrl": "notes/P0001/discharge_2026-03.txt",
+      "contentSize": "6120 B",
+      "encodingFormat": "text/plain",
+      "sha256": "6ec97b50558c5f10891ee4d83f8fe6798bcf05d7d39f9632fd7d30205d78c050",
+      "md5": "f33aebc38851adc955e66565885aa39a",
+      "modality": "clinical_text",
+      "subjectIds": [
+        "P0001"
+      ]
+    },
+    {
+      "@id": "urn:uuid:0000a302-0000-4000-8000-00000000a302",
+      "@type": "cr:FileObject",
+      "additionalType": "rddc:ClinicalDocumentFile",
+      "name": "notes/P0002/genetics_report.pdf",
+      "contentUrl": "notes/P0002/genetics_report.pdf",
+      "contentSize": "288003 B",
+      "encodingFormat": "application/pdf",
+      "sha256": "b7cd59d5284e4793bbe7b332f24a1d5bfae6cd610587b15db601171b72ad1d61",
+      "md5": "1bb2271e1f58d1c277df2b27caaffd01",
+      "modality": "clinical_text",
+      "subjectIds": [
+        "P0002"
+      ],
+      "processingHints": [
+        {
+          "@type": "sc:PropertyValue",
+          "propertyID": "deid:ocr",
+          "value": "scanned"
+        }
+      ]
+    }
+  ]
+}
