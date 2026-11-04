@@ -42,14 +42,14 @@ jobs:
         run: |
           for f in ${{ steps.files.outputs.list }}; do
             echo "::group::linkml-lint $f"
-            linkml-lint "$f"
+            linkml-lint --config .linkml-lint.yaml "$f"
             echo "::endgroup::"
           done
 
       - name: Check schemas load and generate
         run: |
           for f in ${{ steps.files.outputs.list }}; do
-            echo "::group::gen-yaml $f"
-            gen-yaml "$f" > /dev/null
+            echo "::group::gen-json-schema $f"
+            gen-json-schema --closed "$f" > /dev/null
             echo "::endgroup::"
           done

@@ -919,6 +919,7 @@ slots:
       as an object (schema/generated/rddc_sidecar.context.jsonld).
     range: AnyValue
   id:
+    description: "JSON-LD node identifier (@id). Unique within the sidecar."
     alias: "@id"
     identifier: true
     range: uriorcurie
@@ -936,16 +937,21 @@ slots:
 
   # --- schema.org / Croissant terms -------------------------------------------
   conformsTo:
+    description: "Specifications or standards the node conforms to, as versioned URIs."
     slot_uri: dct:conformsTo
     range: uri
     multivalued: true
   name:
+    description: "Human-readable name."
     slot_uri: sc:name
   description:
+    description: "Free-text description."
     slot_uri: sc:description
   url:
+    description: "URL of the resource."
     slot_uri: sc:url
   dateCreated:
+    description: "When the sidecar was created."
     slot_uri: sc:dateCreated
     range: datetime
   contentUrl:
@@ -953,6 +959,7 @@ slots:
     range: RelativePath
     description: Object key relative to the batch prefix; Croissant resolves it against the sidecar's location.
   contentSize:
+    description: "Size of the file in bytes."
     slot_uri: sc:contentSize
     range: ByteSize
   encodingFormat:
@@ -960,6 +967,7 @@ slots:
     range: MediaType
     description: Media type of the content (after decompression when compression is set).
   sha256:
+    description: "SHA-256 checksum of the file, as lowercase hexadecimal."
     slot_uri: sc:sha256
     pattern: "^[0-9a-f]{64}$"
   md5:
@@ -971,6 +979,7 @@ slots:
     multivalued: true
     description: Glob patterns relative to the batch prefix.
   excludes:
+    description: "Glob patterns relative to the batch prefix for files to leave out of the set."
     slot_uri: cr:excludes
     multivalued: true
   hasPart:
@@ -980,11 +989,13 @@ slots:
     inlined_as_list: true
     description: Member files, by @id.
   distribution:
+    description: "The files and file sets in the batch."
     slot_uri: sc:distribution
     range: DistributionItem
     multivalued: true
     inlined_as_list: true
   identifier:
+    description: "IDs assigned to the file by other systems."
     slot_uri: sc:identifier
     range: ExternalIdentifier
     multivalued: true
@@ -996,17 +1007,22 @@ slots:
     inlined_as_list: true
     description: The files or record sets this file documents.
   additionalProperty:
+    description: "Namespaced extension key-value pairs."
     slot_uri: sc:additionalProperty
     range: Extension
     multivalued: true
     inlined_as_list: true
   propertyID:
+    description: "The key of a key-value pair, or the system that assigned an identifier."
     slot_uri: sc:propertyID
   value:
+    description: "The value of a key-value pair or identifier."
     slot_uri: sc:value
   softwareVersion:
+    description: "Version of the software that wrote the document."
     slot_uri: sc:softwareVersion
   recordSet:
+    description: "Record sets describing the records in the batch's files."
     slot_uri: cr:recordSet
     range: RecordSet
     multivalued: true
@@ -1018,6 +1034,7 @@ slots:
     inlined_as_list: true
     description: Fields that together identify a record.
   field:
+    description: "The fields (columns) of a record set."
     slot_uri: cr:field
     range: RecordSetField
     multivalued: true
@@ -1028,34 +1045,42 @@ slots:
     multivalued: true
     description: Field type, e.g. sc:Text, sc:Integer, sc:Date.
   source:
+    description: "Where the field's values come from."
     slot_uri: cr:source
     range: FieldSource
     inlined: true
   fileObject:
+    description: "The file the values come from, by @id."
     slot_uri: cr:fileObject
     range: NodeRef
     inlined: true
   fileSet:
+    description: "The file set the values come from, by @id."
     slot_uri: cr:fileSet
     range: NodeRef
     inlined: true
   extract:
+    description: "How to extract the field's values from the source."
     slot_uri: cr:extract
     range: Extract
     inlined: true
   column:
+    description: "Name of the source column to read values from."
     slot_uri: cr:column
   references:
+    description: "The field this field references, as a foreign key."
     slot_uri: cr:references
     range: FieldReference
     inlined: true
 
   # --- PROV-O -----------------------------------------------------------------
   wasAttributedTo:
+    description: "The agent responsible for the document."
     slot_uri: prov:wasAttributedTo
     range: Agent
     inlined: true
   wasDerivedFrom:
+    description: "Items in this sidecar that this item was derived from, by @id."
     slot_uri: prov:wasDerivedFrom
     range: NodeRef
     multivalued: true
@@ -1072,12 +1097,14 @@ slots:
     description: Contributor-assigned batch ID, unique within the source.
     range: Identifier
   interaction:
+    description: "What the batch asks the RDDC to do."
     range: InteractionEnum
   noticeRef:
     description: "Reference to a GOVERN withdrawal or restriction notice. The notice holds the terms and legal details."
   registerVersion:
     description: "The source register version used to issue the descriptor or draft the sidecar."
   subjects:
+    description: "The subject table: one entry per person the batch refers to."
     range: SubjectEntry
     multivalued: true
     inlined_as_list: true
@@ -1110,12 +1137,14 @@ slots:
       content. These stay in the trusted research environment (TRE).
     range: boolean
   notes:
+    description: "Free-text notes on the sensitivity values."
 
   # --- RDDC: subjects --------------------------------------------------------
   subjectId:
     description: The contributor's coded ID for one person.
     range: Identifier
   idSystem:
+    description: "Where the subject ID comes from. Part of the subject's identity."
     range: IdSystemEnum
   identifierSystemUri:
     description: For fhir_patient_identifier, the identifier system URI.
@@ -1127,23 +1156,28 @@ slots:
     range: Identifier
     multivalued: true
   subjectCount:
+    description: "Number of distinct subjects in the file set."
     range: integer
     minimum_value: 0
 
   # --- RDDC: files -----------------------------------------------------------
   modality:
+    description: "The kind of data in the file."
     range: ModalityEnum
   compression:
+    description: "Compression applied to the file's bytes, if any."
     range: CompressionEnum
   recordCount:
     description: Rows, resources or documents in the file, when counted.
     range: integer
     minimum_value: 0
   processingHints:
+    description: "Informational key-value pairs for downstream pipelines."
     range: ProcessingHint
     multivalued: true
     inlined_as_list: true
   bundleType:
+    description: "The FHIR Bundle.type of the bundles in the file."
     range: FhirBundleTypeEnum
   resourceType:
     description: FHIR resource type, e.g. Patient.
@@ -1157,7 +1191,9 @@ slots:
   tableName:
     description: Table name within its dataset.
   assay:
+    description: "The assay that produced the data."
   platform:
+    description: "The instrument or sequencing platform that produced the data."
   referenceGenome:
     description: Reference assembly, e.g. GRCh38.
   pairedWith:
@@ -1176,30 +1212,41 @@ slots:
   vocabularyVersion:
     description: OHDSI vocabulary release, e.g. "v5.0 25-AUG-2026".
   cdmSource:
+    description: "Values from the OMOP cdm_source table."
     range: CdmSource
     inlined: true
   cdmSourceName:
+    description: "OMOP cdm_source_name: the name of the CDM instance."
   cdmSourceAbbreviation:
+    description: "OMOP cdm_source_abbreviation: a short name for the CDM instance."
   cdmHolder:
+    description: "OMOP cdm_holder: the organization that holds the CDM instance."
   cdmEtlReference:
+    description: "OMOP cdm_etl_reference: a reference to the ETL code or its documentation."
   sourceReleaseDate:
+    description: "OMOP source_release_date: when the data was extracted from the source system."
     range: date
   cdmReleaseDate:
+    description: "OMOP cdm_release_date: when the CDM instance was produced."
     range: date
   cdmVersion:
+    description: "OMOP cdm_version: the CDM version, e.g. 5.4."
 
   # --- RDDC: value origins and provenance ------------------------------------
   valueOrigins:
+    description: "How tools filled in values on this node."
     range: ValueOrigin
     multivalued: true
     inlined_as_list: true
   fieldPath:
     description: JSON pointer to the value within the node.
   origin:
+    description: "Where the value came from."
     range: ValueOriginEnum
   method:
     description: Detector or rule that produced the value.
   confidence:
+    description: "Confidence in a detected or inferred value, from 0 to 1."
     range: float
     minimum_value: 0
     maximum_value: 1
@@ -1214,6 +1261,7 @@ slots:
     description: 'Template for batch prefixes, with {sourceId} and {batchId} placeholders, ending with a slash. Example: "{sourceId}/{batchId}/".'
     pattern: ^(|.*/)$
   region:
+    description: "AWS region of the bucket."
   modalities:
     description: Modalities the source is registered to deposit.
     range: ModalityEnum
@@ -1221,7 +1269,9 @@ slots:
   deliveryRole:
     description: "The delivery role ID, such as an IAM role ARN. Included for information; the platform enforces the role."
   issuedAt:
+    description: "When the descriptor was issued."
     range: datetime
   issuedBy:
+    description: "The agent that issued the descriptor."
     range: Agent
     inlined: true

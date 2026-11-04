@@ -16,7 +16,8 @@ check:
 	$(CROISSANT_PY) scripts/check_examples.py
 
 lint:
-	linkml-lint $(SCHEMA) || true
+	linkml-lint --config .linkml-lint.yaml header.yaml
+	linkml-lint --config .linkml-lint.yaml $(SCHEMA)
 
 site:
 	python3 scripts/build_site.py
