@@ -1,0 +1,221 @@
+{
+  "@id": "urn:uuid:0000a004-0000-4000-8000-00000000a004",
+  "@type": "sc:Dataset",
+  "conformsTo": [
+    "http://mlcommons.org/croissant/1.1",
+    "https://w3id.org/rddc/sidecar/0.1.0"
+  ],
+  "name": "src-ta2-01/2026-11-reg02",
+  "description": "Natural history registry: patients, visits and a data dictionary.",
+  "url": "s3://rddc-deposit-ta2/src-ta2-01/2026-11-reg02/",
+  "dateCreated": "2026-10-28T12:00:00Z",
+  "wasAttributedTo": {
+    "@type": "sc:SoftwareApplication",
+    "name": "rddc-sidecar",
+    "softwareVersion": "0.1.0"
+  },
+  "contributorId": "ta2-site-a",
+  "sourceId": "src-ta2-01",
+  "batchId": "2026-11-reg02",
+  "interaction": "add",
+  "registerVersion": "2026-10-20",
+  "sensitivity": {
+    "directIdentifiersRemoved": true,
+    "containsDates": true,
+    "containsZipCodes": false,
+    "containsFreeText": false,
+    "containsBiometricIdentifiers": false
+  },
+  "subjects": [
+    {
+      "subjectId": "P0001",
+      "idSystem": "contributor"
+    },
+    {
+      "subjectId": "P0002",
+      "idSystem": "contributor"
+    },
+    {
+      "subjectId": "P0003",
+      "idSystem": "contributor"
+    }
+  ],
+  "additionalProperty": [
+    {
+      "@type": "sc:PropertyValue",
+      "propertyID": "ext:ta2_site_a:cohort",
+      "value": "natural-history-2026"
+    }
+  ],
+  "distribution": [
+    {
+      "@id": "registry",
+      "@type": "cr:FileSet",
+      "additionalType": "rddc:TabularDataset",
+      "name": "Natural history registry",
+      "includes": [
+        "registry/*"
+      ],
+      "hasPart": [
+        {
+          "@id": "urn:uuid:0000a401-0000-4000-8000-00000000a401"
+        },
+        {
+          "@id": "urn:uuid:0000a402-0000-4000-8000-00000000a402"
+        },
+        {
+          "@id": "urn:uuid:0000a403-0000-4000-8000-00000000a403"
+        }
+      ]
+    },
+    {
+      "@id": "urn:uuid:0000a403-0000-4000-8000-00000000a403",
+      "@type": "cr:FileObject",
+      "additionalType": "rddc:DocumentationFile",
+      "name": "registry/data_dictionary.csv",
+      "contentUrl": "registry/data_dictionary.csv",
+      "contentSize": "3100 B",
+      "encodingFormat": "text/csv",
+      "sha256": "1615590c779290f20507230a4d58a08a869847ced0c6a574b112a2289d09c790",
+      "md5": "69174e6d6a03ff0a35bd6c1c03e994c9",
+      "modality": "metadata",
+      "about": [
+        {
+          "@id": "patients"
+        },
+        {
+          "@id": "visits"
+        }
+      ]
+    },
+    {
+      "@id": "urn:uuid:0000a401-0000-4000-8000-00000000a401",
+      "@type": "cr:FileObject",
+      "additionalType": "rddc:TabularFile",
+      "name": "registry/patients.parquet",
+      "contentUrl": "registry/patients.parquet",
+      "contentSize": "9200 B",
+      "encodingFormat": "application/vnd.apache.parquet",
+      "sha256": "9388971dd5e6134f327e4577ad6604b7231eb48c5db72f4be07ddb9f4365a4d9",
+      "md5": "c41e9ffa7d521c027a6067cf255ba201",
+      "modality": "clinical_tabular",
+      "tableName": "patients",
+      "recordCount": 3
+    },
+    {
+      "@id": "urn:uuid:0000a402-0000-4000-8000-00000000a402",
+      "@type": "cr:FileObject",
+      "additionalType": "rddc:TabularFile",
+      "name": "registry/visits.csv",
+      "contentUrl": "registry/visits.csv",
+      "contentSize": "18000 B",
+      "encodingFormat": "text/csv",
+      "sha256": "bad7f4d826a9ad20c880b6d10366caf036f3b6fd52ea4f86e8591737ffa722da",
+      "md5": "67622fb63db45003ef4e0a239d032d02",
+      "modality": "clinical_tabular",
+      "tableName": "visits",
+      "recordCount": 41,
+      "valueOrigins": [
+        {
+          "fieldPath": "/tableName",
+          "origin": "detected",
+          "method": "file_stem",
+          "confidence": 0.9
+        }
+      ]
+    }
+  ],
+  "recordSet": [
+    {
+      "@id": "patients",
+      "@type": "cr:RecordSet",
+      "name": "patients",
+      "description": "One row per enrolled patient.",
+      "key": [
+        {
+          "@id": "patients/patient_id"
+        }
+      ],
+      "field": [
+        {
+          "@id": "patients/patient_id",
+          "@type": "cr:Field",
+          "name": "patient_id",
+          "dataType": [
+            "sc:Text"
+          ],
+          "source": {
+            "fileObject": {
+              "@id": "urn:uuid:0000a401-0000-4000-8000-00000000a401"
+            },
+            "extract": {
+              "column": "patient_id"
+            }
+          }
+        },
+        {
+          "@id": "patients/enrolled_on",
+          "@type": "cr:Field",
+          "name": "enrolled_on",
+          "dataType": [
+            "sc:Date"
+          ],
+          "source": {
+            "fileObject": {
+              "@id": "urn:uuid:0000a401-0000-4000-8000-00000000a401"
+            },
+            "extract": {
+              "column": "enrolled_on"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "@id": "visits",
+      "@type": "cr:RecordSet",
+      "name": "visits",
+      "field": [
+        {
+          "@id": "visits/patient_id",
+          "@type": "cr:Field",
+          "name": "patient_id",
+          "dataType": [
+            "sc:Text"
+          ],
+          "description": "Join to patients.patient_id.",
+          "source": {
+            "fileObject": {
+              "@id": "urn:uuid:0000a402-0000-4000-8000-00000000a402"
+            },
+            "extract": {
+              "column": "patient_id"
+            }
+          },
+          "references": {
+            "field": {
+              "@id": "patients/patient_id"
+            }
+          }
+        },
+        {
+          "@id": "visits/six_minute_walk_m",
+          "@type": "cr:Field",
+          "name": "six_minute_walk_m",
+          "dataType": [
+            "sc:Integer"
+          ],
+          "description": "Six-minute walk distance in metres.",
+          "source": {
+            "fileObject": {
+              "@id": "urn:uuid:0000a402-0000-4000-8000-00000000a402"
+            },
+            "extract": {
+              "column": "six_minute_walk_m"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
