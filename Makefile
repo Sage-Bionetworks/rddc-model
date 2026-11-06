@@ -1,14 +1,10 @@
-.PHONY: schema context check lint enums
+.PHONY: schema context check lint enums docs
 
 SCHEMA=schema/rddc_sidecar.yaml
 # Interpreter with mlcroissant installed, for the Croissant half of `make check`.
 CROISSANT_PY?=python3
 
-# The data class schemas (JSON Schema and SHACL shapes) are published as on the
-# data-classes branch; the sidecar's own JSON Schemas and context follow.
 schema: context
-	gen-json-schema --closed schema/data.yaml > schema/generated/data.schema.json
-	gen-shacl schema/data.yaml > schema/generated/data.shacl.ttl
 	gen-json-schema --closed $(SCHEMA) > schema/generated/rddc_sidecar.schema.json
 	gen-json-schema --closed --top-class SourceDescriptor $(SCHEMA) > schema/generated/rddc_source_descriptor.schema.json
 
@@ -32,3 +28,8 @@ lint:
 # Regenerate the FHIR resource type and OMOP table enums from HL7 and OHDSI (downloads).
 enums:
 	python3 scripts/gen_enums.py
+	python3 scripts/gen_docs.py
+
+# Regenerate docs/data_classes.md from the schema; CI fails if it is out of date.
+docs:
+	python3 scripts/gen_docs.py
