@@ -1,0 +1,336 @@
+id: https://w3id.org/rddc/sidecar/data
+name: rddc-sidecar-data
+title: RDDC Sidecar Data File Classes
+version: 0.1.0
+description: >-
+  Data file classes for the RDDC sidecar: the FileObject subclasses that describe the
+  data in a batch, the enums that classify them, and the slots only they use. A file's
+  additionalType names one of these classes.
+
+
+  DataFile extends FileObject from core.yaml, the only module this one imports. The
+  sidecar module (rddc_sidecar.yaml) imports this one and lists data files in
+  distribution.
+license: https://creativecommons.org/publicdomain/zero/1.0/
+
+prefixes:
+  rddc: https://w3id.org/rddc/sidecar/
+  linkml: https://w3id.org/linkml/
+  sc: https://schema.org/
+  cr: http://mlcommons.org/croissant/
+  dct: http://purl.org/dc/terms/
+  prov: http://www.w3.org/ns/prov#
+default_prefix: rddc
+default_range: string
+
+imports:
+- linkml:types
+- core
+
+# ---------------------------------------------------------------------------
+# Enumerations
+# ---------------------------------------------------------------------------
+enums:
+
+  ModalityEnum:
+    description: >-
+      The kind of data in a file. Together with the file and file-set classes, this
+      determines the NORMALIZE lane. A class may support several modalities: a
+      TabularFile can hold registry, PRO or consent data.
+    permissible_values:
+      clinical_fhir:
+        description: HL7 FHIR resources. Lane 2.
+      clinical_omop:
+        description: OMOP CDM tables. Lane 1.
+      clinical_ccda:
+        description: HL7 C-CDA documents. Lane 3.
+      clinical_tabular:
+        description: Registry, patient-reported, claims or mortality tables not in OMOP or FHIR form. Lane 4.
+      clinical_text:
+        description: Unstructured clinical text such as notes. De-identified before lane 4.
+      consent:
+        description: Consent elements for subjects.
+      genomics:
+        description: Sequencing reads, alignments, variant calls and related indexes.
+      imaging:
+        description: Medical images such as DICOM.
+      video:
+        description: Video recordings.
+      audio:
+        description: Audio recordings, including voice.
+      wearable:
+        description: Device or wearable sensor streams.
+      metadata:
+        description: Descriptive files that accompany the data, such as data dictionaries or run metadata.
+      other:
+        description: Anything else; routed by curator decision.
+
+
+  FhirBundleTypeEnum:
+    description: FHIR Bundle.type values accepted in a deposit.
+    permissible_values:
+      collection:
+      transaction:
+      batch:
+      document:
+      searchset:
+      message:
+
+# ---------------------------------------------------------------------------
+# Classes
+# ---------------------------------------------------------------------------
+classes:
+
+  DataFile:
+    is_a: FileObject
+    abstract: true
+    description: A data object of the batch, with modality, subjects, sensitivity and provenance.
+    slots:
+    - modality
+    - subjectIds
+    - recordCount
+    - identifier
+    - sensitivity
+    - processingHints
+    - wasDerivedFrom
+    slot_usage:
+      modality:
+        required: true
+      sensitivity:
+        range: FileSensitivity
+      wasDerivedFrom:
+        description: "References to input files in this sidecar, such as the alignment used to call variants."
+
+  ProcessingHint:
+    class_uri: sc:PropertyValue
+    description: >-
+      An informational key-value pair for a pipeline. Any value used to make a pipeline
+      decision must be a defined schema field.
+    slots:
+    - type
+    - propertyID
+    - value
+    slot_usage:
+      type:
+        equals_string: sc:PropertyValue
+      propertyID:
+        required: true
+        pattern: "^[a-z][a-z0-9_]*:[a-z][a-z0-9_.]*$"
+        description: Namespaced key, e.g. "fhir_to_omop:source_vocabulary".
+      value:
+        required: true
+
+  # --- clinical -------------------------------------------------------------
+
+  FhirBundleFile:
+    is_a: DataFile
+    description: One FHIR Bundle JSON document.
+    slots:
+    - bundleType
+    slot_usage:
+      encodingFormat:
+        range: string  # equals_string needs a string range; the fixed value is a valid MediaType
+        equals_string: application/fhir+json
+      bundleType:
+        required: true
+      subjectIds:
+        required: true
+
+  FhirResourceFile:
+    is_a: DataFile
+    description: One FHIR resource JSON document that is not a Bundle.
+    slots:
+    - resourceType
+    slot_usage:
+      encodingFormat:
+        range: string  # equals_string needs a string range; the fixed value is a valid MediaType
+        equals_string: application/fhir+json
+      resourceType:
+        required: true
+
+  FhirNdjsonFile:
+    is_a: DataFile
+    description: FHIR Bulk Data NDJSON, one resource type per file.
+    slots:
+    - resourceType
+    slot_usage:
+      encodingFormat:
+        range: string  # equals_string needs a string range; the fixed value is a valid MediaType
+        equals_string: application/fhir+ndjson
+      resourceType:
+        required: true
+
+  OmopTableFile:
+    is_a: DataFile
+    description: One OMOP CDM table.
+    slots:
+    - cdmTable
+    slot_usage:
+      encodingFormat:
+        any_of:
+        - equals_string: text/csv
+        - equals_string: text/tab-separated-values
+        - equals_string: application/vnd.apache.parquet
+      cdmTable:
+        required: true
+
+  CcdaDocumentFile:
+    is_a: DataFile
+    description: One HL7 C-CDA document.
+    slots:
+    - templateIds
+    slot_usage:
+      encodingFormat:
+        any_of:
+        - equals_string: application/xml
+        - equals_string: text/xml
+      subjectIds:
+        required: true
+
+  TabularFile:
+    is_a: DataFile
+    description: A table that is not OMOP or FHIR, such as registry, PRO, claims, mortality or consent data.
+    slots:
+    - tableName
+    slot_usage:
+      encodingFormat:
+        any_of:
+        - equals_string: text/csv
+        - equals_string: text/tab-separated-values
+        - equals_string: application/vnd.apache.parquet
+        - equals_string: application/json
+        - equals_string: application/jsonl
+      tableName:
+        required: true
+
+  ClinicalDocumentFile:
+    is_a: DataFile
+    description: An unstructured clinical document, such as a note or a scanned report.
+    slot_usage:
+      encodingFormat:
+        any_of:
+        - equals_string: text/plain
+        - equals_string: application/pdf
+        - equals_string: application/rtf
+      subjectIds:
+        required: true
+
+  DocumentationFile:
+    is_a: DataFile
+    description: A file that documents other files, such as a data dictionary or a README.
+    slots:
+    - about
+    slot_usage:
+      about:
+        required: true
+
+  # --- omics ----------------------------------------------------------------
+
+  GenomicsFile:
+    is_a: DataFile
+    abstract: true
+    description: Omics profile base class (Q5).
+    slots:
+    - assay
+    - platform
+
+  SequenceReadsFile:
+    is_a: GenomicsFile
+    description: Sequencing reads, such as FASTQ.
+    slots:
+    - pairedWith
+
+  AlignmentFile:
+    is_a: GenomicsFile
+    description: Aligned reads, such as BAM or CRAM.
+    slots:
+    - referenceGenome
+    slot_usage:
+      referenceGenome:
+        required: true
+
+  VariantFile:
+    is_a: GenomicsFile
+    description: Variant calls, such as VCF.
+    slots:
+    - referenceGenome
+    slot_usage:
+      referenceGenome:
+        required: true
+
+  IndexFile:
+    is_a: DataFile
+    description: An index of another file, such as .bai, .crai or .tbi.
+    slots:
+    - indexOf
+    slot_usage:
+      indexOf:
+        required: true
+
+  # --- images, recordings and other files -----------------------------------
+
+  ImagingFile:
+    is_a: DataFile
+    description: A medical or photographic image, such as DICOM.
+
+  MediaFile:
+    is_a: DataFile
+    description: An audio or video recording.
+
+  GenericFile:
+    is_a: DataFile
+    description: "Any other data file. A curator decides how to process it."
+
+# ---------------------------------------------------------------------------
+# Slots
+# ---------------------------------------------------------------------------
+slots:
+
+  modality:
+    description: "The kind of data in the file."
+    range: ModalityEnum
+  recordCount:
+    description: Rows, resources or documents in the file, when counted.
+    range: integer
+    minimum_value: 0
+  processingHints:
+    description: "Informational key-value pairs for downstream pipelines."
+    range: ProcessingHint
+    multivalued: true
+    inlined_as_list: true
+  about:
+    slot_uri: sc:about
+    range: NodeRef
+    multivalued: true
+    inlined_as_list: true
+    description: The files or record sets this file documents.
+
+  # --- format-specific -------------------------------------------------------
+  bundleType:
+    description: "The FHIR Bundle.type of the bundles in the file."
+    range: FhirBundleTypeEnum
+  resourceType:
+    description: FHIR resource type, e.g. Patient.
+    pattern: "^[A-Z][A-Za-z]+$"
+  cdmTable:
+    description: OMOP CDM table name, e.g. person.
+    pattern: "^[a-z][a-z_]*$"
+  templateIds:
+    description: C-CDA template IDs (root or root:extension).
+    multivalued: true
+  tableName:
+    description: Table name within its dataset.
+  assay:
+    description: "The assay that produced the data."
+  platform:
+    description: "The instrument or sequencing platform that produced the data."
+  referenceGenome:
+    description: Reference assembly, e.g. GRCh38.
+  pairedWith:
+    description: The mate file of paired-end reads.
+    range: NodeRef
+    inlined: true
+  indexOf:
+    description: The file this file indexes.
+    range: NodeRef
+    inlined: true
