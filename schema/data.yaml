@@ -11,6 +11,17 @@ description: >-
   DataFile extends FileObject from core.yaml, the only module this one imports. The
   sidecar module (rddc_sidecar.yaml) imports this one and lists data files in
   distribution.
+
+
+  Each concrete class carries a "structure" annotation describing its content. It is a
+  property of the class, so sidecars do not include it.
+    structured: records with defined fields that software can read without text or
+      image analysis (FHIR, OMOP and other tables, C-CDA, VCF, FASTQ, BAM). Free text
+      inside such a file is declared with containsFreeText.
+    unstructured: content without defined fields (notes, PDF or scanned documents,
+      images, audio, video). Using it needs NLP, OCR or image analysis.
+    mixed: the class admits either kind, so the file's content decides
+      (DocumentationFile, GenericFile).
 license: https://creativecommons.org/publicdomain/zero/1.0/
 
 prefixes:
@@ -125,6 +136,8 @@ classes:
   FhirBundleFile:
     is_a: DataFile
     description: One FHIR Bundle JSON document.
+    annotations:
+      structure: structured
     slots:
     - bundleType
     slot_usage:
@@ -139,6 +152,8 @@ classes:
   FhirResourceFile:
     is_a: DataFile
     description: One FHIR resource JSON document that is not a Bundle.
+    annotations:
+      structure: structured
     slots:
     - resourceType
     slot_usage:
@@ -151,6 +166,8 @@ classes:
   FhirNdjsonFile:
     is_a: DataFile
     description: FHIR Bulk Data NDJSON, one resource type per file.
+    annotations:
+      structure: structured
     slots:
     - resourceType
     slot_usage:
@@ -163,6 +180,8 @@ classes:
   OmopTableFile:
     is_a: DataFile
     description: One OMOP CDM table.
+    annotations:
+      structure: structured
     slots:
     - cdmTable
     slot_usage:
@@ -177,6 +196,8 @@ classes:
   CcdaDocumentFile:
     is_a: DataFile
     description: One HL7 C-CDA document.
+    annotations:
+      structure: structured
     slots:
     - templateIds
     slot_usage:
@@ -190,6 +211,8 @@ classes:
   TabularFile:
     is_a: DataFile
     description: A table that is not OMOP or FHIR, such as registry, PRO, claims, mortality or consent data.
+    annotations:
+      structure: structured
     slots:
     - tableName
     slot_usage:
@@ -206,6 +229,8 @@ classes:
   ClinicalDocumentFile:
     is_a: DataFile
     description: An unstructured clinical document, such as a note or a scanned report.
+    annotations:
+      structure: unstructured
     slot_usage:
       encodingFormat:
         any_of:
@@ -218,6 +243,8 @@ classes:
   DocumentationFile:
     is_a: DataFile
     description: A file that documents other files, such as a data dictionary or a README.
+    annotations:
+      structure: mixed
     slots:
     - about
     slot_usage:
@@ -237,12 +264,16 @@ classes:
   SequenceReadsFile:
     is_a: GenomicsFile
     description: Sequencing reads, such as FASTQ.
+    annotations:
+      structure: structured
     slots:
     - pairedWith
 
   AlignmentFile:
     is_a: GenomicsFile
     description: Aligned reads, such as BAM or CRAM.
+    annotations:
+      structure: structured
     slots:
     - referenceGenome
     slot_usage:
@@ -252,6 +283,8 @@ classes:
   VariantFile:
     is_a: GenomicsFile
     description: Variant calls, such as VCF.
+    annotations:
+      structure: structured
     slots:
     - referenceGenome
     slot_usage:
@@ -261,6 +294,8 @@ classes:
   IndexFile:
     is_a: DataFile
     description: An index of another file, such as .bai, .crai or .tbi.
+    annotations:
+      structure: structured
     slots:
     - indexOf
     slot_usage:
@@ -272,14 +307,20 @@ classes:
   ImagingFile:
     is_a: DataFile
     description: A medical or photographic image, such as DICOM.
+    annotations:
+      structure: unstructured
 
   MediaFile:
     is_a: DataFile
     description: An audio or video recording.
+    annotations:
+      structure: unstructured
 
   GenericFile:
     is_a: DataFile
     description: "Any other data file. A curator decides how to process it."
+    annotations:
+      structure: mixed
 
 # ---------------------------------------------------------------------------
 # Slots

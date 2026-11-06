@@ -56,3 +56,6 @@ jobs:
             gen-jsonld "$f" > /dev/null
             echo "::endgroup::"
           done
+
+      - name: Check structure annotations on data file classes
+        run: python scripts/check_structure.py schema/data.yaml
