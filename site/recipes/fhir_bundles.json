@@ -1,0 +1,109 @@
+{
+  "@id": "urn:uuid:0000a002-0000-4000-8000-00000000a002",
+  "@type": "sc:Dataset",
+  "conformsTo": [
+    "http://mlcommons.org/croissant/1.1",
+    "https://w3id.org/rddc/sidecar/0.1.0"
+  ],
+  "name": "src-ta2-01/2026-11-synthea",
+  "description": "Synthea test patients as FHIR collection bundles, one per patient.",
+  "url": "s3://rddc-deposit-ta2/src-ta2-01/2026-11-synthea/",
+  "dateCreated": "2026-10-28T12:00:00Z",
+  "wasAttributedTo": {
+    "@type": "sc:SoftwareApplication",
+    "name": "rddc-sidecar",
+    "softwareVersion": "0.1.0"
+  },
+  "contributorId": "ta2-site-a",
+  "sourceId": "src-ta2-01",
+  "batchId": "2026-11-synthea",
+  "interaction": "add",
+  "registerVersion": "2026-10-20",
+  "sensitivity": {
+    "directIdentifiersRemoved": true,
+    "synthetic": true,
+    "containsDates": true,
+    "containsZipCodes": true,
+    "containsFreeText": true,
+    "containsBiometricIdentifiers": false
+  },
+  "subjects": [
+    {
+      "subjectId": "syn-7f3a",
+      "idSystem": "fhir_patient_identifier",
+      "identifierSystemUri": "https://synthea.example.org/patient-id"
+    },
+    {
+      "subjectId": "syn-91c0",
+      "idSystem": "fhir_patient_identifier",
+      "identifierSystemUri": "https://synthea.example.org/patient-id"
+    }
+  ],
+  "distribution": [
+    {
+      "@id": "bundles",
+      "@type": "cr:FileSet",
+      "additionalType": "rddc:FhirBundleCollection",
+      "name": "Synthea bundles",
+      "encodingFormat": "application/fhir+json",
+      "includes": [
+        "bundles/*.json"
+      ],
+      "hasPart": [
+        {
+          "@id": "urn:uuid:0000a201-0000-4000-8000-00000000a201"
+        },
+        {
+          "@id": "urn:uuid:0000a202-0000-4000-8000-00000000a202"
+        }
+      ],
+      "conformsTo": [
+        "http://hl7.org/fhir/R4",
+        "http://hl7.org/fhir/us/core/STU6.1"
+      ],
+      "subjectCount": 2
+    },
+    {
+      "@id": "urn:uuid:0000a201-0000-4000-8000-00000000a201",
+      "@type": "cr:FileObject",
+      "additionalType": "rddc:FhirBundleFile",
+      "name": "bundles/syn-7f3a.json",
+      "contentUrl": "bundles/syn-7f3a.json",
+      "contentSize": "183422 B",
+      "encodingFormat": "application/fhir+json",
+      "sha256": "0e5a8b37fcbc4410dc25d5e4d0d7bc93546dcd813c22d27ef4522ade1a3ac36c",
+      "md5": "475dc32dd03216a9a17ed1f0df1b2049",
+      "modality": "clinical_fhir",
+      "bundleType": "collection",
+      "fhirVersion": "4.0.1",
+      "implementationGuides": [
+        "hl7.fhir.us.core#6.1.0"
+      ],
+      "subjectIds": [
+        "syn-7f3a"
+      ],
+      "recordCount": 412
+    },
+    {
+      "@id": "urn:uuid:0000a202-0000-4000-8000-00000000a202",
+      "@type": "cr:FileObject",
+      "additionalType": "rddc:FhirBundleFile",
+      "name": "bundles/syn-91c0.json",
+      "contentUrl": "bundles/syn-91c0.json",
+      "contentSize": "207118 B",
+      "encodingFormat": "application/fhir+json",
+      "sha256": "cfaf88f2b0d1cb51fcc33009cae7a9f7bd652165824f12f2714c4111bc3d9a3f",
+      "md5": "12691d6c072e6d92a43fe990affca3c7",
+      "modality": "clinical_fhir",
+      "bundleType": "collection",
+      "fhirVersion": "4.0.1",
+      "implementationGuides": [
+        "hl7.fhir.us.core#6.1.0"
+      ],
+      "subjectIds": [
+        "syn-91c0"
+      ],
+      "recordCount": 455
+    }
+  ]
+}

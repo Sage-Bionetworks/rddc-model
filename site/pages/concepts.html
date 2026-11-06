@@ -1,0 +1,191 @@
+<h1>Core concepts</h1>
+<p class="lede">How a sidecar identifies batches, files and subjects, and records sensitivity information.</p>
+
+<h2>Contributors, sources and batches</h2>
+<p>The RDDC Infrastructure Plan uses three terms:</p>
+<dl class="glossary">
+<dt>Contributor</dt><dd>An organization that sends data. It has one S3 bucket and one or more sources. Identified by <code>contributorId</code>.</dd>
+<dt>Source</dt><dd>One of a contributor's data sets, with one set of use terms, registered with the RDDC before the first deposit. Identified by <code>sourceId</code>.</dd>
+<dt>Batch</dt><dd>One delivery of files for one source. One batch, one S3 prefix, one sidecar. Identified by <code>batchId</code>, which the contributor chooses and which is unique within the source.</dd>
+</dl>
+<rddc-code lang="text" title="How a contributor bucket is laid out">s3://rddc-deposit-ta2/                 bucket of contributor ta2-site-a
+└── src-ta2-01/                        source
+    ├── 2026-10-b01/                   batch prefix  →  "url" in the sidecar
+    │   ├── fhir/Patient.ndjson        data files    →  "contentUrl": "fhir/Patient.ndjson"
+    │   ├── fhir/Observation.ndjson.gz
+    │   ├── omop/person.csv
+    │   ├── registry/patients.csv
+    │   └── _sidecar.json         uploaded last; not listed in itself
+    └── 2026-11-w01/                   a later batch: a withdrawal
+        └── _sidecar.json</rddc-code>
+<p>The sidecar's <code>url</code> is the batch prefix, ending with a slash. Every <code>contentUrl</code> is relative to it. The sidecar describes every data object under the prefix and nothing outside it; it does not list itself.</p>
+
+<h2>Anatomy of a sidecar</h2>
+<p>A sidecar has these parts, with required fields marked:</p>
+<div class="anatomy">
+  <div class="row"><code>@context</code><span>The embedded JSON-LD context. Copied verbatim from <code>rddc_sidecar.context.jsonld</code>. <span class="req">required</span></span></div>
+  <div class="row"><code>@id</code>, <code>@type</code>, <code>conformsTo</code></div>
+  <div class="row nested"><span class="muted">identity</span><span>The sidecar's UUID URN, <code>sc:Dataset</code>, and the Croissant and RDDC versions it follows. <span class="req">required</span></span></div>
+  <div class="row"><code>name</code>, <code>url</code>, <code>dateCreated</code>, <code>wasAttributedTo</code></div>
+  <div class="row nested"><span class="muted">description</span><span>Batch label (by convention <code>sourceId/batchId</code>), S3 prefix, timestamp and the tool that wrote it. <span class="req">required</span></span></div>
+  <div class="row"><code>contributorId</code> … <code>interaction</code></div>
+  <div class="row nested"><span class="muted">batch</span><span>Who sent it, for which source, which batch, and what to do with it. <span class="req">required</span> Plus <code>noticeRef</code> and <code>registerVersion</code> when they apply.</span></div>
+  <div class="row"><code>sensitivity</code></div>
+  <div class="row nested"><span class="muted">facts</span><span>De-identification facts that apply to every file unless a file overrides them. <span class="req">required</span></span></div>
+  <div class="row"><code>subjects</code></div>
+  <div class="row nested"><span class="muted">subject table</span><span>One row per person in the batch, by coded ID. <span class="req">required</span> (may be empty only for an <code>add</code> batch of documentation files, modality <code>metadata</code>)</span></div>
+  <div class="row"><code>distribution</code></div>
+  <div class="row nested"><span class="muted">manifest</span><span>Every file (<code>cr:FileObject</code>) and every file set (<code>cr:FileSet</code>), inline. <span class="req">required</span> (empty for withdrawals and restrictions)</span></div>
+  <div class="row"><code>recordSet</code></div>
+  <div class="row nested"><span class="muted">tables</span><span>Optional Croissant record sets for data dictionaries and joins between non-standard tables.</span></div>
+  <div class="row"><code>valueOrigins</code>, <code>additionalProperty</code></div>
+  <div class="row nested"><span class="muted">annotations</span><span>Optional: where auto-filled values came from, and namespaced extensions.</span></div>
+</div>
+
+<h2>Interactions</h2>
+<p><code>interaction</code> tells the platform what the batch asks for. It is required on every sidecar.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Value</th><th>Meaning</th><th>Data files</th><th>Subject table</th><th>Also requires</th></tr></thead>
+<tbody>
+<tr><td><code>add</code></td><td>New data files (called <code>upsert</code> in the plan; a replacement file is added with a new <code>@id</code>)</td><td>Yes</td><td>Subjects in the files; empty only if every file has modality <code>metadata</code></td><td><span class="muted">nothing</span></td></tr>
+<tr><td><code>withdraw</code></td><td>Remove the listed subjects' data</td><td>None</td><td>Subjects to remove</td><td><code>noticeRef</code></td></tr>
+<tr><td><code>restrict</code></td><td>Restrict use of the listed subjects' data</td><td>None</td><td>Subjects to restrict</td><td><code>noticeRef</code></td></tr>
+<tr><td><code>consent</code></td><td>Consent information for the listed subjects</td><td>May list consent files</td><td>Subjects covered, <code>consentRef</code> on each row</td><td><span class="muted">nothing</span></td></tr>
+</tbody></table></div>
+<p><code>noticeRef</code> names the withdrawal or restriction notice registered with GOVERN, the RDDC governance service. The notice holds the terms and legal details; the sidecar only points to it.</p>
+<rddc-json src="examples/withdraw.json" keys="interaction,noticeRef,subjects,distribution" title="examples/withdraw.json (excerpt)"></rddc-json>
+
+<h2>Files</h2>
+<h3>File identity</h3>
+<p>Every file's <code>@id</code> is a UUID URN such as <code>urn:uuid:0000000a-0000-4000-8000-00000000000a</code>. It identifies one file of the source, not one upload:</p>
+<ul>
+<li>It stays the same when the platform moves or re-registers the object.</li>
+<li>Changed content is a new file with a new <code>@id</code>.</li>
+<li>Identical content under two paths is two files with two <code>@id</code>s.</li>
+<li>It is unique within the sidecar and never reused for a different file.</li>
+</ul>
+<p>Use a lowercase UUID. The RDDC tool creates UUIDv5 values from the source, batch, path and checksum. It can reuse IDs from a previous sidecar for unchanged files. Other tools may generate IDs differently.</p>
+
+<h3>The file class: <code>additionalType</code></h3>
+<p>Every file has <code>"@type": "cr:FileObject"</code>. Its <code>additionalType</code> names one RDDC class, which fixes the allowed <code>encodingFormat</code> and adds required fields. The classes for clinical data:</p>
+<div class="table-wrap"><table>
+<thead><tr><th>File type</th><th><code>additionalType</code></th><th>Adds</th></tr></thead>
+<tbody>
+<tr><td>FHIR Bulk Data NDJSON, one resource type per file</td><td><code>rddc:FhirNdjsonFile</code></td><td><code>resourceType</code></td></tr>
+<tr><td>A FHIR Bundle (one patient, or a collection)</td><td><code>rddc:FhirBundleFile</code></td><td><code>bundleType</code>, <code>subjectIds</code></td></tr>
+<tr><td>One FHIR resource that is not a Bundle</td><td><code>rddc:FhirResourceFile</code></td><td><code>resourceType</code></td></tr>
+<tr><td>One OMOP CDM table</td><td><code>rddc:OmopTableFile</code></td><td><code>cdmTable</code></td></tr>
+<tr><td>A C-CDA XML document</td><td><code>rddc:CcdaDocumentFile</code></td><td><code>subjectIds</code></td></tr>
+<tr><td>Registry, PRO, claims, mortality or consent table</td><td><code>rddc:TabularFile</code></td><td><code>tableName</code></td></tr>
+<tr><td>A clinical note or scanned report</td><td><code>rddc:ClinicalDocumentFile</code></td><td><code>subjectIds</code></td></tr>
+<tr><td>A data dictionary or README</td><td><code>rddc:DocumentationFile</code></td><td><code>about</code></td></tr>
+</tbody></table></div>
+<p>Genomics, imaging, media and catch-all classes are covered on the <a href="data-classes.html#at-a-glance">Data file classes</a> page.</p>
+
+<h3>Modality</h3>
+<p><code>modality</code> says what kind of data a file carries, from a <a href="vocabularies.html#ModalityEnum">fixed list</a>. Together with the file class and the file set's <code>conformsTo</code>, it decides which processing lane handles the file. It is independent of the class: a <code>TabularFile</code> may hold <code>clinical_tabular</code>, <code>consent</code> or <code>metadata</code> data.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Modality</th><th>Lane</th></tr></thead>
+<tbody>
+<tr><td><code>clinical_omop</code></td><td>Lane 1: OMOP load</td></tr>
+<tr><td><code>clinical_fhir</code></td><td>Lane 2: FHIR</td></tr>
+<tr><td><code>clinical_ccda</code></td><td>Lane 3: C-CDA</td></tr>
+<tr><td><code>clinical_tabular</code></td><td>Lane 4: registry, PRO, claims and mortality tables</td></tr>
+<tr><td><code>clinical_text</code></td><td>De-identified first, then lane 4</td></tr>
+<tr><td><code>consent</code></td><td>GOVERN</td></tr>
+<tr><td><code>genomics</code>, <code>imaging</code>, <code>video</code>, <code>audio</code>, <code>wearable</code></td><td>Omics and imaging workflows</td></tr>
+<tr><td><code>metadata</code>, <code>other</code></td><td>Kept with the data; <code>other</code> is routed by a curator</td></tr>
+</tbody></table></div>
+
+<h3>Format and compression</h3>
+<p><code>encodingFormat</code> is the IANA media type of the content <em>after</em> decompression. If the bytes are compressed, say so in <code>compression</code>. A gzipped NDJSON file is <code>"encodingFormat": "application/fhir+ndjson"</code> with <code>"compression": "gzip"</code>, never <code>application/gzip</code>.</p>
+
+<h2>File sets</h2>
+<p>Files that form one collection, such as an OMOP instance or a FHIR bulk export, are grouped in a file set with <code>"@type": "cr:FileSet"</code> and an RDDC class in <code>additionalType</code>. A file set:</p>
+<ul>
+<li>has a short local <code>@id</code> such as <code>omop</code>, not a UUID;</li>
+<li>lists its members in <code>hasPart</code>, selects them with <code>includes</code> globs, or both. Every member must also appear in <code>distribution</code>. A glob is still needed alongside <code>hasPart</code> for generic Croissant loaders, which only read <code>includes</code>;</li>
+<li>declares the standard it follows in <code>conformsTo</code>, which is required for FHIR, OMOP and C-CDA sets.</li>
+</ul>
+<h3>Pinned standards</h3>
+<p>The validator only accepts these <code>conformsTo</code> values on file sets:</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Standard</th><th>Value</th></tr></thead>
+<tbody>
+<tr><td>FHIR R4 (4.0.1)</td><td><code>http://hl7.org/fhir/R4</code></td></tr>
+<tr><td>US Core 6.1.0</td><td><code>http://hl7.org/fhir/us/core/STU6.1</code></td></tr>
+<tr><td>OMOP CDM 5.4</td><td><code>https://ohdsi.github.io/CommonDataModel/cdm54.html</code></td></tr>
+<tr><td>C-CDA 2.1</td><td><code>http://hl7.org/cda/us/ccda/2.1</code></td></tr>
+</tbody></table></div>
+<rddc-json src="examples/deposit_fhir_omop.json" pointer="/distribution/1" title="An OMOP CDM instance, derived from the FHIR export in the same batch"></rddc-json>
+
+<h2>Subjects</h2>
+<p>The subject table lists every person in the batch, by the contributor's coded ID. It is how the RDDC checks a deposit against its participants table, and how a later withdrawal finds the right data.</p>
+<p>A subject's identity is the combination of three values, which must be unique within the table and mean the same person in every batch of the source:</p>
+<ul>
+<li><code>subjectId</code>: the coded ID. Never a name, MRN or other direct identifier.</li>
+<li><code>idSystem</code>: where the ID comes from, such as <code>fhir_patient_id</code> (FHIR <code>Patient.id</code>) or <code>omop_person_source_value</code>.</li>
+<li><code>identifierSystemUri</code>: required when <code>idSystem</code> is <code>fhir_patient_identifier</code>, naming the identifier system.</li>
+</ul>
+<p>One batch may mix systems. In this deposit, P0001 appears once as a FHIR patient ID and once as an OMOP person source value:</p>
+<rddc-json src="examples/deposit_fhir_omop.json" pointer="/subjects" title="examples/deposit_fhir_omop.json/subjects"></rddc-json>
+<h3>Per-file subjects</h3>
+<p>A file may list the subjects it contains in <code>subjectIds</code>; each must match a row of the subject table. The list is required for formats that hold one person per file: <code>FhirBundleFile</code>, <code>CcdaDocumentFile</code> and <code>ClinicalDocumentFile</code>. It is optional for multi-subject tables and NDJSON.</p>
+
+<h2>Sensitivity</h2>
+<p>The <code>sensitivity</code> block describes data that de-identification and routing need to check. Use terms, access tier and date policy come from the source register and cannot be set in a sidecar.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Flag</th><th>Where</th><th>Per-file override</th><th>If not set</th></tr></thead>
+<tbody>
+<tr><td><code>directIdentifiersRemoved</code></td><td>Batch only, required</td><td>Not allowed</td><td><span class="muted">must be set explicitly</span></td></tr>
+<tr><td><code>synthetic</code></td><td>Batch only</td><td>Not allowed</td><td><code>false</code></td></tr>
+<tr><td><code>containsDates</code></td><td>Batch or file</td><td>Either direction</td><td><code>true</code></td></tr>
+<tr><td><code>containsZipCodes</code></td><td>Batch or file</td><td>Either direction</td><td><code>true</code></td></tr>
+<tr><td><code>containsFreeText</code></td><td>Batch or file</td><td>Either direction</td><td><code>true</code></td></tr>
+<tr><td><code>containsBiometricIdentifiers</code></td><td>Batch or file</td><td>Either direction</td><td><code>true</code></td></tr>
+</tbody></table></div>
+<p>An unset <code>contains*</code> flag means "unknown" and is treated as <code>true</code>. Known values can be set explicitly. <code>directIdentifiersRemoved</code> records the contributor's confirmation that the required direct identifiers were removed before upload. It must be <code>true</code> unless the data is synthetic.</p>
+<div class="pair">
+  <div>
+    <p class="label rddc">Batch level</p>
+    <rddc-json src="examples/deposit_fhir_omop.json" pointer="/sensitivity" title="Applies to every file"></rddc-json>
+  </div>
+  <div>
+    <p class="label rddc">File level</p>
+    <rddc-json src="examples/deposit_fhir_omop.json" pointer="/distribution/3/sensitivity" title="Observation.ndjson.gz overrides one flag"></rddc-json>
+  </div>
+</div>
+<p>The effective value for <code>Observation.ndjson.gz</code> is <code>containsFreeText: true</code>; every other flag comes from the batch.</p>
+
+<h2>Provenance</h2>
+<p>Use <code>wasDerivedFrom</code> to link a file to its input files in the same batch, or a file set to its input file sets. For example, an OMOP snapshot can point to the FHIR export it was built from. Synapse records the provenance of RDDC pipeline outputs.</p>
+
+<h3>Value origins</h3>
+<p><code>valueOrigins</code> records how a tool filled in a value: its JSON pointer, origin (<code>declared</code>, <code>detected</code> or <code>inferred</code>), method and confidence. A person must confirm inferred values with <code>"confirmed": true</code> before validation passes.</p>
+<rddc-json src="examples/deposit_fhir_omop.json" pointer="/distribution/8/valueOrigins" title="tableName was detected from the file name"></rddc-json>
+
+<h2>Record sets</h2>
+<p>Record sets describe table columns. Use them for data dictionaries and joins between tables whose structure is not defined by a standard, such as <code>visits.patient_id</code> referencing <code>patients.id</code>. OMOP foreign keys and FHIR references are already defined by their standards.</p>
+<rddc-json src="examples/deposit_fhir_omop.json" pointer="/recordSet/1" title="A join between two registry CSVs"></rddc-json>
+
+<h2 id="extensions-and-hints">Extensions and hints</h2>
+<p>The schema rejects unknown properties. Project details have two supported locations:</p>
+<ul>
+<li><strong>Extensions</strong> (<code>additionalProperty</code>, on the sidecar or any file or file set) hold project-specific values. Keys have the form <code>ext:&lt;namespace&gt;:&lt;key&gt;</code>. Tools that rewrite sidecars preserve them.</li>
+<li><strong>Processing hints</strong> (<code>processingHints</code>, on data files) are informational notes for a pipeline, keyed <code>&lt;namespace&gt;:&lt;key&gt;</code>. Any value used for a pipeline decision must be a defined schema field.</li>
+</ul>
+<rddc-json src="site/recipes/registry_dictionary.json" pointer="/additionalProperty" title="An extension on the sidecar"></rddc-json>
+
+<h2>References between objects</h2>
+<p>Objects point to each other with <code>{"@id": "…"}</code>. Files are referenced by their <code>urn:uuid</code>; file sets, record sets and fields by their local IDs.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Property</th><th>On</th><th>Points to</th><th>Resolved</th></tr></thead>
+<tbody>
+<tr><td><code>hasPart</code></td><td>File set</td><td>Files in this sidecar</td><td>Locally</td></tr>
+<tr><td><code>wasDerivedFrom</code></td><td>File</td><td>Files in this sidecar</td><td>Locally</td></tr>
+<tr><td><code>wasDerivedFrom</code></td><td>File set</td><td>File sets in this sidecar</td><td>Locally</td></tr>
+<tr><td><code>indexOf</code>, <code>pairedWith</code></td><td>File</td><td>Files in this sidecar</td><td>Locally</td></tr>
+<tr><td><code>about</code></td><td>Documentation file</td><td>Files or record sets in this sidecar</td><td>Locally</td></tr>
+<tr><td><code>source.fileObject</code>, <code>source.fileSet</code>, <code>key</code>, <code>references</code></td><td>Record set and field</td><td>Files, file sets and fields in this sidecar</td><td>Locally</td></tr>
+<tr><td><code>subjectIds</code></td><td>File</td><td>Rows of the subject table (by <code>subjectId</code>)</td><td>Locally</td></tr>
+</tbody></table></div>

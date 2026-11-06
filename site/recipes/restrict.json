@@ -1,0 +1,37 @@
+{
+  "@id": "urn:uuid:0000a008-0000-4000-8000-00000000a008",
+  "@type": "sc:Dataset",
+  "conformsTo": [
+    "http://mlcommons.org/croissant/1.1",
+    "https://w3id.org/rddc/sidecar/0.1.0"
+  ],
+  "name": "src-ta2-01/2026-12-r01",
+  "description": "Restrict secondary use for one participant.",
+  "url": "s3://rddc-deposit-ta2/src-ta2-01/2026-12-r01/",
+  "dateCreated": "2026-10-28T12:00:00Z",
+  "wasAttributedTo": {
+    "@type": "sc:SoftwareApplication",
+    "name": "rddc-sidecar",
+    "softwareVersion": "0.1.0"
+  },
+  "contributorId": "ta2-site-a",
+  "sourceId": "src-ta2-01",
+  "batchId": "2026-12-r01",
+  "interaction": "restrict",
+  "registerVersion": "2026-10-20",
+  "sensitivity": {
+    "directIdentifiersRemoved": true,
+    "containsDates": true,
+    "containsZipCodes": false,
+    "containsFreeText": false,
+    "containsBiometricIdentifiers": false
+  },
+  "noticeRef": "govern:notice/2026-0142",
+  "subjects": [
+    {
+      "subjectId": "P0003",
+      "idSystem": "contributor"
+    }
+  ],
+  "distribution": []
+}

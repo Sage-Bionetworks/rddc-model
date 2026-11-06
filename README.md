@@ -1,7 +1,7 @@
 # RDDC data model
 
 This repository defines the Rare Disease Data Commons (RDDC) data model in
-LinkML. It also holds the requirements and examples. The schema
+LinkML. It also holds the requirements, examples and documentation. The schema
 defines the fields and validation rules; the requirements explain why they
 exist. Tools live in separate repositories and use tagged releases of this model.
 
@@ -25,7 +25,9 @@ RDDC fields use camelCase in the `rddc:` namespace.
 | `schema/generated/rddc_sidecar.schema.json` | Closed JSON Schema for the sidecar document |
 | `schema/generated/rddc_source_descriptor.schema.json` | Closed JSON Schema for the source descriptor (plain JSON) |
 | `examples/` | Example sidecars (deposit, withdrawal, C-CDA document set) and a source descriptor |
-| `scripts/` | Context builder, example and data file checkers, class annotation checker, enum generator and data class docs generator |
+| `site/` | Documentation site sources: pages, recipe sidecars, template and assets |
+| `site/slides.html` | Standalone four-slide presentation on Croissant and the RDDC sidecar |
+| `scripts/` | Context builder, example and data file checkers, class annotation checker, enum generator, data class docs generator and site builder |
 
 ## Build and check
 
@@ -37,7 +39,12 @@ make check CROISSANT_PY=/path/to/python-with-mlcroissant   # also Croissant vali
 make lint       # linkml-lint, plus the class annotation check
 make docs       # regenerate docs/data_classes.md (CI checks it)
 make enums      # regenerate the FHIR resource type and OMOP table enums from HL7 and OHDSI
+make site       # documentation and slides into site/dist (checks the recipes first)
 ```
+
+The presentation is built at `site/dist/slides.html` and linked from the docs.
+It includes its styles and script, so the downloaded HTML works offline.
+Arrow keys navigate, F toggles fullscreen, and Print / PDF prints all four slides.
 
 The `rddc-sidecar` validator checks rules beyond JSON Schema: unique `@id`s
 and subject identities, valid references, required subjects, no data files in

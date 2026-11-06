@@ -1,0 +1,59 @@
+{
+  "@id": "urn:uuid:0000a001-0000-4000-8000-00000000a001",
+  "@type": "sc:Dataset",
+  "conformsTo": [
+    "http://mlcommons.org/croissant/1.1",
+    "https://w3id.org/rddc/sidecar/0.1.0"
+  ],
+  "name": "src-ta2-01/2026-11-reg01",
+  "description": "Registry extract, November 2026.",
+  "url": "https://rddc-deposit-ta2.s3.amazonaws.com/src-ta2-01/2026-11-reg01/",
+  "dateCreated": "2026-10-28T12:00:00Z",
+  "wasAttributedTo": {
+    "@type": "sc:SoftwareApplication",
+    "name": "rddc-sidecar",
+    "softwareVersion": "0.1.0"
+  },
+  "contributorId": "ta2-site-a",
+  "sourceId": "src-ta2-01",
+  "batchId": "2026-11-reg01",
+  "interaction": "add",
+  "registerVersion": "2026-10-20",
+  "sensitivity": {
+    "directIdentifiersRemoved": true,
+    "containsDates": true,
+    "containsZipCodes": false,
+    "containsFreeText": false,
+    "containsBiometricIdentifiers": false
+  },
+  "subjects": [
+    {
+      "subjectId": "P0001",
+      "idSystem": "contributor"
+    },
+    {
+      "subjectId": "P0002",
+      "idSystem": "contributor"
+    },
+    {
+      "subjectId": "P0003",
+      "idSystem": "contributor"
+    }
+  ],
+  "distribution": [
+    {
+      "@id": "urn:uuid:0000a101-0000-4000-8000-00000000a101",
+      "@type": "cr:FileObject",
+      "additionalType": "rddc:TabularFile",
+      "name": "registry/patients.csv",
+      "contentUrl": "registry/patients.csv",
+      "contentSize": "4096 B",
+      "encodingFormat": "text/csv",
+      "sha256": "fe839da367b9e09b32a88842ac70277f03e7e9fd032c288d30fa326d1544f290",
+      "md5": "4dd68b0c0d3be7e343ec7ac5dccdf066",
+      "modality": "clinical_tabular",
+      "tableName": "patients",
+      "recordCount": 3
+    }
+  ]
+}
