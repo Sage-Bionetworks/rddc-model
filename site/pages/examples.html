@@ -1,0 +1,65 @@
+<h1>Example sidecars</h1>
+<p class="lede">These examples explain the main parts of a sidecar. <code>make check</code> validates them against JSON Schema and also checks Croissant compatibility when <code>mlcroissant</code> is installed.</p>
+
+<div class="table-wrap"><table>
+<thead><tr><th>Example</th><th>Shows</th></tr></thead>
+<tbody>
+<tr><td><a href="#mixed-deposit-fhir-omop-and-registry">deposit_fhir_omop.json</a></td><td>A typical first deposit: FHIR bulk export, OMOP snapshot and registry tables with a join</td></tr>
+<tr><td><a href="#c-cda-document-set">ccda_document_set.json</a></td><td>A large document set selected by glob, with per-document subjects</td></tr>
+<tr><td><a href="#withdrawal">withdraw.json</a></td><td>Withdrawing one participant</td></tr>
+<tr><td><a href="source-descriptor.html">source_descriptor.json</a></td><td>The per-source register values (a separate document)</td></tr>
+</tbody></table></div>
+
+<h2>Mixed deposit: FHIR, OMOP and registry</h2>
+<p>Site A's batch for <code>src-ta2-01</code> contains a FHIR Bulk Data export, an OMOP CDM 5.4 snapshot built from it, and two registry CSVs.</p>
+<rddc-json src="examples/deposit_fhir_omop.json" keys="@context,@id,@type,conformsTo,name,description,url,dateCreated,wasAttributedTo,contributorId,sourceId,batchId,interaction,sensitivity" title="Header"></rddc-json>
+
+<h3>The FHIR bulk export</h3>
+<p>Two NDJSON files, one per resource type, grouped in a <code>FhirBulkExport</code> set. The Observation file is gzipped, so <code>compression</code> is set while <code>encodingFormat</code> stays <code>application/fhir+ndjson</code>. It also contains free-text notes, so it overrides the batch's <code>containsFreeText</code>.</p>
+<div class="tabs">
+  <div role="tablist" aria-label="FHIR export parts">
+    <button role="tab" id="t-fhir-1" aria-controls="p-fhir-1" aria-selected="true">Patient.ndjson</button>
+    <button role="tab" id="t-fhir-2" aria-controls="p-fhir-2" aria-selected="false" tabindex="-1">Observation.ndjson.gz</button>
+    <button role="tab" id="t-fhir-3" aria-controls="p-fhir-3" aria-selected="false" tabindex="-1">File set</button>
+  </div>
+  <div role="tabpanel" id="p-fhir-1" aria-labelledby="t-fhir-1"><rddc-json src="examples/deposit_fhir_omop.json" pointer="/distribution/4"></rddc-json></div>
+  <div role="tabpanel" id="p-fhir-2" aria-labelledby="t-fhir-2" hidden><rddc-json src="examples/deposit_fhir_omop.json" pointer="/distribution/3"></rddc-json></div>
+  <div role="tabpanel" id="p-fhir-3" aria-labelledby="t-fhir-3" hidden><rddc-json src="examples/deposit_fhir_omop.json" pointer="/distribution/0"></rddc-json></div>
+</div>
+
+<h3>The OMOP snapshot</h3>
+<p>Each CDM table is an <code>OmopTableFile</code> with its <code>cdmTable</code> name. The <code>OmopCdmInstance</code> set requires the CDM version in <code>conformsTo</code>, the OHDSI <code>vocabularyVersion</code>, and the <code>cdmSource</code> fields a lane 1 load needs. <code>wasDerivedFrom</code> records that this snapshot was built from the FHIR export above.</p>
+<div class="tabs">
+  <div role="tablist" aria-label="OMOP parts">
+    <button role="tab" id="t-omop-1" aria-controls="p-omop-1" aria-selected="true">person.csv</button>
+    <button role="tab" id="t-omop-2" aria-controls="p-omop-2" aria-selected="false" tabindex="-1">File set</button>
+  </div>
+  <div role="tabpanel" id="p-omop-1" aria-labelledby="t-omop-1"><rddc-json src="examples/deposit_fhir_omop.json" pointer="/distribution/6"></rddc-json></div>
+  <div role="tabpanel" id="p-omop-2" aria-labelledby="t-omop-2" hidden><rddc-json src="examples/deposit_fhir_omop.json" pointer="/distribution/1"></rddc-json></div>
+</div>
+
+<h3>Registry tables and their join</h3>
+<p>The registry CSVs are <code>TabularFile</code>s in a <code>TabularDataset</code>. No standard says how they relate, so two Croissant record sets declare it: <code>visits.patient_id</code> references <code>patients.id</code>. The <code>tableName</code> of <code>visits.csv</code> was detected from the file name, recorded in <code>valueOrigins</code>.</p>
+<div class="tabs">
+  <div role="tablist" aria-label="Registry parts">
+    <button role="tab" id="t-reg-1" aria-controls="p-reg-1" aria-selected="true">visits.csv</button>
+    <button role="tab" id="t-reg-2" aria-controls="p-reg-2" aria-selected="false" tabindex="-1">Record sets</button>
+  </div>
+  <div role="tabpanel" id="p-reg-1" aria-labelledby="t-reg-1"><rddc-json src="examples/deposit_fhir_omop.json" pointer="/distribution/8"></rddc-json></div>
+  <div role="tabpanel" id="p-reg-2" aria-labelledby="t-reg-2" hidden><rddc-json src="examples/deposit_fhir_omop.json" pointer="/recordSet"></rddc-json></div>
+</div>
+
+<h3>Subjects</h3>
+<p>P0001 appears under two ID systems, once from FHIR and once from OMOP. Each (system, ID) pair is a distinct row.</p>
+<rddc-json src="examples/deposit_fhir_omop.json" pointer="/subjects"></rddc-json>
+
+<h2>C-CDA document set</h2>
+<p>Health information exchange documents, one XML file per patient encounter. <code>CcdaDocumentFile</code> requires <code>subjectIds</code>; <code>templateIds</code> records the C-CDA template (here the Continuity of Care Document, 2015 edition). The file set selects its members with a single glob instead of listing them, which keeps very large sets smaller. Every file is still listed in <code>distribution</code>.</p>
+<rddc-json src="examples/ccda_document_set.json" pointer="/distribution/1" title="One document"></rddc-json>
+<rddc-json src="examples/ccda_document_set.json" pointer="/distribution/0" title="The document set: glob only, no hasPart"></rddc-json>
+<div class="note"><strong>Large batches</strong>
+<p>All file entries stay in the sidecar. A measured 120,000-document C-CDA batch produced about 93 MB of JSON. Consumers can stream the document if needed.</p></div>
+
+<h2>Withdrawal</h2>
+<p>A withdrawal lists the subjects to remove and the GOVERN notice that authorizes it. It carries no data files, so <code>distribution</code> is an empty list. The sensitivity block is still required.</p>
+<rddc-json src="examples/withdraw.json"></rddc-json>

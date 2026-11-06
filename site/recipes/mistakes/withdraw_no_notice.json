@@ -1,0 +1,44 @@
+{
+  "@id": "urn:uuid:0000a001-0000-4000-8000-00000000a001",
+  "@type": "sc:Dataset",
+  "conformsTo": [
+    "http://mlcommons.org/croissant/1.1",
+    "https://w3id.org/rddc/sidecar/0.1.0"
+  ],
+  "name": "src-ta2-01/2026-11-reg01",
+  "description": "Registry extract, November 2026.",
+  "url": "s3://rddc-deposit-ta2/src-ta2-01/2026-11-reg01/",
+  "dateCreated": "2026-10-28T12:00:00Z",
+  "wasAttributedTo": {
+    "@type": "sc:SoftwareApplication",
+    "name": "rddc-sidecar",
+    "softwareVersion": "0.1.0"
+  },
+  "contributorId": "ta2-site-a",
+  "sourceId": "src-ta2-01",
+  "batchId": "2026-11-reg01",
+  "interaction": "withdraw",
+  "registerVersion": "2026-10-20",
+  "sensitivity": {
+    "directIdentifiersRemoved": true,
+    "containsDates": true,
+    "containsZipCodes": false,
+    "containsFreeText": false,
+    "containsBiometricIdentifiers": false
+  },
+  "subjects": [
+    {
+      "subjectId": "P0001",
+      "idSystem": "contributor"
+    },
+    {
+      "subjectId": "P0002",
+      "idSystem": "contributor"
+    },
+    {
+      "subjectId": "P0003",
+      "idSystem": "contributor"
+    }
+  ],
+  "distribution": []
+}

@@ -1,0 +1,55 @@
+<div class="hero">
+  <div>
+    <h1>The RDDC metadata sidecar<span>A description of the files and subjects in a data deposit, with the metadata needed for RDDC processing.</span></h1>
+    <p class="lede">Every batch sent to the Rare Disease Data Commons (RDDC) includes <code>_sidecar.json</code>. This file lists the data files, their types and checksums, the subjects they describe, and the information needed for de-identification.</p>
+    <p>The sidecar uses <a href="foundations.html#croissant">Croissant</a>, a standard for describing datasets, with extra fields for clinical data. These docs explain the format from the beginning.</p>
+    <div class="actions">
+      <a class="button primary" href="tutorial.html">Sidecar tutorial</a>
+      <a class="button" href="foundations.html">Format foundations</a>
+      <a class="button" href="slides.html">Overview slides</a>
+    </div>
+  </div>
+  <div class="hero-code">
+    <ul class="legend" aria-label="Term origins. Select one to highlight its keys.">
+      <li><button class="chip o-sc" data-origin="sc" aria-pressed="false">schema.org</button></li>
+      <li><button class="chip o-cr" data-origin="cr" aria-pressed="false">Croissant</button></li>
+      <li><button class="chip o-rddc" data-origin="rddc" aria-pressed="false">RDDC</button></li>
+      <li><button class="chip o-prov" data-origin="prov" aria-pressed="false">W3C PROV</button></li>
+    </ul>
+    <p class="hint">Each key is coloured by the vocabulary that defines it. Select a vocabulary to pick out its keys, or hover over a key for its full IRI.</p>
+    <rddc-json src="site/recipes/minimal.json" title="A complete, valid sidecar for a one-file registry deposit"></rddc-json>
+
+  </div>
+</div>
+
+<div class="paths">
+  <a href="foundations.html"><b>JSON-LD and Croissant basics</b><span>The JSON-LD, schema.org and Croissant terms used in a sidecar.</span></a>
+  <a href="croissant.html"><b>RDDC extensions to Croissant</b><span>What RDDC keeps, what it adds, and the few places it is stricter than Croissant.</span></a>
+  <a href="recipes.html"><b>Examples by data type</b><span>Example sidecars for FHIR, OMOP, C-CDA, registries, notes, genomics, imaging and consent.</span></a>
+</div>
+
+<h2>What the sidecar is for</h2>
+<p>Contributors upload each batch to one S3 prefix, with the sidecar last. Its arrival starts automated receipt. The sidecar gives the platform the information it needs to check and route the files.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>The platform needs to know</th><th>The sidecar says</th></tr></thead>
+<tbody>
+<tr><td>Has the upload finished?</td><td>The sidecar is uploaded last. Its arrival starts receipt.</td></tr>
+<tr><td>Did every file arrive intact?</td><td>Each file is listed with its path, size and SHA-256 checksum.</td></tr>
+<tr><td>Which pipeline should process each file?</td><td>Each file has a <code>modality</code> and a class such as <code>rddc:FhirNdjsonFile</code>; collections declare the standard they follow.</td></tr>
+<tr><td>Whose data is this?</td><td>A subject table lists every coded subject ID in the batch.</td></tr>
+<tr><td>What does de-identification have to look for?</td><td>Sensitivity flags: dates, ZIP codes, free text, biometric identifiers.</td></tr>
+<tr><td>Is this a data, withdrawal, restriction or consent batch?</td><td>The <code>interaction</code> field.</td></tr>
+</tbody></table></div>
+
+<h2>At a glance</h2>
+<dl class="glossary">
+  <dt>File name and location</dt><dd><code>_sidecar.json</code> at the root of the batch prefix, uploaded after every data file.</dd>
+  <dt>Format</dt><dd>UTF-8 JSON-LD. A valid Croissant 1.1 dataset, so generic Croissant tools can read it.</dd>
+  <dt>Scope</dt><dd>One sidecar per batch. One batch is one delivery of files for one source.</dd>
+  <dt>Schema</dt><dd>Defined in LinkML (<code>schema/rddc_sidecar.yaml</code>, version {{version}}). JSON Schema and the JSON-LD context are generated from it.</dd>
+  <dt>Strictness</dt><dd>The schema is closed: unknown properties fail validation. Project-specific values go in namespaced <a href="concepts.html#extensions-and-hints">extensions</a>.</dd>
+  <dt>Contents</dt><dd>No direct identifiers or protected health information (PHI). Use coded subject IDs, never names or medical record numbers (MRNs).</dd>
+</dl>
+
+<div class="note warn"><strong>Draft</strong>
+<p>Schema {{version}} is unreleased and may change before 1.0. This site is built from the schema in the repository, so the reference pages always match it.</p></div>

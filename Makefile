@@ -1,4 +1,4 @@
-.PHONY: schema context check lint enums docs
+.PHONY: schema context check lint enums docs site
 
 SCHEMA=schema/rddc_sidecar.yaml
 # Interpreter with mlcroissant installed, for the Croissant half of `make check`.
@@ -24,6 +24,9 @@ lint:
 	linkml-lint --config .linkml-lint.yaml schema/data.yaml
 	linkml-lint --config .linkml-lint.yaml $(SCHEMA)
 	python3 scripts/check_structure.py schema/data.yaml
+
+site:
+	python3 scripts/build_site.py
 
 # Regenerate the FHIR resource type and OMOP table enums from HL7 and OHDSI (downloads).
 enums:

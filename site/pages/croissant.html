@@ -1,0 +1,129 @@
+<h1>RDDC and Croissant</h1>
+<p class="lede">An RDDC sidecar follows Croissant 1.1. Croissant tools can read its files and file sets. RDDC tools also read the clinical fields. This page explains what the formats share and what RDDC adds.</p>
+<p><a href="slides.html">Overview slides</a>: the standards rationale, the four Croissant layers, RDDC needs and a side-by-side comparison.</p>
+
+<p><a href="foundations.html#croissant">Foundations</a> introduces the format. Croissant describes a dataset's files (<code>cr:FileObject</code>, <code>cr:FileSet</code>) and the tables in them (<code>cr:RecordSet</code>, <code>cr:Field</code>) on top of schema.org's <code>Dataset</code>.</p>
+
+<h2>The design in one paragraph</h2>
+<p>Every file uses <code>"@type": "cr:FileObject"</code>, and every file set uses <code>"@type": "cr:FileSet"</code>. The RDDC class goes in <code>additionalType</code> and determines the extra required fields. The sidecar keeps existing Croissant and schema.org property names. RDDC fields use camelCase in the <code>rddc:</code> namespace. The embedded context combines Croissant's context with RDDC terms; the builder rejects any attempt to redefine a Croissant term.</p>
+
+<h2>One file, two ways</h2>
+<p>The same compressed FHIR NDJSON file, described in plain Croissant and in an RDDC sidecar:</p>
+<div class="pair">
+  <div>
+    <p class="label cr">Plain Croissant</p>
+    <rddc-code title="cr:FileObject">{
+  "@type": "cr:FileObject",
+  "@id": "observations",
+  "name": "Observation.ndjson.gz",
+  "contentUrl": "https://example.org/fhir/Observation.ndjson.gz",
+  "encodingFormat": "application/gzip",
+  "sha256": "e047db5f…"
+}</rddc-code>
+  </div>
+  <div>
+    <p class="label rddc">RDDC sidecar</p>
+    <rddc-json src="examples/deposit_fhir_omop.json" pointer="/distribution/3" title="cr:FileObject + rddc:FhirNdjsonFile"></rddc-json>
+  </div>
+</div>
+<p>What changed, reading top to bottom:</p>
+<ul>
+<li><code>@id</code> is a UUID URN that identifies this file across every batch of the source, not a local label.</li>
+<li><code>additionalType</code> names the RDDC class. Because it is <code>rddc:FhirNdjsonFile</code>, <code>resourceType</code> is required and <code>encodingFormat</code> must be <code>application/fhir+ndjson</code>.</li>
+<li><code>contentUrl</code> is relative to the batch prefix, so the sidecar stays valid wherever the batch is stored.</li>
+<li><code>contentSize</code> and <code>sha256</code> are required, so receipt can verify the upload.</li>
+<li><code>encodingFormat</code> describes the content after decompression; <code>compression</code> says how it is wrapped.</li>
+<li><code>modality</code>, <code>recordCount</code> and the per-file <code>sensitivity</code> override are RDDC additions for routing and de-identification.</li>
+</ul>
+
+<h2>One collection, two ways</h2>
+<div class="pair">
+  <div>
+    <p class="label cr">Plain Croissant</p>
+    <rddc-code title="cr:FileSet">{
+  "@type": "cr:FileSet",
+  "@id": "fhir-files",
+  "name": "FHIR export",
+  "encodingFormat": "application/fhir+ndjson",
+  "includes": ["fhir/*.ndjson"]
+}</rddc-code>
+  </div>
+  <div>
+    <p class="label rddc">RDDC sidecar</p>
+    <rddc-json src="examples/deposit_fhir_omop.json" pointer="/distribution/0" title="cr:FileSet + rddc:FhirBulkExport"></rddc-json>
+  </div>
+</div>
+<p>The RDDC version keeps the Croissant glob in <code>includes</code>, so generic loaders still find the files, and adds:</p>
+<ul>
+<li><code>hasPart</code>, listing members explicitly by <code>@id</code>;</li>
+<li><code>conformsTo</code>, pinning the standard and version (FHIR R4 with US Core 6.1), which picks the processing lane;</li>
+<li>class-specific facts such as <code>exportTime</code> and <code>subjectCount</code>.</li>
+</ul>
+
+<h2>Side-by-side summary</h2>
+<div class="table-wrap"><table class="compare">
+<thead><tr><th>Topic</th><th>Croissant 1.1</th><th>RDDC sidecar</th></tr></thead>
+<tbody>
+<tr><td>Root object</td><td><code>sc:Dataset</code></td><td>Same. One dataset per batch.</td></tr>
+<tr><td><code>conformsTo</code></td><td><code>http://mlcommons.org/croissant/1.1</code></td><td>Both that and <code>https://w3id.org/rddc/sidecar/{{version}}</code>.</td></tr>
+<tr><td>JSON-LD context</td><td>Usually the published Croissant context.</td><td>Croissant's context plus RDDC terms, <strong>embedded</strong> in the document. <code>mlcroissant</code> does not accept a remote context.</td></tr>
+<tr><td>Files</td><td><code>cr:FileObject</code></td><td>Same <code>@type</code>, plus an RDDC class in <code>additionalType</code>.</td></tr>
+<tr><td>File groups</td><td><code>cr:FileSet</code> with <code>includes</code>/<code>excludes</code> globs, often inside an archive via <code>containedIn</code>.</td><td>Same <code>@type</code> and globs, plus optional <code>hasPart</code>. No archives: every file is its own object.</td></tr>
+<tr><td>Identifiers</td><td>Any string <code>@id</code>.</td><td><code>urn:uuid:…</code> for the sidecar and files, short local IDs for file sets, record sets and fields.</td></tr>
+<tr><td>File location</td><td>Usually absolute URLs.</td><td>A path relative to the batch prefix, with no leading slash and no <code>..</code>.</td></tr>
+<tr><td>Size</td><td>Optional, free-form.</td><td>Required, written <code>"1010 B"</code>.</td></tr>
+<tr><td>Checksums</td><td><code>sha256</code> or <code>md5</code>.</td><td><code>sha256</code> required (lowercase hex), <code>md5</code> optional.</td></tr>
+<tr><td>Compressed files</td><td><code>encodingFormat</code> of the archive, e.g. <code>application/gzip</code>.</td><td><code>encodingFormat</code> of the content plus <code>compression</code> (<code>gzip</code>, <code>bzip2</code>, <code>xz</code>, <code>zstd</code>).</td></tr>
+<tr><td>Record sets</td><td>The main way to describe data structure.</td><td>Optional. Only for tables no standard defines: data dictionaries and joins between registry CSVs. Never for OMOP or FHIR.</td></tr>
+<tr><td>License, creator, citation</td><td>Recommended.</td><td>Not present. Use terms and access tiers live in the RDDC source register.</td></tr>
+<tr><td>Unknown properties</td><td>Allowed (open world).</td><td>Rejected. Use namespaced <code>additionalProperty</code> extensions.</td></tr>
+<tr><td>Subjects</td><td>Not modelled.</td><td>A subject table plus per-file <code>subjectIds</code>, depending on data type (required for FHIR Bundles, C-CDA documents and clinical documents).</td></tr>
+<tr><td>Payload intent</td><td>Not modelled.</td><td><code>interaction</code>: <code>add</code>, <code>withdraw</code>, <code>restrict</code> or <code>consent</code>.</td></tr>
+<tr><td>Sensitivity</td><td>Partly covered by the separate Responsible AI (RAI) extension, at dataset level.</td><td>Flags on the batch, with per-file overrides for <code>contains*</code> flags.</td></tr>
+<tr><td>Provenance</td><td>Recommended via W3C PROV-O, on any object (dataset, file, record set or field).</td><td>Required <code>wasAttributedTo</code> naming the tool that wrote the sidecar; optional <code>wasDerivedFrom</code>, only to files or file sets in the same batch.</td></tr>
+</tbody></table></div>
+
+<h2>Term by term</h2>
+<p>Which vocabulary each sidecar key comes from. The colours match the code samples throughout the site.</p>
+<h3>Kept from schema.org and Croissant</h3>
+<p>
+<span class="chip o-sc">name</span> <span class="chip o-sc">description</span> <span class="chip o-sc">url</span> <span class="chip o-sc">dateCreated</span>
+<span class="chip o-sc">distribution</span> <span class="chip o-sc">contentUrl</span> <span class="chip o-sc">contentSize</span> <span class="chip o-sc">encodingFormat</span>
+<span class="chip o-sc">sha256</span> <span class="chip o-sc">hasPart</span> <span class="chip o-sc">additionalType</span> <span class="chip o-sc">identifier</span>
+<span class="chip o-sc">additionalProperty</span> <span class="chip o-sc">about</span> <span class="chip o-sc">softwareVersion</span>
+<span class="chip o-cr">conformsTo</span> <span class="chip o-cr">md5</span> <span class="chip o-cr">includes</span> <span class="chip o-cr">excludes</span>
+<span class="chip o-cr">recordSet</span> <span class="chip o-cr">field</span> <span class="chip o-cr">key</span> <span class="chip o-cr">dataType</span>
+<span class="chip o-cr">source</span> <span class="chip o-cr">fileObject</span> <span class="chip o-cr">fileSet</span> <span class="chip o-cr">extract</span>
+<span class="chip o-cr">column</span> <span class="chip o-cr">references</span>
+</p>
+<p class="muted"><code>conformsTo</code> is Dublin Core's <code>dct:conformsTo</code>, which Croissant adopts; it is grouped with Croissant here.</p>
+<h3>Added by the RDDC</h3>
+<p>
+<span class="chip o-rddc">contributorId</span> <span class="chip o-rddc">sourceId</span> <span class="chip o-rddc">batchId</span>
+<span class="chip o-rddc">interaction</span> <span class="chip o-rddc">noticeRef</span> <span class="chip o-rddc">registerVersion</span>
+<span class="chip o-rddc">sensitivity</span> <span class="chip o-rddc">subjects</span> <span class="chip o-rddc">subjectIds</span> <span class="chip o-rddc">modality</span>
+<span class="chip o-rddc">compression</span> <span class="chip o-rddc">recordCount</span> <span class="chip o-rddc">processingHints</span> <span class="chip o-rddc">valueOrigins</span>
+<span class="chip o-rddc">resourceType</span> <span class="chip o-rddc">bundleType</span> <span class="chip o-rddc">cdmTable</span> <span class="chip o-rddc">templateIds</span>
+<span class="chip o-rddc">tableName</span> <span class="chip o-rddc">referenceGenome</span> <span class="chip o-rddc">exportTime</span> <span class="chip o-rddc">vocabularyVersion</span>
+<span class="chip o-rddc">cdmSource</span> <span class="chip o-rddc">subjectCount</span> <span class="chip o-rddc">…</span>
+</p>
+<h3>Borrowed from W3C PROV</h3>
+<p><span class="chip o-prov">wasAttributedTo</span> <span class="chip o-prov">wasDerivedFrom</span></p>
+<p>The <a href="reference.html">schema reference</a> lists every property with its full IRI.</p>
+
+<h2>How generic Croissant tools see a sidecar</h2>
+<p>A Croissant tool reads the standard files, file sets, checksums and media types. It ignores RDDC terms such as <code>modality</code> and <code>subjects</code>. Run <code>make check</code> with <code>mlcroissant</code> installed to check that every example loads.</p>
+<rddc-code lang="python" title="Loading a sidecar with mlcroissant">import mlcroissant as mlc
+
+ds = mlc.Dataset(jsonld="examples/deposit_fhir_omop.json")
+for item in ds.metadata.distribution:   # FileObjects and FileSets
+    print(type(item).__name__, item.name)</rddc-code>
+<div class="note croissant"><strong>Expect warnings, not errors</strong>
+<p>Croissant validators may warn about properties Croissant recommends but the sidecar leaves out on purpose, such as <code>license</code>. Those warnings are expected.</p></div>
+
+<h2>Why not plain Croissant, or a custom format?</h2>
+<ul>
+<li><strong>Plain Croissant</strong> has no place for subjects, withdrawals, clinical standards or de-identification facts, and its open-world rules can't guarantee that a pipeline finds the fields it needs.</li>
+<li><strong>A custom format</strong> would need a separate mapping to work with Croissant tools and datasets.</li>
+<li><strong>Croissant plus RDDC terms</strong> works with Croissant tools while adding validation rules for clinical intake. An earlier draft of the model (0.2.0, snake_case groups and links) took the custom route; the model restarted at 0.1.0 when it moved to Croissant.</li>
+</ul>
