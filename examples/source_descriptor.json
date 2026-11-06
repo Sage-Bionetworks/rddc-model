@@ -1,0 +1,21 @@
+{
+  "conformsTo": [
+    "https://w3id.org/rddc/source-descriptor/0.1.0"
+  ],
+  "contributorId": "ta2-site-a",
+  "sourceId": "src-ta2-01",
+  "bucket": "rddc-deposit-ta2",
+  "prefixPattern": "{sourceId}/{batchId}/",
+  "modalities": [
+    "clinical_fhir",
+    "clinical_omop",
+    "clinical_tabular",
+    "clinical_ccda"
+  ],
+  "registerVersion": "2026-10-20",
+  "issuedAt": "2026-10-20T00:00:00Z",
+  "issuedBy": {
+    "@type": "sc:Organization",
+    "name": "RDDC ACT"
+  }
+}

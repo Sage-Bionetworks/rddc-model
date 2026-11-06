@@ -1,0 +1,406 @@
+{
+  "@context": {
+    "@language": "en",
+    "@vocab": "https://schema.org/",
+    "arrayShape": "cr:arrayShape",
+    "citeAs": "cr:citeAs",
+    "column": "cr:column",
+    "conformsTo": "dct:conformsTo",
+    "containedIn": "cr:containedIn",
+    "cr": "http://mlcommons.org/croissant/",
+    "rai": "http://mlcommons.org/croissant/RAI/",
+    "data": {
+      "@id": "cr:data",
+      "@type": "@json"
+    },
+    "dataType": {
+      "@id": "cr:dataType",
+      "@type": "@vocab"
+    },
+    "dct": "http://purl.org/dc/terms/",
+    "description": {
+      "@container": "@language"
+    },
+    "equivalentProperty": "cr:equivalentProperty",
+    "examples": {
+      "@id": "cr:examples",
+      "@type": "@json"
+    },
+    "extract": "cr:extract",
+    "field": "cr:field",
+    "fileProperty": "cr:fileProperty",
+    "fileObject": "cr:fileObject",
+    "fileSet": "cr:fileSet",
+    "format": "cr:format",
+    "includes": "cr:includes",
+    "isArray": "cr:isArray",
+    "isLiveDataset": "cr:isLiveDataset",
+    "jsonPath": "cr:jsonPath",
+    "key": "cr:key",
+    "md5": "cr:md5",
+    "name": {
+      "@container": "@language"
+    },
+    "parentField": "cr:parentField",
+    "path": "cr:path",
+    "recordSet": "cr:recordSet",
+    "references": "cr:references",
+    "regex": "cr:regex",
+    "repeated": "cr:repeated",
+    "replace": "cr:replace",
+    "samplingRate": "cr:samplingRate",
+    "sc": "https://schema.org/",
+    "separator": "cr:separator",
+    "source": "cr:source",
+    "subField": "cr:subField",
+    "transform": "cr:transform",
+    "rddc": "https://w3id.org/rddc/sidecar/",
+    "prov": "http://www.w3.org/ns/prov#",
+    "additionalType": {
+      "@id": "sc:additionalType",
+      "@type": "@id"
+    },
+    "assay": "rddc:assay",
+    "batchId": "rddc:batchId",
+    "bucket": "rddc:bucket",
+    "bundleType": "rddc:bundleType",
+    "cdmEtlReference": "rddc:cdmEtlReference",
+    "cdmHolder": "rddc:cdmHolder",
+    "cdmReleaseDate": "rddc:cdmReleaseDate",
+    "cdmSource": "rddc:cdmSource",
+    "cdmSourceAbbreviation": "rddc:cdmSourceAbbreviation",
+    "cdmSourceName": "rddc:cdmSourceName",
+    "cdmTable": "rddc:cdmTable",
+    "cdmVersion": "rddc:cdmVersion",
+    "compression": "rddc:compression",
+    "confidence": "rddc:confidence",
+    "confirmed": "rddc:confirmed",
+    "consentRef": "rddc:consentRef",
+    "containsBiometricIdentifiers": "rddc:containsBiometricIdentifiers",
+    "containsDates": "rddc:containsDates",
+    "containsFreeText": "rddc:containsFreeText",
+    "containsZipCodes": "rddc:containsZipCodes",
+    "contributorId": "rddc:contributorId",
+    "deliveryRole": "rddc:deliveryRole",
+    "directIdentifiersRemoved": "rddc:directIdentifiersRemoved",
+    "excludes": "cr:excludes",
+    "exportTime": "rddc:exportTime",
+    "fhirVersion": "rddc:fhirVersion",
+    "fieldPath": "rddc:fieldPath",
+    "idSystem": "rddc:idSystem",
+    "identifierSystemUri": "rddc:identifierSystemUri",
+    "implementationGuides": "rddc:implementationGuides",
+    "indexOf": "rddc:indexOf",
+    "interaction": "rddc:interaction",
+    "issuedAt": "rddc:issuedAt",
+    "issuedBy": "rddc:issuedBy",
+    "method": "rddc:method",
+    "modalities": "rddc:modalities",
+    "modality": "rddc:modality",
+    "notes": "rddc:notes",
+    "noticeRef": "rddc:noticeRef",
+    "omopCdmVersion": "rddc:omopCdmVersion",
+    "origin": "rddc:origin",
+    "pairedWith": "rddc:pairedWith",
+    "platform": "rddc:platform",
+    "prefixPattern": "rddc:prefixPattern",
+    "processingHints": "rddc:processingHints",
+    "recordCount": "rddc:recordCount",
+    "referenceGenome": "rddc:referenceGenome",
+    "region": "rddc:region",
+    "registerVersion": "rddc:registerVersion",
+    "resourceType": "rddc:resourceType",
+    "sensitivity": "rddc:sensitivity",
+    "sourceId": "rddc:sourceId",
+    "sourceReleaseDate": "rddc:sourceReleaseDate",
+    "subjectCount": "rddc:subjectCount",
+    "subjectId": "rddc:subjectId",
+    "subjectIds": "rddc:subjectIds",
+    "subjects": "rddc:subjects",
+    "synthetic": "rddc:synthetic",
+    "tableName": "rddc:tableName",
+    "templateIds": "rddc:templateIds",
+    "valueOrigins": "rddc:valueOrigins",
+    "vocabularyVersion": "rddc:vocabularyVersion",
+    "wasAttributedTo": "prov:wasAttributedTo",
+    "wasDerivedFrom": "prov:wasDerivedFrom"
+  },
+  "@id": "urn:uuid:00000001-0000-4000-8000-000000000001",
+  "@type": "sc:Dataset",
+  "conformsTo": [
+    "http://mlcommons.org/croissant/1.1",
+    "https://w3id.org/rddc/sidecar/0.1.0"
+  ],
+  "name": "src-ta2-01/2026-10-b01",
+  "url": "s3://rddc-deposit-ta2/src-ta2-01/2026-10-b01/",
+  "dateCreated": "2026-10-28T12:00:00Z",
+  "wasAttributedTo": {
+    "@type": "sc:SoftwareApplication",
+    "name": "rddc-sidecar",
+    "softwareVersion": "0.1.0"
+  },
+  "contributorId": "ta2-site-a",
+  "sourceId": "src-ta2-01",
+  "batchId": "2026-10-b01",
+  "interaction": "add",
+  "sensitivity": {
+    "directIdentifiersRemoved": true,
+    "containsDates": true,
+    "containsZipCodes": false,
+    "containsFreeText": false,
+    "containsBiometricIdentifiers": false
+  },
+  "description": "FHIR bulk export, OMOP snapshot and registry tables.",
+  "subjects": [
+    {
+      "subjectId": "P0001",
+      "idSystem": "fhir_patient_id"
+    },
+    {
+      "subjectId": "P0002",
+      "idSystem": "fhir_patient_id"
+    },
+    {
+      "subjectId": "P0001",
+      "idSystem": "omop_person_source_value"
+    }
+  ],
+  "distribution": [
+    {
+      "@id": "fhir_export",
+      "@type": "cr:FileSet",
+      "additionalType": "rddc:FhirBulkExport",
+      "name": "FHIR bulk export",
+      "encodingFormat": "application/fhir+ndjson",
+      "includes": [
+        "fhir/*.ndjson",
+        "fhir/*.ndjson.gz"
+      ],
+      "hasPart": [
+        {
+          "@id": "urn:uuid:0000000a-0000-4000-8000-00000000000a"
+        },
+        {
+          "@id": "urn:uuid:0000000b-0000-4000-8000-00000000000b"
+        }
+      ],
+      "conformsTo": [
+        "http://hl7.org/fhir/R4",
+        "http://hl7.org/fhir/us/core/STU6.1"
+      ],
+      "exportTime": "2026-10-27T08:00:00Z",
+      "subjectCount": 2
+    },
+    {
+      "@id": "omop",
+      "@type": "cr:FileSet",
+      "additionalType": "rddc:OmopCdmInstance",
+      "name": "OMOP CDM 5.4 snapshot",
+      "encodingFormat": "text/csv",
+      "includes": [
+        "omop/*.csv"
+      ],
+      "hasPart": [
+        {
+          "@id": "urn:uuid:00000014-0000-4000-8000-000000000014"
+        },
+        {
+          "@id": "urn:uuid:00000015-0000-4000-8000-000000000015"
+        }
+      ],
+      "conformsTo": [
+        "https://ohdsi.github.io/CommonDataModel/cdm54.html"
+      ],
+      "vocabularyVersion": "v5.0 25-AUG-2026",
+      "cdmSource": {
+        "cdmSourceName": "Site A EHR",
+        "cdmVersion": "5.4",
+        "sourceReleaseDate": "2026-10-01"
+      },
+      "wasDerivedFrom": [
+        {
+          "@id": "fhir_export"
+        }
+      ]
+    },
+    {
+      "@id": "registry",
+      "@type": "cr:FileSet",
+      "additionalType": "rddc:TabularDataset",
+      "name": "Registry extract",
+      "encodingFormat": "text/csv",
+      "includes": [
+        "registry/*.csv"
+      ],
+      "hasPart": [
+        {
+          "@id": "urn:uuid:0000001e-0000-4000-8000-00000000001e"
+        },
+        {
+          "@id": "urn:uuid:0000001f-0000-4000-8000-00000000001f"
+        }
+      ]
+    },
+    {
+      "@id": "urn:uuid:0000000b-0000-4000-8000-00000000000b",
+      "@type": "cr:FileObject",
+      "additionalType": "rddc:FhirNdjsonFile",
+      "name": "fhir/Observation.ndjson.gz",
+      "contentUrl": "fhir/Observation.ndjson.gz",
+      "contentSize": "1011 B",
+      "encodingFormat": "application/fhir+ndjson",
+      "sha256": "e047db5fa705c1cd516e0939ba1e07221c45573f06accfe3c5f8a5a4bdc112f4",
+      "md5": "e047db5fa705c1cd516e0939ba1e0722",
+      "modality": "clinical_fhir",
+      "resourceType": "Observation",
+      "fhirVersion": "4.0.1",
+      "implementationGuides": [
+        "hl7.fhir.us.core#6.1.0"
+      ],
+      "compression": "gzip",
+      "recordCount": 240,
+      "sensitivity": {
+        "containsFreeText": true
+      }
+    },
+    {
+      "@id": "urn:uuid:0000000a-0000-4000-8000-00000000000a",
+      "@type": "cr:FileObject",
+      "additionalType": "rddc:FhirNdjsonFile",
+      "name": "fhir/Patient.ndjson",
+      "contentUrl": "fhir/Patient.ndjson",
+      "contentSize": "1010 B",
+      "encodingFormat": "application/fhir+ndjson",
+      "sha256": "e90a5d12b9d1e923967675f48ccda22730b9ddf3ea86bcaf97984ca3cbd60912",
+      "md5": "e90a5d12b9d1e923967675f48ccda227",
+      "modality": "clinical_fhir",
+      "resourceType": "Patient",
+      "fhirVersion": "4.0.1",
+      "implementationGuides": [
+        "hl7.fhir.us.core#6.1.0"
+      ],
+      "recordCount": 2
+    },
+    {
+      "@id": "urn:uuid:00000015-0000-4000-8000-000000000015",
+      "@type": "cr:FileObject",
+      "additionalType": "rddc:OmopTableFile",
+      "name": "omop/observation_period.csv",
+      "contentUrl": "omop/observation_period.csv",
+      "contentSize": "1021 B",
+      "encodingFormat": "text/csv",
+      "sha256": "b6d65337119f21b5058e2e91f90899342c698b9c15ee6a6192422a87b93ddb0a",
+      "md5": "b6d65337119f21b5058e2e91f9089934",
+      "modality": "clinical_omop",
+      "cdmTable": "observation_period",
+      "omopCdmVersion": "5.4"
+    },
+    {
+      "@id": "urn:uuid:00000014-0000-4000-8000-000000000014",
+      "@type": "cr:FileObject",
+      "additionalType": "rddc:OmopTableFile",
+      "name": "omop/person.csv",
+      "contentUrl": "omop/person.csv",
+      "contentSize": "1020 B",
+      "encodingFormat": "text/csv",
+      "sha256": "aae5ddf096a0994ba79a254c8a5abc2e95ec2cbfb4d65642d84065c12c88d752",
+      "md5": "aae5ddf096a0994ba79a254c8a5abc2e",
+      "modality": "clinical_omop",
+      "cdmTable": "person",
+      "omopCdmVersion": "5.4"
+    },
+    {
+      "@id": "urn:uuid:0000001e-0000-4000-8000-00000000001e",
+      "@type": "cr:FileObject",
+      "additionalType": "rddc:TabularFile",
+      "name": "registry/patients.csv",
+      "contentUrl": "registry/patients.csv",
+      "contentSize": "1030 B",
+      "encodingFormat": "text/csv",
+      "sha256": "fe839da367b9e09b32a88842ac70277f03e7e9fd032c288d30fa326d1544f290",
+      "md5": "fe839da367b9e09b32a88842ac70277f",
+      "modality": "clinical_tabular",
+      "tableName": "patients"
+    },
+    {
+      "@id": "urn:uuid:0000001f-0000-4000-8000-00000000001f",
+      "@type": "cr:FileObject",
+      "additionalType": "rddc:TabularFile",
+      "name": "registry/visits.csv",
+      "contentUrl": "registry/visits.csv",
+      "contentSize": "1031 B",
+      "encodingFormat": "text/csv",
+      "sha256": "bad7f4d826a9ad20c880b6d10366caf036f3b6fd52ea4f86e8591737ffa722da",
+      "md5": "bad7f4d826a9ad20c880b6d10366caf0",
+      "modality": "clinical_tabular",
+      "tableName": "visits",
+      "valueOrigins": [
+        {
+          "fieldPath": "/tableName",
+          "origin": "detected",
+          "method": "file_stem",
+          "confidence": 0.9
+        }
+      ]
+    }
+  ],
+  "recordSet": [
+    {
+      "@id": "patients",
+      "@type": "cr:RecordSet",
+      "name": "patients",
+      "key": [
+        {
+          "@id": "patients/id"
+        }
+      ],
+      "field": [
+        {
+          "@id": "patients/id",
+          "@type": "cr:Field",
+          "name": "id",
+          "dataType": [
+            "sc:Text"
+          ],
+          "source": {
+            "fileObject": {
+              "@id": "urn:uuid:0000001e-0000-4000-8000-00000000001e"
+            },
+            "extract": {
+              "column": "id"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "@id": "visits",
+      "@type": "cr:RecordSet",
+      "name": "visits",
+      "field": [
+        {
+          "@id": "visits/patient_id",
+          "@type": "cr:Field",
+          "name": "patient_id",
+          "description": "Join to patients.id; inferred from value overlap and confirmed.",
+          "dataType": [
+            "sc:Text"
+          ],
+          "source": {
+            "fileObject": {
+              "@id": "urn:uuid:0000001f-0000-4000-8000-00000000001f"
+            },
+            "extract": {
+              "column": "patient_id"
+            }
+          },
+          "references": {
+            "field": {
+              "@id": "patients/id"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
