@@ -13,6 +13,8 @@ Each concrete class carries a "structure" annotation describing its content. It 
 - **unstructured**: content without defined fields (notes, PDF or scanned documents, images, audio, video). Using it needs NLP, OCR or image analysis.
 - **mixed**: the class admits either kind, so the file's content decides (DocumentationFile, GenericFile).
 
+A class whose content always identifies a person carries a "biometric" annotation set to "true" (FacialImagingFile). Its files count as containing biometric identifiers and stay in the trusted research environment, whatever the sensitivity flags say.
+
 ## Hierarchy
 
 ```
@@ -35,6 +37,7 @@ DistributionItem
         VariantFile  (structured)
       IndexFile  (structured)
       ImagingFile  (unstructured)
+        FacialImagingFile  (unstructured, biometric)
       MediaFile  (unstructured)
       GenericFile  (mixed)
 ```
@@ -58,6 +61,7 @@ Every concrete class also requires the fields shared by all data files: `@id`, `
 | [`VariantFile`](#variantfile) | structured | any | `referenceGenome` |
 | [`IndexFile`](#indexfile) | structured | any | `indexOf` |
 | [`ImagingFile`](#imagingfile) | unstructured | any |  |
+| [`FacialImagingFile`](#facialimagingfile) | unstructured | `image/jpeg`, `image/png`, `image/tiff`, `image/heic`, `application/dicom` | `subjectIds` |
 | [`MediaFile`](#mediafile) | unstructured | any |  |
 | [`GenericFile`](#genericfile) | mixed | any |  |
 
@@ -303,9 +307,22 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 A medical or photographic image, such as DICOM.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:ImagingFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: unstructured.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:ImagingFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Subclasses: [`FacialImagingFile`](#facialimagingfile). Structure: unstructured.
 
 No fields beyond those of [`DataFile`](#datafile).
+
+### FacialImagingFile
+
+A photograph of a person's face, such as those taken for dysmorphology assessment or facial phenotyping. A face is a biometric identifier, so the file always counts as containing biometric identifiers.
+
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:FacialImagingFile"`. Inherits from [`ImagingFile`](#imagingfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: unstructured. Biometric: always counts as containing biometric identifiers.
+
+Fields it adds or changes; it also has all fields of [`ImagingFile`](#imagingfile):
+
+| Field | Type | Required | Meaning and constraints |
+| --- | --- | --- | --- |
+| `encodingFormat` | [`MediaType`](#mediatype) | yes | Media type of the content (after decompression when compression is set). One of: `image/jpeg`, `image/png`, `image/tiff`, `image/heic`, `application/dicom`. |
+| `subjectIds` | [`Identifier`](#identifier) (list) | yes | Subject IDs the file contains. Each must appear in the subject table. |
 
 ### MediaFile
 

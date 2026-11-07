@@ -57,7 +57,7 @@ jobs:
             echo "::endgroup::"
           done
 
-      - name: Check structure annotations on data file classes
+      - name: Check the structure and biometric annotations on data file classes
         run: python scripts/check_structure.py schema/data.yaml
 
       - name: Check the data class docs are up to date

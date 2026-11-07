@@ -22,6 +22,12 @@ description: >-
       images, audio, video). Using it needs NLP, OCR or image analysis.
     mixed: the class admits either kind, so the file's content decides
       (DocumentationFile, GenericFile).
+
+
+  A class whose content always identifies a person carries a "biometric" annotation
+  set to "true" (FacialImagingFile). Its files count as containing biometric
+  identifiers and stay in the trusted research environment, whatever the sensitivity
+  flags say.
 license: https://creativecommons.org/publicdomain/zero/1.0/
 
 prefixes:
@@ -1380,6 +1386,26 @@ classes:
     description: A medical or photographic image, such as DICOM.
     annotations:
       structure: unstructured
+
+  FacialImagingFile:
+    is_a: ImagingFile
+    description: >-
+      A photograph of a person's face, such as those taken for dysmorphology assessment
+      or facial phenotyping. A face is a biometric identifier, so the file always counts
+      as containing biometric identifiers.
+    annotations:
+      structure: unstructured
+      biometric: "true"
+    slot_usage:
+      encodingFormat:
+        any_of:
+        - equals_string: image/jpeg
+        - equals_string: image/png
+        - equals_string: image/tiff
+        - equals_string: image/heic
+        - equals_string: application/dicom
+      subjectIds:
+        required: true
 
   MediaFile:
     is_a: DataFile

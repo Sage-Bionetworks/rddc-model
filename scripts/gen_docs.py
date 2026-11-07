@@ -170,6 +170,8 @@ class Page:
             structure = cls.annotations.get("structure")
             if structure:
                 notes.append(structure.value)
+            if cls.annotations.get("biometric"):
+                notes.append("biometric")
             lines.append(("  " * depth) + name + (f"  ({', '.join(notes)})" if notes else ""))
             for child in self.sv.class_children(name):
                 tree(child, depth + 1)
@@ -213,6 +215,8 @@ class Page:
         structure = cls.annotations.get("structure")
         if structure:
             facts.append(f"Structure: {structure.value}.")
+        if cls.annotations.get("biometric"):
+            facts.append("Biometric: always counts as containing biometric identifiers.")
         out += [" ".join(facts), ""] if facts else []
         own, parent = self.own_slots(name)
         if parent and own:
