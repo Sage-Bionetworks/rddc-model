@@ -1,20 +1,31 @@
-"""Regenerate enums in schema/data.yaml from their published sources.
+"""Regenerate the versioned FHIR and OMOP enums and rules in schema/data.yaml.
 
-Usage: python scripts/gen_enums.py [--check] [--source NAME=PATH_OR_URL ...] [NAME ...]
+Usage: python scripts/gen_enums.py [--check] [--source VERSION_KEY=PATH_OR_URL ...] [FAMILY ...]
 
-Each enum's permissible values sit between BEGIN and END marker comments in
-schema/data.yaml. The script rewrites only those lines, so the enum's hand-written
-description stays. NAME selects enums (default: all):
+A family is a standard whose files declare a version and use a value whose allowed
+set depends on it:
 
-  fhir-resource-types  FhirResourceTypeEnum, from the FHIR R4 resource-types code
-                       system. Each value means the FHIR RDF type of the same name.
-                       The abstract types Resource and DomainResource are left out.
-  omop-cdm-tables      OmopCdmTableEnum, from the OMOP CDM v5.4.3 table list. Each
-                       value carries a cdm_schema annotation: CDM, VOCAB or RESULTS.
+  fhir  fhirVersion selects the allowed resourceType values.
+  omop  omopCdmVersion selects the allowed cdmTable values.
 
---source replaces a default download URL with a local file or another URL. With
+For each family the script generates, between BEGIN and END marker comments:
+
+  <family>-versions      the version enum (FhirVersionEnum, OmopCdmVersionEnum)
+  <family>-<version key> one enum per version, with descriptions from its source
+                         (FhirR4ResourceTypeEnum, OmopCdm54TableEnum)
+  <family>-all           the union of all versions' values, the slot's range
+                         (FhirResourceTypeEnum, OmopCdmTableEnum)
+  <family>-rules         one rule per version: if the file declares that version,
+                         the value must be one of that version's values
+
+LinkML's JSON Schema generator ignores enum inheritance and range narrowing in rules,
+so the union and the rules list values explicitly. To support a new version, add it
+to VERSIONS with its source and parser, add an empty <family>-<version key> enum with
+markers to the schema, and run the script.
+
+--source replaces a version's download URL with a local file or another URL. With
 --check, nothing is written: the script exits 1 if the schema differs from what the
-sources would generate.
+sources would generate. FAMILY selects families (default: all).
 """
 
 import argparse
@@ -22,6 +33,7 @@ import csv
 import io
 import json
 import os
+import re
 import sys
 import urllib.request
 
@@ -33,53 +45,68 @@ def quote(text):
     return json.dumps(" ".join(text.split()), ensure_ascii=False)
 
 
-def fhir_resource_types(raw):
+# --- source parsers: raw text -> list of (value, YAML lines for its details) --------
+
+def fhir_r4(raw):
     code_system = json.loads(raw)
     found = (code_system.get("url"), code_system.get("version"))
     if found != ("http://hl7.org/fhir/resource-types", "4.0.1"):
-        sys.exit(f"fhir-resource-types: expected the resource-types code system, version 4.0.1; got {found}")
-    stack, codes = list(code_system.get("concept", [])), []
+        sys.exit(f"fhir-r4: expected the resource-types code system, version 4.0.1; got {found}")
+    stack, concepts = list(code_system.get("concept", [])), []
     while stack:
         concept = stack.pop()
-        codes.append(concept)
+        concepts.append(concept)
         stack.extend(concept.get("concept", []))
-    return "".join(
-        f"      {c['code']}:\n        meaning: fhir:{c['code']}\n        description: {quote(c.get('definition', ''))}\n"
-        for c in sorted(codes, key=lambda c: c["code"])
-        if c["code"] not in {"Resource", "DomainResource"}
-    )
+    return [
+        (c["code"], [f"meaning: fhir:{c['code']}", f"description: {quote(c.get('definition', ''))}"])
+        for c in sorted(concepts, key=lambda c: c["code"])
+        if c["code"] not in {"Resource", "DomainResource"}  # abstract: no instance has them
+    ]
 
 
-def omop_cdm_tables(raw):
+def omop_cdm54(raw):
     rows = list(csv.DictReader(io.StringIO(raw)))
     if not rows or not {"cdmTableName", "schema", "tableDescription"} <= set(rows[0]):
-        sys.exit("omop-cdm-tables: expected the OMOP CDM Table_Level CSV (cdmTableName, schema, tableDescription)")
+        sys.exit("omop-cdm54: expected the OMOP CDM Table_Level CSV (cdmTableName, schema, tableDescription)")
     unknown = {r["schema"] for r in rows} - {"CDM", "VOCAB", "RESULTS"}
     if unknown:
-        sys.exit(f"omop-cdm-tables: unknown schema values {sorted(unknown)}")
+        sys.exit(f"omop-cdm54: unknown schema values {sorted(unknown)}")
     # Keep the source's order: it groups tables the way the CDM documentation does.
-    return "".join(
-        f"      {r['cdmTableName']}:\n        description: {quote(r['tableDescription'])}\n"
-        f"        annotations:\n          cdm_schema: {r['schema']}\n"
+    return [
+        (r["cdmTableName"], [f"description: {quote(r['tableDescription'])}",
+                             "annotations:", f"  cdm_schema: {r['schema']}"])
         for r in rows
-    )
+    ]
 
 
-ENUMS = {
-    "fhir-resource-types": (
-        "https://hl7.org/fhir/R4/codesystem-resource-types.json",
-        fhir_resource_types,
-    ),
-    "omop-cdm-tables": (
-        "https://raw.githubusercontent.com/OHDSI/CommonDataModel/v5.4.3/inst/csv/OMOP_CDMv5.4_Table_Level.csv",
-        omop_cdm_tables,
-    ),
+# --- families and their versions ----------------------------------------------------
+
+FAMILIES = {
+    "fhir": {
+        "version_slot": "fhirVersion",
+        "value_slot": "resourceType",
+        "sort_union": True,
+        "versions": [
+            # (version value, version key, label, source, parser)
+            ("4.0.1", "r4", "FHIR R4", "https://hl7.org/fhir/R4/codesystem-resource-types.json", fhir_r4),
+        ],
+    },
+    "omop": {
+        "version_slot": "omopCdmVersion",
+        "value_slot": "cdmTable",
+        "sort_union": False,
+        "versions": [
+            ("5.4", "cdm54", "OMOP CDM 5.4",
+             "https://raw.githubusercontent.com/OHDSI/CommonDataModel/v5.4.3/inst/csv/OMOP_CDMv5.4_Table_Level.csv",
+             omop_cdm54),
+        ],
+    },
 }
 
 
-def markers(name):
-    return (f"      # BEGIN generated by scripts/gen_enums.py {name}\n",
-            f"      # END generated by scripts/gen_enums.py {name}\n")
+def scalar(value):
+    """A YAML scalar for a code: bare when YAML reads it as a string, quoted otherwise (e.g. 5.4)."""
+    return value if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", value) else json.dumps(value)
 
 
 def fetch(source):
@@ -90,50 +117,101 @@ def fetch(source):
         return f.read()
 
 
-def replace(text, name, values):
-    begin, end = markers(name)
-    if text.count(begin) != 1 or text.count(end) != 1 or text.index(begin) > text.index(end):
-        sys.exit(f"{name}: expected one BEGIN and one END marker, in that order")
-    head, rest = text.split(begin)
-    old, tail = rest.split(end)
-    return head + begin + values + end + tail, old
+def render_values(indent, entries):
+    """Permissible values: entries are (value, detail lines)."""
+    pad = " " * indent
+    out = []
+    for value, details in entries:
+        if details:
+            out.append(f"{pad}{scalar(value)}:\n" + "".join(f"{pad}  {d}\n" for d in details))
+        else:
+            out.append(f"{pad}{scalar(value)}:\n")
+    return "".join(out)
+
+
+def render_rules(indent, family, per_version):
+    pad = " " * indent
+    out = []
+    for (version, _, label, _, _), values in per_version:
+        out.append(
+            f"{pad}- description: {quote(f'A file that declares {label} uses its {family['value_slot']} values.')}\n"
+            f"{pad}  preconditions:\n{pad}    slot_conditions:\n"
+            f"{pad}      {family['version_slot']}:\n{pad}        equals_string: {scalar(version)}\n"
+            f"{pad}  postconditions:\n{pad}    slot_conditions:\n"
+            f"{pad}      {family['value_slot']}:\n{pad}        equals_string_in:\n"
+            + "".join(f"{pad}        - {scalar(v)}\n" for v, _ in values)
+        )
+    return "".join(out)
+
+
+def replace(text, region, render):
+    """Replace the lines between the region's markers; render(indent) gives the new lines."""
+    pattern = re.compile(
+        rf"^( *)# BEGIN generated by scripts/gen_enums\.py {re.escape(region)}\n(.*?)^\1# END generated by scripts/gen_enums\.py {re.escape(region)}\n",
+        re.M | re.S)
+    matches = list(pattern.finditer(text))
+    if len(matches) != 1:
+        sys.exit(f"{region}: expected one BEGIN/END marker pair in the schema, found {len(matches)}")
+    m = matches[0]
+    indent = len(m.group(1))
+    new = render(indent)
+    block = f"{m.group(1)}# BEGIN generated by scripts/gen_enums.py {region}\n{new}{m.group(1)}# END generated by scripts/gen_enums.py {region}\n"
+    return text[:m.start()] + block + text[m.end():], m.group(2) != new
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0],
                                      formatter_class=argparse.RawDescriptionHelpFormatter, epilog=__doc__)
-    parser.add_argument("names", nargs="*", metavar="NAME", help=f"enums to regenerate: {', '.join(ENUMS)}")
+    parser.add_argument("families", nargs="*", metavar="FAMILY", help=f"families to regenerate: {', '.join(FAMILIES)}")
     parser.add_argument("--schema", default=os.path.join(ROOT, "schema", "data.yaml"))
-    parser.add_argument("--source", action="append", default=[], metavar="NAME=PATH_OR_URL")
+    parser.add_argument("--source", action="append", default=[], metavar="VERSION_KEY=PATH_OR_URL",
+                        help="e.g. fhir-r4=/tmp/codesystem-resource-types.json")
     parser.add_argument("--check", action="store_true", help="report whether the schema is up to date; write nothing")
     args = parser.parse_args()
 
-    names = args.names or list(ENUMS)
+    names = args.families or list(FAMILIES)
     for name in names:
-        if name not in ENUMS:
-            parser.error(f"unknown enum {name}; choose from {', '.join(ENUMS)}")
-    sources = {name: url for name, (url, _) in ENUMS.items()}
+        if name not in FAMILIES:
+            parser.error(f"unknown family {name}; choose from {', '.join(FAMILIES)}")
+    sources = {f"{name}-{key}": src for name, fam in FAMILIES.items() for _, key, _, src, _ in fam["versions"]}
     for item in args.source:
-        name, _, source = item.partition("=")
-        if name not in ENUMS or not source:
-            parser.error(f"--source needs NAME=PATH_OR_URL with NAME in {', '.join(ENUMS)}")
-        sources[name] = source
+        key, _, source = item.partition("=")
+        if key not in sources or not source:
+            parser.error(f"--source needs VERSION_KEY=PATH_OR_URL with VERSION_KEY in {', '.join(sources)}")
+        sources[key] = source
 
     text = original = open(args.schema, encoding="utf-8").read()
     stale = []
     for name in names:
-        values = ENUMS[name][1](fetch(sources[name]))
-        text, old = replace(text, name, values)
-        count = sum(1 for line in values.splitlines() if line.startswith("      ") and not line.startswith("       "))
-        status = "up to date" if old == values else ("OUT OF DATE" if args.check else "updated")
-        stale += [name] if old != values else []
-        print(f"{name}: {count} values, {status}")
+        family = FAMILIES[name]
+        per_version = [(v, v[4](fetch(sources[f"{name}-{v[1]}"]))) for v in family["versions"]]
+
+        union, seen = [], set()
+        for _, values in per_version:
+            for value, _ in values:
+                if value not in seen:
+                    seen.add(value)
+                    union.append((value, []))
+        if family["sort_union"]:
+            union.sort()
+
+        regions = [(f"{name}-versions", lambda i: render_values(i, [(v[0], [f"description: {quote(v[2])}"]) for v, _ in per_version]))]
+        regions += [(f"{name}-{v[1]}", lambda i, values=values: render_values(i, values)) for v, values in per_version]
+        regions += [(f"{name}-all", lambda i: render_values(i, union)),
+                    (f"{name}-rules", lambda i: render_rules(i, family, per_version))]
+        for region, render in regions:
+            text, changed = replace(text, region, render)
+            stale += [region] if changed else []
+        counts = ", ".join(f"{v[2]}: {len(values)}" for v, values in per_version)
+        print(f"{name}: {counts}; union: {len(union)}")
 
     if args.check:
+        print("up to date" if not stale else f"OUT OF DATE: {', '.join(stale)}")
         sys.exit(1 if stale else 0)
     if text != original:
         with open(args.schema, "w", encoding="utf-8") as f:
             f.write(text)
+        print(f"updated {', '.join(stale)}")
 
 
 if __name__ == "__main__":
