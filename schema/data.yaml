@@ -997,11 +997,12 @@ classes:
     is_a: DataFile
     abstract: true
     description: >-
-      Base class for FHIR JSON files. It records the FHIR version and the implementation
-      guide packages, which a FHIR validator needs to check the resources.
+      Base class for FHIR JSON files. It records the FHIR version, which a FHIR validator
+      needs to check the resources. The implementation guides they follow, such as US
+      Core, are declared once in the conformsTo of the file set the file belongs to, not
+      per file.
     slots:
     - fhirVersion
-    - implementationGuides
     slot_usage:
       fhirVersion:
         required: true
@@ -1563,19 +1564,12 @@ slots:
     inlined_as_list: true
 
   # --- FHIR (FhirFile and its subclasses) -----------------------------------
-  # fhirVersion and implementationGuides: every FHIR file.
+  # fhirVersion: every FHIR file.
   fhirVersion:
     description: >-
       FHIR version of the resources in the file. A file holds resources of one
       version only.
     range: FhirVersionEnum
-  implementationGuides:
-    description: >-
-      FHIR implementation guide packages the resources conform to, as
-      "<package id>#<version>", e.g. "hl7.fhir.us.core#6.1.0". A FHIR validator loads
-      these packages. Leave it out for resources that follow only the base specification.
-    multivalued: true
-    pattern: "^[a-z0-9][a-z0-9_-]*(\\.[a-z0-9_-]+)+#[0-9]+\\.[0-9]+\\.[0-9]+(-[A-Za-z0-9.-]+)?$"
   # resourceType: single-type files (FhirResourceFile, FhirNdjsonFile).
   resourceType:
     description: FHIR resource type of the resources in the file, e.g. Patient.

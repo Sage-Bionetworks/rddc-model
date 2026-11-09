@@ -105,7 +105,7 @@ Abstract: not used directly. Inherits from `FileObject` → `DistributionItem`. 
 
 ### FhirFile
 
-Base class for FHIR JSON files. It records the FHIR version and the implementation guide packages, which a FHIR validator needs to check the resources.
+Base class for FHIR JSON files. It records the FHIR version, which a FHIR validator needs to check the resources. The implementation guides they follow, such as US Core, are declared once in the conformsTo of the file set the file belongs to, not per file.
 
 Abstract: not used directly. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Subclasses: [`FhirBundleFile`](#fhirbundlefile), [`FhirSingleTypeFile`](#fhirsingletypefile).
 
@@ -114,7 +114,6 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
 | `fhirVersion` | [`FhirVersionEnum`](#fhirversionenum) | yes | FHIR version of the resources in the file. A file holds resources of one version only. |
-| `implementationGuides` | `string` (list) | | FHIR implementation guide packages the resources conform to, as "<package id>#<version>", e.g. "hl7.fhir.us.core#6.1.0". A FHIR validator loads these packages. Leave it out for resources that follow only the base specification. Pattern: `^[a-z0-9][a-z0-9_-]*(\.[a-z0-9_-]+)+#[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.-]+)?$`. |
 
 ### FhirBundleFile
 

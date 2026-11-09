@@ -54,7 +54,6 @@ VALID = {
         "FhirNdjsonFile", 3, contentUrl="fhir/Observation.ndjson.gz",
         encodingFormat="application/fhir+ndjson", compression="gzip",
         fhirVersion="4.0.1", resourceType="Observation",
-        implementationGuides=["hl7.fhir.us.core#6.1.0"],
     ),
     "omop_table": item(
         "OmopTableFile", 4, contentUrl="omop/person.csv", encodingFormat="text/csv",
@@ -143,6 +142,7 @@ INVALID = {
     "consent table without subjects": put("consent", ["subjectIds"], []),
     "face photo flags no biometric identifiers":
         put("face", ["sensitivity"], {"containsBiometricIdentifiers": False}),
+    "implementation guides on a file": put("fhir_ndjson", ["implementationGuides"], ["hl7.fhir.us.core#6.1.0"]),
     "FHIR resource file holding a Bundle": put("fhir_resource", ["resourceType"], "Bundle"),
     "OMOP table not in CDM 5.4": put("omop_table", ["cdmTable"], "attribute_definition"),
     "contentUrl with empty segment": put("generic", ["contentUrl"], "a//b"),
