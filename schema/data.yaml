@@ -44,6 +44,8 @@ prefixes:
   dct: http://purl.org/dc/terms/
   prov: http://www.w3.org/ns/prov#
   fhir: http://hl7.org/fhir/
+  EDAM: http://edamontology.org/
+  OBI: http://purl.obolibrary.org/obo/OBI_
 default_prefix: rddc
 default_range: string
 
@@ -716,6 +718,52 @@ enums:
       T2T-CHM13v2.0:
         description: Telomere-to-Telomere CHM13 assembly, version 2.0 (hs1).
 
+  GenomicsAssayEnum:
+    description: >-
+      Sequencing assays accepted for genomics files. Meanings are OBI assay terms (OBI
+      release 2026-07-27). OBI has no term for targeted gene panels, so that value has no
+      meaning. The sequencing platform (short-read, long-read) goes in platform, not here.
+    permissible_values:
+      wgs:
+        title: Whole genome sequencing
+        description: Sequencing of the complete genome.
+        meaning: OBI:0002117
+        aliases:
+        - WGS
+      wes:
+        title: Exome sequencing
+        description: Sequencing of the protein-coding regions of the genome.
+        meaning: OBI:0002118
+        aliases:
+        - WES
+        - Whole exome sequencing
+      targeted_panel:
+        title: Targeted gene panel sequencing
+        description: >-
+          Sequencing of a selected set of genes or regions, such as a clinical gene
+          panel, by hybrid capture or amplicons. OBI has no term covering both; its
+          nearest is DNA sequencing assay (OBI:0000626).
+      rna_seq:
+        title: RNA-Seq
+        description: Sequencing of RNA (cDNA) to measure the transcriptome of a sample.
+        meaning: OBI:0001271
+        aliases:
+        - RNA sequencing
+      methylation_seq:
+        title: Methylation sequencing
+        description: >-
+          Sequencing that determines the methylation state of DNA, such as whole-genome
+          bisulfite sequencing.
+        meaning: OBI:0001266
+        aliases:
+        - WGBS
+        - Bisulfite sequencing
+      other:
+        title: Other sequencing assay
+        description: >-
+          A sequencing assay not listed here. Name it in the file's description; a
+          curator decides whether it needs its own value.
+
   OmopCdmVersionEnum:
     description: >-
       OMOP CDM versions accepted in a deposit, as major.minor. Patch releases of a
@@ -986,6 +1034,8 @@ classes:
 
   FhirFile:
     is_a: DataFile
+    broad_mappings:
+    - EDAM:data_3861
     abstract: true
     description: >-
       Base class for FHIR JSON files. The FHIR version and the implementation guides the
@@ -1048,6 +1098,8 @@ classes:
 
   OmopTableFile:
     is_a: DataFile
+    broad_mappings:
+    - EDAM:data_3861
     description: One OMOP CDM table.
     annotations:
       structure: structured
@@ -1119,6 +1171,8 @@ classes:
 
   CcdaDocumentFile:
     is_a: DataFile
+    broad_mappings:
+    - EDAM:data_3861
     description: >-
       One HL7 C-CDA document. Its template IDs are in the document header and its C-CDA
       release is in the conformsTo of the file set it belongs to, so neither is repeated
@@ -1136,6 +1190,8 @@ classes:
 
   TabularFile:
     is_a: DataFile
+    broad_mappings:
+    - EDAM:data_3861
     description: >-
       A clinical table that is not OMOP or FHIR, such as registry, patient-reported
       outcome, claims or mortality data. Consent tables go in a ConsentFile, sensor data
@@ -1175,6 +1231,8 @@ classes:
 
   ClinicalDocumentFile:
     is_a: DataFile
+    broad_mappings:
+    - EDAM:data_3861
     description: >-
       An unstructured clinical document, such as a note or a scanned report. A scan is
       a PDF or an image (TIFF, JPEG or PNG).
@@ -1195,15 +1253,17 @@ classes:
 
   DocumentationFile:
     is_a: DataFile
-    description: A file that documents other files, such as a data dictionary or a README.
+    broad_mappings:
+    - EDAM:data_2337
+    description: >-
+      A file that documents other files, such as a data dictionary or a README. When it
+      documents particular files or record sets, about points to them; a README for the
+      whole batch leaves about out.
     annotations:
       structure: mixed
       modality: metadata
     slots:
     - about
-    slot_usage:
-      about:
-        required: true
 
   BiometricFileSensitivity:
     description: >-
@@ -1232,6 +1292,12 @@ classes:
     - assay
     - platform
     slot_usage:
+      assay:
+        required: true
+        range: GenomicsAssayEnum
+        description: >-
+          The sequencing assay that produced the data, e.g. wgs or wes. Downstream
+          analysis depends on it, so every genomics file states it.
       encodingFormat:
         any_of:
         - equals_string: text/plain
@@ -1239,6 +1305,8 @@ classes:
 
   SequenceReadsFile:
     is_a: GenomicsFile
+    close_mappings:
+    - EDAM:data_2977
     description: Sequencing reads, such as FASTQ or unaligned BAM.
     annotations:
       structure: structured
@@ -1248,6 +1316,8 @@ classes:
 
   AlignmentFile:
     is_a: GenomicsFile
+    close_mappings:
+    - EDAM:data_1383
     description: Aligned reads, such as BAM or CRAM.
     annotations:
       structure: structured
@@ -1260,6 +1330,8 @@ classes:
 
   VariantFile:
     is_a: GenomicsFile
+    close_mappings:
+    - EDAM:data_3498
     description: Variant calls, such as VCF or BCF.
     annotations:
       structure: structured
@@ -1272,6 +1344,8 @@ classes:
 
   IndexFile:
     is_a: DataFile
+    broad_mappings:
+    - EDAM:data_0955
     description: >-
       An index of another file in the sidecar, such as .bai, .crai or .tbi. Indexes are
       binary, so encodingFormat is application/octet-stream.
@@ -1291,6 +1365,8 @@ classes:
 
   ImagingFile:
     is_a: DataFile
+    close_mappings:
+    - EDAM:data_3424
     description: >-
       A medical or photographic image, such as DICOM. A photograph of a person's face
       goes in a FacialImagingFile instead.
@@ -1300,6 +1376,8 @@ classes:
 
   FacialImagingFile:
     is_a: ImagingFile
+    broad_mappings:
+    - EDAM:data_3424
     description: >-
       A photograph of a person's face, such as those taken for dysmorphology assessment
       or facial phenotyping. A face is a biometric identifier, so the file always counts
@@ -1420,7 +1498,9 @@ slots:
   # --- genomics (GenomicsFile and its subclasses, IndexFile) ----------------
   # assay: every genomics file.
   assay:
-    description: "The assay that produced the data."
+    description: >-
+      The assay that produced the data. Each class that uses it sets the allowed
+      values.
   # referenceGenome: aligned or called data (AlignmentFile, VariantFile).
   referenceGenome:
     description: Reference assembly the coordinates refer to, e.g. GRCh38.

@@ -61,10 +61,10 @@ Every concrete class also requires the fields shared by all data files: `@id`, `
 | [`TabularFile`](#tabularfile) | `clinical_tabular` | structured | `text/csv`, `text/tab-separated-values`, `application/vnd.apache.parquet`, `application/json`, `application/jsonlines` |  |
 | [`ConsentFile`](#consentfile) | `consent` | structured | `text/csv`, `text/tab-separated-values`, `application/json`, `application/jsonlines` | `subjectIds` |
 | [`ClinicalDocumentFile`](#clinicaldocumentfile) | `clinical_text` | unstructured | `text/plain`, `application/pdf`, `application/rtf`, `image/tiff`, `image/jpeg`, `image/png` | `subjectIds` |
-| [`DocumentationFile`](#documentationfile) | `metadata` | mixed | any | `about` |
-| [`SequenceReadsFile`](#sequencereadsfile) | `genomics` | structured | `text/plain`, `application/octet-stream` |  |
-| [`AlignmentFile`](#alignmentfile) | `genomics` | structured | `text/plain`, `application/octet-stream` | `referenceGenome` |
-| [`VariantFile`](#variantfile) | `genomics` | structured | `text/plain`, `application/octet-stream` | `referenceGenome` |
+| [`DocumentationFile`](#documentationfile) | `metadata` | mixed | any |  |
+| [`SequenceReadsFile`](#sequencereadsfile) | `genomics` | structured | `text/plain`, `application/octet-stream` | `assay` |
+| [`AlignmentFile`](#alignmentfile) | `genomics` | structured | `text/plain`, `application/octet-stream` | `referenceGenome`, `assay` |
+| [`VariantFile`](#variantfile) | `genomics` | structured | `text/plain`, `application/octet-stream` | `referenceGenome`, `assay` |
 | [`IndexFile`](#indexfile) | `genomics` | structured | `application/octet-stream` | `indexOf` |
 | [`ImagingFile`](#imagingfile) | `imaging` | unstructured | any |  |
 | [`FacialImagingFile`](#facialimagingfile) | `imaging` | unstructured | `image/jpeg`, `image/png`, `image/tiff`, `image/heic`, `application/dicom` | `subjectIds` |
@@ -107,7 +107,7 @@ Abstract: not used directly. Inherits from `FileObject` → `DistributionItem`. 
 
 Base class for FHIR JSON files. The FHIR version and the implementation guides the resources follow, such as US Core, are declared once in the conformsTo of the file set the file belongs to, not per file.
 
-Abstract: not used directly. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Subclasses: [`FhirBundleFile`](#fhirbundlefile), [`FhirSingleTypeFile`](#fhirsingletypefile).
+Abstract: not used directly. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Subclasses: [`FhirBundleFile`](#fhirbundlefile), [`FhirSingleTypeFile`](#fhirsingletypefile). A kind of [`EDAM:data_3861`](http://edamontology.org/data_3861).
 
 No fields beyond those of [`DataFile`](#datafile).
 
@@ -166,7 +166,7 @@ Fields it adds or changes; it also has all fields of [`FhirSingleTypeFile`](#fhi
 
 One OMOP CDM table.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:OmopTableFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `clinical_omop`.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:OmopTableFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `clinical_omop`. A kind of [`EDAM:data_3861`](http://edamontology.org/data_3861).
 
 Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
@@ -184,7 +184,7 @@ Rules:
 
 One HL7 C-CDA document. Its template IDs are in the document header and its C-CDA release is in the conformsTo of the file set it belongs to, so neither is repeated per file.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:CcdaDocumentFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `clinical_ccda`.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:CcdaDocumentFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `clinical_ccda`. A kind of [`EDAM:data_3861`](http://edamontology.org/data_3861).
 
 Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
@@ -197,7 +197,7 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 A clinical table that is not OMOP or FHIR, such as registry, patient-reported outcome, claims or mortality data. Consent tables go in a ConsentFile, sensor data in a SensorDataFile, and tables that describe other files in a DocumentationFile. Its name and contentUrl identify the table; record sets describe its columns and joins to other tables.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:TabularFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `clinical_tabular`.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:TabularFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `clinical_tabular`. A kind of [`EDAM:data_3861`](http://edamontology.org/data_3861).
 
 Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
@@ -222,7 +222,7 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 An unstructured clinical document, such as a note or a scanned report. A scan is a PDF or an image (TIFF, JPEG or PNG).
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:ClinicalDocumentFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: unstructured. Modality: `clinical_text`.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:ClinicalDocumentFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: unstructured. Modality: `clinical_text`. A kind of [`EDAM:data_3861`](http://edamontology.org/data_3861).
 
 Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
@@ -233,15 +233,15 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 ### DocumentationFile
 
-A file that documents other files, such as a data dictionary or a README.
+A file that documents other files, such as a data dictionary or a README. When it documents particular files or record sets, about points to them; a README for the whole batch leaves about out.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:DocumentationFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: mixed. Modality: `metadata`.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:DocumentationFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: mixed. Modality: `metadata`. A kind of [`EDAM:data_2337`](http://edamontology.org/data_2337).
 
 Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
-| `about` | [`NodeRef`](#noderef) (list) | yes | The files or record sets this file documents. |
+| `about` | [`NodeRef`](#noderef) (list) | | The files or record sets this file documents. |
 
 ### GenomicsFile
 
@@ -253,15 +253,15 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
+| `assay` | [`GenomicsAssayEnum`](#genomicsassayenum) | yes | The sequencing assay that produced the data, e.g. wgs or wes. Downstream analysis depends on it, so every genomics file states it. |
 | `encodingFormat` | [`MediaType`](#mediatype) | yes | Media type of the content (after decompression when compression is set). One of: `text/plain`, `application/octet-stream`. |
-| `assay` | `string` | | The assay that produced the data. |
 | `platform` | `string` | | The instrument, sequencing platform or device that produced the data. |
 
 ### SequenceReadsFile
 
 Sequencing reads, such as FASTQ or unaligned BAM.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:SequenceReadsFile"`. Inherits from [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:SequenceReadsFile"`. Inherits from [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`. Close to [`EDAM:data_2977`](http://edamontology.org/data_2977).
 
 Fields it adds or changes; it also has all fields of [`GenomicsFile`](#genomicsfile):
 
@@ -273,7 +273,7 @@ Fields it adds or changes; it also has all fields of [`GenomicsFile`](#genomicsf
 
 Aligned reads, such as BAM or CRAM.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:AlignmentFile"`. Inherits from [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:AlignmentFile"`. Inherits from [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`. Close to [`EDAM:data_1383`](http://edamontology.org/data_1383).
 
 Fields it adds or changes; it also has all fields of [`GenomicsFile`](#genomicsfile):
 
@@ -285,7 +285,7 @@ Fields it adds or changes; it also has all fields of [`GenomicsFile`](#genomicsf
 
 Variant calls, such as VCF or BCF.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:VariantFile"`. Inherits from [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:VariantFile"`. Inherits from [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`. Close to [`EDAM:data_3498`](http://edamontology.org/data_3498).
 
 Fields it adds or changes; it also has all fields of [`GenomicsFile`](#genomicsfile):
 
@@ -297,7 +297,7 @@ Fields it adds or changes; it also has all fields of [`GenomicsFile`](#genomicsf
 
 An index of another file in the sidecar, such as .bai, .crai or .tbi. Indexes are binary, so encodingFormat is application/octet-stream.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:IndexFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:IndexFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`. A kind of [`EDAM:data_0955`](http://edamontology.org/data_0955).
 
 Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
@@ -310,7 +310,7 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 A medical or photographic image, such as DICOM. A photograph of a person's face goes in a FacialImagingFile instead.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:ImagingFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Subclasses: [`FacialImagingFile`](#facialimagingfile). Structure: unstructured. Modality: `imaging`.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:ImagingFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Subclasses: [`FacialImagingFile`](#facialimagingfile). Structure: unstructured. Modality: `imaging`. Close to [`EDAM:data_3424`](http://edamontology.org/data_3424).
 
 No fields beyond those of [`DataFile`](#datafile).
 
@@ -318,7 +318,7 @@ No fields beyond those of [`DataFile`](#datafile).
 
 A photograph of a person's face, such as those taken for dysmorphology assessment or facial phenotyping. A face is a biometric identifier, so the file always counts as containing biometric identifiers.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:FacialImagingFile"`. Inherits from [`ImagingFile`](#imagingfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: unstructured. Modality: `imaging`. Biometric: always counts as containing biometric identifiers.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:FacialImagingFile"`. Inherits from [`ImagingFile`](#imagingfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: unstructured. Modality: `imaging`. A kind of [`EDAM:data_3424`](http://edamontology.org/data_3424). Biometric: always counts as containing biometric identifiers.
 
 Fields it adds or changes; it also has all fields of [`ImagingFile`](#imagingfile):
 
@@ -526,6 +526,19 @@ Human reference assemblies accepted in a deposit. UCSC builds use the matching G
 | `GRCh37` | Genome Reference Consortium human build 37 (hg19). |
 | `GRCh38` | Genome Reference Consortium human build 38 (hg38). |
 | `T2T-CHM13v2.0` | Telomere-to-Telomere CHM13 assembly, version 2.0 (hs1). |
+
+### GenomicsAssayEnum
+
+Sequencing assays accepted for genomics files. Meanings are OBI assay terms (OBI release 2026-07-27). OBI has no term for targeted gene panels, so that value has no meaning. The sequencing platform (short-read, long-read) goes in platform, not here.
+
+| Value | Term | Meaning |
+| --- | --- | --- |
+| `wgs` | [`OBI:0002117`](http://purl.obolibrary.org/obo/OBI_0002117) | Sequencing of the complete genome. |
+| `wes` | [`OBI:0002118`](http://purl.obolibrary.org/obo/OBI_0002118) | Sequencing of the protein-coding regions of the genome. |
+| `targeted_panel` |  | Sequencing of a selected set of genes or regions, such as a clinical gene panel, by hybrid capture or amplicons. OBI has no term covering both; its nearest is DNA sequencing assay (OBI:0000626). |
+| `rna_seq` | [`OBI:0001271`](http://purl.obolibrary.org/obo/OBI_0001271) | Sequencing of RNA (cDNA) to measure the transcriptome of a sample. |
+| `methylation_seq` | [`OBI:0001266`](http://purl.obolibrary.org/obo/OBI_0001266) | Sequencing that determines the methylation state of DNA, such as whole-genome bisulfite sequencing. |
+| `other` |  | A sequencing assay not listed here. Name it in the file's description; a curator decides whether it needs its own value. |
 
 ### OmopCdmVersionEnum
 

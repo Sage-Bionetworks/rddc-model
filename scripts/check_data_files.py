@@ -78,21 +78,24 @@ VALID = {
         subjectIds=["S1"],
         processingHints=[{"@type": "sc:PropertyValue", "propertyID": "deid:ocrEngine", "value": "x"}],
     ),
+    "readme": item(
+        "DocumentationFile", 21, contentUrl="README.md", encodingFormat="text/markdown",
+    ),
     "documentation": item(
         "DocumentationFile", 10, contentUrl="docs/dictionary.csv", encodingFormat="text/csv",
         about=[REF],
     ),
     "reads": item(
         "SequenceReadsFile", 11, contentUrl="genomics/S1_R1.fastq.gz", encodingFormat="text/plain",
-        compression="gzip", pairedWith=REF,
+        compression="gzip", assay="wgs", pairedWith=REF,
     ),
     "alignment": item(
         "AlignmentFile", 12, contentUrl="genomics/S1.bam", encodingFormat="application/octet-stream",
-        referenceGenome="GRCh38",
+        assay="wgs", referenceGenome="GRCh38",
     ),
     "variants": item(
         "VariantFile", 13, contentUrl="genomics/S1.vcf.gz", encodingFormat="text/plain",
-        compression="gzip", referenceGenome="T2T-CHM13v2.0",
+        compression="gzip", assay="wes", referenceGenome="T2T-CHM13v2.0",
     ),
     "index": item(
         "IndexFile", 14, contentUrl="genomics/S1.bam.bai", encodingFormat="application/octet-stream",
@@ -120,6 +123,15 @@ VALID = {
         "GenericFile", 20, contentUrl="other/file.bin", encodingFormat="application/octet-stream",
     ),
 }
+
+
+def drop(key, path):
+    def mutate(docs):
+        doc = docs[key]
+        for k in path[:-1]:
+            doc = doc[k]
+        del doc[path[-1]]
+    return key, mutate
 
 
 def put(key, path, value):
@@ -156,7 +168,9 @@ INVALID = {
     "table name on a tabular file": put("tabular", ["tableName"], "visits"),
     "template IDs on a C-CDA file": put("ccda", ["templateIds"], ["2.16.840.1.113883.10.20.22.1.2:2015-08-01"]),
     "processing hint key without namespace": put("scanned_report", ["processingHints", 0, "propertyID"], "ocr"),
-    "data dictionary without about": put("documentation", ["about"], []),
+    "data dictionary with an empty about list": put("documentation", ["about"], []),
+    "genomics file without assay": drop("alignment", ["assay"]),
+    "assay not in GenomicsAssayEnum": put("reads", ["assay"], "WGS"),
     "empty subject list": put("face", ["subjectIds"], []),
 }
 

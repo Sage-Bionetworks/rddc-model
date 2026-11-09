@@ -224,6 +224,11 @@ class Page:
         modality = cls.annotations.get("modality")
         if modality:
             facts.append(f"Modality: `{modality.value}`.")
+        for kind, label in (("exact_mappings", "Same as"), ("close_mappings", "Close to"),
+                            ("broad_mappings", "A kind of"), ("narrow_mappings", "Broader than")):
+            terms = getattr(cls, kind) or []
+            if terms:
+                facts.append(f"{label} " + ", ".join(self.term(t) for t in terms) + ".")
         if cls.annotations.get("biometric"):
             facts.append("Biometric: always counts as containing biometric identifiers.")
         out += [" ".join(facts), ""] if facts else []
@@ -249,10 +254,17 @@ class Page:
                     + " |" for v, pv in values.items()]
         elif len(values) > COMPACT_ENUM:
             out.append(f"{len(values)} values: " + ", ".join(f"`{v}`" for v in values) + ".")
+        elif any(pv.meaning for pv in values.values()):
+            out += ["| Value | Term | Meaning |", "| --- | --- | --- |"]
+            out += [f"| `{v}` | {self.term(pv.meaning)} | {cell(pv.description)} |" for v, pv in values.items()]
         else:
             out += ["| Value | Meaning |", "| --- | --- |"]
             out += [f"| `{v}` | {cell(pv.description)} |" for v, pv in values.items()]
         return out + [""]
+
+    def term(self, curie):
+        """An ontology term as a link to its IRI, or empty when the value has none."""
+        return f"[`{curie}`]({self.sv.expand_curie(curie)})" if curie else ""
 
     def type_rows(self):
         rows = ["| Type | Base | Meaning | Pattern |", "| --- | --- | --- | --- |"]
