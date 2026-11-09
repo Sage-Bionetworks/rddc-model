@@ -17,6 +17,7 @@ prefixes:
   cr: http://mlcommons.org/croissant/
   dct: http://purl.org/dc/terms/
   prov: http://www.w3.org/ns/prov#
+  pd: https://w3id.org/dpv/pd#
 default_prefix: rddc
 default_range: string
 
@@ -302,19 +303,38 @@ slots:
     range: FileSensitivity
     inlined: true
   containsDates:
-    description: "The data includes dates more precise than a year. These are accepted at deposit and masked at release."
+    description: >-
+      The data includes dates more precise than a year. These are accepted at deposit
+      and masked at release. HIPAA Safe Harbor identifier (C), 45 CFR
+      164.514(b)(2)(i)(C), which also covers ages over 89.
     range: boolean
+    narrow_mappings:
+    - pd:BirthDate
   containsZipCodes:
-    description: "The data includes postal codes. These are accepted at deposit and masked at release."
+    description: >-
+      The data includes postal codes. These are accepted at deposit and masked at
+      release. Part of HIPAA Safe Harbor identifier (B), 45 CFR 164.514(b)(2)(i)(B),
+      which covers all geographic subdivisions smaller than a state; this flag covers
+      postal codes only.
     range: boolean
+    exact_mappings:
+    - pd:PostalCode
   containsFreeText:
-    description: "The data includes unstructured text that needs a de-identification scan."
+    description: >-
+      The data includes unstructured text that needs a de-identification scan. Not a
+      HIPAA Safe Harbor identifier itself: free text can contain any of them.
     range: boolean
   containsBiometricIdentifiers:
     description: >-
       The data includes biometric identifiers, full-face images, voice or similar
-      content. These stay in the trusted research environment (TRE).
+      content. These stay in the trusted research environment (TRE). HIPAA Safe
+      Harbor identifiers (P), biometric identifiers including finger and voice prints,
+      and (Q), full-face photographs and comparable images, 45 CFR 164.514(b)(2)(i).
     range: boolean
+    close_mappings:
+    - pd:Biometric
+    related_mappings:
+    - pd:Picture
   notes:
     description: "Free-text notes on the sensitivity values."
 

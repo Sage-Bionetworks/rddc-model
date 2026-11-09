@@ -151,8 +151,9 @@ class Page:
             return [f"No fields beyond those of {self.link(parent)}."]
         rows = ["| Field | Type | Required | Meaning and constraints |", "| --- | --- | --- | --- |"]
         for s in slots:
+            meaning = " ".join(p for p in (cell(s.description), self.constraints(s), self.mappings(s)) if p)
             rows.append(f"| `{s.alias or s.name}` | {self.range_text(s)} | {'yes' if s.required else ''} | "
-                        f"{cell(s.description)} {self.constraints(s)} |".replace("  |", " |"))
+                        f"{meaning} |".replace("  |", " |"))
         return rows
 
     # --- sections -----------------------------------------------------------------
@@ -273,6 +274,15 @@ class Page:
                  for kind, label in (("close_mappings", "close"), ("broad_mappings", "broader"))
                  if getattr(pv, kind)]
         return "; ".join(parts)
+
+    MAPPING_LABELS = (("exact_mappings", "Same as"), ("close_mappings", "Close to"),
+                      ("broad_mappings", "Narrower than"), ("narrow_mappings", "Broader than"),
+                      ("related_mappings", "Related to"))
+
+    def mappings(self, element):
+        """A slot's mappings to external terms, e.g. "Close to pd:Biometric."."""
+        return " ".join(f"{label} " + ", ".join(self.term(t) for t in getattr(element, kind)) + "."
+                        for kind, label in self.MAPPING_LABELS if getattr(element, kind, None))
 
     def term(self, curie):
         """An ontology term as a link to its IRI, or empty when the value has none."""

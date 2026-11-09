@@ -427,10 +427,10 @@ Per-file overrides for the header contains* flags. A file can set these to true 
 
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
-| `containsBiometricIdentifiers` | `boolean` | | The data includes biometric identifiers, full-face images, voice or similar content. These stay in the trusted research environment (TRE). |
-| `containsDates` | `boolean` | | The data includes dates more precise than a year. These are accepted at deposit and masked at release. |
-| `containsFreeText` | `boolean` | | The data includes unstructured text that needs a de-identification scan. |
-| `containsZipCodes` | `boolean` | | The data includes postal codes. These are accepted at deposit and masked at release. |
+| `containsBiometricIdentifiers` | `boolean` | | The data includes biometric identifiers, full-face images, voice or similar content. These stay in the trusted research environment (TRE). HIPAA Safe Harbor identifiers (P), biometric identifiers including finger and voice prints, and (Q), full-face photographs and comparable images, 45 CFR 164.514(b)(2)(i). Close to [`pd:Biometric`](https://w3id.org/dpv/pd#Biometric). Related to [`pd:Picture`](https://w3id.org/dpv/pd#Picture). |
+| `containsDates` | `boolean` | | The data includes dates more precise than a year. These are accepted at deposit and masked at release. HIPAA Safe Harbor identifier (C), 45 CFR 164.514(b)(2)(i)(C), which also covers ages over 89. Broader than [`pd:BirthDate`](https://w3id.org/dpv/pd#BirthDate). |
+| `containsFreeText` | `boolean` | | The data includes unstructured text that needs a de-identification scan. Not a HIPAA Safe Harbor identifier itself: free text can contain any of them. |
+| `containsZipCodes` | `boolean` | | The data includes postal codes. These are accepted at deposit and masked at release. Part of HIPAA Safe Harbor identifier (B), 45 CFR 164.514(b)(2)(i)(B), which covers all geographic subdivisions smaller than a state; this flag covers postal codes only. Same as [`pd:PostalCode`](https://w3id.org/dpv/pd#PostalCode). |
 | `notes` | `string` | | Free-text notes on the sensitivity values. |
 
 ### ProcessingHint
@@ -479,9 +479,9 @@ Per-file sensitivity overrides for a class whose content always identifies a per
 
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
-| `containsDates` | `boolean` | | The data includes dates more precise than a year. These are accepted at deposit and masked at release. |
-| `containsFreeText` | `boolean` | | The data includes unstructured text that needs a de-identification scan. |
-| `containsZipCodes` | `boolean` | | The data includes postal codes. These are accepted at deposit and masked at release. |
+| `containsDates` | `boolean` | | The data includes dates more precise than a year. These are accepted at deposit and masked at release. HIPAA Safe Harbor identifier (C), 45 CFR 164.514(b)(2)(i)(C), which also covers ages over 89. Broader than [`pd:BirthDate`](https://w3id.org/dpv/pd#BirthDate). |
+| `containsFreeText` | `boolean` | | The data includes unstructured text that needs a de-identification scan. Not a HIPAA Safe Harbor identifier itself: free text can contain any of them. |
+| `containsZipCodes` | `boolean` | | The data includes postal codes. These are accepted at deposit and masked at release. Part of HIPAA Safe Harbor identifier (B), 45 CFR 164.514(b)(2)(i)(B), which covers all geographic subdivisions smaller than a state; this flag covers postal codes only. Same as [`pd:PostalCode`](https://w3id.org/dpv/pd#PostalCode). |
 | `notes` | `string` | | Free-text notes on the sensitivity values. |
 
 ## Enumerations
