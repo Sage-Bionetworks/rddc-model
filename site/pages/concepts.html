@@ -106,7 +106,8 @@
 <ul>
 <li>has a short local <code>@id</code> such as <code>omop</code>, not a UUID;</li>
 <li>lists its members in <code>hasPart</code>, selects them with <code>includes</code> globs, or both. Every member must also appear in <code>distribution</code>. A glob is still needed alongside <code>hasPart</code> for generic Croissant loaders, which only read <code>includes</code>;</li>
-<li>declares the standard it follows in <code>conformsTo</code>, which is required for FHIR, OMOP and C-CDA sets.</li>
+<li>declares the standard it follows in <code>conformsTo</code>, which is required for FHIR, OMOP and C-CDA sets;</li>
+<li>may give the period its data covers in <code>temporalCoverage</code>, schema.org's ISO 8601 interval such as <code>2019/2024</code>. The sidecar document can give one for the whole batch. Use year or month precision unless the batch declares <code>containsDates</code>.</li>
 </ul>
 <h3>Pinned standards</h3>
 <p>The validator only accepts these <code>conformsTo</code> values on file sets:</p>
