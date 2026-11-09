@@ -135,7 +135,7 @@ File sets reference existing specifications for file relationships. A batch can 
 
 - **FHIR:** references live inside the records, so the file set records resource type per file, bundle type, export time and FHIR version; a Bulk Data `$export` status manifest supplies these details.
 - **OMOP:** foreign keys are fixed by the CDM, so the file set records which tables are present, CDM and vocabulary versions, and CDM source details.
-- **C-CDA:** one document per subject encounter; the file set records the C-CDA release and template IDs.
+- **C-CDA:** one document per subject encounter; the file set records the C-CDA release. Template IDs stay in each document's header and are not repeated in the sidecar.
 - Validators check for expected members using the declared spec and version (for OMOP, at least `person` and `observation_period`; for FHIR bulk, at least `Patient`).
 
 #### Initial data types
