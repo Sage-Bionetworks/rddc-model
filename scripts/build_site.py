@@ -488,6 +488,11 @@ def class_section(name, view=None):
     modality = cls.annotations.get("modality")
     if modality:
         meta.append(f"<span>Modality: <code>{html.escape(modality.value)}</code></span>")
+    for kind, label in (("exact_mappings", "Same as"), ("close_mappings", "Close to"),
+                        ("broad_mappings", "A kind of"), ("narrow_mappings", "Broader than")):
+        terms = getattr(cls, kind) or []
+        if terms:
+            meta.append(f"<span>{label} " + ", ".join(term_link(t) for t in terms) + "</span>")
     if cls.annotations.get("biometric"):
         meta.append("<span>Biometric: always counts as containing biometric identifiers</span>")
     if name in DISPATCHED:
@@ -661,6 +666,13 @@ whatever the batch default. The schema stops the file setting the flag itself.</
 """
 
 
+def term_link(curie):
+    """An ontology term (CURIE) as a link to its IRI; empty when there is none."""
+    if not curie:
+        return ""
+    return f'<a href="{html.escape(sv.expand_curie(curie))}"><code>{html.escape(curie)}</code></a>'
+
+
 def vocab_page():
     body = [
         "<h1>Controlled vocabularies</h1>",
@@ -671,17 +683,26 @@ def vocab_page():
     users = {}
     for sname, slot in sv.all_slots().items():
         if slot.range in sv.all_enums():
-            users.setdefault(slot.range, []).append(slot.alias or sname)
+            users.setdefault(slot.range, set()).add(slot.alias or sname)
+    for cls in sv.all_classes().values():  # ranges a class sets in slot_usage
+        for sname, usage in (cls.slot_usage or {}).items():
+            if usage.range in sv.all_enums():
+                users.setdefault(usage.range, set()).add(sv.get_slot(sname).alias or sname)
     for name, enum in sv.all_enums().items():
+        values = enum.permissible_values
+        with_terms = any(pv.meaning for pv in values.values())
         rows = "".join(
-            f"<tr><td><code>{html.escape(v)}</code></td><td>{html.escape(pv.description or '')}</td></tr>"
-            for v, pv in enum.permissible_values.items()
+            f"<tr><td><code>{html.escape(v)}</code></td>"
+            + (f"<td>{term_link(pv.meaning)}</td>" if with_terms else "")
+            + f"<td>{html.escape(pv.description or '')}</td></tr>"
+            for v, pv in values.items()
         )
         used = ", ".join(f"<code>{u}</code>" for u in sorted(users.get(name, [])))
+        meta = f"<p class='meta'><span>Used by {used}</span></p>" if used else ""
         body.append(
-            f"<section class='class' id='{name}'><h3>{name}</h3><p>{html.escape(enum.description or '')}</p>"
-            f"<p class='meta'><span>Used by {used}</span></p>"
-            f"<div class='table-wrap'><table><thead><tr><th>Value</th><th>Meaning</th></tr></thead><tbody>{rows}</tbody></table></div></section>"
+            f"<section class='class' id='{name}'><h3>{name}</h3><p>{html.escape(enum.description or '')}</p>{meta}"
+            f"<div class='table-wrap'><table><thead><tr><th>Value</th>{'<th>Term</th>' if with_terms else ''}"
+            f"<th>Meaning</th></tr></thead><tbody>{rows}</tbody></table></div></section>"
         )
     body.append("<h2 id='value-types'>Value types</h2><p>Text formats checked with regular expressions.</p>")
     rows = "".join(
