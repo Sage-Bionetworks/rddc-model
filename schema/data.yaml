@@ -1314,11 +1314,11 @@ classes:
       A clinical table that is not OMOP or FHIR, such as registry, patient-reported
       outcome, claims or mortality data. Consent tables go in a ConsentFile, sensor data
       in a SensorDataFile, and tables that describe other files in a DocumentationFile.
+      Its name and contentUrl identify the table; record sets describe its columns and
+      joins to other tables.
     annotations:
       structure: structured
       modality: clinical_tabular
-    slots:
-    - tableName
     slot_usage:
       encodingFormat:
         any_of:
@@ -1327,8 +1327,6 @@ classes:
         - equals_string: application/vnd.apache.parquet
         - equals_string: application/json
         - equals_string: application/jsonlines
-      tableName:
-        required: true
 
   ConsentFile:
     is_a: DataFile
@@ -1339,8 +1337,6 @@ classes:
     annotations:
       structure: structured
       modality: consent
-    slots:
-    - tableName
     slot_usage:
       encodingFormat:
         any_of:
@@ -1587,10 +1583,6 @@ slots:
   omopCdmVersion:
     description: OMOP CDM version of the table, as major.minor, e.g. "5.4".
     range: OmopCdmVersionEnum
-
-  # --- other tables (TabularFile, ConsentFile) ------------------------------
-  tableName:
-    description: Table name within its dataset.
 
   # --- documentation (DocumentationFile) ------------------------------------
   about:

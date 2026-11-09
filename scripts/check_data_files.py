@@ -65,15 +65,13 @@ VALID = {
     ),
     "tabular": item(
         "TabularFile", 6, contentUrl="registry/visits.csv", encodingFormat="text/csv",
-        tableName="visits",
     ),
     "tabular_jsonlines": item(
         "TabularFile", 7, contentUrl="registry/pro.jsonl", encodingFormat="application/jsonlines",
-        tableName="pro",
     ),
     "consent": item(
         "ConsentFile", 8, contentUrl="consent/elements.csv", encodingFormat="text/csv",
-        subjectIds=["S1", "S2"], tableName="consent_elements",
+        subjectIds=["S1", "S2"],
     ),
     "scanned_report": item(
         "ClinicalDocumentFile", 9, contentUrl="notes/report.tif", encodingFormat="image/tiff",
@@ -153,6 +151,7 @@ INVALID = {
     "BAM with an invented media type": put("alignment", ["encodingFormat"], "application/x-bam"),
     "index that is not binary": put("index", ["encodingFormat"], "text/plain"),
     "unknown reference genome": put("variants", ["referenceGenome"], "hg38"),
+    "table name on a tabular file": put("tabular", ["tableName"], "visits"),
     "template IDs on a C-CDA file": put("ccda", ["templateIds"], ["2.16.840.1.113883.10.20.22.1.2:2015-08-01"]),
     "processing hint key without namespace": put("scanned_report", ["processingHints", 0, "propertyID"], "ocr"),
     "data dictionary without about": put("documentation", ["about"], []),

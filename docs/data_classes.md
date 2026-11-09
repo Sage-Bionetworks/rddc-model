@@ -58,7 +58,7 @@ Every concrete class also requires the fields shared by all data files: `@id`, `
 | [`FhirNdjsonFile`](#fhirndjsonfile) | `clinical_fhir` | structured | `application/fhir+ndjson` | `resourceType`, `fhirVersion` |
 | [`OmopTableFile`](#omoptablefile) | `clinical_omop` | structured | `text/csv`, `text/tab-separated-values`, `application/vnd.apache.parquet` | `cdmTable`, `omopCdmVersion` |
 | [`CcdaDocumentFile`](#ccdadocumentfile) | `clinical_ccda` | structured | `application/xml`, `text/xml` | `subjectIds` |
-| [`TabularFile`](#tabularfile) | `clinical_tabular` | structured | `text/csv`, `text/tab-separated-values`, `application/vnd.apache.parquet`, `application/json`, `application/jsonlines` | `tableName` |
+| [`TabularFile`](#tabularfile) | `clinical_tabular` | structured | `text/csv`, `text/tab-separated-values`, `application/vnd.apache.parquet`, `application/json`, `application/jsonlines` |  |
 | [`ConsentFile`](#consentfile) | `consent` | structured | `text/csv`, `text/tab-separated-values`, `application/json`, `application/jsonlines` | `subjectIds` |
 | [`ClinicalDocumentFile`](#clinicaldocumentfile) | `clinical_text` | unstructured | `text/plain`, `application/pdf`, `application/rtf`, `image/tiff`, `image/jpeg`, `image/png` | `subjectIds` |
 | [`DocumentationFile`](#documentationfile) | `metadata` | mixed | any | `about` |
@@ -211,7 +211,7 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 ### TabularFile
 
-A clinical table that is not OMOP or FHIR, such as registry, patient-reported outcome, claims or mortality data. Consent tables go in a ConsentFile, sensor data in a SensorDataFile, and tables that describe other files in a DocumentationFile.
+A clinical table that is not OMOP or FHIR, such as registry, patient-reported outcome, claims or mortality data. Consent tables go in a ConsentFile, sensor data in a SensorDataFile, and tables that describe other files in a DocumentationFile. Its name and contentUrl identify the table; record sets describe its columns and joins to other tables.
 
 Use as `"@type": "cr:FileObject", "additionalType": "rddc:TabularFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `clinical_tabular`.
 
@@ -220,7 +220,6 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
 | `encodingFormat` | [`MediaType`](#mediatype) | yes | Media type of the content (after decompression when compression is set). One of: `text/csv`, `text/tab-separated-values`, `application/vnd.apache.parquet`, `application/json`, `application/jsonlines`. |
-| `tableName` | `string` | yes | Table name within its dataset. |
 
 ### ConsentFile
 
@@ -234,7 +233,6 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 | --- | --- | --- | --- |
 | `encodingFormat` | [`MediaType`](#mediatype) | yes | Media type of the content (after decompression when compression is set). One of: `text/csv`, `text/tab-separated-values`, `application/json`, `application/jsonlines`. |
 | `subjectIds` | [`Identifier`](#identifier) (list) | yes | Subject IDs the file contains. Each must appear in the subject table. |
-| `tableName` | `string` | | Table name within its dataset. |
 
 ### ClinicalDocumentFile
 
