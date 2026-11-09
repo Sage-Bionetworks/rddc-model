@@ -52,8 +52,7 @@
       "subjectIds": [
         "P0001",
         "P0003"
-      ],
-      "tableName": "consent_elements"
+      ]
     }
   ]
 }

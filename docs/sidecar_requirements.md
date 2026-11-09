@@ -296,7 +296,7 @@ left empty fail validation.
 | Embedded metadata | Parse format headers | FHIR bundle type, resource counts, US Core profiles; OMOP `cdm_source` row; C-CDA template extension; BAM `@RG`/`@PG`; VCF `##reference` | High |
 | Subjects | Extract per the declared spec and record the ID system | FHIR `Patient.id`; OMOP `person.person_source_value`; C-CDA `recordTarget` | High |
 | Spec-defined relations | Resolve against the declared spec | FHIR references across NDJSON files; OMOP foreign keys against the CDM | High |
-| Conventions | Filename and pairing patterns | Table name from file stem; R1/R2 reads; `.bai` beside `.bam` | Medium |
+| Conventions | Filename and pairing patterns | R1/R2 reads; `.bai` beside `.bam` | Medium |
 | Ad hoc relations | Shared column names + value overlap | Candidate key between two CSVs | Low, needs confirmation |
 
 - For each auto-filled value, the generator records its origin (`detected`, `declared`, `inferred`), method and confidence in [0, 1].

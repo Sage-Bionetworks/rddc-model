@@ -76,7 +76,8 @@
 <tr><td>One FHIR resource that is not a Bundle</td><td><code>rddc:FhirResourceFile</code></td><td><code>resourceType</code></td></tr>
 <tr><td>One OMOP CDM table</td><td><code>rddc:OmopTableFile</code></td><td><code>cdmTable</code></td></tr>
 <tr><td>A C-CDA XML document</td><td><code>rddc:CcdaDocumentFile</code></td><td><code>subjectIds</code></td></tr>
-<tr><td>Registry, PRO, claims, mortality or consent table</td><td><code>rddc:TabularFile</code></td><td><code>tableName</code></td></tr>
+<tr><td>Registry, PRO, claims or mortality table</td><td><code>rddc:TabularFile</code></td><td><span class="muted">none</span></td></tr>
+<tr><td>Consent table</td><td><code>rddc:ConsentFile</code></td><td><code>subjectIds</code></td></tr>
 <tr><td>A clinical note or scanned report</td><td><code>rddc:ClinicalDocumentFile</code></td><td><code>subjectIds</code></td></tr>
 <tr><td>A data dictionary or README</td><td><code>rddc:DocumentationFile</code></td><td><code>about</code></td></tr>
 </tbody></table></div>
@@ -162,7 +163,7 @@
 
 <h3>Value origins</h3>
 <p><code>valueOrigins</code> records how a tool filled in a value: its JSON pointer, origin (<code>declared</code>, <code>detected</code> or <code>inferred</code>), method and confidence. A person must confirm inferred values with <code>"confirmed": true</code> before validation passes.</p>
-<rddc-json src="examples/deposit_fhir_omop.json" pointer="/distribution/8/valueOrigins" title="tableName was detected from the file name"></rddc-json>
+<rddc-json src="examples/deposit_fhir_omop.json" pointer="/distribution/8/valueOrigins" title="recordCount was detected by counting rows"></rddc-json>
 
 <h2>Record sets</h2>
 <p>Record sets describe table columns. Use them for data dictionaries and joins between tables whose structure is not defined by a standard, such as <code>visits.patient_id</code> referencing <code>patients.id</code>. OMOP foreign keys and FHIR references are already defined by their standards.</p>
