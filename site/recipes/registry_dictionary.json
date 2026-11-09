@@ -97,7 +97,6 @@
       "encodingFormat": "application/vnd.apache.parquet",
       "sha256": "9388971dd5e6134f327e4577ad6604b7231eb48c5db72f4be07ddb9f4365a4d9",
       "md5": "c41e9ffa7d521c027a6067cf255ba201",
-      "tableName": "patients",
       "recordCount": 3
     },
     {
@@ -110,14 +109,12 @@
       "encodingFormat": "text/csv",
       "sha256": "bad7f4d826a9ad20c880b6d10366caf036f3b6fd52ea4f86e8591737ffa722da",
       "md5": "67622fb63db45003ef4e0a239d032d02",
-      "tableName": "visits",
       "recordCount": 41,
       "valueOrigins": [
         {
-          "fieldPath": "/tableName",
+          "fieldPath": "/recordCount",
           "origin": "detected",
-          "method": "file_stem",
-          "confidence": 0.9
+          "method": "row_count"
         }
       ]
     }
