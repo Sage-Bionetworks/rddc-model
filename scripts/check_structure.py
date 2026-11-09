@@ -4,8 +4,9 @@ Usage: python scripts/check_structure.py [SCHEMA]
 
 SCHEMA defaults to schema/data.yaml. LinkML does not validate annotation values,
 so this script does. Exits non-zero if any concrete DataFile subclass has no
-"structure" annotation or an unknown value, or if any class has a "biometric"
-annotation other than "true".
+"structure" annotation or an unknown value, if any class has a "biometric"
+annotation other than "true", or if a subclass of a biometric class does not
+repeat the annotation.
 """
 
 import os
@@ -29,7 +30,16 @@ def main():
         ann = cls.annotations.get("structure")
         value = ann.value if ann is not None else None
         biometric = cls.annotations.get("biometric")
-        ok = value in STRUCTURES and (biometric is None or biometric.value in BIOMETRIC)
+        # A subclass of a biometric class identifies a person too, so it must say so.
+        inherited = any(
+            "biometric" in sv.get_class(a).annotations
+            for a in sv.class_ancestors(name, reflexive=False)
+        )
+        ok = (
+            value in STRUCTURES
+            and (biometric is None or biometric.value in BIOMETRIC)
+            and (biometric is not None or not inherited)
+        )
         bad += [] if ok else [name]
         extra = f", biometric: {biometric.value}" if biometric is not None else ""
         print(f"{'ok  ' if ok else 'FAIL'} {name}: {value}{extra}")

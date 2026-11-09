@@ -53,13 +53,13 @@ Every concrete class also requires the fields shared by all data files: `@id`, `
 | [`FhirNdjsonFile`](#fhirndjsonfile) | structured | `application/fhir+ndjson` | `resourceType`, `fhirVersion` |
 | [`OmopTableFile`](#omoptablefile) | structured | `text/csv`, `text/tab-separated-values`, `application/vnd.apache.parquet` | `cdmTable`, `omopCdmVersion` |
 | [`CcdaDocumentFile`](#ccdadocumentfile) | structured | `application/xml`, `text/xml` | `subjectIds` |
-| [`TabularFile`](#tabularfile) | structured | `text/csv`, `text/tab-separated-values`, `application/vnd.apache.parquet`, `application/json`, `application/jsonl` | `tableName` |
-| [`ClinicalDocumentFile`](#clinicaldocumentfile) | unstructured | `text/plain`, `application/pdf`, `application/rtf` | `subjectIds` |
+| [`TabularFile`](#tabularfile) | structured | `text/csv`, `text/tab-separated-values`, `application/vnd.apache.parquet`, `application/json`, `application/jsonlines` | `tableName` |
+| [`ClinicalDocumentFile`](#clinicaldocumentfile) | unstructured | `text/plain`, `application/pdf`, `application/rtf`, `image/tiff`, `image/jpeg`, `image/png` | `subjectIds` |
 | [`DocumentationFile`](#documentationfile) | mixed | any | `about` |
-| [`SequenceReadsFile`](#sequencereadsfile) | structured | any |  |
-| [`AlignmentFile`](#alignmentfile) | structured | any | `referenceGenome` |
-| [`VariantFile`](#variantfile) | structured | any | `referenceGenome` |
-| [`IndexFile`](#indexfile) | structured | any | `indexOf` |
+| [`SequenceReadsFile`](#sequencereadsfile) | structured | `text/plain`, `application/octet-stream` |  |
+| [`AlignmentFile`](#alignmentfile) | structured | `text/plain`, `application/octet-stream` | `referenceGenome` |
+| [`VariantFile`](#variantfile) | structured | `text/plain`, `application/octet-stream` | `referenceGenome` |
+| [`IndexFile`](#indexfile) | structured | `application/octet-stream` | `indexOf` |
 | [`ImagingFile`](#imagingfile) | unstructured | any |  |
 | [`FacialImagingFile`](#facialimagingfile) | unstructured | `image/jpeg`, `image/png`, `image/tiff`, `image/heic`, `application/dicom` | `subjectIds` |
 | [`MediaFile`](#mediafile) | unstructured | any |  |
@@ -107,6 +107,7 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
 | `fhirVersion` | [`FhirVersionEnum`](#fhirversionenum) | yes | FHIR version of the resources in the file. A file holds resources of one version only. |
+| `modality` | [`ModalityEnum`](#modalityenum) | yes | The kind of data in the file. One of: `clinical_fhir`. |
 | `implementationGuides` | `string` (list) | | FHIR implementation guide packages the resources conform to, as "<package id>#<version>", e.g. "hl7.fhir.us.core#6.1.0". A FHIR validator loads these packages. Leave it out for resources that follow only the base specification. Pattern: `^[a-z0-9][a-z0-9_-]*(\.[a-z0-9_-]+)+#[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.-]+)?$`. |
 
 ### FhirBundleFile
@@ -119,7 +120,7 @@ Fields it adds or changes; it also has all fields of [`FhirFile`](#fhirfile):
 
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
-| `bundleType` | [`FhirBundleTypeEnum`](#fhirbundletypeenum) | yes | The FHIR Bundle.type of the bundles in the file. |
+| `bundleType` | [`FhirBundleTypeEnum`](#fhirbundletypeenum) | yes | The FHIR Bundle.type of the bundle in the file. |
 | `encodingFormat` | `string` | yes | Media type of the content (after decompression when compression is set). Fixed: `application/fhir+json`. |
 | `subjectIds` | [`Identifier`](#identifier) (list) | yes | Subject IDs the file contains. Each must appear in the subject table. |
 
@@ -184,6 +185,7 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 | --- | --- | --- | --- |
 | `cdmTable` | [`OmopCdmTableEnum`](#omopcdmtableenum) | yes | OMOP CDM table in the file, e.g. person. |
 | `encodingFormat` | [`MediaType`](#mediatype) | yes | Media type of the content (after decompression when compression is set). One of: `text/csv`, `text/tab-separated-values`, `application/vnd.apache.parquet`. |
+| `modality` | [`ModalityEnum`](#modalityenum) | yes | The kind of data in the file. One of: `clinical_omop`. |
 | `omopCdmVersion` | [`OmopCdmVersionEnum`](#omopcdmversionenum) | yes | OMOP CDM version of the table, as major.minor, e.g. "5.4". |
 
 Rules:
@@ -201,8 +203,9 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
 | `encodingFormat` | [`MediaType`](#mediatype) | yes | Media type of the content (after decompression when compression is set). One of: `application/xml`, `text/xml`. |
+| `modality` | [`ModalityEnum`](#modalityenum) | yes | The kind of data in the file. One of: `clinical_ccda`. |
 | `subjectIds` | [`Identifier`](#identifier) (list) | yes | Subject IDs the file contains. Each must appear in the subject table. |
-| `templateIds` | `string` (list) | | C-CDA template IDs (root or root:extension). |
+| `templateIds` | `string` (list) | | C-CDA template IDs, as an OID root or "root:extension", e.g. "2.16.840.1.113883.10.20.22.1.2:2015-08-01". Pattern: `^[0-2](\.(0\|[1-9][0-9]*))+(:[^\s:]+)?$`. |
 
 ### TabularFile
 
@@ -214,12 +217,13 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
-| `encodingFormat` | [`MediaType`](#mediatype) | yes | Media type of the content (after decompression when compression is set). One of: `text/csv`, `text/tab-separated-values`, `application/vnd.apache.parquet`, `application/json`, `application/jsonl`. |
+| `encodingFormat` | [`MediaType`](#mediatype) | yes | Media type of the content (after decompression when compression is set). One of: `text/csv`, `text/tab-separated-values`, `application/vnd.apache.parquet`, `application/json`, `application/jsonlines`. |
+| `modality` | [`ModalityEnum`](#modalityenum) | yes | The kind of data in the file. One of: `clinical_tabular`, `consent`, `wearable`, `metadata`, `other`. |
 | `tableName` | `string` | yes | Table name within its dataset. |
 
 ### ClinicalDocumentFile
 
-An unstructured clinical document, such as a note or a scanned report.
+An unstructured clinical document, such as a note or a scanned report. A scan is a PDF or an image (TIFF, JPEG or PNG).
 
 Use as `"@type": "cr:FileObject", "additionalType": "rddc:ClinicalDocumentFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: unstructured.
 
@@ -227,7 +231,8 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
-| `encodingFormat` | [`MediaType`](#mediatype) | yes | Media type of the content (after decompression when compression is set). One of: `text/plain`, `application/pdf`, `application/rtf`. |
+| `encodingFormat` | [`MediaType`](#mediatype) | yes | Media type of the content (after decompression when compression is set). One of: `text/plain`, `application/pdf`, `application/rtf`, `image/tiff`, `image/jpeg`, `image/png`. |
+| `modality` | [`ModalityEnum`](#modalityenum) | yes | The kind of data in the file. One of: `clinical_text`. |
 | `subjectIds` | [`Identifier`](#identifier) (list) | yes | Subject IDs the file contains. Each must appear in the subject table. |
 
 ### DocumentationFile
@@ -241,10 +246,11 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
 | `about` | [`NodeRef`](#noderef) (list) | yes | The files or record sets this file documents. |
+| `modality` | [`ModalityEnum`](#modalityenum) | yes | The kind of data in the file. One of: `metadata`. |
 
 ### GenomicsFile
 
-Omics profile base class (Q5).
+Base class for genomic sequencing data. These formats have no registered media type, so encodingFormat names the container: text/plain for text formats (FASTQ, SAM, VCF) and application/octet-stream for binary ones (BAM, CRAM, BCF). The class says which format it is. A gzip or BGZF-compressed text file (.fastq.gz, .vcf.gz) sets compression to gzip. BAM, CRAM and BCF compress internally as part of the format, so they leave compression unset.
 
 Abstract: not used directly. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Subclasses: [`SequenceReadsFile`](#sequencereadsfile), [`AlignmentFile`](#alignmentfile), [`VariantFile`](#variantfile).
 
@@ -252,12 +258,14 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
+| `encodingFormat` | [`MediaType`](#mediatype) | yes | Media type of the content (after decompression when compression is set). One of: `text/plain`, `application/octet-stream`. |
+| `modality` | [`ModalityEnum`](#modalityenum) | yes | The kind of data in the file. One of: `genomics`. |
 | `assay` | `string` | | The assay that produced the data. |
 | `platform` | `string` | | The instrument or sequencing platform that produced the data. |
 
 ### SequenceReadsFile
 
-Sequencing reads, such as FASTQ.
+Sequencing reads, such as FASTQ or unaligned BAM.
 
 Use as `"@type": "cr:FileObject", "additionalType": "rddc:SequenceReadsFile"`. Inherits from [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured.
 
@@ -277,11 +285,11 @@ Fields it adds or changes; it also has all fields of [`GenomicsFile`](#genomicsf
 
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
-| `referenceGenome` | `string` | yes | Reference assembly, e.g. GRCh38. |
+| `referenceGenome` | [`ReferenceGenomeEnum`](#referencegenomeenum) | yes | Reference assembly the coordinates refer to, e.g. GRCh38. |
 
 ### VariantFile
 
-Variant calls, such as VCF.
+Variant calls, such as VCF or BCF.
 
 Use as `"@type": "cr:FileObject", "additionalType": "rddc:VariantFile"`. Inherits from [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured.
 
@@ -289,11 +297,11 @@ Fields it adds or changes; it also has all fields of [`GenomicsFile`](#genomicsf
 
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
-| `referenceGenome` | `string` | yes | Reference assembly, e.g. GRCh38. |
+| `referenceGenome` | [`ReferenceGenomeEnum`](#referencegenomeenum) | yes | Reference assembly the coordinates refer to, e.g. GRCh38. |
 
 ### IndexFile
 
-An index of another file, such as .bai, .crai or .tbi.
+An index of another file in the sidecar, such as .bai, .crai or .tbi. Indexes are binary, so encodingFormat is application/octet-stream.
 
 Use as `"@type": "cr:FileObject", "additionalType": "rddc:IndexFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured.
 
@@ -301,15 +309,20 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
+| `encodingFormat` | `string` | yes | Media type of the content (after decompression when compression is set). Fixed: `application/octet-stream`. |
 | `indexOf` | [`NodeRef`](#noderef) | yes | The file this file indexes. |
 
 ### ImagingFile
 
-A medical or photographic image, such as DICOM.
+A medical or photographic image, such as DICOM. A photograph of a person's face goes in a FacialImagingFile instead.
 
 Use as `"@type": "cr:FileObject", "additionalType": "rddc:ImagingFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Subclasses: [`FacialImagingFile`](#facialimagingfile). Structure: unstructured.
 
-No fields beyond those of [`DataFile`](#datafile).
+Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
+
+| Field | Type | Required | Meaning and constraints |
+| --- | --- | --- | --- |
+| `modality` | [`ModalityEnum`](#modalityenum) | yes | The kind of data in the file. One of: `imaging`. |
 
 ### FacialImagingFile
 
@@ -323,14 +336,19 @@ Fields it adds or changes; it also has all fields of [`ImagingFile`](#imagingfil
 | --- | --- | --- | --- |
 | `encodingFormat` | [`MediaType`](#mediatype) | yes | Media type of the content (after decompression when compression is set). One of: `image/jpeg`, `image/png`, `image/tiff`, `image/heic`, `application/dicom`. |
 | `subjectIds` | [`Identifier`](#identifier) (list) | yes | Subject IDs the file contains. Each must appear in the subject table. |
+| `sensitivity` | [`BiometricFileSensitivity`](#biometricfilesensitivity) | | Per-file sensitivity overrides. containsBiometricIdentifiers is left out: the class already says the file contains biometric identifiers. |
 
 ### MediaFile
 
-An audio or video recording.
+An audio or video recording. A recording of a person's voice or face contains biometric identifiers, so set sensitivity.containsBiometricIdentifiers to true.
 
 Use as `"@type": "cr:FileObject", "additionalType": "rddc:MediaFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: unstructured.
 
-No fields beyond those of [`DataFile`](#datafile).
+Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
+
+| Field | Type | Required | Meaning and constraints |
+| --- | --- | --- | --- |
+| `modality` | [`ModalityEnum`](#modalityenum) | yes | The kind of data in the file. One of: `audio`, `video`. |
 
 ### GenericFile
 
@@ -372,7 +390,7 @@ An informational key-value pair for a pipeline. Any value used to make a pipelin
 
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
-| `propertyID` | `string` | yes | Namespaced key, e.g. "fhir_to_omop:source_vocabulary". Pattern: `^[a-z][a-z0-9_]*:[a-z][a-z0-9_.]*$`. |
+| `propertyID` | `string` | yes | Namespaced key, "<namespace>:<key>", e.g. "fhir_to_omop:source_vocabulary". Pattern: `^[a-z][a-z0-9_]*:[A-Za-z][A-Za-z0-9_.]*$`. |
 | `value` | `string` | yes | The value of a key-value pair or identifier. |
 | `@type` | `string` | | The JSON-LD type. cr:FileObject or cr:FileSet for distribution items. Fixed: `sc:PropertyValue`. |
 
@@ -406,6 +424,17 @@ A project-specific key-value pair with a namespace, stored in additionalProperty
 | `value` | `string` | yes | The value of a key-value pair or identifier. |
 | `@type` | `string` | | The JSON-LD type. cr:FileObject or cr:FileSet for distribution items. Fixed: `sc:PropertyValue`. |
 
+### BiometricFileSensitivity
+
+Per-file sensitivity overrides for a class whose content always identifies a person, such as FacialImagingFile. It has no containsBiometricIdentifiers flag, so a file cannot contradict its class.
+
+| Field | Type | Required | Meaning and constraints |
+| --- | --- | --- | --- |
+| `containsDates` | `boolean` | | The data includes dates more precise than a year. These are accepted at deposit and masked at release. |
+| `containsFreeText` | `boolean` | | The data includes unstructured text that needs a de-identification scan. |
+| `containsZipCodes` | `boolean` | | The data includes postal codes. These are accepted at deposit and masked at release. |
+| `notes` | `string` | | Free-text notes on the sensitivity values. |
+
 ## Enumerations
 
 ### CompressionEnum
@@ -431,15 +460,15 @@ Where an auto-filled value came from.
 
 ### ModalityEnum
 
-The kind of data in a file. Together with the file and file-set classes, this determines the NORMALIZE lane. A class may support several modalities: a TabularFile can hold registry, PRO or consent data.
+The kind of data in a file. Together with the file and file-set classes, this determines how the platform processes the file. Each class accepts only the modalities that fit it; some accept several, e.g. a TabularFile can hold registry, PRO or consent data.
 
 | Value | Meaning |
 | --- | --- |
-| `clinical_fhir` | HL7 FHIR resources. Lane 2. |
-| `clinical_omop` | OMOP CDM tables. Lane 1. |
-| `clinical_ccda` | HL7 C-CDA documents. Lane 3. |
-| `clinical_tabular` | Registry, patient-reported, claims or mortality tables not in OMOP or FHIR form. Lane 4. |
-| `clinical_text` | Unstructured clinical text such as notes. De-identified before lane 4. |
+| `clinical_fhir` | HL7 FHIR resources. |
+| `clinical_omop` | OMOP CDM tables. |
+| `clinical_ccda` | HL7 C-CDA documents. |
+| `clinical_tabular` | Registry, patient-reported, claims or mortality tables not in OMOP or FHIR form. |
+| `clinical_text` | Unstructured clinical text such as notes. De-identified before use. |
 | `consent` | Consent elements for subjects. |
 | `genomics` | Sequencing reads, alignments, variant calls and related indexes. |
 | `imaging` | Medical images such as DICOM. |
@@ -481,6 +510,16 @@ FHIR resource types of every accepted FHIR version, the range of resourceType. A
 FHIR R4 (4.0.1) resource types, from the resource-types code system (http://hl7.org/fhir/R4/codesystem-resource-types.html). The abstract types Resource and DomainResource are left out because no instance has them. Each value means the FHIR RDF type of the same name.
 
 146 values: `Account`, `ActivityDefinition`, `AdverseEvent`, `AllergyIntolerance`, `Appointment`, `AppointmentResponse`, `AuditEvent`, `Basic`, `Binary`, `BiologicallyDerivedProduct`, `BodyStructure`, `Bundle`, `CapabilityStatement`, `CarePlan`, `CareTeam`, `CatalogEntry`, `ChargeItem`, `ChargeItemDefinition`, `Claim`, `ClaimResponse`, `ClinicalImpression`, `CodeSystem`, `Communication`, `CommunicationRequest`, `CompartmentDefinition`, `Composition`, `ConceptMap`, `Condition`, `Consent`, `Contract`, `Coverage`, `CoverageEligibilityRequest`, `CoverageEligibilityResponse`, `DetectedIssue`, `Device`, `DeviceDefinition`, `DeviceMetric`, `DeviceRequest`, `DeviceUseStatement`, `DiagnosticReport`, `DocumentManifest`, `DocumentReference`, `EffectEvidenceSynthesis`, `Encounter`, `Endpoint`, `EnrollmentRequest`, `EnrollmentResponse`, `EpisodeOfCare`, `EventDefinition`, `Evidence`, `EvidenceVariable`, `ExampleScenario`, `ExplanationOfBenefit`, `FamilyMemberHistory`, `Flag`, `Goal`, `GraphDefinition`, `Group`, `GuidanceResponse`, `HealthcareService`, `ImagingStudy`, `Immunization`, `ImmunizationEvaluation`, `ImmunizationRecommendation`, `ImplementationGuide`, `InsurancePlan`, `Invoice`, `Library`, `Linkage`, `List`, `Location`, `Measure`, `MeasureReport`, `Media`, `Medication`, `MedicationAdministration`, `MedicationDispense`, `MedicationKnowledge`, `MedicationRequest`, `MedicationStatement`, `MedicinalProduct`, `MedicinalProductAuthorization`, `MedicinalProductContraindication`, `MedicinalProductIndication`, `MedicinalProductIngredient`, `MedicinalProductInteraction`, `MedicinalProductManufactured`, `MedicinalProductPackaged`, `MedicinalProductPharmaceutical`, `MedicinalProductUndesirableEffect`, `MessageDefinition`, `MessageHeader`, `MolecularSequence`, `NamingSystem`, `NutritionOrder`, `Observation`, `ObservationDefinition`, `OperationDefinition`, `OperationOutcome`, `Organization`, `OrganizationAffiliation`, `Parameters`, `Patient`, `PaymentNotice`, `PaymentReconciliation`, `Person`, `PlanDefinition`, `Practitioner`, `PractitionerRole`, `Procedure`, `Provenance`, `Questionnaire`, `QuestionnaireResponse`, `RelatedPerson`, `RequestGroup`, `ResearchDefinition`, `ResearchElementDefinition`, `ResearchStudy`, `ResearchSubject`, `RiskAssessment`, `RiskEvidenceSynthesis`, `Schedule`, `SearchParameter`, `ServiceRequest`, `Slot`, `Specimen`, `SpecimenDefinition`, `StructureDefinition`, `StructureMap`, `Subscription`, `Substance`, `SubstanceNucleicAcid`, `SubstancePolymer`, `SubstanceProtein`, `SubstanceReferenceInformation`, `SubstanceSourceMaterial`, `SubstanceSpecification`, `SupplyDelivery`, `SupplyRequest`, `Task`, `TerminologyCapabilities`, `TestReport`, `TestScript`, `ValueSet`, `VerificationResult`, `VisionPrescription`.
+
+### ReferenceGenomeEnum
+
+Human reference assemblies accepted in a deposit. UCSC builds use the matching GRC assembly: hg19 is GRCh37 and hg38 is GRCh38.
+
+| Value | Meaning |
+| --- | --- |
+| `GRCh37` | Genome Reference Consortium human build 37 (hg19). |
+| `GRCh38` | Genome Reference Consortium human build 38 (hg38). |
+| `T2T-CHM13v2.0` | Telomere-to-Telomere CHM13 assembly, version 2.0 (hs1). |
 
 ### OmopCdmVersionEnum
 
@@ -547,7 +586,7 @@ OMOP CDM 5.4 tables, from the OHDSI table list (CommonDataModel v5.4.3, inst/csv
 | Type | Base | Meaning | Pattern |
 | --- | --- | --- | --- |
 | <a id="uuidurn"></a>`UuidUrn` | `uriorcurie` | A UUID in the form urn:uuid:<uuid>, using lowercase hexadecimal. | `^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$` |
-| <a id="relativepath"></a>`RelativePath` | `string` | An object key relative to the batch prefix. Use forward slashes, no leading slash, and no '.' or '..' path segments. | `^(?!/)(?!.*(^\|/)\.\.?(/\|$)).+$` |
+| <a id="relativepath"></a>`RelativePath` | `string` | An object key relative to the batch prefix. Segments are separated by single forward slashes, with no leading or trailing slash, no backslashes and no '.' or '..' segments. | `^(?!(.*/)?\.\.?(/\|$))[^/\\]+(/[^/\\]+)*$` |
 | <a id="identifier"></a>`Identifier` | `string` | A coded identifier. Letters, digits, and the characters . _ - : only. | `^[A-Za-z0-9._:-]+$` |
 | <a id="mediatype"></a>`MediaType` | `string` | An IANA media type, without parameters. | `^[a-z]+/[A-Za-z0-9.+_-]+$` |
 | <a id="bytesize"></a>`ByteSize` | `string` | A Croissant contentSize in bytes, written "<integer> B". | `^[0-9]+ B$` |

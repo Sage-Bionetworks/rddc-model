@@ -36,9 +36,10 @@ types:
     uri: xsd:string
     typeof: string
     description: >-
-      An object key relative to the batch prefix. Use forward slashes, no leading slash,
-      and no '.' or '..' path segments.
-    pattern: "^(?!/)(?!.*(^|/)\\.\\.?(/|$)).+$"
+      An object key relative to the batch prefix. Segments are separated by single
+      forward slashes, with no leading or trailing slash, no backslashes and no '.' or
+      '..' segments.
+    pattern: "^(?!(.*/)?\\.\\.?(/|$))[^/\\\\]+(/[^/\\\\]+)*$"
   Identifier:
     uri: xsd:string
     typeof: string
@@ -322,6 +323,7 @@ slots:
     description: Subject IDs the file contains. Each must appear in the subject table.
     range: Identifier
     multivalued: true
+    minimum_cardinality: 1
   compression:
     description: "Compression applied to the file's bytes, if any."
     range: CompressionEnum
