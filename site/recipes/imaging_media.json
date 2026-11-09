@@ -43,7 +43,7 @@
       "encodingFormat": "application/dicom",
       "sha256": "788e4bc36221d709dc3aa6a69f2f66886b8824f885c201516073ed15df93df93",
       "md5": "8aff8ec69b45840538059f89005322e8",
-      "assay": "photography",
+      "measurementTechnique": "photography",
       "subjectIds": [
         "P0002"
       ]
