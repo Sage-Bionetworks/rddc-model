@@ -673,6 +673,16 @@ def term_link(curie):
     return f'<a href="{html.escape(sv.expand_curie(curie))}"><code>{html.escape(curie)}</code></a>'
 
 
+def value_terms(pv):
+    """A value's meaning, or failing that its mappings, e.g. "close: NCIT:C190554"."""
+    if pv.meaning:
+        return term_link(pv.meaning)
+    parts = [f"{label}: " + ", ".join(term_link(t) for t in getattr(pv, kind))
+             for kind, label in (("close_mappings", "close"), ("broad_mappings", "broader"))
+             if getattr(pv, kind)]
+    return "; ".join(parts)
+
+
 def vocab_page():
     body = [
         "<h1>Controlled vocabularies</h1>",
@@ -690,10 +700,10 @@ def vocab_page():
                 users.setdefault(usage.range, set()).add(sv.get_slot(sname).alias or sname)
     for name, enum in sv.all_enums().items():
         values = enum.permissible_values
-        with_terms = any(pv.meaning for pv in values.values())
+        with_terms = any(pv.meaning or pv.close_mappings or pv.broad_mappings for pv in values.values())
         rows = "".join(
             f"<tr><td><code>{html.escape(v)}</code></td>"
-            + (f"<td>{term_link(pv.meaning)}</td>" if with_terms else "")
+            + (f"<td>{value_terms(pv)}</td>" if with_terms else "")
             + f"<td>{html.escape(pv.description or '')}</td></tr>"
             for v, pv in values.items()
         )

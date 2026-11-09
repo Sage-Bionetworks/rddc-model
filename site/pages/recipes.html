@@ -64,7 +64,7 @@
 
 <h2>Images and video</h2>
 <p>Facial photographs and gait videos contain biometric identifiers. Here, the acquisition table has none, so the batch sets <code>containsBiometricIdentifiers: false</code>. The video overrides it to <code>true</code>. Files with biometric identifiers stay in the trusted research environment.</p>
-<p>The photograph uses <code>FacialImagingFile</code>, which always counts as biometric whatever the batch default, so it does not set the flag; the schema rejects it if it does. The acquisition table is a <code>DocumentationFile</code> whose <code>about</code> points to the photograph.</p>
+<p>The photograph uses <code>FacialImagingFile</code>, which always counts as biometric whatever the batch default, so it does not set the flag; the schema rejects it if it does. Its <code>assay</code> is <code>photography</code>; a 3D facial scan uses the same class with <code>surface_scan_3d</code>, as an OBJ, STL, glTF or PLY model. The acquisition table is a <code>DocumentationFile</code> whose <code>about</code> points to the photograph.</p>
 <rddc-json src="site/recipes/imaging_media.json" keys="sensitivity,distribution" title="imaging_media.json (excerpt)"></rddc-json>
 
 <h2>Consent</h2>
