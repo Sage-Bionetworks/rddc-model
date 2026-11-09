@@ -1,9 +1,9 @@
-id: https://w3id.org/rddc/sidecar/core
-name: rddc-sidecar-core
-title: RDDC Sidecar Core
+id: https://w3id.org/rddc/core
+name: rddc-core
+title: RDDC Core
 version: 0.1.0
 description: >-
-  Shared building blocks of the RDDC sidecar schema: types, the Croissant file classes
+  Shared building blocks of the RDDC schema modules: types, the Croissant file classes
   (DistributionItem and FileObject), small supporting classes such as references,
   identifiers, extensions and value origins, and the slots they use. The data module
   (data.yaml) and the sidecar module (rddc_sidecar.yaml) import it. It does not import
@@ -11,7 +11,7 @@ description: >-
 license: https://creativecommons.org/publicdomain/zero/1.0/
 
 prefixes:
-  rddc: https://w3id.org/rddc/sidecar/
+  rddc: https://w3id.org/rddc/vocab/
   linkml: https://w3id.org/linkml/
   sc: https://schema.org/
   cr: http://mlcommons.org/croissant/

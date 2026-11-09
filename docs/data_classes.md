@@ -2,9 +2,9 @@
 
 # Data file classes
 
-Schema module `rddc-sidecar-data` (https://w3id.org/rddc/sidecar/data), version 0.1.0.
+Schema module `rddc-data` (https://w3id.org/rddc/data), version 0.1.0.
 
-Data file classes for the RDDC sidecar: the FileObject subclasses that describe the data in a batch, the enums that classify them, and the slots only they use. A file's additionalType names one of these classes.
+Data file classes for RDDC: the FileObject subclasses that describe the data in a batch, the enums that classify them, and the slots only they use. A file's additionalType names one of these classes.
 
 DataFile extends FileObject from core.yaml, the only module this one imports. The sidecar module (rddc_sidecar.yaml) imports this one and lists data files in distribution.
 

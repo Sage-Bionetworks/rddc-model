@@ -1,9 +1,9 @@
-id: https://w3id.org/rddc/sidecar/data
-name: rddc-sidecar-data
-title: RDDC Sidecar Data File Classes
+id: https://w3id.org/rddc/data
+name: rddc-data
+title: RDDC Data File Classes
 version: 0.1.0
 description: >-
-  Data file classes for the RDDC sidecar: the FileObject subclasses that describe the
+  Data file classes for RDDC: the FileObject subclasses that describe the
   data in a batch, the enums that classify them, and the slots only they use. A file's
   additionalType names one of these classes.
 
@@ -31,7 +31,7 @@ description: >-
 license: https://creativecommons.org/publicdomain/zero/1.0/
 
 prefixes:
-  rddc: https://w3id.org/rddc/sidecar/
+  rddc: https://w3id.org/rddc/vocab/
   linkml: https://w3id.org/linkml/
   sc: https://schema.org/
   cr: http://mlcommons.org/croissant/
