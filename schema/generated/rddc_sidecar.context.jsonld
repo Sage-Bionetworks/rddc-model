@@ -85,7 +85,6 @@
     "directIdentifiersRemoved": "rddc:directIdentifiersRemoved",
     "excludes": "cr:excludes",
     "exportTime": "rddc:exportTime",
-    "fhirVersion": "rddc:fhirVersion",
     "fieldPath": "rddc:fieldPath",
     "idSystem": "rddc:idSystem",
     "identifierSystemUri": "rddc:identifierSystemUri",

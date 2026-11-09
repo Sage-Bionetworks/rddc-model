@@ -85,7 +85,6 @@
     "directIdentifiersRemoved": "rddc:directIdentifiersRemoved",
     "excludes": "cr:excludes",
     "exportTime": "rddc:exportTime",
-    "fhirVersion": "rddc:fhirVersion",
     "fieldPath": "rddc:fieldPath",
     "idSystem": "rddc:idSystem",
     "identifierSystemUri": "rddc:identifierSystemUri",
@@ -248,7 +247,6 @@
       "sha256": "e047db5fa705c1cd516e0939ba1e07221c45573f06accfe3c5f8a5a4bdc112f4",
       "md5": "e047db5fa705c1cd516e0939ba1e0722",
       "resourceType": "Observation",
-      "fhirVersion": "4.0.1",
       "compression": "gzip",
       "recordCount": 240,
       "sensitivity": {
@@ -266,7 +264,6 @@
       "sha256": "e90a5d12b9d1e923967675f48ccda22730b9ddf3ea86bcaf97984ca3cbd60912",
       "md5": "e90a5d12b9d1e923967675f48ccda227",
       "resourceType": "Patient",
-      "fhirVersion": "4.0.1",
       "recordCount": 2
     },
     {
