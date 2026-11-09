@@ -15,6 +15,8 @@ Each concrete class carries a "structure" annotation describing its content. It 
 
 Each concrete class also carries a "modality" annotation, a ModalityEnum value naming the kind of data it holds. The platform reads it from the class to decide how to process the file, so sidecars do not include it either. A new kind of data gets a new class rather than a new value on an existing one.
 
+A class whose data is always collected the same way carries an "rai:dataCollectionType" annotation, the Croissant Responsible AI term, with one of its recommended values: "Direct measurement" for genomics, imaging and sensor data. A release can copy it into the dataset's Croissant metadata.
+
 A class whose content always identifies a person carries a "biometric" annotation set to "true" (FacialImagingFile). Its files count as containing biometric identifiers and stay in the trusted research environment, whatever the sensitivity flags say.
 
 ## Hierarchy
@@ -64,16 +66,16 @@ Every concrete class also requires the fields shared by all data files: `@id`, `
 | [`ConsentFile`](#consentfile) | `consent` | structured | `text/csv`, `text/tab-separated-values`, `application/json`, `application/jsonlines` | `subjectIds` |
 | [`ClinicalDocumentFile`](#clinicaldocumentfile) | `clinical_text` | unstructured | `text/plain`, `application/pdf`, `application/rtf`, `image/tiff`, `image/jpeg`, `image/png` | `subjectIds` |
 | [`DocumentationFile`](#documentationfile) | `metadata` | mixed | any |  |
-| [`SequenceReadsFile`](#sequencereadsfile) | `genomics` | structured | `text/plain`, `application/octet-stream` | `assay` |
-| [`AlignmentFile`](#alignmentfile) | `genomics` | structured | `text/plain`, `application/octet-stream` | `referenceGenome`, `assay` |
-| [`VariantFile`](#variantfile) | `genomics` | structured | `text/plain`, `application/octet-stream` | `referenceGenome`, `assay` |
+| [`SequenceReadsFile`](#sequencereadsfile) | `genomics` | structured | `text/plain`, `application/octet-stream` | `measurementTechnique` |
+| [`AlignmentFile`](#alignmentfile) | `genomics` | structured | `text/plain`, `application/octet-stream` | `referenceGenome`, `measurementTechnique` |
+| [`VariantFile`](#variantfile) | `genomics` | structured | `text/plain`, `application/octet-stream` | `referenceGenome`, `measurementTechnique` |
 | [`IndexFile`](#indexfile) | `genomics` | structured | `application/octet-stream` | `indexOf` |
-| [`ImagingFile`](#imagingfile) | `imaging` | unstructured | any | `assay` |
-| [`FacialImagingFile`](#facialimagingfile) | `imaging` | unstructured | `image/jpeg`, `image/png`, `image/tiff`, `image/heic`, `application/dicom`, `model/obj`, `model/stl`, `model/gltf-binary`, `model/gltf+json`, `model/mtl`, `application/octet-stream` | `assay`, `subjectIds` |
+| [`ImagingFile`](#imagingfile) | `imaging` | unstructured | any | `measurementTechnique` |
+| [`FacialImagingFile`](#facialimagingfile) | `imaging` | unstructured | `image/jpeg`, `image/png`, `image/tiff`, `image/heic`, `application/dicom`, `model/obj`, `model/stl`, `model/gltf-binary`, `model/gltf+json`, `model/mtl`, `application/octet-stream` | `measurementTechnique`, `subjectIds` |
 | [`AudioFile`](#audiofile) | `audio` | unstructured | `audio/*` |  |
 | [`VideoFile`](#videofile) | `video` | unstructured | `video/*` |  |
-| [`SensorSignalFile`](#sensorsignalfile) | `wearable` | structured | any | `assay` |
-| [`SensorMeasureFile`](#sensormeasurefile) | `wearable` | structured | `text/csv`, `text/tab-separated-values`, `application/vnd.apache.parquet`, `application/json`, `application/jsonlines` | `assay` |
+| [`SensorSignalFile`](#sensorsignalfile) | `wearable` | structured | any | `measurementTechnique` |
+| [`SensorMeasureFile`](#sensormeasurefile) | `wearable` | structured | `text/csv`, `text/tab-separated-values`, `application/vnd.apache.parquet`, `application/json`, `application/jsonlines` | `measurementTechnique` |
 | [`GenericFile`](#genericfile) | `other` | mixed | any |  |
 
 ## Classes
@@ -256,15 +258,15 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
-| `assay` | [`GenomicsAssayEnum`](#genomicsassayenum) | yes | The sequencing assay that produced the data, e.g. wgs or wes. Downstream analysis depends on it, so every genomics file states it. |
 | `encodingFormat` | [`MediaType`](#mediatype) | yes | Media type of the content (after decompression when compression is set). One of: `text/plain`, `application/octet-stream`. |
+| `measurementTechnique` | [`GenomicsAssayEnum`](#genomicsassayenum) | yes | The sequencing assay that produced the data, e.g. wgs or wes. Downstream analysis depends on it, so every genomics file states it. |
 | `platform` | `string` | | The instrument, sequencing platform or device that produced the data. |
 
 ### SequenceReadsFile
 
 Sequencing reads, such as FASTQ or unaligned BAM.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:SequenceReadsFile"`. Inherits from [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`. Close to [`EDAM:data_2977`](http://edamontology.org/data_2977).
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:SequenceReadsFile"`. Inherits from [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`. Data collection (`rai:dataCollectionType`): Direct measurement. Close to [`EDAM:data_2977`](http://edamontology.org/data_2977).
 
 Fields it adds or changes; it also has all fields of [`GenomicsFile`](#genomicsfile):
 
@@ -276,7 +278,7 @@ Fields it adds or changes; it also has all fields of [`GenomicsFile`](#genomicsf
 
 Aligned reads, such as BAM or CRAM.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:AlignmentFile"`. Inherits from [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`. Close to [`EDAM:data_1383`](http://edamontology.org/data_1383).
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:AlignmentFile"`. Inherits from [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`. Data collection (`rai:dataCollectionType`): Direct measurement. Close to [`EDAM:data_1383`](http://edamontology.org/data_1383).
 
 Fields it adds or changes; it also has all fields of [`GenomicsFile`](#genomicsfile):
 
@@ -288,7 +290,7 @@ Fields it adds or changes; it also has all fields of [`GenomicsFile`](#genomicsf
 
 Variant calls, such as VCF or BCF.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:VariantFile"`. Inherits from [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`. Close to [`EDAM:data_3498`](http://edamontology.org/data_3498).
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:VariantFile"`. Inherits from [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`. Data collection (`rai:dataCollectionType`): Direct measurement. Close to [`EDAM:data_3498`](http://edamontology.org/data_3498).
 
 Fields it adds or changes; it also has all fields of [`GenomicsFile`](#genomicsfile):
 
@@ -313,26 +315,26 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 A medical or photographic image, such as DICOM. A photograph of a person's face goes in a FacialImagingFile instead.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:ImagingFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Subclasses: [`FacialImagingFile`](#facialimagingfile). Structure: unstructured. Modality: `imaging`. Close to [`EDAM:data_3424`](http://edamontology.org/data_3424).
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:ImagingFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Subclasses: [`FacialImagingFile`](#facialimagingfile). Structure: unstructured. Modality: `imaging`. Data collection (`rai:dataCollectionType`): Direct measurement. Close to [`EDAM:data_3424`](http://edamontology.org/data_3424).
 
 Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
-| `assay` | [`ImagingAssayEnum`](#imagingassayenum) | yes | The imaging technique that produced the image, e.g. ct, mri or photography. Analysis depends on it, so every image states it. |
+| `measurementTechnique` | [`ImagingAssayEnum`](#imagingassayenum) | yes | The imaging technique that produced the image, e.g. ct, mri or photography. Analysis depends on it, so every image states it. |
 
 ### FacialImagingFile
 
-An image or 3D surface model of a person's face, such as those taken for dysmorphology assessment or facial phenotyping. assay says how it was captured: a photograph, a 3D surface scan, or a CT or MRI. A face is a biometric identifier, so the file always counts as containing biometric identifiers.
+An image or 3D surface model of a person's face, such as those taken for dysmorphology assessment or facial phenotyping. measurementTechnique says how it was captured: a photograph, a 3D surface scan, or a CT or MRI. A face is a biometric identifier, so the file always counts as containing biometric identifiers.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:FacialImagingFile"`. Inherits from [`ImagingFile`](#imagingfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: unstructured. Modality: `imaging`. A kind of [`EDAM:data_3424`](http://edamontology.org/data_3424). Biometric: always counts as containing biometric identifiers.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:FacialImagingFile"`. Inherits from [`ImagingFile`](#imagingfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: unstructured. Modality: `imaging`. Data collection (`rai:dataCollectionType`): Direct measurement. A kind of [`EDAM:data_3424`](http://edamontology.org/data_3424). Biometric: always counts as containing biometric identifiers.
 
 Fields it adds or changes; it also has all fields of [`ImagingFile`](#imagingfile):
 
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
-| `assay` | [`ImagingAssayEnum`](#imagingassayenum) | yes | How the face was captured. Processing differs: 2D photographs and 3D surface models go to different facial analysis tools. One of: `photography`, `surface_scan_3d`, `ct`, `mri`, `other`. |
 | `encodingFormat` | [`MediaType`](#mediatype) | yes | Media type of the image or 3D model. An OBJ model's material file is model/mtl. PLY has no registered media type, so a PLY model is application/octet-stream. One of: `image/jpeg`, `image/png`, `image/tiff`, `image/heic`, `application/dicom`, `model/obj`, `model/stl`, `model/gltf-binary`, `model/gltf+json`, `model/mtl`, `application/octet-stream`. |
+| `measurementTechnique` | [`ImagingAssayEnum`](#imagingassayenum) | yes | How the face was captured. Processing differs: 2D photographs and 3D surface models go to different facial analysis tools. One of: `photography`, `surface_scan_3d`, `ct`, `mri`, `other`. |
 | `subjectIds` | [`Identifier`](#identifier) (list) | yes | Subject IDs the file contains. Each must appear in the subject table. |
 | `sensitivity` | [`BiometricFileSensitivity`](#biometricfilesensitivity) | | Per-file sensitivity overrides. containsBiometricIdentifiers is left out: the class already says the file contains biometric identifiers. |
 
@@ -370,14 +372,14 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
-| `assay` | [`SensorAssayEnum`](#sensorassayenum) (list) | yes | The sensing techniques that produced the data, e.g. accelerometry or ecg. A list, since one recording or summary can combine several, such as a sleep study's EEG and ECG channels. |
+| `measurementTechnique` | [`SensorAssayEnum`](#sensorassayenum) (list) | yes | The sensing techniques that produced the data, e.g. accelerometry or ecg. A list, since one recording or summary can combine several, such as a sleep study's EEG and ECG channels. |
 | `platform` | `string` | | The device that recorded the data, e.g. "ActiGraph GT9X". |
 
 ### SensorSignalFile
 
 A raw sensor signal, such as 100 Hz accelerometry or an ECG waveform, before any aggregation. Common formats are EDF/EDF+, WFDB, DICOM waveform and device or vendor formats; EDF, WFDB and vendor formats have no registered media type, so they are application/octet-stream.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:SensorSignalFile"`. Inherits from [`SensorDataFile`](#sensordatafile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `wearable`.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:SensorSignalFile"`. Inherits from [`SensorDataFile`](#sensordatafile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `wearable`. Data collection (`rai:dataCollectionType`): Direct measurement.
 
 Fields it adds or changes; it also has all fields of [`SensorDataFile`](#sensordatafile):
 
@@ -389,7 +391,7 @@ Fields it adds or changes; it also has all fields of [`SensorDataFile`](#sensord
 
 Measures derived from sensor data, such as per-minute step counts, sleep stages or daily heart rate summaries. IEEE 1752.1 (Open mHealth) defines JSON schemas for sleep and physical activity measures.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:SensorMeasureFile"`. Inherits from [`SensorDataFile`](#sensordatafile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `wearable`.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:SensorMeasureFile"`. Inherits from [`SensorDataFile`](#sensordatafile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `wearable`. Data collection (`rai:dataCollectionType`): Direct measurement.
 
 Fields it adds or changes; it also has all fields of [`SensorDataFile`](#sensordatafile):
 

@@ -8,7 +8,9 @@ so this script does. Exits non-zero if any concrete DataFile subclass:
 - has no "structure" annotation, or an unknown value;
 - has no "modality" annotation, or a value that is not in ModalityEnum;
 - has a "biometric" annotation other than "true", or is a subclass of a
-  biometric class and does not repeat the annotation.
+  biometric class and does not repeat the annotation;
+- has an "rai:dataCollectionType" annotation that is not one of the Croissant
+  Responsible AI recommended values (the annotation is optional).
 """
 
 import os
@@ -19,6 +21,13 @@ from linkml_runtime.utils.schemaview import SchemaView
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STRUCTURES = {"structured", "unstructured", "mixed"}
 BIOMETRIC = {"true"}
+# Recommended values of rai:dataCollectionType (Croissant RAI vocabulary, croissant_rai.ttl).
+COLLECTION_TYPES = {
+    "Surveys", "Secondary Data analysis", "Physical data collection", "Direct measurement",
+    "Document analysis", "Manual Human Curator", "Software Collection", "Experiments",
+    "Web Scraping", "Web API", "Focus groups", "Self-reporting", "Customer feedback data",
+    "User-generated content data", "Passive Data Collection", "Others",
+}
 
 
 def value(cls, key):
@@ -35,7 +44,8 @@ def main():
         cls = sv.get_class(name)
         if cls.abstract:
             continue
-        structure, modality, biometric = (value(cls, k) for k in ("structure", "modality", "biometric"))
+        structure, modality, biometric, collection = (
+            value(cls, k) for k in ("structure", "modality", "biometric", "rai:dataCollectionType"))
         # A subclass of a biometric class identifies a person too, so it must say so.
         inherited = any(
             value(sv.get_class(a), "biometric") is not None
@@ -46,9 +56,11 @@ def main():
             and modality in modalities
             and (biometric is None or biometric in BIOMETRIC)
             and (biometric is not None or not inherited)
+            and (collection is None or collection in COLLECTION_TYPES)
         )
         bad += [] if ok else [name]
         extra = f", biometric: {biometric}" if biometric is not None else ""
+        extra += f", collected by: {collection}" if collection is not None else ""
         print(f"{'ok  ' if ok else 'FAIL'} {name}: {structure}, {modality}{extra}")
     print(f"\n{len(bad)} failure(s)")
     sys.exit(1 if bad else 0)

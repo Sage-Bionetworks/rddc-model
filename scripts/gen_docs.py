@@ -224,6 +224,9 @@ class Page:
         modality = cls.annotations.get("modality")
         if modality:
             facts.append(f"Modality: `{modality.value}`.")
+        collection = cls.annotations.get("rai:dataCollectionType")
+        if collection:
+            facts.append(f"Data collection (`rai:dataCollectionType`): {collection.value}.")
         for kind, label in (("exact_mappings", "Same as"), ("close_mappings", "Close to"),
                             ("broad_mappings", "A kind of"), ("narrow_mappings", "Broader than")):
             terms = getattr(cls, kind) or []

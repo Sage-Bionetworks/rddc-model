@@ -30,6 +30,12 @@ description: >-
   new class rather than a new value on an existing one.
 
 
+  A class whose data is always collected the same way carries an
+  "rai:dataCollectionType" annotation, the Croissant Responsible AI term, with one of
+  its recommended values: "Direct measurement" for genomics, imaging and sensor data.
+  A release can copy it into the dataset's Croissant metadata.
+
+
   A class whose content always identifies a person carries a "biometric" annotation
   set to "true" (FacialImagingFile). Its files count as containing biometric
   identifiers and stay in the trusted research environment, whatever the sensitivity
@@ -48,6 +54,7 @@ prefixes:
   OBI: http://purl.obolibrary.org/obo/OBI_
   NCIT: http://purl.obolibrary.org/obo/NCIT_
   SNOMEDCT: http://identifiers.org/snomedct/
+  rai: http://mlcommons.org/croissant/RAI/
 default_prefix: rddc
 default_range: string
 
@@ -1432,10 +1439,10 @@ classes:
       .vcf.gz) sets compression to gzip. BAM, CRAM and BCF compress internally as part of
       the format, so they leave compression unset.
     slots:
-    - assay
+    - measurementTechnique
     - platform
     slot_usage:
-      assay:
+      measurementTechnique:
         required: true
         range: GenomicsAssayEnum
         description: >-
@@ -1454,6 +1461,7 @@ classes:
     annotations:
       structure: structured
       modality: genomics
+      rai:dataCollectionType: Direct measurement
     slots:
     - pairedWith
 
@@ -1465,6 +1473,7 @@ classes:
     annotations:
       structure: structured
       modality: genomics
+      rai:dataCollectionType: Direct measurement
     slots:
     - referenceGenome
     slot_usage:
@@ -1479,6 +1488,7 @@ classes:
     annotations:
       structure: structured
       modality: genomics
+      rai:dataCollectionType: Direct measurement
     slots:
     - referenceGenome
     slot_usage:
@@ -1516,10 +1526,11 @@ classes:
     annotations:
       structure: unstructured
       modality: imaging
+      rai:dataCollectionType: Direct measurement
     slots:
-    - assay
+    - measurementTechnique
     slot_usage:
-      assay:
+      measurementTechnique:
         required: true
         range: ImagingAssayEnum
         description: >-
@@ -1532,15 +1543,16 @@ classes:
     - EDAM:data_3424
     description: >-
       An image or 3D surface model of a person's face, such as those taken for
-      dysmorphology assessment or facial phenotyping. assay says how it was captured: a
+      dysmorphology assessment or facial phenotyping. measurementTechnique says how it was captured: a
       photograph, a 3D surface scan, or a CT or MRI. A face is a biometric identifier, so
       the file always counts as containing biometric identifiers.
     annotations:
       structure: unstructured
       modality: imaging
+      rai:dataCollectionType: Direct measurement
       biometric: "true"
     slot_usage:
-      assay:
+      measurementTechnique:
         any_of:
         - equals_string: photography
         - equals_string: surface_scan_3d
@@ -1609,10 +1621,10 @@ classes:
       since they need different processing. Sensor data already in FHIR form, such as
       device Observations, goes in a FHIR file instead.
     slots:
-    - assay
+    - measurementTechnique
     - platform
     slot_usage:
-      assay:
+      measurementTechnique:
         required: true
         multivalued: true
         minimum_cardinality: 1
@@ -1634,6 +1646,7 @@ classes:
     annotations:
       structure: structured
       modality: wearable
+      rai:dataCollectionType: Direct measurement
     slots:
     - samplingRate
 
@@ -1646,6 +1659,7 @@ classes:
     annotations:
       structure: structured
       modality: wearable
+      rai:dataCollectionType: Direct measurement
     slot_usage:
       encodingFormat:
         any_of:
@@ -1706,11 +1720,14 @@ slots:
     description: The files or record sets this file documents.
 
   # --- assays and instruments -----------------------------------------------
-  # assay: GenomicsFile, ImagingFile, SensorDataFile and their subclasses.
-  assay:
+  # measurementTechnique: GenomicsFile, ImagingFile, SensorDataFile and their
+  # subclasses.
+  measurementTechnique:
+    slot_uri: sc:measurementTechnique
     description: >-
-      The assay that produced the data. Each class that uses it sets the allowed
-      values.
+      The assay or technique that produced the data, schema.org's measurementTechnique.
+      Each class that uses it sets the allowed values, from an enum whose values map to
+      ontology terms.
   # platform: GenomicsFile, SensorDataFile and their subclasses.
   platform:
     description: "The instrument, sequencing platform or device that produced the data."
