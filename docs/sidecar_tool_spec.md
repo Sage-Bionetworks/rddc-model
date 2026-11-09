@@ -407,7 +407,8 @@ W = warning, I = information.
 | `conformance.fhir_bulk_patient` | E | `FhirBulkExport` has no `Patient` file |
 | `conformance.pinned_standard` | E | A file set's `conformsTo` value is not in the pinned list |
 | `conformance.compression` | E | `compression` disagrees with the magic number |
-| `conformance.unassigned` | W | A FHIR, OMOP or C-CDA file belongs to no file set |
+| `conformance.unassigned` | E | A FHIR, OMOP or C-CDA file belongs to no file set. The set's `conformsTo` is the only place the file's FHIR version, OMOP vocabulary release or C-CDA release is declared |
+| `conformance.resource_type_version` | E | A FHIR file's `resourceType` is not a resource type of the FHIR version in its file set's `conformsTo` |
 | `confirmation.unconfirmed_inferred` | E | A `valueOrigins` entry with `origin: inferred` and not `confirmed` |
 | `register.descriptor_absent` | W | No descriptor; register checks deferred to receipt |
 | `register.mismatch` | E | `contributorId`, `sourceId`, bucket or prefix pattern differ from the descriptor |
