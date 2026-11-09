@@ -237,7 +237,7 @@ that need confirmation.
 | Bulk `$export` status JSON | (metadata; not a data file unless listed) | | Declared outputs reconciled with present files; `exportTime` |
 | CSV/TSV/Parquet whose columns match a CDM 5.4 table | `OmopTableFile` | `text/csv` / `text/tab-separated-values` / `application/vnd.apache.parquet` | `cdmTable`; CDM version from version-specific columns; `cdm_source` row; subjects from `person.person_source_value` |
 | XML `ClinicalDocument` with C-CDA templates | `CcdaDocumentFile` | `application/xml` | Release from the header template IDs (2015-08-01 → 2.1), checked against the set's `conformsTo`; subject from `recordTarget/patientRole/id`. The template IDs are not written to the sidecar |
-| Other delimited tables | `TabularFile` | as above | `recordCount`, columns, direct-identifier-like columns. Consent tables (`ConsentFile`) and sensor data (`SensorDataFile`) are declared, not detected |
+| Other delimited tables | `TabularFile` | as above | `recordCount`, columns, direct-identifier-like columns. Consent tables (`ConsentFile`) and sensor measures (`SensorMeasureFile`) are declared, not detected |
 | Text, PDF, RTF | `ClinicalDocumentFile` | `text/plain`, `application/pdf`, `application/rtf` (scans: `image/tiff`, `image/jpeg`, `image/png`, declared) | `containsFreeText: true` |
 | FASTQ / BAM, CRAM / VCF | `SequenceReadsFile` / `AlignmentFile` / `VariantFile` | see 5.2 | `referenceGenome` from VCF `##reference`/BAM `@SQ` when present; R1/R2 pairing (`inferred`) |
 | `.bai`, `.crai`, `.tbi`, `.csi` | `IndexFile` | `application/octet-stream` | `indexOf` from name pairing (`detected` when the target exists) |
@@ -245,6 +245,8 @@ that need confirmation.
 | Photographs of faces | `FacialImagingFile` (declared, not detected) | `image/jpeg`, `image/png`, `image/tiff`, `image/heic`, `application/dicom` | Always biometric; the tool cannot tell a face from other images, so the contributor declares the class |
 | MP4, MOV, … | `VideoFile` | `video/*` | as imaging |
 | WAV, MP3, … | `AudioFile` | `audio/*` | as imaging |
+| JSON or JSON Lines whose objects have `header.schema_id.namespace: "ieee"` and a `body` | `SensorMeasureFile` | `application/json`, `application/jsonlines` | IEEE 1752.1 data points or series; the schema named in `schema_id` (e.g. `physical-activity` 1.0) is reported. `assay` is left to the contributor: the data does not say which sensor produced it |
+| EDF/EDF+ (`0       ` header and `.edf`), WFDB (`.hea` with signal files) | `SensorSignalFile` | `application/octet-stream` | `samplingRate` and channel labels from the header; `assay` `inferred` from channel labels (e.g. `ECG`, `EEG`) |
 | Data dictionary next to tables (`*dictionary*`, `*codebook*`) | `DocumentationFile` | by format | `about` (`inferred`) |
 | Anything else | `GenericFile` | from magic bytes, else `application/octet-stream` | |
 
@@ -274,11 +276,13 @@ The generator proposes file sets from detected classes:
 | `OmopTableFile`s in one directory | `OmopCdmInstance` | `vocabularyVersion` and `cdmSource` from `cdm_source.csv`, else required options |
 | `CcdaDocumentFile`s | `CcdaDocumentSet` | |
 | Related `TabularFile`s in one directory | `TabularDataset` | |
+| `SensorMeasureFile`s detected as IEEE 1752.1 | `FileCollection` | `conformsTo` IEEE 1752.1-2021 |
 
 Each set gets `includes` globs covering its directory. Sets of 10,000 members
 or fewer also get `hasPart`; larger sets use globs alone, to keep the document
 smaller. `conformsTo` is filled from the pinned list (FHIR R4 and US Core
-6.1, OMOP CDM 5.4, C-CDA 2.1); `--us-core <version>` overrides it. Set `@id`s
+6.1, OMOP CDM 5.4, C-CDA 2.1, IEEE 1752.1-2021); `--us-core <version>` overrides
+it, and `--phd` adds the HL7 Personal Health Device IG to a FHIR set of device data. Set `@id`s
 are deterministic: the class name in snake_case, plus `-2`, `-3`, … when a
 class repeats.
 

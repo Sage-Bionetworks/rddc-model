@@ -142,7 +142,9 @@ File sets reference existing specifications for file relationships. A batch can 
 
 Standards are pinned per the plan (§4.5): FHIR R4 (4.0.1) with US Core as the
 exchange format, OMOP CDM 5.4 as the target model, C-CDA 2.1 as a document
-format.
+format. Wearable data may also declare IEEE 1752.1-2021 (sleep and physical
+activity measures) or, for device data in FHIR, the HL7 Personal Health Device
+IG 2.0.0.
 
 Modalities and file set types are named descriptively here; their
 enumeration values and class names are defined in the schema and published
@@ -157,7 +159,7 @@ class determines its modality. The lanes, formats and standards come from the pl
 | Other clinical tables (registry, PRO, claims, mortality) | CSV, Parquet | Tabular dataset | 4 | Q3–Q4 |
 | Clinical text | TXT, PDF | Document set | de-id (Comprehend Medical) then 4 | Q3 |
 | Consent | CSV, JSON | Tabular dataset | GOVERN | Q3 |
-| Genomics, imaging, video, audio, wearable sensor data | FASTQ, BAM, CRAM, VCF, DICOM, media | File collection | omics and image workflows | Q5 |
+| Genomics, imaging, video, audio, wearable sensor data | FASTQ, BAM, CRAM, VCF, DICOM, media; EDF and vendor formats for raw sensor signals; CSV, Parquet or IEEE 1752.1 JSON for sensor measures | File collection | omics and image workflows | Q5 |
 | Documentation (data dictionaries, run metadata) | any | With the files it describes | none | — |
 | Other | any | File collection | curator decision | — |
 

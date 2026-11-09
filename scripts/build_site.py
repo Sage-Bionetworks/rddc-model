@@ -656,7 +656,7 @@ record set sources and keys, and each file's <code>subjectIds</code> (against th
 <li>The subject table is non-empty unless the batch is an <code>add</code> batch whose data files are all
 <code>DocumentationFile</code>s (modality <code>metadata</code>).</li>
 <li><code>withdraw</code> and <code>restrict</code> batches list no data files, and every row of a consent batch has a <code>consentRef</code>.</li>
-<li>File set <code>conformsTo</code> values come from the pinned list (FHIR R4, US Core 6.1, OMOP CDM 5.4, C-CDA 2.1).</li>
+<li>File set <code>conformsTo</code> values come from the pinned list (FHIR R4, US Core 6.1, HL7 Personal Health Device IG 2.0.0, OMOP CDM 5.4, C-CDA 2.1, IEEE 1752.1-2021).</li>
 <li>Every FHIR, OMOP and C-CDA file belongs to a file set of its standard, whose <code>conformsTo</code> gives its version.
 A FHIR file's <code>resourceType</code> is a resource type of that FHIR version.</li>
 <li><code>directIdentifiersRemoved</code> is <code>true</code> unless <code>synthetic</code> is <code>true</code>.</li>
