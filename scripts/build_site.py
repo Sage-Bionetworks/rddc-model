@@ -505,7 +505,9 @@ def class_section(name, view=None):
         if terms:
             meta.append(f"<span>{label} " + ", ".join(term_link(t) for t in terms) + "</span>")
     if cls.annotations.get("biometric"):
-        meta.append("<span>Biometric: always counts as containing biometric identifiers</span>")
+        meta.append("<span>Biometric: always counts as containing biometric identifiers, and so as identifying</span>")
+    if cls.annotations.get("identifying"):
+        meta.append("<span>Identifying: can identify a person on its own, so it never counts as de-identified</span>")
     if name in DISPATCHED:
         typ = "cr:FileSet" if "FileSet" in view.class_ancestors(name) else "cr:FileObject"
         meta.append(f'<span>Use as <code>"@type": "{typ}", "additionalType": "rddc:{name}"</code></span>')
@@ -626,7 +628,7 @@ def hierarchy_html(name):
     cls = data_sv.get_class(name)
     notes = (["abstract"] if cls.abstract else []) + (
         [cls.annotations[k].value for k in ("structure", "modality") if cls.annotations.get(k)]) + (
-        ["biometric"] if cls.annotations.get("biometric") else [])
+        [k for k in ("biometric", "identifying") if cls.annotations.get(k)])
     label = f"<a href='#{name}'><code>{name}</code></a>" + "".join(f" <span class='badge'>{n}</span>" for n in notes)
     children = data_sv.class_children(name)
     inner = "<ul>" + "".join(hierarchy_html(c) for c in children) + "</ul>" if children else ""
