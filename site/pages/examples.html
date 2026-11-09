@@ -54,7 +54,7 @@
 <rddc-json src="examples/deposit_fhir_omop.json" pointer="/subjects"></rddc-json>
 
 <h2>C-CDA document set</h2>
-<p>Health information exchange documents, one XML file per patient encounter. <code>CcdaDocumentFile</code> requires <code>subjectIds</code>; <code>templateIds</code> records the C-CDA template (here the Continuity of Care Document, 2015 edition). The file set selects its members with a single glob instead of listing them, which keeps very large sets smaller. Every file is still listed in <code>distribution</code>.</p>
+<p>Health information exchange documents, one XML file per patient encounter. <code>CcdaDocumentFile</code> requires <code>subjectIds</code>. The document type and template IDs stay in each document's header; the file set's <code>conformsTo</code> records the C-CDA release. The file set selects its members with a single glob instead of listing them, which keeps very large sets smaller. Every file is still listed in <code>distribution</code>.</p>
 <rddc-json src="examples/ccda_document_set.json" pointer="/distribution/1" title="One document"></rddc-json>
 <rddc-json src="examples/ccda_document_set.json" pointer="/distribution/0" title="The document set: glob only, no hasPart"></rddc-json>
 <div class="note"><strong>Large batches</strong>
