@@ -383,7 +383,7 @@ Fields it adds or changes; it also has all fields of [`SensorDataFile`](#sensord
 
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
-| `samplingRate` | `float` | | Samples per second of the recorded signal, in hertz. When channels differ, the highest rate. Minimum: 0. |
+| `samplingRate` | `float` | | Samples per second of the recorded signal, in hertz. When channels differ, the highest rate. Croissant's term, which Croissant sets on audio fields. Minimum: 0. |
 
 ### SensorMeasureFile
 

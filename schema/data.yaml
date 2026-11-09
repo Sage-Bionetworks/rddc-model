@@ -1717,9 +1717,10 @@ slots:
 
   # --- sensor data (SensorSignalFile) ----------------------------------------
   samplingRate:
+    slot_uri: cr:samplingRate
     description: >-
       Samples per second of the recorded signal, in hertz. When channels differ, the
-      highest rate.
+      highest rate. Croissant's term, which Croissant sets on audio fields.
     range: float
     minimum_value: 0
 
