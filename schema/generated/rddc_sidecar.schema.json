@@ -2397,17 +2397,6 @@
                         "null"
                     ]
                 },
-                "implementationGuides": {
-                    "description": "FHIR implementation guide packages the resources conform to, as \"<package id>#<version>\", e.g. \"hl7.fhir.us.core#6.1.0\". A FHIR validator loads these packages. Leave it out for resources that follow only the base specification.",
-                    "items": {
-                        "pattern": "^[a-z0-9][a-z0-9_-]*(\\.[a-z0-9_-]+)+#[0-9]+\\.[0-9]+\\.[0-9]+(-[A-Za-z0-9.-]+)?$",
-                        "type": "string"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
                 "md5": {
                     "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
@@ -2515,7 +2504,7 @@
         },
         "FhirFile": {
             "additionalProperties": false,
-            "description": "Base class for FHIR JSON files. It records the FHIR version and the implementation guide packages, which a FHIR validator needs to check the resources.",
+            "description": "Base class for FHIR JSON files. It records the FHIR version, which a FHIR validator needs to check the resources. The implementation guides they follow, such as US Core, are declared once in the conformsTo of the file set the file belongs to, not per file.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -2578,17 +2567,6 @@
                     "description": "IDs assigned to the file by other systems.",
                     "items": {
                         "$ref": "#/$defs/ExternalIdentifier"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "implementationGuides": {
-                    "description": "FHIR implementation guide packages the resources conform to, as \"<package id>#<version>\", e.g. \"hl7.fhir.us.core#6.1.0\". A FHIR validator loads these packages. Leave it out for resources that follow only the base specification.",
-                    "items": {
-                        "pattern": "^[a-z0-9][a-z0-9_-]*(\\.[a-z0-9_-]+)+#[0-9]+\\.[0-9]+\\.[0-9]+(-[A-Za-z0-9.-]+)?$",
-                        "type": "string"
                     },
                     "type": [
                         "array",
@@ -2763,17 +2741,6 @@
                     "description": "IDs assigned to the file by other systems.",
                     "items": {
                         "$ref": "#/$defs/ExternalIdentifier"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "implementationGuides": {
-                    "description": "FHIR implementation guide packages the resources conform to, as \"<package id>#<version>\", e.g. \"hl7.fhir.us.core#6.1.0\". A FHIR validator loads these packages. Leave it out for resources that follow only the base specification.",
-                    "items": {
-                        "pattern": "^[a-z0-9][a-z0-9_-]*(\\.[a-z0-9_-]+)+#[0-9]+\\.[0-9]+\\.[0-9]+(-[A-Za-z0-9.-]+)?$",
-                        "type": "string"
                     },
                     "type": [
                         "array",
@@ -3263,17 +3230,6 @@
                     "description": "IDs assigned to the file by other systems.",
                     "items": {
                         "$ref": "#/$defs/ExternalIdentifier"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "implementationGuides": {
-                    "description": "FHIR implementation guide packages the resources conform to, as \"<package id>#<version>\", e.g. \"hl7.fhir.us.core#6.1.0\". A FHIR validator loads these packages. Leave it out for resources that follow only the base specification.",
-                    "items": {
-                        "pattern": "^[a-z0-9][a-z0-9_-]*(\\.[a-z0-9_-]+)+#[0-9]+\\.[0-9]+\\.[0-9]+(-[A-Za-z0-9.-]+)?$",
-                        "type": "string"
                     },
                     "type": [
                         "array",
@@ -3770,17 +3726,6 @@
                     "description": "IDs assigned to the file by other systems.",
                     "items": {
                         "$ref": "#/$defs/ExternalIdentifier"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "implementationGuides": {
-                    "description": "FHIR implementation guide packages the resources conform to, as \"<package id>#<version>\", e.g. \"hl7.fhir.us.core#6.1.0\". A FHIR validator loads these packages. Leave it out for resources that follow only the base specification.",
-                    "items": {
-                        "pattern": "^[a-z0-9][a-z0-9_-]*(\\.[a-z0-9_-]+)+#[0-9]+\\.[0-9]+\\.[0-9]+(-[A-Za-z0-9.-]+)?$",
-                        "type": "string"
                     },
                     "type": [
                         "array",

@@ -89,7 +89,6 @@
     "fieldPath": "rddc:fieldPath",
     "idSystem": "rddc:idSystem",
     "identifierSystemUri": "rddc:identifierSystemUri",
-    "implementationGuides": "rddc:implementationGuides",
     "indexOf": "rddc:indexOf",
     "interaction": "rddc:interaction",
     "issuedAt": "rddc:issuedAt",

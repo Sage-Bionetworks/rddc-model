@@ -89,7 +89,6 @@
     "fieldPath": "rddc:fieldPath",
     "idSystem": "rddc:idSystem",
     "identifierSystemUri": "rddc:identifierSystemUri",
-    "implementationGuides": "rddc:implementationGuides",
     "indexOf": "rddc:indexOf",
     "interaction": "rddc:interaction",
     "issuedAt": "rddc:issuedAt",
@@ -252,9 +251,6 @@
       "md5": "e047db5fa705c1cd516e0939ba1e0722",
       "resourceType": "Observation",
       "fhirVersion": "4.0.1",
-      "implementationGuides": [
-        "hl7.fhir.us.core#6.1.0"
-      ],
       "compression": "gzip",
       "recordCount": 240,
       "sensitivity": {
@@ -273,9 +269,6 @@
       "md5": "e90a5d12b9d1e923967675f48ccda227",
       "resourceType": "Patient",
       "fhirVersion": "4.0.1",
-      "implementationGuides": [
-        "hl7.fhir.us.core#6.1.0"
-      ],
       "recordCount": 2
     },
     {

@@ -65,7 +65,7 @@ INVALID = {
     "FHIR NDJSON without fhirVersion": drop(FHIR + ["fhirVersion"]),
     "FHIR version not accepted": put(FHIR + ["fhirVersion"], "5.0.0"),
     "resourceType not in FHIR R4": put(FHIR + ["resourceType"], "ActorDefinition"),
-    "implementation guide without version": put(FHIR + ["implementationGuides"], ["hl7.fhir.us.core"]),
+    "implementation guides on a FHIR file": put(FHIR + ["implementationGuides"], ["hl7.fhir.us.core#6.1.0"]),
     "contentSize without unit": put(FHIR + ["contentSize"], "1010"),
     "sha256 too short": put(FHIR + ["sha256"], "abc"),
     "unknown compression": put(FHIR + ["compression"], "rar"),
