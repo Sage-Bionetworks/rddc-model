@@ -69,11 +69,8 @@
                     "type": "string"
                 },
                 "assay": {
-                    "description": "The assay that produced the data.",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "$ref": "#/$defs/GenomicsAssayEnum",
+                    "description": "The sequencing assay that produced the data, e.g. wgs or wes. Downstream analysis depends on it, so every genomics file states it."
                 },
                 "compression": {
                     "$ref": "#/$defs/CompressionEnum",
@@ -211,6 +208,7 @@
             },
             "required": [
                 "referenceGenome",
+                "assay",
                 "contentUrl",
                 "contentSize",
                 "sha256",
@@ -1564,7 +1562,7 @@
         },
         "DocumentationFile": {
             "additionalProperties": false,
-            "description": "A file that documents other files, such as a data dictionary or a README.",
+            "description": "A file that documents other files, such as a data dictionary or a README. When it documents particular files or record sets, about points to them; a README for the whole batch leaves about out.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -1582,7 +1580,10 @@
                         "$ref": "#/$defs/NodeRef"
                     },
                     "minItems": 1,
-                    "type": "array"
+                    "type": [
+                        "array",
+                        "null"
+                    ]
                 },
                 "additionalProperty": {
                     "description": "Namespaced extension key-value pairs.",
@@ -1717,7 +1718,6 @@
                 }
             },
             "required": [
-                "about",
                 "contentUrl",
                 "contentSize",
                 "sha256",
@@ -4149,6 +4149,19 @@
             "title": "GenericFile",
             "type": "object"
         },
+        "GenomicsAssayEnum": {
+            "description": "Sequencing assays accepted for genomics files. Meanings are OBI assay terms (OBI release 2026-07-27). OBI has no term for targeted gene panels, so that value has no meaning. The sequencing platform (short-read, long-read) goes in platform, not here.",
+            "enum": [
+                "wgs",
+                "wes",
+                "targeted_panel",
+                "rna_seq",
+                "methylation_seq",
+                "other"
+            ],
+            "title": "GenomicsAssayEnum",
+            "type": "string"
+        },
         "GenomicsFile": {
             "additionalProperties": false,
             "description": "Base class for genomic sequencing data. These formats have no registered media type, so encodingFormat names the container: text/plain for text formats (FASTQ, SAM, VCF) and application/octet-stream for binary ones (BAM, CRAM, BCF). The class says which format it is. A gzip or BGZF-compressed text file (.fastq.gz, .vcf.gz) sets compression to gzip. BAM, CRAM and BCF compress internally as part of the format, so they leave compression unset.",
@@ -4181,11 +4194,8 @@
                     "type": "string"
                 },
                 "assay": {
-                    "description": "The assay that produced the data.",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "$ref": "#/$defs/GenomicsAssayEnum",
+                    "description": "The sequencing assay that produced the data, e.g. wgs or wes. Downstream analysis depends on it, so every genomics file states it."
                 },
                 "compression": {
                     "$ref": "#/$defs/CompressionEnum",
@@ -4318,6 +4328,7 @@
                 }
             },
             "required": [
+                "assay",
                 "contentUrl",
                 "contentSize",
                 "sha256",
@@ -5627,11 +5638,8 @@
                     "type": "string"
                 },
                 "assay": {
-                    "description": "The assay that produced the data.",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "$ref": "#/$defs/GenomicsAssayEnum",
+                    "description": "The sequencing assay that produced the data, e.g. wgs or wes. Downstream analysis depends on it, so every genomics file states it."
                 },
                 "compression": {
                     "$ref": "#/$defs/CompressionEnum",
@@ -5775,6 +5783,7 @@
                 }
             },
             "required": [
+                "assay",
                 "contentUrl",
                 "contentSize",
                 "sha256",
@@ -6619,11 +6628,8 @@
                     "type": "string"
                 },
                 "assay": {
-                    "description": "The assay that produced the data.",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "$ref": "#/$defs/GenomicsAssayEnum",
+                    "description": "The sequencing assay that produced the data, e.g. wgs or wes. Downstream analysis depends on it, so every genomics file states it."
                 },
                 "compression": {
                     "$ref": "#/$defs/CompressionEnum",
@@ -6761,6 +6767,7 @@
             },
             "required": [
                 "referenceGenome",
+                "assay",
                 "contentUrl",
                 "contentSize",
                 "sha256",
