@@ -432,7 +432,7 @@
         },
         "CcdaDocumentFile": {
             "additionalProperties": false,
-            "description": "One HL7 C-CDA document.",
+            "description": "One HL7 C-CDA document. Its template IDs are in the document header and its C-CDA release is in the conformsTo of the file set it belongs to, so neither is repeated per file.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -559,17 +559,6 @@
                     },
                     "minItems": 1,
                     "type": "array"
-                },
-                "templateIds": {
-                    "description": "C-CDA template IDs, as an OID root or \"root:extension\", e.g. \"2.16.840.1.113883.10.20.22.1.2:2015-08-01\".",
-                    "items": {
-                        "pattern": "^[0-2](\\.(0|[1-9][0-9]*))+(:[^\\s:]+)?$",
-                        "type": "string"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
                 },
                 "valueOrigins": {
                     "description": "How tools filled in values on this node.",

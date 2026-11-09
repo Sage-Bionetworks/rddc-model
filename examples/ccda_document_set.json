@@ -117,7 +117,6 @@
     "subjects": "rddc:subjects",
     "synthetic": "rddc:synthetic",
     "tableName": "rddc:tableName",
-    "templateIds": "rddc:templateIds",
     "valueOrigins": "rddc:valueOrigins",
     "vocabularyVersion": "rddc:vocabularyVersion",
     "wasAttributedTo": "prov:wasAttributedTo",
@@ -190,9 +189,6 @@
       "md5": "38fbfdfdab53f39ecb0ef6ebab32768a",
       "subjectIds": [
         "P0001"
-      ],
-      "templateIds": [
-        "2.16.840.1.113883.10.20.22.1.2:2015-08-01"
       ]
     },
     {
@@ -207,9 +203,6 @@
       "md5": "d71fcfaf1d95870510bf2041c4f5d8a3",
       "subjectIds": [
         "P0002"
-      ],
-      "templateIds": [
-        "2.16.840.1.113883.10.20.22.1.2:2015-08-01"
       ]
     },
     {
@@ -224,9 +217,6 @@
       "md5": "720cf72e066cfdebd12f78cb95cb2ab5",
       "subjectIds": [
         "P0003"
-      ],
-      "templateIds": [
-        "2.16.840.1.113883.10.20.22.1.2:2015-08-01"
       ]
     }
   ]

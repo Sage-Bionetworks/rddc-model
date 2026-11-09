@@ -236,7 +236,7 @@ that need confirmation.
 | NDJSON, one `resourceType` | `FhirNdjsonFile` | `application/fhir+ndjson` | `resourceType`, `recordCount`, subjects from `Patient` |
 | Bulk `$export` status JSON | (metadata; not a data file unless listed) | | Declared outputs reconciled with present files; `exportTime` |
 | CSV/TSV/Parquet whose columns match a CDM 5.4 table | `OmopTableFile` | `text/csv` / `text/tab-separated-values` / `application/vnd.apache.parquet` | `cdmTable`; CDM version from version-specific columns; `cdm_source` row; subjects from `person.person_source_value` |
-| XML `ClinicalDocument` with C-CDA templates | `CcdaDocumentFile` | `application/xml` | `templateIds`, release (2015-08-01 → 2.1), subject from `recordTarget/patientRole/id` |
+| XML `ClinicalDocument` with C-CDA templates | `CcdaDocumentFile` | `application/xml` | Release from the header template IDs (2015-08-01 → 2.1), checked against the set's `conformsTo`; subject from `recordTarget/patientRole/id`. The template IDs are not written to the sidecar |
 | Other delimited tables | `TabularFile` | as above | `tableName` (file stem), columns, direct-identifier-like columns. Consent tables (`ConsentFile`) and sensor data (`SensorDataFile`) are declared, not detected |
 | Text, PDF, RTF | `ClinicalDocumentFile` | `text/plain`, `application/pdf`, `application/rtf` (scans: `image/tiff`, `image/jpeg`, `image/png`, declared) | `containsFreeText: true` |
 | FASTQ / BAM, CRAM / VCF | `SequenceReadsFile` / `AlignmentFile` / `VariantFile` | see 5.2 | `referenceGenome` from VCF `##reference`/BAM `@SQ` when present; R1/R2 pairing (`inferred`) |
@@ -464,7 +464,7 @@ usage error (exit 2), not a finding.
 
 Measured with `rddc-sidecar` (`scripts/scale.sh`) on a synthetic 120,000-file
 C-CDA batch, 8-core laptop, SSD: the sidecar is 93 MB of JSON (each entry
-carries MD5, two template IDs and subject IDs); generate takes 2.4 s at
+carried MD5, two template IDs and subject IDs; entries no longer carry template IDs); generate takes 2.4 s at
 1.06 GB peak RSS, validate 1.5 s at about 690 MB, checksums included.
 
 | Operation | Target (laptop, 8 cores, SSD) |
