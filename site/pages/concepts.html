@@ -33,7 +33,7 @@
   <div class="row"><code>sensitivity</code></div>
   <div class="row nested"><span class="muted">facts</span><span>De-identification facts that apply to every file unless a file overrides them. <span class="req">required</span></span></div>
   <div class="row"><code>subjects</code></div>
-  <div class="row nested"><span class="muted">subject table</span><span>One row per person in the batch, by coded ID. <span class="req">required</span> (may be empty only for an <code>add</code> batch of documentation files, modality <code>metadata</code>)</span></div>
+  <div class="row nested"><span class="muted">subject table</span><span>One row per person in the batch, by coded ID. <span class="req">required</span> (may be empty only for an <code>add</code> batch of <code>DocumentationFile</code>s)</span></div>
   <div class="row"><code>distribution</code></div>
   <div class="row nested"><span class="muted">manifest</span><span>Every file (<code>cr:FileObject</code>) and every file set (<code>cr:FileSet</code>), inline. <span class="req">required</span> (empty for withdrawals and restrictions)</span></div>
   <div class="row"><code>recordSet</code></div>
@@ -47,7 +47,7 @@
 <div class="table-wrap"><table>
 <thead><tr><th>Value</th><th>Meaning</th><th>Data files</th><th>Subject table</th><th>Also requires</th></tr></thead>
 <tbody>
-<tr><td><code>add</code></td><td>New data files (called <code>upsert</code> in the plan; a replacement file is added with a new <code>@id</code>)</td><td>Yes</td><td>Subjects in the files; empty only if every file has modality <code>metadata</code></td><td><span class="muted">nothing</span></td></tr>
+<tr><td><code>add</code></td><td>New data files (called <code>upsert</code> in the plan; a replacement file is added with a new <code>@id</code>)</td><td>Yes</td><td>Subjects in the files; empty only if every file is a <code>DocumentationFile</code></td><td><span class="muted">nothing</span></td></tr>
 <tr><td><code>withdraw</code></td><td>Remove the listed subjects' data</td><td>None</td><td>Subjects to remove</td><td><code>noticeRef</code></td></tr>
 <tr><td><code>restrict</code></td><td>Restrict use of the listed subjects' data</td><td>None</td><td>Subjects to restrict</td><td><code>noticeRef</code></td></tr>
 <tr><td><code>consent</code></td><td>Consent information for the listed subjects</td><td>May list consent files</td><td>Subjects covered, <code>consentRef</code> on each row</td><td><span class="muted">nothing</span></td></tr>
@@ -83,7 +83,7 @@
 <p>Genomics, imaging, media and catch-all classes are covered on the <a href="data-classes.html#at-a-glance">Data file classes</a> page.</p>
 
 <h3>Modality</h3>
-<p><code>modality</code> says what kind of data a file carries, from a <a href="vocabularies.html#ModalityEnum">fixed list</a>. Together with the file class and the file set's <code>conformsTo</code>, it decides which processing lane handles the file. It is independent of the class: a <code>TabularFile</code> may hold <code>clinical_tabular</code>, <code>consent</code> or <code>metadata</code> data.</p>
+<p>A file's modality is the kind of data it carries, from a <a href="vocabularies.html#ModalityEnum">fixed list</a>. It is not written in the sidecar: each data file class has exactly one, so the class decides it. A consent table is a <code>ConsentFile</code>, not a <code>TabularFile</code>. Together with the file set's <code>conformsTo</code>, the modality decides which processing lane handles the file. A new kind of data gets a new class. The <a href="data-classes.html#at-a-glance">Data file classes</a> page lists each class's modality.</p>
 <div class="table-wrap"><table>
 <thead><tr><th>Modality</th><th>Lane</th></tr></thead>
 <tbody>

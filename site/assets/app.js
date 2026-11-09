@@ -162,7 +162,7 @@
             return '<li><a href="' + h.e.url + '"><b>' + escapeHtml(h.e.heading) + "</b><small>" +
               escapeHtml(h.e.page) + "</small><br><small>" + snippet(h.e.text, terms) + "</small></a></li>";
           }).join("")
-        : '<li class="empty">No matches. Try a property name such as <code>modality</code>.</li>';
+        : '<li class="empty">No matches. Try a property name such as <code>subjectIds</code>.</li>';
       list.hidden = false;
     });
   }

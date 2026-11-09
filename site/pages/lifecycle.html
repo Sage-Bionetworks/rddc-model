@@ -8,7 +8,7 @@
 <li><h3 id="upload">Upload</h3><p>Data files first, then <code>_sidecar.json</code>, all under one batch prefix in the contributor's bucket.</p></li>
 <li><h3 id="receive">Receive</h3><p>The sidecar's arrival starts one receipt workflow for the batch. It checks the delivery role and <code>sourceId</code>, waits for every listed file, verifies checksums, reports objects missing from either side, checks subjects against the participants table, and registers the files in Synapse with sidecar fields as annotations.</p></li>
 <li><h3 id="screen">Screen</h3><p>De-identification and QC tasks pick their checks from each file's format and sensitivity flags. Exceptions go to curators with the file and subject context from the sidecar.</p></li>
-<li><h3 id="process">Process</h3><p>The NORMALIZE stage picks a lane from <code>modality</code> and the file set's <code>conformsTo</code>, reads task parameters from the file and file-set fields, and verifies inputs by checksum.</p></li>
+<li><h3 id="process">Process</h3><p>The NORMALIZE stage picks a lane from each file's modality (set by its class) and the file set's <code>conformsTo</code>, reads task parameters from the file and file-set fields, and verifies inputs by checksum.</p></li>
 <li><h3 id="register-outputs">Register outputs</h3><p>Synapse registers pipeline outputs with the provenance recorded in Cirro, in W3C PROV form. Outputs do not get sidecars; the sidecar describes the deposit only.</p></li>
 </ol>
 
@@ -37,7 +37,7 @@
 <tr><td>Sensitivity</td><td><code>directIdentifiersRemoved</code> false on real data; column headers or paths that look like names, SSNs, MRNs, addresses, phone numbers or emails</td><td>Intrinsic</td></tr>
 <tr><td>Conformance</td><td>An OMOP instance without <code>person</code> and <code>observation_period</code>; a FHIR bulk export without <code>Patient</code>; a <code>conformsTo</code> value outside the pinned list</td><td>Intrinsic</td></tr>
 <tr><td>Confirmation</td><td>An <code>inferred</code> value not yet confirmed</td><td>Intrinsic</td></tr>
-<tr><td>Registry</td><td><code>contributorId</code>, <code>sourceId</code> or bucket not matching the register; prefix not matching the source's pattern; a modality the source isn't registered for; subject IDs not in the participants table; references to earlier sidecars that don't resolve</td><td>Registry</td></tr>
+<tr><td>Registry</td><td><code>contributorId</code>, <code>sourceId</code> or bucket not matching the register; prefix not matching the source's pattern; a file class whose modality the source isn't registered for; subject IDs not in the participants table; references to earlier sidecars that don't resolve</td><td>Registry</td></tr>
 </tbody></table></div>
 <p>The JSON Schema generated from the model covers the schema and vocabulary checks. Everything else is the job of the RDDC validator; the <a href="reference.html#rules-beyond-json-schema">reference</a> lists the rules JSON Schema can't express.</p>
 

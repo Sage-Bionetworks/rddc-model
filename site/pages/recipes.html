@@ -14,8 +14,8 @@
 <tr><td>Registry, PRO, claims tables</td><td><code>TabularFile</code>, <code>DocumentationFile</code></td><td><code>TabularDataset</code></td><td><a href="#registry-with-a-data-dictionary">Below</a></td></tr>
 <tr><td>Clinical notes and reports</td><td><code>ClinicalDocumentFile</code></td><td><code>DocumentSet</code></td><td><a href="#clinical-notes">Below</a></td></tr>
 <tr><td>Sequencing, alignments, variants</td><td><code>SequenceReadsFile</code>, <code>AlignmentFile</code>, <code>IndexFile</code>, <code>VariantFile</code></td><td><code>FileCollection</code></td><td><a href="#genomics">Below</a></td></tr>
-<tr><td>Images, video, audio</td><td><code>ImagingFile</code>, <code>FacialImagingFile</code>, <code>MediaFile</code></td><td><code>FileCollection</code></td><td><a href="#images-and-video">Below</a></td></tr>
-<tr><td>Consent</td><td><code>TabularFile</code></td><td><span class="muted">optional</span></td><td><a href="#consent">Below</a></td></tr>
+<tr><td>Images, video, audio</td><td><code>ImagingFile</code>, <code>FacialImagingFile</code>, <code>VideoFile</code>, <code>AudioFile</code></td><td><code>FileCollection</code></td><td><a href="#images-and-video">Below</a></td></tr>
+<tr><td>Consent</td><td><code>ConsentFile</code></td><td><span class="muted">optional</span></td><td><a href="#consent">Below</a></td></tr>
 <tr><td>Restriction or withdrawal</td><td><span class="muted">no files</span></td><td><span class="muted">none</span></td><td><a href="#restriction">Below</a></td></tr>
 </tbody></table></div>
 
@@ -32,7 +32,7 @@
 <p>A natural history registry with two tables, a data dictionary, a join, and a project-specific extension.</p>
 <ul>
 <li>Tables may be CSV, TSV, Parquet, JSON or JSON Lines.</li>
-<li>The data dictionary is a <code>DocumentationFile</code> with modality <code>metadata</code>. Its <code>about</code> points to the record sets it documents.</li>
+<li>The data dictionary is a <code>DocumentationFile</code>. Its <code>about</code> points to the record sets it documents.</li>
 <li>Record sets give the columns typed fields, a <code>key</code>, and a <code>references</code> link from <code>visits.patient_id</code> to <code>patients.patient_id</code>.</li>
 <li><code>additionalProperty</code> carries a namespaced extension, <code>ext:ta2_site_a:cohort</code>.</li>
 </ul>
@@ -59,16 +59,16 @@
 <li>Gzipped FASTQ and VCF set <code>compression: gzip</code>.</li>
 </ul>
 <rddc-json src="site/recipes/genomics.json" keys="distribution" title="genomics.json (distribution)"></rddc-json>
-<div class="note warn"><strong>Media types for genomics files are not settled</strong>
-<p>FASTQ, CRAM, CRAI and VCF have no registered IANA media types. This recipe uses <code>text/plain</code> for the text formats and <code>application/octet-stream</code> for the binary ones. The schema accepts any well-formed media type here; a convention may be fixed with the omics profile.</p></div>
+<div class="note"><strong>Media types for genomics files</strong>
+<p>FASTQ, BAM, CRAM, VCF and their indexes have no registered IANA media types. Genomics files use <code>text/plain</code> for the text formats and <code>application/octet-stream</code> for the binary ones, and the class says which format it is. BAM, CRAM and BCF compress internally, so they leave <code>compression</code> unset.</p></div>
 
 <h2>Images and video</h2>
-<p>Facial photographs and gait videos contain biometric identifiers. Here, the acquisition table has none, so the batch sets <code>containsBiometricIdentifiers: false</code>. Each image or video overrides it to <code>true</code>. Files with biometric identifiers stay in the trusted research environment.</p>
-<p>The photograph uses <code>FacialImagingFile</code>, which always counts as biometric. Its override is still required: the validator rejects a facial image whose effective flag is <code>false</code>, and here the batch default is <code>false</code>.</p>
+<p>Facial photographs and gait videos contain biometric identifiers. Here, the acquisition table has none, so the batch sets <code>containsBiometricIdentifiers: false</code>. The video overrides it to <code>true</code>. Files with biometric identifiers stay in the trusted research environment.</p>
+<p>The photograph uses <code>FacialImagingFile</code>, which always counts as biometric whatever the batch default, so it does not set the flag; the schema rejects it if it does. The acquisition table is a <code>DocumentationFile</code> whose <code>about</code> points to the photograph.</p>
 <rddc-json src="site/recipes/imaging_media.json" keys="sensitivity,distribution" title="imaging_media.json (excerpt)"></rddc-json>
 
 <h2>Consent</h2>
-<p>A consent batch uses <code>interaction: consent</code>. Every subject row carries a <code>consentRef</code>, and the batch may include consent files with modality <code>consent</code>. What a consent batch must contain beyond this is still an open question for the GOVERN register specification.</p>
+<p>A consent batch uses <code>interaction: consent</code>. Every subject row carries a <code>consentRef</code>, and the batch may include <code>ConsentFile</code>s listing the subjects they cover. What a consent batch must contain beyond this is still an open question for the GOVERN register specification.</p>
 <rddc-json src="site/recipes/consent.json" keys="interaction,subjects,distribution" title="consent.json (excerpt)"></rddc-json>
 
 <h2>Restriction</h2>
