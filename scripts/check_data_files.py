@@ -44,16 +44,16 @@ REF = {"@id": "urn:uuid:00000000-0000-4000-8000-000000000099"}
 VALID = {
     "fhir_bundle": item(
         "FhirBundleFile", 1, contentUrl="fhir/bundle.json", encodingFormat="application/fhir+json",
-        fhirVersion="4.0.1", bundleType="collection", subjectIds=["S1"],
+        bundleType="collection", subjectIds=["S1"],
     ),
     "fhir_resource": item(
         "FhirResourceFile", 2, contentUrl="fhir/patient.json", encodingFormat="application/fhir+json",
-        fhirVersion="4.0.1", resourceType="Patient",
+        resourceType="Patient",
     ),
     "fhir_ndjson": item(
         "FhirNdjsonFile", 3, contentUrl="fhir/Observation.ndjson.gz",
         encodingFormat="application/fhir+ndjson", compression="gzip",
-        fhirVersion="4.0.1", resourceType="Observation",
+        resourceType="Observation",
     ),
     "omop_table": item(
         "OmopTableFile", 4, contentUrl="omop/person.csv", encodingFormat="text/csv",
@@ -139,6 +139,8 @@ INVALID = {
     "consent table without subjects": put("consent", ["subjectIds"], []),
     "face photo flags no biometric identifiers":
         put("face", ["sensitivity"], {"containsBiometricIdentifiers": False}),
+    "FHIR version on a file": put("fhir_ndjson", ["fhirVersion"], "4.0.1"),
+    "resource type of no accepted FHIR version": put("fhir_resource", ["resourceType"], "ActorDefinition"),
     "implementation guides on a file": put("fhir_ndjson", ["implementationGuides"], ["hl7.fhir.us.core#6.1.0"]),
     "FHIR resource file holding a Bundle": put("fhir_resource", ["resourceType"], "Bundle"),
     "OMOP table not in CDM 5.4": put("omop_table", ["cdmTable"], "attribute_definition"),

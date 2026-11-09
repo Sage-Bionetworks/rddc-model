@@ -2,19 +2,23 @@
 
 Usage: python scripts/gen_enums.py [--check] [--source VERSION_KEY=PATH_OR_URL ...] [FAMILY ...]
 
-A family is a standard whose files declare a version and use a value whose allowed
-set depends on it:
+A family is a standard whose files use a value whose allowed set depends on the
+standard's version:
 
-  fhir  fhirVersion selects the allowed resourceType values.
-  omop  omopCdmVersion selects the allowed cdmTable values.
+  fhir  resourceType values. A FHIR file does not declare its version; its file set's
+        conformsTo does, and the RDDC validator checks the value against it.
+  omop  cdmTable values. omopCdmVersion on the file selects the allowed values.
 
 For each family the script generates, between BEGIN and END marker comments:
 
-  <family>-versions      the version enum (FhirVersionEnum, OmopCdmVersionEnum)
   <family>-<version key> one enum per version, with descriptions from its source
                          (FhirR4ResourceTypeEnum, OmopCdm54TableEnum)
   <family>-all           the union of all versions' values, the slot's range
                          (FhirResourceTypeEnum, OmopCdmTableEnum)
+
+and, for a family whose files declare their version (omop only):
+
+  <family>-versions      the version enum (OmopCdmVersionEnum)
   <family>-rules         one rule per version: if the file declares that version,
                          the value must be one of that version's values
 
@@ -83,7 +87,7 @@ def omop_cdm54(raw):
 
 FAMILIES = {
     "fhir": {
-        "version_slot": "fhirVersion",
+        "version_slot": None,  # the file set declares the version
         "value_slot": "resourceType",
         "sort_union": True,
         "versions": [
@@ -195,10 +199,11 @@ def main():
         if family["sort_union"]:
             union.sort()
 
-        regions = [(f"{name}-versions", lambda i: render_values(i, [(v[0], [f"description: {quote(v[2])}"]) for v, _ in per_version]))]
-        regions += [(f"{name}-{v[1]}", lambda i, values=values: render_values(i, values)) for v, values in per_version]
-        regions += [(f"{name}-all", lambda i: render_values(i, union)),
-                    (f"{name}-rules", lambda i: render_rules(i, family, per_version))]
+        regions = [(f"{name}-{v[1]}", lambda i, values=values: render_values(i, values)) for v, values in per_version]
+        regions += [(f"{name}-all", lambda i: render_values(i, union))]
+        if family["version_slot"]:
+            regions += [(f"{name}-versions", lambda i: render_values(i, [(v[0], [f"description: {quote(v[2])}"]) for v, _ in per_version])),
+                        (f"{name}-rules", lambda i: render_rules(i, family, per_version))]
         for region, render in regions:
             text, changed = replace(text, region, render)
             stale += [region] if changed else []

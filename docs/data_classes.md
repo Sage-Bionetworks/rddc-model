@@ -53,9 +53,9 @@ Every concrete class also requires the fields shared by all data files: `@id`, `
 
 | Class | Modality | Structure | Media types | Class-specific required fields |
 | --- | --- | --- | --- | --- |
-| [`FhirBundleFile`](#fhirbundlefile) | `clinical_fhir` | structured | `application/fhir+json` | `bundleType`, `fhirVersion`, `subjectIds` |
-| [`FhirResourceFile`](#fhirresourcefile) | `clinical_fhir` | structured | `application/fhir+json` | `resourceType`, `fhirVersion` |
-| [`FhirNdjsonFile`](#fhirndjsonfile) | `clinical_fhir` | structured | `application/fhir+ndjson` | `resourceType`, `fhirVersion` |
+| [`FhirBundleFile`](#fhirbundlefile) | `clinical_fhir` | structured | `application/fhir+json` | `bundleType`, `subjectIds` |
+| [`FhirResourceFile`](#fhirresourcefile) | `clinical_fhir` | structured | `application/fhir+json` | `resourceType` |
+| [`FhirNdjsonFile`](#fhirndjsonfile) | `clinical_fhir` | structured | `application/fhir+ndjson` | `resourceType` |
 | [`OmopTableFile`](#omoptablefile) | `clinical_omop` | structured | `text/csv`, `text/tab-separated-values`, `application/vnd.apache.parquet` | `cdmTable`, `omopCdmVersion` |
 | [`CcdaDocumentFile`](#ccdadocumentfile) | `clinical_ccda` | structured | `application/xml`, `text/xml` | `subjectIds` |
 | [`TabularFile`](#tabularfile) | `clinical_tabular` | structured | `text/csv`, `text/tab-separated-values`, `application/vnd.apache.parquet`, `application/json`, `application/jsonlines` |  |
@@ -105,15 +105,11 @@ Abstract: not used directly. Inherits from `FileObject` → `DistributionItem`. 
 
 ### FhirFile
 
-Base class for FHIR JSON files. It records the FHIR version, which a FHIR validator needs to check the resources. The implementation guides they follow, such as US Core, are declared once in the conformsTo of the file set the file belongs to, not per file.
+Base class for FHIR JSON files. The FHIR version and the implementation guides the resources follow, such as US Core, are declared once in the conformsTo of the file set the file belongs to, not per file.
 
 Abstract: not used directly. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Subclasses: [`FhirBundleFile`](#fhirbundlefile), [`FhirSingleTypeFile`](#fhirsingletypefile).
 
-Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
-
-| Field | Type | Required | Meaning and constraints |
-| --- | --- | --- | --- |
-| `fhirVersion` | [`FhirVersionEnum`](#fhirversionenum) | yes | FHIR version of the resources in the file. A file holds resources of one version only. |
+No fields beyond those of [`DataFile`](#datafile).
 
 ### FhirBundleFile
 
@@ -131,7 +127,7 @@ Fields it adds or changes; it also has all fields of [`FhirFile`](#fhirfile):
 
 ### FhirSingleTypeFile
 
-Base class for FHIR files that hold one resource type. Its rules check resourceType against the resource types of the file's fhirVersion.
+Base class for FHIR files that hold one resource type.
 
 Abstract: not used directly. Inherits from [`FhirFile`](#fhirfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Subclasses: [`FhirResourceFile`](#fhirresourcefile), [`FhirNdjsonFile`](#fhirndjsonfile).
 
@@ -140,10 +136,6 @@ Fields it adds or changes; it also has all fields of [`FhirFile`](#fhirfile):
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
 | `resourceType` | [`FhirResourceTypeEnum`](#fhirresourcetypeenum) | yes | FHIR resource type of the resources in the file, e.g. Patient. |
-
-Rules:
-
-- If `fhirVersion` is `4.0.1`, `resourceType` must be a value of [`FhirR4ResourceTypeEnum`](#fhirr4resourcetypeenum).
 
 ### FhirResourceFile
 
@@ -158,10 +150,6 @@ Fields it adds or changes; it also has all fields of [`FhirSingleTypeFile`](#fhi
 | `encodingFormat` | `string` | yes | Media type of the content (after decompression when compression is set). Fixed: `application/fhir+json`. |
 | `resourceType` | [`FhirResourceTypeEnum`](#fhirresourcetypeenum) | yes | The resource type. A Bundle goes in a FhirBundleFile instead. Not: `Bundle`. |
 
-Rules:
-
-- If `fhirVersion` is `4.0.1`, `resourceType` must be a value of [`FhirR4ResourceTypeEnum`](#fhirr4resourcetypeenum).
-
 ### FhirNdjsonFile
 
 FHIR Bulk Data NDJSON, one resource type per file.
@@ -173,10 +161,6 @@ Fields it adds or changes; it also has all fields of [`FhirSingleTypeFile`](#fhi
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
 | `encodingFormat` | `string` | yes | Media type of the content (after decompression when compression is set). Fixed: `application/fhir+ndjson`. |
-
-Rules:
-
-- If `fhirVersion` is `4.0.1`, `resourceType` must be a value of [`FhirR4ResourceTypeEnum`](#fhirr4resourcetypeenum).
 
 ### OmopTableFile
 
@@ -521,17 +505,9 @@ FHIR Bundle.type values accepted in a deposit.
 | `searchset` |  |
 | `message` |  |
 
-### FhirVersionEnum
-
-FHIR versions accepted in a deposit, as the full version number FHIR uses in CapabilityStatement.fhirVersion and package manifests.
-
-| Value | Meaning |
-| --- | --- |
-| `4.0.1` | FHIR R4 |
-
 ### FhirResourceTypeEnum
 
-FHIR resource types of every accepted FHIR version, the range of resourceType. A rule on FhirSingleTypeFile narrows the values to the file's fhirVersion. The descriptions are in the per-version enums, such as FhirR4ResourceTypeEnum.
+FHIR resource types of every accepted FHIR version, the range of resourceType. A file's FHIR version is declared by its file set, so the RDDC validator, not this schema, checks resourceType against that version's types. The descriptions are in the per-version enums, such as FhirR4ResourceTypeEnum.
 
 146 values: `Account`, `ActivityDefinition`, `AdverseEvent`, `AllergyIntolerance`, `Appointment`, `AppointmentResponse`, `AuditEvent`, `Basic`, `Binary`, `BiologicallyDerivedProduct`, `BodyStructure`, `Bundle`, `CapabilityStatement`, `CarePlan`, `CareTeam`, `CatalogEntry`, `ChargeItem`, `ChargeItemDefinition`, `Claim`, `ClaimResponse`, `ClinicalImpression`, `CodeSystem`, `Communication`, `CommunicationRequest`, `CompartmentDefinition`, `Composition`, `ConceptMap`, `Condition`, `Consent`, `Contract`, `Coverage`, `CoverageEligibilityRequest`, `CoverageEligibilityResponse`, `DetectedIssue`, `Device`, `DeviceDefinition`, `DeviceMetric`, `DeviceRequest`, `DeviceUseStatement`, `DiagnosticReport`, `DocumentManifest`, `DocumentReference`, `EffectEvidenceSynthesis`, `Encounter`, `Endpoint`, `EnrollmentRequest`, `EnrollmentResponse`, `EpisodeOfCare`, `EventDefinition`, `Evidence`, `EvidenceVariable`, `ExampleScenario`, `ExplanationOfBenefit`, `FamilyMemberHistory`, `Flag`, `Goal`, `GraphDefinition`, `Group`, `GuidanceResponse`, `HealthcareService`, `ImagingStudy`, `Immunization`, `ImmunizationEvaluation`, `ImmunizationRecommendation`, `ImplementationGuide`, `InsurancePlan`, `Invoice`, `Library`, `Linkage`, `List`, `Location`, `Measure`, `MeasureReport`, `Media`, `Medication`, `MedicationAdministration`, `MedicationDispense`, `MedicationKnowledge`, `MedicationRequest`, `MedicationStatement`, `MedicinalProduct`, `MedicinalProductAuthorization`, `MedicinalProductContraindication`, `MedicinalProductIndication`, `MedicinalProductIngredient`, `MedicinalProductInteraction`, `MedicinalProductManufactured`, `MedicinalProductPackaged`, `MedicinalProductPharmaceutical`, `MedicinalProductUndesirableEffect`, `MessageDefinition`, `MessageHeader`, `MolecularSequence`, `NamingSystem`, `NutritionOrder`, `Observation`, `ObservationDefinition`, `OperationDefinition`, `OperationOutcome`, `Organization`, `OrganizationAffiliation`, `Parameters`, `Patient`, `PaymentNotice`, `PaymentReconciliation`, `Person`, `PlanDefinition`, `Practitioner`, `PractitionerRole`, `Procedure`, `Provenance`, `Questionnaire`, `QuestionnaireResponse`, `RelatedPerson`, `RequestGroup`, `ResearchDefinition`, `ResearchElementDefinition`, `ResearchStudy`, `ResearchSubject`, `RiskAssessment`, `RiskEvidenceSynthesis`, `Schedule`, `SearchParameter`, `ServiceRequest`, `Slot`, `Specimen`, `SpecimenDefinition`, `StructureDefinition`, `StructureMap`, `Subscription`, `Substance`, `SubstanceNucleicAcid`, `SubstancePolymer`, `SubstanceProtein`, `SubstanceReferenceInformation`, `SubstanceSourceMaterial`, `SubstanceSpecification`, `SupplyDelivery`, `SupplyRequest`, `Task`, `TerminologyCapabilities`, `TestReport`, `TestScript`, `ValueSet`, `VerificationResult`, `VisionPrescription`.
 
