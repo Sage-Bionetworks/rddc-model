@@ -54,7 +54,7 @@
 <h2>Genomics</h2>
 <p>Whole-genome sequencing for one proband: paired FASTQ reads, a CRAM alignment with its index, and a VCF.</p>
 <ul>
-<li>Genomics classes accept <code>assay</code> and <code>platform</code>. Alignments and variants require <code>referenceGenome</code>.</li>
+<li>Every genomics file states its <code>assay</code>, here <code>wgs</code>, from a <a href="vocabularies.html#GenomicsAssayEnum">fixed list</a> mapped to OBI assay terms. <code>platform</code> is optional. Alignments and variants also require <code>referenceGenome</code>.</li>
 <li>Read pairs point to each other with <code>pairedWith</code>; the index points to its alignment with <code>indexOf</code>.</li>
 <li>Gzipped FASTQ and VCF set <code>compression: gzip</code>.</li>
 </ul>
