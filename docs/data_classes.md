@@ -13,6 +13,8 @@ Each concrete class carries a "structure" annotation describing its content. It 
 - **unstructured**: content without defined fields (notes, PDF or scanned documents, images, audio, video). Using it needs NLP, OCR or image analysis.
 - **mixed**: the class admits either kind, so the file's content decides (DocumentationFile, GenericFile).
 
+Each concrete class also carries a "modality" annotation, a ModalityEnum value naming the kind of data it holds. The platform reads it from the class to decide how to process the file, so sidecars do not include it either. A new kind of data gets a new class rather than a new value on an existing one.
+
 A class whose content always identifies a person carries a "biometric" annotation set to "true" (FacialImagingFile). Its files count as containing biometric identifiers and stay in the trusted research environment, whatever the sensitivity flags say.
 
 ## Hierarchy
@@ -22,56 +24,62 @@ DistributionItem
   FileObject
     DataFile  (abstract)
       FhirFile  (abstract)
-        FhirBundleFile  (structured)
+        FhirBundleFile  (structured, clinical_fhir)
         FhirSingleTypeFile  (abstract)
-          FhirResourceFile  (structured)
-          FhirNdjsonFile  (structured)
-      OmopTableFile  (structured)
-      CcdaDocumentFile  (structured)
-      TabularFile  (structured)
-      ClinicalDocumentFile  (unstructured)
-      DocumentationFile  (mixed)
+          FhirResourceFile  (structured, clinical_fhir)
+          FhirNdjsonFile  (structured, clinical_fhir)
+      OmopTableFile  (structured, clinical_omop)
+      CcdaDocumentFile  (structured, clinical_ccda)
+      TabularFile  (structured, clinical_tabular)
+      ConsentFile  (structured, consent)
+      ClinicalDocumentFile  (unstructured, clinical_text)
+      DocumentationFile  (mixed, metadata)
       GenomicsFile  (abstract)
-        SequenceReadsFile  (structured)
-        AlignmentFile  (structured)
-        VariantFile  (structured)
-      IndexFile  (structured)
-      ImagingFile  (unstructured)
-        FacialImagingFile  (unstructured, biometric)
-      MediaFile  (unstructured)
-      GenericFile  (mixed)
+        SequenceReadsFile  (structured, genomics)
+        AlignmentFile  (structured, genomics)
+        VariantFile  (structured, genomics)
+      IndexFile  (structured, genomics)
+      ImagingFile  (unstructured, imaging)
+        FacialImagingFile  (unstructured, imaging, biometric)
+      AudioFile  (unstructured, audio)
+      VideoFile  (unstructured, video)
+      SensorDataFile  (structured, wearable)
+      GenericFile  (mixed, other)
 ```
 
 ## Summary
 
-Every concrete class also requires the fields shared by all data files: `@id`, `@type`, `additionalType`, `contentSize`, `contentUrl`, `encodingFormat`, `modality`, `name`, `sha256`.
+Every concrete class also requires the fields shared by all data files: `@id`, `@type`, `additionalType`, `contentSize`, `contentUrl`, `encodingFormat`, `name`, `sha256`.
 
-| Class | Structure | Media types | Class-specific required fields |
-| --- | --- | --- | --- |
-| [`FhirBundleFile`](#fhirbundlefile) | structured | `application/fhir+json` | `bundleType`, `fhirVersion`, `subjectIds` |
-| [`FhirResourceFile`](#fhirresourcefile) | structured | `application/fhir+json` | `resourceType`, `fhirVersion` |
-| [`FhirNdjsonFile`](#fhirndjsonfile) | structured | `application/fhir+ndjson` | `resourceType`, `fhirVersion` |
-| [`OmopTableFile`](#omoptablefile) | structured | `text/csv`, `text/tab-separated-values`, `application/vnd.apache.parquet` | `cdmTable`, `omopCdmVersion` |
-| [`CcdaDocumentFile`](#ccdadocumentfile) | structured | `application/xml`, `text/xml` | `subjectIds` |
-| [`TabularFile`](#tabularfile) | structured | `text/csv`, `text/tab-separated-values`, `application/vnd.apache.parquet`, `application/json`, `application/jsonlines` | `tableName` |
-| [`ClinicalDocumentFile`](#clinicaldocumentfile) | unstructured | `text/plain`, `application/pdf`, `application/rtf`, `image/tiff`, `image/jpeg`, `image/png` | `subjectIds` |
-| [`DocumentationFile`](#documentationfile) | mixed | any | `about` |
-| [`SequenceReadsFile`](#sequencereadsfile) | structured | `text/plain`, `application/octet-stream` |  |
-| [`AlignmentFile`](#alignmentfile) | structured | `text/plain`, `application/octet-stream` | `referenceGenome` |
-| [`VariantFile`](#variantfile) | structured | `text/plain`, `application/octet-stream` | `referenceGenome` |
-| [`IndexFile`](#indexfile) | structured | `application/octet-stream` | `indexOf` |
-| [`ImagingFile`](#imagingfile) | unstructured | any |  |
-| [`FacialImagingFile`](#facialimagingfile) | unstructured | `image/jpeg`, `image/png`, `image/tiff`, `image/heic`, `application/dicom` | `subjectIds` |
-| [`MediaFile`](#mediafile) | unstructured | any |  |
-| [`GenericFile`](#genericfile) | mixed | any |  |
+| Class | Modality | Structure | Media types | Class-specific required fields |
+| --- | --- | --- | --- | --- |
+| [`FhirBundleFile`](#fhirbundlefile) | `clinical_fhir` | structured | `application/fhir+json` | `bundleType`, `fhirVersion`, `subjectIds` |
+| [`FhirResourceFile`](#fhirresourcefile) | `clinical_fhir` | structured | `application/fhir+json` | `resourceType`, `fhirVersion` |
+| [`FhirNdjsonFile`](#fhirndjsonfile) | `clinical_fhir` | structured | `application/fhir+ndjson` | `resourceType`, `fhirVersion` |
+| [`OmopTableFile`](#omoptablefile) | `clinical_omop` | structured | `text/csv`, `text/tab-separated-values`, `application/vnd.apache.parquet` | `cdmTable`, `omopCdmVersion` |
+| [`CcdaDocumentFile`](#ccdadocumentfile) | `clinical_ccda` | structured | `application/xml`, `text/xml` | `subjectIds` |
+| [`TabularFile`](#tabularfile) | `clinical_tabular` | structured | `text/csv`, `text/tab-separated-values`, `application/vnd.apache.parquet`, `application/json`, `application/jsonlines` | `tableName` |
+| [`ConsentFile`](#consentfile) | `consent` | structured | `text/csv`, `text/tab-separated-values`, `application/json`, `application/jsonlines` | `subjectIds` |
+| [`ClinicalDocumentFile`](#clinicaldocumentfile) | `clinical_text` | unstructured | `text/plain`, `application/pdf`, `application/rtf`, `image/tiff`, `image/jpeg`, `image/png` | `subjectIds` |
+| [`DocumentationFile`](#documentationfile) | `metadata` | mixed | any | `about` |
+| [`SequenceReadsFile`](#sequencereadsfile) | `genomics` | structured | `text/plain`, `application/octet-stream` |  |
+| [`AlignmentFile`](#alignmentfile) | `genomics` | structured | `text/plain`, `application/octet-stream` | `referenceGenome` |
+| [`VariantFile`](#variantfile) | `genomics` | structured | `text/plain`, `application/octet-stream` | `referenceGenome` |
+| [`IndexFile`](#indexfile) | `genomics` | structured | `application/octet-stream` | `indexOf` |
+| [`ImagingFile`](#imagingfile) | `imaging` | unstructured | any |  |
+| [`FacialImagingFile`](#facialimagingfile) | `imaging` | unstructured | `image/jpeg`, `image/png`, `image/tiff`, `image/heic`, `application/dicom` | `subjectIds` |
+| [`AudioFile`](#audiofile) | `audio` | unstructured | `audio/*` |  |
+| [`VideoFile`](#videofile) | `video` | unstructured | `video/*` |  |
+| [`SensorDataFile`](#sensordatafile) | `wearable` | structured | any |  |
+| [`GenericFile`](#genericfile) | `other` | mixed | any |  |
 
 ## Classes
 
 ### DataFile
 
-A data object of the batch, with modality, subjects, sensitivity and provenance.
+A data object of the batch, with subjects, sensitivity and provenance. Its class determines its modality (see the modality annotation).
 
-Abstract: not used directly. Inherits from `FileObject` → `DistributionItem`. Subclasses: [`FhirFile`](#fhirfile), [`OmopTableFile`](#omoptablefile), [`CcdaDocumentFile`](#ccdadocumentfile), [`TabularFile`](#tabularfile), [`ClinicalDocumentFile`](#clinicaldocumentfile), [`DocumentationFile`](#documentationfile), [`GenomicsFile`](#genomicsfile), [`IndexFile`](#indexfile), [`ImagingFile`](#imagingfile), [`MediaFile`](#mediafile), [`GenericFile`](#genericfile).
+Abstract: not used directly. Inherits from `FileObject` → `DistributionItem`. Subclasses: [`FhirFile`](#fhirfile), [`OmopTableFile`](#omoptablefile), [`CcdaDocumentFile`](#ccdadocumentfile), [`TabularFile`](#tabularfile), [`ConsentFile`](#consentfile), [`ClinicalDocumentFile`](#clinicaldocumentfile), [`DocumentationFile`](#documentationfile), [`GenomicsFile`](#genomicsfile), [`IndexFile`](#indexfile), [`ImagingFile`](#imagingfile), [`AudioFile`](#audiofile), [`VideoFile`](#videofile), [`SensorDataFile`](#sensordatafile), [`GenericFile`](#genericfile).
 
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
@@ -81,7 +89,6 @@ Abstract: not used directly. Inherits from `FileObject` → `DistributionItem`. 
 | `contentSize` | [`ByteSize`](#bytesize) | yes | Size of the file in bytes. |
 | `contentUrl` | [`RelativePath`](#relativepath) | yes | Object key relative to the batch prefix; Croissant resolves it against the sidecar's location. |
 | `encodingFormat` | [`MediaType`](#mediatype) | yes | Media type of the content (after decompression when compression is set). |
-| `modality` | [`ModalityEnum`](#modalityenum) | yes | The kind of data in the file. |
 | `name` | `string` | yes | File name, by convention the contentUrl. |
 | `sha256` | `string` | yes | SHA-256 checksum of the file, as lowercase hexadecimal. Pattern: `^[0-9a-f]{64}$`. |
 | `additionalProperty` | [`Extension`](#extension) (list) | | Namespaced extension key-value pairs. |
@@ -107,14 +114,13 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
 | `fhirVersion` | [`FhirVersionEnum`](#fhirversionenum) | yes | FHIR version of the resources in the file. A file holds resources of one version only. |
-| `modality` | [`ModalityEnum`](#modalityenum) | yes | The kind of data in the file. One of: `clinical_fhir`. |
 | `implementationGuides` | `string` (list) | | FHIR implementation guide packages the resources conform to, as "<package id>#<version>", e.g. "hl7.fhir.us.core#6.1.0". A FHIR validator loads these packages. Leave it out for resources that follow only the base specification. Pattern: `^[a-z0-9][a-z0-9_-]*(\.[a-z0-9_-]+)+#[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.-]+)?$`. |
 
 ### FhirBundleFile
 
 One FHIR Bundle JSON document.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:FhirBundleFile"`. Inherits from [`FhirFile`](#fhirfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:FhirBundleFile"`. Inherits from [`FhirFile`](#fhirfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `clinical_fhir`.
 
 Fields it adds or changes; it also has all fields of [`FhirFile`](#fhirfile):
 
@@ -144,7 +150,7 @@ Rules:
 
 One FHIR resource JSON document that is not a Bundle.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:FhirResourceFile"`. Inherits from [`FhirSingleTypeFile`](#fhirsingletypefile) → [`FhirFile`](#fhirfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:FhirResourceFile"`. Inherits from [`FhirSingleTypeFile`](#fhirsingletypefile) → [`FhirFile`](#fhirfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `clinical_fhir`.
 
 Fields it adds or changes; it also has all fields of [`FhirSingleTypeFile`](#fhirsingletypefile):
 
@@ -161,7 +167,7 @@ Rules:
 
 FHIR Bulk Data NDJSON, one resource type per file.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:FhirNdjsonFile"`. Inherits from [`FhirSingleTypeFile`](#fhirsingletypefile) → [`FhirFile`](#fhirfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:FhirNdjsonFile"`. Inherits from [`FhirSingleTypeFile`](#fhirsingletypefile) → [`FhirFile`](#fhirfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `clinical_fhir`.
 
 Fields it adds or changes; it also has all fields of [`FhirSingleTypeFile`](#fhirsingletypefile):
 
@@ -177,7 +183,7 @@ Rules:
 
 One OMOP CDM table.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:OmopTableFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:OmopTableFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `clinical_omop`.
 
 Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
@@ -185,7 +191,6 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 | --- | --- | --- | --- |
 | `cdmTable` | [`OmopCdmTableEnum`](#omopcdmtableenum) | yes | OMOP CDM table in the file, e.g. person. |
 | `encodingFormat` | [`MediaType`](#mediatype) | yes | Media type of the content (after decompression when compression is set). One of: `text/csv`, `text/tab-separated-values`, `application/vnd.apache.parquet`. |
-| `modality` | [`ModalityEnum`](#modalityenum) | yes | The kind of data in the file. One of: `clinical_omop`. |
 | `omopCdmVersion` | [`OmopCdmVersionEnum`](#omopcdmversionenum) | yes | OMOP CDM version of the table, as major.minor, e.g. "5.4". |
 
 Rules:
@@ -196,57 +201,67 @@ Rules:
 
 One HL7 C-CDA document.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:CcdaDocumentFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:CcdaDocumentFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `clinical_ccda`.
 
 Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
 | `encodingFormat` | [`MediaType`](#mediatype) | yes | Media type of the content (after decompression when compression is set). One of: `application/xml`, `text/xml`. |
-| `modality` | [`ModalityEnum`](#modalityenum) | yes | The kind of data in the file. One of: `clinical_ccda`. |
 | `subjectIds` | [`Identifier`](#identifier) (list) | yes | Subject IDs the file contains. Each must appear in the subject table. |
 | `templateIds` | `string` (list) | | C-CDA template IDs, as an OID root or "root:extension", e.g. "2.16.840.1.113883.10.20.22.1.2:2015-08-01". Pattern: `^[0-2](\.(0\|[1-9][0-9]*))+(:[^\s:]+)?$`. |
 
 ### TabularFile
 
-A table that is not OMOP or FHIR, such as registry, PRO, claims, mortality or consent data.
+A clinical table that is not OMOP or FHIR, such as registry, patient-reported outcome, claims or mortality data. Consent tables go in a ConsentFile, sensor data in a SensorDataFile, and tables that describe other files in a DocumentationFile.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:TabularFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:TabularFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `clinical_tabular`.
 
 Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
 | `encodingFormat` | [`MediaType`](#mediatype) | yes | Media type of the content (after decompression when compression is set). One of: `text/csv`, `text/tab-separated-values`, `application/vnd.apache.parquet`, `application/json`, `application/jsonlines`. |
-| `modality` | [`ModalityEnum`](#modalityenum) | yes | The kind of data in the file. One of: `clinical_tabular`, `consent`, `wearable`, `metadata`, `other`. |
 | `tableName` | `string` | yes | Table name within its dataset. |
+
+### ConsentFile
+
+Consent elements for the subjects it lists: which uses each subject agreed to. The platform applies them to access decisions rather than processing them as clinical data.
+
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:ConsentFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `consent`.
+
+Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
+
+| Field | Type | Required | Meaning and constraints |
+| --- | --- | --- | --- |
+| `encodingFormat` | [`MediaType`](#mediatype) | yes | Media type of the content (after decompression when compression is set). One of: `text/csv`, `text/tab-separated-values`, `application/json`, `application/jsonlines`. |
+| `subjectIds` | [`Identifier`](#identifier) (list) | yes | Subject IDs the file contains. Each must appear in the subject table. |
+| `tableName` | `string` | | Table name within its dataset. |
 
 ### ClinicalDocumentFile
 
 An unstructured clinical document, such as a note or a scanned report. A scan is a PDF or an image (TIFF, JPEG or PNG).
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:ClinicalDocumentFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: unstructured.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:ClinicalDocumentFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: unstructured. Modality: `clinical_text`.
 
 Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
 | `encodingFormat` | [`MediaType`](#mediatype) | yes | Media type of the content (after decompression when compression is set). One of: `text/plain`, `application/pdf`, `application/rtf`, `image/tiff`, `image/jpeg`, `image/png`. |
-| `modality` | [`ModalityEnum`](#modalityenum) | yes | The kind of data in the file. One of: `clinical_text`. |
 | `subjectIds` | [`Identifier`](#identifier) (list) | yes | Subject IDs the file contains. Each must appear in the subject table. |
 
 ### DocumentationFile
 
 A file that documents other files, such as a data dictionary or a README.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:DocumentationFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: mixed.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:DocumentationFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: mixed. Modality: `metadata`.
 
 Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
 | `about` | [`NodeRef`](#noderef) (list) | yes | The files or record sets this file documents. |
-| `modality` | [`ModalityEnum`](#modalityenum) | yes | The kind of data in the file. One of: `metadata`. |
 
 ### GenomicsFile
 
@@ -259,15 +274,14 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
 | `encodingFormat` | [`MediaType`](#mediatype) | yes | Media type of the content (after decompression when compression is set). One of: `text/plain`, `application/octet-stream`. |
-| `modality` | [`ModalityEnum`](#modalityenum) | yes | The kind of data in the file. One of: `genomics`. |
 | `assay` | `string` | | The assay that produced the data. |
-| `platform` | `string` | | The instrument or sequencing platform that produced the data. |
+| `platform` | `string` | | The instrument, sequencing platform or device that produced the data. |
 
 ### SequenceReadsFile
 
 Sequencing reads, such as FASTQ or unaligned BAM.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:SequenceReadsFile"`. Inherits from [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:SequenceReadsFile"`. Inherits from [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`.
 
 Fields it adds or changes; it also has all fields of [`GenomicsFile`](#genomicsfile):
 
@@ -279,7 +293,7 @@ Fields it adds or changes; it also has all fields of [`GenomicsFile`](#genomicsf
 
 Aligned reads, such as BAM or CRAM.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:AlignmentFile"`. Inherits from [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:AlignmentFile"`. Inherits from [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`.
 
 Fields it adds or changes; it also has all fields of [`GenomicsFile`](#genomicsfile):
 
@@ -291,7 +305,7 @@ Fields it adds or changes; it also has all fields of [`GenomicsFile`](#genomicsf
 
 Variant calls, such as VCF or BCF.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:VariantFile"`. Inherits from [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:VariantFile"`. Inherits from [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`.
 
 Fields it adds or changes; it also has all fields of [`GenomicsFile`](#genomicsfile):
 
@@ -303,7 +317,7 @@ Fields it adds or changes; it also has all fields of [`GenomicsFile`](#genomicsf
 
 An index of another file in the sidecar, such as .bai, .crai or .tbi. Indexes are binary, so encodingFormat is application/octet-stream.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:IndexFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:IndexFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`.
 
 Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
@@ -316,19 +330,15 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 A medical or photographic image, such as DICOM. A photograph of a person's face goes in a FacialImagingFile instead.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:ImagingFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Subclasses: [`FacialImagingFile`](#facialimagingfile). Structure: unstructured.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:ImagingFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Subclasses: [`FacialImagingFile`](#facialimagingfile). Structure: unstructured. Modality: `imaging`.
 
-Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
-
-| Field | Type | Required | Meaning and constraints |
-| --- | --- | --- | --- |
-| `modality` | [`ModalityEnum`](#modalityenum) | yes | The kind of data in the file. One of: `imaging`. |
+No fields beyond those of [`DataFile`](#datafile).
 
 ### FacialImagingFile
 
 A photograph of a person's face, such as those taken for dysmorphology assessment or facial phenotyping. A face is a biometric identifier, so the file always counts as containing biometric identifiers.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:FacialImagingFile"`. Inherits from [`ImagingFile`](#imagingfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: unstructured. Biometric: always counts as containing biometric identifiers.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:FacialImagingFile"`. Inherits from [`ImagingFile`](#imagingfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: unstructured. Modality: `imaging`. Biometric: always counts as containing biometric identifiers.
 
 Fields it adds or changes; it also has all fields of [`ImagingFile`](#imagingfile):
 
@@ -338,23 +348,47 @@ Fields it adds or changes; it also has all fields of [`ImagingFile`](#imagingfil
 | `subjectIds` | [`Identifier`](#identifier) (list) | yes | Subject IDs the file contains. Each must appear in the subject table. |
 | `sensitivity` | [`BiometricFileSensitivity`](#biometricfilesensitivity) | | Per-file sensitivity overrides. containsBiometricIdentifiers is left out: the class already says the file contains biometric identifiers. |
 
-### MediaFile
+### AudioFile
 
-An audio or video recording. A recording of a person's voice or face contains biometric identifiers, so set sensitivity.containsBiometricIdentifiers to true.
+An audio recording. A recording of a person's voice contains biometric identifiers, so set sensitivity.containsBiometricIdentifiers to true.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:MediaFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: unstructured.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:AudioFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: unstructured. Modality: `audio`.
 
 Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
-| `modality` | [`ModalityEnum`](#modalityenum) | yes | The kind of data in the file. One of: `audio`, `video`. |
+| `encodingFormat` | [`MediaType`](#mediatype) | yes | An audio media type, such as audio/wav or audio/mpeg. Pattern: `^audio/[A-Za-z0-9.+_-]+$`. |
+
+### VideoFile
+
+A video recording. A recording that shows a person's face or voice contains biometric identifiers, so set sensitivity.containsBiometricIdentifiers to true.
+
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:VideoFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: unstructured. Modality: `video`.
+
+Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
+
+| Field | Type | Required | Meaning and constraints |
+| --- | --- | --- | --- |
+| `encodingFormat` | [`MediaType`](#mediatype) | yes | A video media type, such as video/mp4. Pattern: `^video/[A-Za-z0-9.+_-]+$`. |
+
+### SensorDataFile
+
+Data recorded by a wearable or other sensor device, such as accelerometry, heart rate or continuous glucose readings. It may be a table (CSV, Parquet) or a device or vendor format; encodingFormat names it, application/octet-stream if no media type fits.
+
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:SensorDataFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `wearable`.
+
+Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
+
+| Field | Type | Required | Meaning and constraints |
+| --- | --- | --- | --- |
+| `platform` | `string` | | The instrument, sequencing platform or device that produced the data. |
 
 ### GenericFile
 
 Any other data file. A curator decides how to process it.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:GenericFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: mixed.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:GenericFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: mixed. Modality: `other`.
 
 No fields beyond those of [`DataFile`](#datafile).
 
@@ -460,23 +494,23 @@ Where an auto-filled value came from.
 
 ### ModalityEnum
 
-The kind of data in a file. Together with the file and file-set classes, this determines how the platform processes the file. Each class accepts only the modalities that fit it; some accept several, e.g. a TabularFile can hold registry, PRO or consent data.
+The kind of data in a file: the values of the "modality" class annotation. Each concrete data file class has exactly one, so a sidecar does not state it; the platform reads it from the file's class to decide how to process the file. A new kind of data gets a new class.
 
 | Value | Meaning |
 | --- | --- |
 | `clinical_fhir` | HL7 FHIR resources. |
 | `clinical_omop` | OMOP CDM tables. |
 | `clinical_ccda` | HL7 C-CDA documents. |
-| `clinical_tabular` | Registry, patient-reported, claims or mortality tables not in OMOP or FHIR form. |
+| `clinical_tabular` | Registry, patient-reported, claims or mortality tables not in OMOP or FHIR form (TabularFile). |
 | `clinical_text` | Unstructured clinical text such as notes. De-identified before use. |
-| `consent` | Consent elements for subjects. |
+| `consent` | Consent elements for subjects (ConsentFile). |
 | `genomics` | Sequencing reads, alignments, variant calls and related indexes. |
 | `imaging` | Medical images such as DICOM. |
-| `video` | Video recordings. |
-| `audio` | Audio recordings, including voice. |
-| `wearable` | Device or wearable sensor streams. |
-| `metadata` | Descriptive files that accompany the data, such as data dictionaries or run metadata. |
-| `other` | Anything else; routed by curator decision. |
+| `video` | Video recordings (VideoFile). |
+| `audio` | Audio recordings, including voice (AudioFile). |
+| `wearable` | Device or wearable sensor streams (SensorDataFile). |
+| `metadata` | Files that describe other files, such as data dictionaries or acquisition metadata (DocumentationFile). |
+| `other` | Anything else, routed by curator decision (GenericFile). |
 
 ### FhirBundleTypeEnum
 

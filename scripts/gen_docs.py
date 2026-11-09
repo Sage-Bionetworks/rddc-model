@@ -10,6 +10,7 @@ written: the script exits 1 if OUT differs from what the schema generates.
 
 import argparse
 import os
+import re
 import sys
 
 from linkml_runtime.utils.schemaview import SchemaView
@@ -167,9 +168,9 @@ class Page:
             notes = []
             if cls.abstract:
                 notes.append("abstract")
-            structure = cls.annotations.get("structure")
-            if structure:
-                notes.append(structure.value)
+            for key in ("structure", "modality"):
+                if cls.annotations.get(key):
+                    notes.append(cls.annotations[key].value)
             if cls.annotations.get("biometric"):
                 notes.append("biometric")
             lines.append(("  " * depth) + name + (f"  ({', '.join(notes)})" if notes else ""))
@@ -181,7 +182,8 @@ class Page:
         return lines
 
     def summary(self):
-        rows = ["| Class | Structure | Media types | Class-specific required fields |", "| --- | --- | --- | --- |"]
+        rows = ["| Class | Modality | Structure | Media types | Class-specific required fields |",
+                "| --- | --- | --- | --- | --- |"]
         base = {s.name for s in self.sv.class_induced_slots(ROOT_CLASS) if s.required}
         for name in self.classes:
             cls = self.sv.get_class(name)
@@ -191,9 +193,13 @@ class Page:
             fmt = slots["encodingFormat"]
             media = ([fmt.equals_string] if fmt.equals_string
                      else [a.equals_string for a in fmt.any_of or [] if a.equals_string])
+            top = re.match(r"\^([a-z]+)/", fmt.pattern or "")
+            if not media and top:
+                media = [f"{top.group(1)}/*"]
             extra = [s.alias or s.name for s in slots.values() if s.required and s.name not in base]
-            structure = cls.annotations.get("structure")
-            rows.append(f"| {self.link(name)} | {structure.value if structure else ''} | "
+            structure, modality = (cls.annotations.get(k) for k in ("structure", "modality"))
+            rows.append(f"| {self.link(name)} | {f'`{modality.value}`' if modality else ''} | "
+                        f"{structure.value if structure else ''} | "
                         f"{', '.join(f'`{m}`' for m in media) or 'any'} | {', '.join(f'`{e}`' for e in extra)} |")
         return rows
 
@@ -215,6 +221,9 @@ class Page:
         structure = cls.annotations.get("structure")
         if structure:
             facts.append(f"Structure: {structure.value}.")
+        modality = cls.annotations.get("modality")
+        if modality:
+            facts.append(f"Modality: `{modality.value}`.")
         if cls.annotations.get("biometric"):
             facts.append("Biometric: always counts as containing biometric identifiers.")
         out += [" ".join(facts), ""] if facts else []

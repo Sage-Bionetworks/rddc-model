@@ -24,6 +24,12 @@ description: >-
       (DocumentationFile, GenericFile).
 
 
+  Each concrete class also carries a "modality" annotation, a ModalityEnum value naming
+  the kind of data it holds. The platform reads it from the class to decide how to
+  process the file, so sidecars do not include it either. A new kind of data gets a
+  new class rather than a new value on an existing one.
+
+
   A class whose content always identifies a person carries a "biometric" annotation
   set to "true" (FacialImagingFile). Its files count as containing biometric
   identifiers and stay in the trusted research environment, whatever the sensitivity
@@ -52,10 +58,10 @@ enums:
 
   ModalityEnum:
     description: >-
-      The kind of data in a file. Together with the file and file-set classes, this
-      determines how the platform processes the file. Each class accepts only the
-      modalities that fit it; some accept several, e.g. a TabularFile can hold
-      registry, PRO or consent data.
+      The kind of data in a file: the values of the "modality" class annotation. Each
+      concrete data file class has exactly one, so a sidecar does not state it; the
+      platform reads it from the file's class to decide how to process the file. A new
+      kind of data gets a new class.
     permissible_values:
       clinical_fhir:
         description: HL7 FHIR resources.
@@ -64,25 +70,25 @@ enums:
       clinical_ccda:
         description: HL7 C-CDA documents.
       clinical_tabular:
-        description: Registry, patient-reported, claims or mortality tables not in OMOP or FHIR form.
+        description: Registry, patient-reported, claims or mortality tables not in OMOP or FHIR form (TabularFile).
       clinical_text:
         description: Unstructured clinical text such as notes. De-identified before use.
       consent:
-        description: Consent elements for subjects.
+        description: Consent elements for subjects (ConsentFile).
       genomics:
         description: Sequencing reads, alignments, variant calls and related indexes.
       imaging:
         description: Medical images such as DICOM.
       video:
-        description: Video recordings.
+        description: Video recordings (VideoFile).
       audio:
-        description: Audio recordings, including voice.
+        description: Audio recordings, including voice (AudioFile).
       wearable:
-        description: Device or wearable sensor streams.
+        description: Device or wearable sensor streams (SensorDataFile).
       metadata:
-        description: Descriptive files that accompany the data, such as data dictionaries or run metadata.
+        description: Files that describe other files, such as data dictionaries or acquisition metadata (DocumentationFile).
       other:
-        description: Anything else; routed by curator decision.
+        description: Anything else, routed by curator decision (GenericFile).
 
   FhirBundleTypeEnum:
     description: FHIR Bundle.type values accepted in a deposit.
@@ -952,9 +958,10 @@ classes:
   DataFile:
     is_a: FileObject
     abstract: true
-    description: A data object of the batch, with modality, subjects, sensitivity and provenance.
+    description: >-
+      A data object of the batch, with subjects, sensitivity and provenance. Its class
+      determines its modality (see the modality annotation).
     slots:
-    - modality
     - subjectIds
     - recordCount
     - identifier
@@ -962,8 +969,6 @@ classes:
     - processingHints
     - wasDerivedFrom
     slot_usage:
-      modality:
-        required: true
       wasDerivedFrom:
         description: "References to input files in this sidecar, such as the alignment used to call variants."
 
@@ -998,9 +1003,6 @@ classes:
     - fhirVersion
     - implementationGuides
     slot_usage:
-      modality:
-        any_of:
-        - equals_string: clinical_fhir
       fhirVersion:
         required: true
 
@@ -1009,6 +1011,7 @@ classes:
     description: One FHIR Bundle JSON document.
     annotations:
       structure: structured
+      modality: clinical_fhir
     slots:
     - bundleType
     slot_usage:
@@ -1195,6 +1198,7 @@ classes:
     description: One FHIR resource JSON document that is not a Bundle.
     annotations:
       structure: structured
+      modality: clinical_fhir
     slot_usage:
       encodingFormat:
         range: string  # equals_string needs a string range; the fixed value is a valid MediaType
@@ -1209,6 +1213,7 @@ classes:
     description: FHIR Bulk Data NDJSON, one resource type per file.
     annotations:
       structure: structured
+      modality: clinical_fhir
     slot_usage:
       encodingFormat:
         range: string  # equals_string needs a string range; the fixed value is a valid MediaType
@@ -1219,13 +1224,11 @@ classes:
     description: One OMOP CDM table.
     annotations:
       structure: structured
+      modality: clinical_omop
     slots:
     - cdmTable
     - omopCdmVersion
     slot_usage:
-      modality:
-        any_of:
-        - equals_string: clinical_omop
       encodingFormat:
         any_of:
         - equals_string: text/csv
@@ -1292,12 +1295,10 @@ classes:
     description: One HL7 C-CDA document.
     annotations:
       structure: structured
+      modality: clinical_ccda
     slots:
     - templateIds
     slot_usage:
-      modality:
-        any_of:
-        - equals_string: clinical_ccda
       encodingFormat:
         any_of:
         - equals_string: application/xml
@@ -1307,19 +1308,16 @@ classes:
 
   TabularFile:
     is_a: DataFile
-    description: A table that is not OMOP or FHIR, such as registry, PRO, claims, mortality or consent data.
+    description: >-
+      A clinical table that is not OMOP or FHIR, such as registry, patient-reported
+      outcome, claims or mortality data. Consent tables go in a ConsentFile, sensor data
+      in a SensorDataFile, and tables that describe other files in a DocumentationFile.
     annotations:
       structure: structured
+      modality: clinical_tabular
     slots:
     - tableName
     slot_usage:
-      modality:
-        any_of:
-        - equals_string: clinical_tabular
-        - equals_string: consent
-        - equals_string: wearable
-        - equals_string: metadata
-        - equals_string: other
       encodingFormat:
         any_of:
         - equals_string: text/csv
@@ -1330,6 +1328,27 @@ classes:
       tableName:
         required: true
 
+  ConsentFile:
+    is_a: DataFile
+    description: >-
+      Consent elements for the subjects it lists: which uses each subject agreed to. The
+      platform applies them to access decisions rather than processing them as clinical
+      data.
+    annotations:
+      structure: structured
+      modality: consent
+    slots:
+    - tableName
+    slot_usage:
+      encodingFormat:
+        any_of:
+        - equals_string: text/csv
+        - equals_string: text/tab-separated-values
+        - equals_string: application/json
+        - equals_string: application/jsonlines
+      subjectIds:
+        required: true
+
   ClinicalDocumentFile:
     is_a: DataFile
     description: >-
@@ -1337,10 +1356,8 @@ classes:
       a PDF or an image (TIFF, JPEG or PNG).
     annotations:
       structure: unstructured
+      modality: clinical_text
     slot_usage:
-      modality:
-        any_of:
-        - equals_string: clinical_text
       encodingFormat:
         any_of:
         - equals_string: text/plain
@@ -1357,12 +1374,10 @@ classes:
     description: A file that documents other files, such as a data dictionary or a README.
     annotations:
       structure: mixed
+      modality: metadata
     slots:
     - about
     slot_usage:
-      modality:
-        any_of:
-        - equals_string: metadata
       about:
         required: true
 
@@ -1393,9 +1408,6 @@ classes:
     - assay
     - platform
     slot_usage:
-      modality:
-        any_of:
-        - equals_string: genomics
       encodingFormat:
         any_of:
         - equals_string: text/plain
@@ -1406,6 +1418,7 @@ classes:
     description: Sequencing reads, such as FASTQ or unaligned BAM.
     annotations:
       structure: structured
+      modality: genomics
     slots:
     - pairedWith
 
@@ -1414,6 +1427,7 @@ classes:
     description: Aligned reads, such as BAM or CRAM.
     annotations:
       structure: structured
+      modality: genomics
     slots:
     - referenceGenome
     slot_usage:
@@ -1425,6 +1439,7 @@ classes:
     description: Variant calls, such as VCF or BCF.
     annotations:
       structure: structured
+      modality: genomics
     slots:
     - referenceGenome
     slot_usage:
@@ -1438,6 +1453,7 @@ classes:
       binary, so encodingFormat is application/octet-stream.
     annotations:
       structure: structured
+      modality: genomics
     slots:
     - indexOf
     slot_usage:
@@ -1456,10 +1472,7 @@ classes:
       goes in a FacialImagingFile instead.
     annotations:
       structure: unstructured
-    slot_usage:
-      modality:
-        any_of:
-        - equals_string: imaging
+      modality: imaging
 
   FacialImagingFile:
     is_a: ImagingFile
@@ -1469,6 +1482,7 @@ classes:
       as containing biometric identifiers.
     annotations:
       structure: unstructured
+      modality: imaging
       biometric: "true"
     slot_usage:
       sensitivity:
@@ -1486,33 +1500,57 @@ classes:
       subjectIds:
         required: true
 
-  MediaFile:
+  AudioFile:
     is_a: DataFile
     description: >-
-      An audio or video recording. A recording of a person's voice or face contains
+      An audio recording. A recording of a person's voice contains biometric
+      identifiers, so set sensitivity.containsBiometricIdentifiers to true.
+    annotations:
+      structure: unstructured
+      modality: audio
+    slot_usage:
+      encodingFormat:
+        pattern: "^audio/[A-Za-z0-9.+_-]+$"
+        description: An audio media type, such as audio/wav or audio/mpeg.
+
+  VideoFile:
+    is_a: DataFile
+    description: >-
+      A video recording. A recording that shows a person's face or voice contains
       biometric identifiers, so set sensitivity.containsBiometricIdentifiers to true.
     annotations:
       structure: unstructured
+      modality: video
     slot_usage:
-      modality:
-        any_of:
-        - equals_string: audio
-        - equals_string: video
+      encodingFormat:
+        pattern: "^video/[A-Za-z0-9.+_-]+$"
+        description: A video media type, such as video/mp4.
+
+  SensorDataFile:
+    is_a: DataFile
+    description: >-
+      Data recorded by a wearable or other sensor device, such as accelerometry, heart
+      rate or continuous glucose readings. It may be a table (CSV, Parquet) or a device
+      or vendor format; encodingFormat names it, application/octet-stream if no media
+      type fits.
+    annotations:
+      structure: structured
+      modality: wearable
+    slots:
+    - platform
 
   GenericFile:
     is_a: DataFile
     description: "Any other data file. A curator decides how to process it."
     annotations:
       structure: mixed
+      modality: other
 
 # ---------------------------------------------------------------------------
 # Slots
 # ---------------------------------------------------------------------------
 slots:
 
-  modality:
-    description: "The kind of data in the file."
-    range: ModalityEnum
   recordCount:
     description: Rows, resources or documents in the file, when counted.
     range: integer
@@ -1566,7 +1604,7 @@ slots:
   assay:
     description: "The assay that produced the data."
   platform:
-    description: "The instrument or sequencing platform that produced the data."
+    description: "The instrument, sequencing platform or device that produced the data."
   referenceGenome:
     description: Reference assembly the coordinates refer to, e.g. GRCh38.
     range: ReferenceGenomeEnum
