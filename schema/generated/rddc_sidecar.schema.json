@@ -633,7 +633,7 @@
                     "type": "string"
                 },
                 "conformsTo": {
-                    "description": "Standards the collection follows, as versioned URLs. Pinned values: http://hl7.org/fhir/R4 (FHIR 4.0.1), http://hl7.org/fhir/us/core/STU6.1 (US Core 6.1.0), https://ohdsi.github.io/CommonDataModel/cdm54.html (OMOP CDM 5.4), http://hl7.org/cda/us/ccda/2.1 (C-CDA 2.1). The validator checks values against the pinned list.",
+                    "description": "Standards the collection follows, as versioned URLs. Pinned values: http://hl7.org/fhir/R4 (FHIR 4.0.1), http://hl7.org/fhir/us/core/STU6.1 (US Core 6.1.0), http://hl7.org/fhir/uv/phd/STU2 (HL7 Personal Health Device IG 2.0.0, for device data in FHIR), https://ohdsi.github.io/CommonDataModel/cdm54.html (OMOP CDM 5.4), http://hl7.org/cda/us/ccda/2.1 (C-CDA 2.1), https://standards.ieee.org/ieee/1752.1/6982/ (IEEE 1752.1-2021, for sleep and physical activity measures). The validator checks values against the pinned list.",
                     "items": {
                         "format": "uri",
                         "type": "string"
@@ -1437,7 +1437,7 @@
                     "type": "string"
                 },
                 "conformsTo": {
-                    "description": "Standards the collection follows, as versioned URLs. Pinned values: http://hl7.org/fhir/R4 (FHIR 4.0.1), http://hl7.org/fhir/us/core/STU6.1 (US Core 6.1.0), https://ohdsi.github.io/CommonDataModel/cdm54.html (OMOP CDM 5.4), http://hl7.org/cda/us/ccda/2.1 (C-CDA 2.1). The validator checks values against the pinned list.",
+                    "description": "Standards the collection follows, as versioned URLs. Pinned values: http://hl7.org/fhir/R4 (FHIR 4.0.1), http://hl7.org/fhir/us/core/STU6.1 (US Core 6.1.0), http://hl7.org/fhir/uv/phd/STU2 (HL7 Personal Health Device IG 2.0.0, for device data in FHIR), https://ohdsi.github.io/CommonDataModel/cdm54.html (OMOP CDM 5.4), http://hl7.org/cda/us/ccda/2.1 (C-CDA 2.1), https://standards.ieee.org/ieee/1752.1/6982/ (IEEE 1752.1-2021, for sleep and physical activity measures). The validator checks values against the pinned list.",
                     "items": {
                         "format": "uri",
                         "type": "string"
@@ -2056,7 +2056,7 @@
                     "type": "string"
                 },
                 "conformsTo": {
-                    "description": "Standards the collection follows, as versioned URLs. Pinned values: http://hl7.org/fhir/R4 (FHIR 4.0.1), http://hl7.org/fhir/us/core/STU6.1 (US Core 6.1.0), https://ohdsi.github.io/CommonDataModel/cdm54.html (OMOP CDM 5.4), http://hl7.org/cda/us/ccda/2.1 (C-CDA 2.1). The validator checks values against the pinned list.",
+                    "description": "Standards the collection follows, as versioned URLs. Pinned values: http://hl7.org/fhir/R4 (FHIR 4.0.1), http://hl7.org/fhir/us/core/STU6.1 (US Core 6.1.0), http://hl7.org/fhir/uv/phd/STU2 (HL7 Personal Health Device IG 2.0.0, for device data in FHIR), https://ohdsi.github.io/CommonDataModel/cdm54.html (OMOP CDM 5.4), http://hl7.org/cda/us/ccda/2.1 (C-CDA 2.1), https://standards.ieee.org/ieee/1752.1/6982/ (IEEE 1752.1-2021, for sleep and physical activity measures). The validator checks values against the pinned list.",
                     "items": {
                         "format": "uri",
                         "type": "string"
@@ -2223,7 +2223,7 @@
                     "type": "string"
                 },
                 "conformsTo": {
-                    "description": "Standards the collection follows, as versioned URLs. Pinned values: http://hl7.org/fhir/R4 (FHIR 4.0.1), http://hl7.org/fhir/us/core/STU6.1 (US Core 6.1.0), https://ohdsi.github.io/CommonDataModel/cdm54.html (OMOP CDM 5.4), http://hl7.org/cda/us/ccda/2.1 (C-CDA 2.1). The validator checks values against the pinned list.",
+                    "description": "Standards the collection follows, as versioned URLs. Pinned values: http://hl7.org/fhir/R4 (FHIR 4.0.1), http://hl7.org/fhir/us/core/STU6.1 (US Core 6.1.0), http://hl7.org/fhir/uv/phd/STU2 (HL7 Personal Health Device IG 2.0.0, for device data in FHIR), https://ohdsi.github.io/CommonDataModel/cdm54.html (OMOP CDM 5.4), http://hl7.org/cda/us/ccda/2.1 (C-CDA 2.1), https://standards.ieee.org/ieee/1752.1/6982/ (IEEE 1752.1-2021, for sleep and physical activity measures). The validator checks values against the pinned list.",
                     "items": {
                         "format": "uri",
                         "type": "string"
@@ -3603,7 +3603,7 @@
                     "type": "string"
                 },
                 "conformsTo": {
-                    "description": "Standards the collection follows, as versioned URLs. Pinned values: http://hl7.org/fhir/R4 (FHIR 4.0.1), http://hl7.org/fhir/us/core/STU6.1 (US Core 6.1.0), https://ohdsi.github.io/CommonDataModel/cdm54.html (OMOP CDM 5.4), http://hl7.org/cda/us/ccda/2.1 (C-CDA 2.1). The validator checks values against the pinned list.",
+                    "description": "Standards the collection follows, as versioned URLs. Pinned values: http://hl7.org/fhir/R4 (FHIR 4.0.1), http://hl7.org/fhir/us/core/STU6.1 (US Core 6.1.0), http://hl7.org/fhir/uv/phd/STU2 (HL7 Personal Health Device IG 2.0.0, for device data in FHIR), https://ohdsi.github.io/CommonDataModel/cdm54.html (OMOP CDM 5.4), http://hl7.org/cda/us/ccda/2.1 (C-CDA 2.1), https://standards.ieee.org/ieee/1752.1/6982/ (IEEE 1752.1-2021, for sleep and physical activity measures). The validator checks values against the pinned list.",
                     "items": {
                         "format": "uri",
                         "type": "string"
@@ -3907,7 +3907,7 @@
                     "type": "string"
                 },
                 "conformsTo": {
-                    "description": "Standards the collection follows, as versioned URLs. Pinned values: http://hl7.org/fhir/R4 (FHIR 4.0.1), http://hl7.org/fhir/us/core/STU6.1 (US Core 6.1.0), https://ohdsi.github.io/CommonDataModel/cdm54.html (OMOP CDM 5.4), http://hl7.org/cda/us/ccda/2.1 (C-CDA 2.1). The validator checks values against the pinned list.",
+                    "description": "Standards the collection follows, as versioned URLs. Pinned values: http://hl7.org/fhir/R4 (FHIR 4.0.1), http://hl7.org/fhir/us/core/STU6.1 (US Core 6.1.0), http://hl7.org/fhir/uv/phd/STU2 (HL7 Personal Health Device IG 2.0.0, for device data in FHIR), https://ohdsi.github.io/CommonDataModel/cdm54.html (OMOP CDM 5.4), http://hl7.org/cda/us/ccda/2.1 (C-CDA 2.1), https://standards.ieee.org/ieee/1752.1/6982/ (IEEE 1752.1-2021, for sleep and physical activity measures). The validator checks values against the pinned list.",
                     "items": {
                         "format": "uri",
                         "type": "string"
@@ -4874,7 +4874,7 @@
                     "description": "Values from the OMOP cdm_source table."
                 },
                 "conformsTo": {
-                    "description": "Standards the collection follows, as versioned URLs. Pinned values: http://hl7.org/fhir/R4 (FHIR 4.0.1), http://hl7.org/fhir/us/core/STU6.1 (US Core 6.1.0), https://ohdsi.github.io/CommonDataModel/cdm54.html (OMOP CDM 5.4), http://hl7.org/cda/us/ccda/2.1 (C-CDA 2.1). The validator checks values against the pinned list.",
+                    "description": "Standards the collection follows, as versioned URLs. Pinned values: http://hl7.org/fhir/R4 (FHIR 4.0.1), http://hl7.org/fhir/us/core/STU6.1 (US Core 6.1.0), http://hl7.org/fhir/uv/phd/STU2 (HL7 Personal Health Device IG 2.0.0, for device data in FHIR), https://ohdsi.github.io/CommonDataModel/cdm54.html (OMOP CDM 5.4), http://hl7.org/cda/us/ccda/2.1 (C-CDA 2.1), https://standards.ieee.org/ieee/1752.1/6982/ (IEEE 1752.1-2021, for sleep and physical activity measures). The validator checks values against the pinned list.",
                     "items": {
                         "format": "uri",
                         "type": "string"
@@ -5501,9 +5501,28 @@
             "title": "SensitivityDeclaration",
             "type": "object"
         },
+        "SensorAssayEnum": {
+            "description": "Sensing techniques accepted for sensor data. Meanings are NCIT (26.02d) terms, OBI assay terms (release 2026-07-27) where OBI has one, and SNOMED CT for continuous glucose monitoring. No term describes measuring electrodermal activity, so that value has only a close mapping.",
+            "enum": [
+                "accelerometry",
+                "ecg",
+                "ppg",
+                "pulse_oximetry",
+                "cgm",
+                "eeg",
+                "emg",
+                "blood_pressure",
+                "temperature",
+                "respiration",
+                "eda",
+                "other"
+            ],
+            "title": "SensorAssayEnum",
+            "type": "string"
+        },
         "SensorDataFile": {
             "additionalProperties": false,
-            "description": "Data recorded by a wearable or other sensor device, such as accelerometry, heart rate or continuous glucose readings. It may be a table (CSV, Parquet) or a device or vendor format; encodingFormat names it, application/octet-stream if no media type fits.",
+            "description": "Base class for data recorded by a wearable or other sensor device. A raw signal goes in a SensorSignalFile and measures derived from it in a SensorMeasureFile, since they need different processing. Sensor data already in FHIR form, such as device Observations, goes in a FHIR file instead.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -5531,6 +5550,14 @@
                         "rddc:SensorDataFile"
                     ],
                     "type": "string"
+                },
+                "assay": {
+                    "description": "The sensing techniques that produced the data, e.g. accelerometry or ecg. A list, since one recording or summary can combine several, such as a sleep study's EEG and ECG channels.",
+                    "items": {
+                        "$ref": "#/$defs/SensorAssayEnum"
+                    },
+                    "minItems": 1,
+                    "type": "array"
                 },
                 "compression": {
                     "$ref": "#/$defs/CompressionEnum",
@@ -5581,7 +5608,7 @@
                     "type": "string"
                 },
                 "platform": {
-                    "description": "The instrument, sequencing platform or device that produced the data.",
+                    "description": "The device that recorded the data, e.g. \"ActiGraph GT9X\".",
                     "type": [
                         "string",
                         "null"
@@ -5655,6 +5682,7 @@
                 }
             },
             "required": [
+                "assay",
                 "contentUrl",
                 "contentSize",
                 "sha256",
@@ -5665,6 +5693,381 @@
                 "encodingFormat"
             ],
             "title": "SensorDataFile",
+            "type": "object"
+        },
+        "SensorMeasureFile": {
+            "additionalProperties": false,
+            "description": "Measures derived from sensor data, such as per-minute step counts, sleep stages or daily heart rate summaries. IEEE 1752.1 (Open mHealth) defines JSON schemas for sleep and physical activity measures.",
+            "properties": {
+                "@id": {
+                    "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
+                    "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                    "type": "string"
+                },
+                "@type": {
+                    "const": "cr:FileObject",
+                    "description": "The JSON-LD type. cr:FileObject or cr:FileSet for distribution items.",
+                    "type": "string"
+                },
+                "additionalProperty": {
+                    "description": "Namespaced extension key-value pairs.",
+                    "items": {
+                        "$ref": "#/$defs/Extension"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "additionalType": {
+                    "description": "The RDDC class of a distribution item, as a CURIE such as rddc:FhirNdjsonFile. Selects the required fields.",
+                    "enum": [
+                        "rddc:SensorMeasureFile"
+                    ],
+                    "type": "string"
+                },
+                "assay": {
+                    "description": "The sensing techniques that produced the data, e.g. accelerometry or ecg. A list, since one recording or summary can combine several, such as a sleep study's EEG and ECG channels.",
+                    "items": {
+                        "$ref": "#/$defs/SensorAssayEnum"
+                    },
+                    "minItems": 1,
+                    "type": "array"
+                },
+                "compression": {
+                    "$ref": "#/$defs/CompressionEnum",
+                    "description": "Compression applied to the file's bytes, if any."
+                },
+                "contentSize": {
+                    "description": "Size of the file in bytes.",
+                    "pattern": "^[0-9]+ B$",
+                    "type": "string"
+                },
+                "contentUrl": {
+                    "description": "Object key relative to the batch prefix; Croissant resolves it against the sidecar's location.",
+                    "pattern": "^(?!(.*/)?\\.\\.?(/|$))[^/\\\\]+(/[^/\\\\]+)*$",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Free-text description.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "encodingFormat": {
+                    "anyOf": [
+                        {
+                            "const": "text/csv"
+                        },
+                        {
+                            "const": "text/tab-separated-values"
+                        },
+                        {
+                            "const": "application/vnd.apache.parquet"
+                        },
+                        {
+                            "const": "application/json"
+                        },
+                        {
+                            "const": "application/jsonlines"
+                        }
+                    ],
+                    "description": "Media type of the content (after decompression when compression is set).",
+                    "pattern": "^[a-z]+/[A-Za-z0-9.+_-]+$",
+                    "type": "string"
+                },
+                "identifier": {
+                    "description": "IDs assigned to the file by other systems.",
+                    "items": {
+                        "$ref": "#/$defs/ExternalIdentifier"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "md5": {
+                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "pattern": "^[0-9a-f]{32}$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "description": "File name, by convention the contentUrl.",
+                    "type": "string"
+                },
+                "platform": {
+                    "description": "The device that recorded the data, e.g. \"ActiGraph GT9X\".",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "processingHints": {
+                    "description": "Informational key-value pairs for downstream pipelines.",
+                    "items": {
+                        "$ref": "#/$defs/ProcessingHint"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "recordCount": {
+                    "description": "Rows, resources or documents in the file, when counted.",
+                    "minimum": 0,
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "sensitivity": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/FileSensitivity"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
+                },
+                "sha256": {
+                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "pattern": "^[0-9a-f]{64}$",
+                    "type": "string"
+                },
+                "subjectIds": {
+                    "description": "Subject IDs the file contains. Each must appear in the subject table.",
+                    "items": {
+                        "pattern": "^[A-Za-z0-9._:-]+$",
+                        "type": "string"
+                    },
+                    "minItems": 1,
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "valueOrigins": {
+                    "description": "How tools filled in values on this node.",
+                    "items": {
+                        "$ref": "#/$defs/ValueOrigin"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "wasDerivedFrom": {
+                    "description": "References to input files in this sidecar, such as the alignment used to call variants.",
+                    "items": {
+                        "$ref": "#/$defs/NodeRef"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "assay",
+                "contentUrl",
+                "contentSize",
+                "sha256",
+                "@id",
+                "@type",
+                "additionalType",
+                "name",
+                "encodingFormat"
+            ],
+            "title": "SensorMeasureFile",
+            "type": "object"
+        },
+        "SensorSignalFile": {
+            "additionalProperties": false,
+            "description": "A raw sensor signal, such as 100 Hz accelerometry or an ECG waveform, before any aggregation. Common formats are EDF/EDF+, WFDB, DICOM waveform and device or vendor formats; EDF, WFDB and vendor formats have no registered media type, so they are application/octet-stream.",
+            "properties": {
+                "@id": {
+                    "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
+                    "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                    "type": "string"
+                },
+                "@type": {
+                    "const": "cr:FileObject",
+                    "description": "The JSON-LD type. cr:FileObject or cr:FileSet for distribution items.",
+                    "type": "string"
+                },
+                "additionalProperty": {
+                    "description": "Namespaced extension key-value pairs.",
+                    "items": {
+                        "$ref": "#/$defs/Extension"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "additionalType": {
+                    "description": "The RDDC class of a distribution item, as a CURIE such as rddc:FhirNdjsonFile. Selects the required fields.",
+                    "enum": [
+                        "rddc:SensorSignalFile"
+                    ],
+                    "type": "string"
+                },
+                "assay": {
+                    "description": "The sensing techniques that produced the data, e.g. accelerometry or ecg. A list, since one recording or summary can combine several, such as a sleep study's EEG and ECG channels.",
+                    "items": {
+                        "$ref": "#/$defs/SensorAssayEnum"
+                    },
+                    "minItems": 1,
+                    "type": "array"
+                },
+                "compression": {
+                    "$ref": "#/$defs/CompressionEnum",
+                    "description": "Compression applied to the file's bytes, if any."
+                },
+                "contentSize": {
+                    "description": "Size of the file in bytes.",
+                    "pattern": "^[0-9]+ B$",
+                    "type": "string"
+                },
+                "contentUrl": {
+                    "description": "Object key relative to the batch prefix; Croissant resolves it against the sidecar's location.",
+                    "pattern": "^(?!(.*/)?\\.\\.?(/|$))[^/\\\\]+(/[^/\\\\]+)*$",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Free-text description.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "encodingFormat": {
+                    "description": "Media type of the content (after decompression when compression is set).",
+                    "pattern": "^[a-z]+/[A-Za-z0-9.+_-]+$",
+                    "type": "string"
+                },
+                "identifier": {
+                    "description": "IDs assigned to the file by other systems.",
+                    "items": {
+                        "$ref": "#/$defs/ExternalIdentifier"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "md5": {
+                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "pattern": "^[0-9a-f]{32}$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "description": "File name, by convention the contentUrl.",
+                    "type": "string"
+                },
+                "platform": {
+                    "description": "The device that recorded the data, e.g. \"ActiGraph GT9X\".",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "processingHints": {
+                    "description": "Informational key-value pairs for downstream pipelines.",
+                    "items": {
+                        "$ref": "#/$defs/ProcessingHint"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "recordCount": {
+                    "description": "Rows, resources or documents in the file, when counted.",
+                    "minimum": 0,
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "samplingRate": {
+                    "description": "Samples per second of the recorded signal, in hertz. When channels differ, the highest rate. Croissant's term, which Croissant sets on audio fields.",
+                    "minimum": 0,
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                },
+                "sensitivity": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/FileSensitivity"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
+                },
+                "sha256": {
+                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "pattern": "^[0-9a-f]{64}$",
+                    "type": "string"
+                },
+                "subjectIds": {
+                    "description": "Subject IDs the file contains. Each must appear in the subject table.",
+                    "items": {
+                        "pattern": "^[A-Za-z0-9._:-]+$",
+                        "type": "string"
+                    },
+                    "minItems": 1,
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "valueOrigins": {
+                    "description": "How tools filled in values on this node.",
+                    "items": {
+                        "$ref": "#/$defs/ValueOrigin"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "wasDerivedFrom": {
+                    "description": "References to input files in this sidecar, such as the alignment used to call variants.",
+                    "items": {
+                        "$ref": "#/$defs/NodeRef"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "assay",
+                "contentUrl",
+                "contentSize",
+                "sha256",
+                "@id",
+                "@type",
+                "additionalType",
+                "name",
+                "encodingFormat"
+            ],
+            "title": "SensorSignalFile",
             "type": "object"
         },
         "SequenceReadsFile": {
@@ -5988,10 +6391,13 @@
                                 "$ref": "#/$defs/VideoFile"
                             },
                             {
-                                "$ref": "#/$defs/SensorDataFile"
+                                "$ref": "#/$defs/GenericFile"
                             },
                             {
-                                "$ref": "#/$defs/GenericFile"
+                                "$ref": "#/$defs/SensorSignalFile"
+                            },
+                            {
+                                "$ref": "#/$defs/SensorMeasureFile"
                             },
                             {
                                 "$ref": "#/$defs/FacialImagingFile"
@@ -6305,7 +6711,7 @@
                     "type": "string"
                 },
                 "conformsTo": {
-                    "description": "Standards the collection follows, as versioned URLs. Pinned values: http://hl7.org/fhir/R4 (FHIR 4.0.1), http://hl7.org/fhir/us/core/STU6.1 (US Core 6.1.0), https://ohdsi.github.io/CommonDataModel/cdm54.html (OMOP CDM 5.4), http://hl7.org/cda/us/ccda/2.1 (C-CDA 2.1). The validator checks values against the pinned list.",
+                    "description": "Standards the collection follows, as versioned URLs. Pinned values: http://hl7.org/fhir/R4 (FHIR 4.0.1), http://hl7.org/fhir/us/core/STU6.1 (US Core 6.1.0), http://hl7.org/fhir/uv/phd/STU2 (HL7 Personal Health Device IG 2.0.0, for device data in FHIR), https://ohdsi.github.io/CommonDataModel/cdm54.html (OMOP CDM 5.4), http://hl7.org/cda/us/ccda/2.1 (C-CDA 2.1), https://standards.ieee.org/ieee/1752.1/6982/ (IEEE 1752.1-2021, for sleep and physical activity measures). The validator checks values against the pinned list.",
                     "items": {
                         "format": "uri",
                         "type": "string"
@@ -6430,7 +6836,7 @@
         },
         "TabularFile": {
             "additionalProperties": false,
-            "description": "A clinical table that is not OMOP or FHIR, such as registry, patient-reported outcome, claims or mortality data. Consent tables go in a ConsentFile, sensor data in a SensorDataFile, and tables that describe other files in a DocumentationFile. Its name and contentUrl identify the table; record sets describe its columns and joins to other tables.",
+            "description": "A clinical table that is not OMOP or FHIR, such as registry, patient-reported outcome, claims or mortality data. Consent tables go in a ConsentFile, sensor data in a SensorMeasureFile, and tables that describe other files in a DocumentationFile. Its name and contentUrl identify the table; record sets describe its columns and joins to other tables.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -7134,10 +7540,13 @@
                         "$ref": "#/$defs/VideoFile"
                     },
                     {
-                        "$ref": "#/$defs/SensorDataFile"
+                        "$ref": "#/$defs/GenericFile"
                     },
                     {
-                        "$ref": "#/$defs/GenericFile"
+                        "$ref": "#/$defs/SensorSignalFile"
+                    },
+                    {
+                        "$ref": "#/$defs/SensorMeasureFile"
                     },
                     {
                         "$ref": "#/$defs/FacialImagingFile"
