@@ -68,10 +68,6 @@
                     ],
                     "type": "string"
                 },
-                "assay": {
-                    "$ref": "#/$defs/GenomicsAssayEnum",
-                    "description": "The sequencing assay that produced the data, e.g. wgs or wes. Downstream analysis depends on it, so every genomics file states it."
-                },
                 "compression": {
                     "$ref": "#/$defs/CompressionEnum",
                     "description": "Compression applied to the file's bytes, if any."
@@ -123,6 +119,10 @@
                         "string",
                         "null"
                     ]
+                },
+                "measurementTechnique": {
+                    "$ref": "#/$defs/GenomicsAssayEnum",
+                    "description": "The sequencing assay that produced the data, e.g. wgs or wes. Downstream analysis depends on it, so every genomics file states it."
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -208,7 +208,7 @@
             },
             "required": [
                 "referenceGenome",
-                "assay",
+                "measurementTechnique",
                 "contentUrl",
                 "contentSize",
                 "sha256",
@@ -694,6 +694,14 @@
                     "minimum": 0,
                     "type": [
                         "integer",
+                        "null"
+                    ]
+                },
+                "temporalCoverage": {
+                    "description": "The period the data covers, as an ISO 8601 date or interval \"start/end\", e.g. \"2019/2024\" or \"2024-03/2024-06\"; \"..\" leaves one end open, e.g. \"2021/..\". Use year or month precision unless the batch declares containsDates: day-precision dates for a set about one subject can identify them.",
+                    "pattern": "^([0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?(/([0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?|\\.\\.))?|\\.\\./[0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?)$",
+                    "type": [
+                        "string",
                         "null"
                     ]
                 },
@@ -1504,6 +1512,14 @@
                         "null"
                     ]
                 },
+                "temporalCoverage": {
+                    "description": "The period the data covers, as an ISO 8601 date or interval \"start/end\", e.g. \"2019/2024\" or \"2024-03/2024-06\"; \"..\" leaves one end open, e.g. \"2021/..\". Use year or month precision unless the batch declares containsDates: day-precision dates for a set about one subject can identify them.",
+                    "pattern": "^([0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?(/([0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?|\\.\\.))?|\\.\\./[0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?)$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
                 "valueOrigins": {
                     "description": "How tools filled in values on this node.",
                     "items": {
@@ -1804,7 +1820,7 @@
         },
         "FacialImagingFile": {
             "additionalProperties": false,
-            "description": "An image or 3D surface model of a person's face, such as those taken for dysmorphology assessment or facial phenotyping. assay says how it was captured: a photograph, a 3D surface scan, or a CT or MRI. A face is a biometric identifier, so the file always counts as containing biometric identifiers.",
+            "description": "An image or 3D surface model of a person's face, such as those taken for dysmorphology assessment or facial phenotyping. measurementTechnique says how it was captured: a photograph, a 3D surface scan, or a CT or MRI. A face is a biometric identifier, so the file always counts as containing biometric identifiers.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -1832,27 +1848,6 @@
                         "rddc:FacialImagingFile"
                     ],
                     "type": "string"
-                },
-                "assay": {
-                    "$ref": "#/$defs/ImagingAssayEnum",
-                    "anyOf": [
-                        {
-                            "const": "photography"
-                        },
-                        {
-                            "const": "surface_scan_3d"
-                        },
-                        {
-                            "const": "ct"
-                        },
-                        {
-                            "const": "mri"
-                        },
-                        {
-                            "const": "other"
-                        }
-                    ],
-                    "description": "How the face was captured. Processing differs: 2D photographs and 3D surface models go to different facial analysis tools."
                 },
                 "compression": {
                     "$ref": "#/$defs/CompressionEnum",
@@ -1933,6 +1928,27 @@
                         "null"
                     ]
                 },
+                "measurementTechnique": {
+                    "$ref": "#/$defs/ImagingAssayEnum",
+                    "anyOf": [
+                        {
+                            "const": "photography"
+                        },
+                        {
+                            "const": "surface_scan_3d"
+                        },
+                        {
+                            "const": "ct"
+                        },
+                        {
+                            "const": "mri"
+                        },
+                        {
+                            "const": "other"
+                        }
+                    ],
+                    "description": "How the face was captured. Processing differs: 2D photographs and 3D surface models go to different facial analysis tools."
+                },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
                     "type": "string"
@@ -2002,7 +2018,7 @@
                 }
             },
             "required": [
-                "assay",
+                "measurementTechnique",
                 "subjectIds",
                 "contentUrl",
                 "contentSize",
@@ -2122,6 +2138,14 @@
                     "minimum": 0,
                     "type": [
                         "integer",
+                        "null"
+                    ]
+                },
+                "temporalCoverage": {
+                    "description": "The period the data covers, as an ISO 8601 date or interval \"start/end\", e.g. \"2019/2024\" or \"2024-03/2024-06\"; \"..\" leaves one end open, e.g. \"2021/..\". Use year or month precision unless the batch declares containsDates: day-precision dates for a set about one subject can identify them.",
+                    "pattern": "^([0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?(/([0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?|\\.\\.))?|\\.\\./[0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?)$",
+                    "type": [
+                        "string",
                         "null"
                     ]
                 },
@@ -2284,6 +2308,14 @@
                     "minimum": 0,
                     "type": [
                         "integer",
+                        "null"
+                    ]
+                },
+                "temporalCoverage": {
+                    "description": "The period the data covers, as an ISO 8601 date or interval \"start/end\", e.g. \"2019/2024\" or \"2024-03/2024-06\"; \"..\" leaves one end open, e.g. \"2021/..\". Use year or month precision unless the batch declares containsDates: day-precision dates for a set about one subject can identify them.",
+                    "pattern": "^([0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?(/([0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?|\\.\\.))?|\\.\\./[0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?)$",
+                    "type": [
+                        "string",
                         "null"
                     ]
                 },
@@ -3670,6 +3702,14 @@
                         "null"
                     ]
                 },
+                "temporalCoverage": {
+                    "description": "The period the data covers, as an ISO 8601 date or interval \"start/end\", e.g. \"2019/2024\" or \"2024-03/2024-06\"; \"..\" leaves one end open, e.g. \"2021/..\". Use year or month precision unless the batch declares containsDates: day-precision dates for a set about one subject can identify them.",
+                    "pattern": "^([0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?(/([0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?|\\.\\.))?|\\.\\./[0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?)$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
                 "valueOrigins": {
                     "description": "How tools filled in values on this node.",
                     "items": {
@@ -3974,6 +4014,14 @@
                         "null"
                     ]
                 },
+                "temporalCoverage": {
+                    "description": "The period the data covers, as an ISO 8601 date or interval \"start/end\", e.g. \"2019/2024\" or \"2024-03/2024-06\"; \"..\" leaves one end open, e.g. \"2021/..\". Use year or month precision unless the batch declares containsDates: day-precision dates for a set about one subject can identify them.",
+                    "pattern": "^([0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?(/([0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?|\\.\\.))?|\\.\\./[0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?)$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
                 "valueOrigins": {
                     "description": "How tools filled in values on this node.",
                     "items": {
@@ -4233,10 +4281,6 @@
                     ],
                     "type": "string"
                 },
-                "assay": {
-                    "$ref": "#/$defs/GenomicsAssayEnum",
-                    "description": "The sequencing assay that produced the data, e.g. wgs or wes. Downstream analysis depends on it, so every genomics file states it."
-                },
                 "compression": {
                     "$ref": "#/$defs/CompressionEnum",
                     "description": "Compression applied to the file's bytes, if any."
@@ -4288,6 +4332,10 @@
                         "string",
                         "null"
                     ]
+                },
+                "measurementTechnique": {
+                    "$ref": "#/$defs/GenomicsAssayEnum",
+                    "description": "The sequencing assay that produced the data, e.g. wgs or wes. Downstream analysis depends on it, so every genomics file states it."
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -4368,7 +4416,7 @@
                 }
             },
             "required": [
-                "assay",
+                "measurementTechnique",
                 "contentUrl",
                 "contentSize",
                 "sha256",
@@ -4441,10 +4489,6 @@
                     ],
                     "type": "string"
                 },
-                "assay": {
-                    "$ref": "#/$defs/ImagingAssayEnum",
-                    "description": "The imaging technique that produced the image, e.g. ct, mri or photography. Analysis depends on it, so every image states it."
-                },
                 "compression": {
                     "$ref": "#/$defs/CompressionEnum",
                     "description": "Compression applied to the file's bytes, if any."
@@ -4488,6 +4532,10 @@
                         "string",
                         "null"
                     ]
+                },
+                "measurementTechnique": {
+                    "$ref": "#/$defs/ImagingAssayEnum",
+                    "description": "The imaging technique that produced the image, e.g. ct, mri or photography. Analysis depends on it, so every image states it."
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -4561,7 +4609,7 @@
                 }
             },
             "required": [
-                "assay",
+                "measurementTechnique",
                 "contentUrl",
                 "contentSize",
                 "sha256",
@@ -4935,6 +4983,14 @@
                     "minimum": 0,
                     "type": [
                         "integer",
+                        "null"
+                    ]
+                },
+                "temporalCoverage": {
+                    "description": "The period the data covers, as an ISO 8601 date or interval \"start/end\", e.g. \"2019/2024\" or \"2024-03/2024-06\"; \"..\" leaves one end open, e.g. \"2021/..\". Use year or month precision unless the batch declares containsDates: day-precision dates for a set about one subject can identify them.",
+                    "pattern": "^([0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?(/([0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?|\\.\\.))?|\\.\\./[0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?)$",
+                    "type": [
+                        "string",
                         "null"
                     ]
                 },
@@ -5551,14 +5607,6 @@
                     ],
                     "type": "string"
                 },
-                "assay": {
-                    "description": "The sensing techniques that produced the data, e.g. accelerometry or ecg. A list, since one recording or summary can combine several, such as a sleep study's EEG and ECG channels.",
-                    "items": {
-                        "$ref": "#/$defs/SensorAssayEnum"
-                    },
-                    "minItems": 1,
-                    "type": "array"
-                },
                 "compression": {
                     "$ref": "#/$defs/CompressionEnum",
                     "description": "Compression applied to the file's bytes, if any."
@@ -5602,6 +5650,14 @@
                         "string",
                         "null"
                     ]
+                },
+                "measurementTechnique": {
+                    "description": "The sensing techniques that produced the data, e.g. accelerometry or ecg. A list, since one recording or summary can combine several, such as a sleep study's EEG and ECG channels.",
+                    "items": {
+                        "$ref": "#/$defs/SensorAssayEnum"
+                    },
+                    "minItems": 1,
+                    "type": "array"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -5682,7 +5738,7 @@
                 }
             },
             "required": [
-                "assay",
+                "measurementTechnique",
                 "contentUrl",
                 "contentSize",
                 "sha256",
@@ -5725,14 +5781,6 @@
                         "rddc:SensorMeasureFile"
                     ],
                     "type": "string"
-                },
-                "assay": {
-                    "description": "The sensing techniques that produced the data, e.g. accelerometry or ecg. A list, since one recording or summary can combine several, such as a sleep study's EEG and ECG channels.",
-                    "items": {
-                        "$ref": "#/$defs/SensorAssayEnum"
-                    },
-                    "minItems": 1,
-                    "type": "array"
                 },
                 "compression": {
                     "$ref": "#/$defs/CompressionEnum",
@@ -5795,6 +5843,14 @@
                         "null"
                     ]
                 },
+                "measurementTechnique": {
+                    "description": "The sensing techniques that produced the data, e.g. accelerometry or ecg. A list, since one recording or summary can combine several, such as a sleep study's EEG and ECG channels.",
+                    "items": {
+                        "$ref": "#/$defs/SensorAssayEnum"
+                    },
+                    "minItems": 1,
+                    "type": "array"
+                },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
                     "type": "string"
@@ -5874,7 +5930,7 @@
                 }
             },
             "required": [
-                "assay",
+                "measurementTechnique",
                 "contentUrl",
                 "contentSize",
                 "sha256",
@@ -5917,14 +5973,6 @@
                         "rddc:SensorSignalFile"
                     ],
                     "type": "string"
-                },
-                "assay": {
-                    "description": "The sensing techniques that produced the data, e.g. accelerometry or ecg. A list, since one recording or summary can combine several, such as a sleep study's EEG and ECG channels.",
-                    "items": {
-                        "$ref": "#/$defs/SensorAssayEnum"
-                    },
-                    "minItems": 1,
-                    "type": "array"
                 },
                 "compression": {
                     "$ref": "#/$defs/CompressionEnum",
@@ -5969,6 +6017,14 @@
                         "string",
                         "null"
                     ]
+                },
+                "measurementTechnique": {
+                    "description": "The sensing techniques that produced the data, e.g. accelerometry or ecg. A list, since one recording or summary can combine several, such as a sleep study's EEG and ECG channels.",
+                    "items": {
+                        "$ref": "#/$defs/SensorAssayEnum"
+                    },
+                    "minItems": 1,
+                    "type": "array"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -6057,7 +6113,7 @@
                 }
             },
             "required": [
-                "assay",
+                "measurementTechnique",
                 "contentUrl",
                 "contentSize",
                 "sha256",
@@ -6100,10 +6156,6 @@
                         "rddc:SequenceReadsFile"
                     ],
                     "type": "string"
-                },
-                "assay": {
-                    "$ref": "#/$defs/GenomicsAssayEnum",
-                    "description": "The sequencing assay that produced the data, e.g. wgs or wes. Downstream analysis depends on it, so every genomics file states it."
                 },
                 "compression": {
                     "$ref": "#/$defs/CompressionEnum",
@@ -6156,6 +6208,10 @@
                         "string",
                         "null"
                     ]
+                },
+                "measurementTechnique": {
+                    "$ref": "#/$defs/GenomicsAssayEnum",
+                    "description": "The sequencing assay that produced the data, e.g. wgs or wes. Downstream analysis depends on it, so every genomics file states it."
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -6247,7 +6303,7 @@
                 }
             },
             "required": [
-                "assay",
+                "measurementTechnique",
                 "contentUrl",
                 "contentSize",
                 "sha256",
@@ -6471,6 +6527,14 @@
                         "$ref": "#/$defs/SubjectEntry"
                     },
                     "type": "array"
+                },
+                "temporalCoverage": {
+                    "description": "The period the data covers, as an ISO 8601 date or interval \"start/end\", e.g. \"2019/2024\" or \"2024-03/2024-06\"; \"..\" leaves one end open, e.g. \"2021/..\". Use year or month precision unless the batch declares containsDates: day-precision dates for a set about one subject can identify them.",
+                    "pattern": "^([0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?(/([0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?|\\.\\.))?|\\.\\./[0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?)$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "url": {
                     "description": "S3 URL of the batch prefix, ending with a slash. The sidecar sits directly under it.",
@@ -6775,6 +6839,14 @@
                     "minimum": 0,
                     "type": [
                         "integer",
+                        "null"
+                    ]
+                },
+                "temporalCoverage": {
+                    "description": "The period the data covers, as an ISO 8601 date or interval \"start/end\", e.g. \"2019/2024\" or \"2024-03/2024-06\"; \"..\" leaves one end open, e.g. \"2021/..\". Use year or month precision unless the batch declares containsDates: day-precision dates for a set about one subject can identify them.",
+                    "pattern": "^([0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?(/([0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?|\\.\\.))?|\\.\\./[0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?)$",
+                    "type": [
+                        "string",
                         "null"
                     ]
                 },
@@ -7094,10 +7166,6 @@
                     ],
                     "type": "string"
                 },
-                "assay": {
-                    "$ref": "#/$defs/GenomicsAssayEnum",
-                    "description": "The sequencing assay that produced the data, e.g. wgs or wes. Downstream analysis depends on it, so every genomics file states it."
-                },
                 "compression": {
                     "$ref": "#/$defs/CompressionEnum",
                     "description": "Compression applied to the file's bytes, if any."
@@ -7149,6 +7217,10 @@
                         "string",
                         "null"
                     ]
+                },
+                "measurementTechnique": {
+                    "$ref": "#/$defs/GenomicsAssayEnum",
+                    "description": "The sequencing assay that produced the data, e.g. wgs or wes. Downstream analysis depends on it, so every genomics file states it."
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -7234,7 +7306,7 @@
             },
             "required": [
                 "referenceGenome",
-                "assay",
+                "measurementTechnique",
                 "contentUrl",
                 "contentSize",
                 "sha256",
@@ -7620,6 +7692,14 @@
                 "$ref": "#/$defs/SubjectEntry"
             },
             "type": "array"
+        },
+        "temporalCoverage": {
+            "description": "The period the data covers, as an ISO 8601 date or interval \"start/end\", e.g. \"2019/2024\" or \"2024-03/2024-06\"; \"..\" leaves one end open, e.g. \"2021/..\". Use year or month precision unless the batch declares containsDates: day-precision dates for a set about one subject can identify them.",
+            "pattern": "^([0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?(/([0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?|\\.\\.))?|\\.\\./[0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?)$",
+            "type": [
+                "string",
+                "null"
+            ]
         },
         "url": {
             "description": "S3 URL of the batch prefix, ending with a slash. The sidecar sits directly under it.",

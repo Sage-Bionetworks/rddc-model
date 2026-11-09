@@ -60,7 +60,6 @@
       "@id": "sc:additionalType",
       "@type": "@id"
     },
-    "assay": "rddc:assay",
     "batchId": "rddc:batchId",
     "bucket": "rddc:bucket",
     "bundleType": "rddc:bundleType",
@@ -129,6 +128,7 @@
   "name": "src-ta2-01/2026-10-b01",
   "url": "s3://rddc-deposit-ta2/src-ta2-01/2026-10-b01/",
   "dateCreated": "2026-10-28T12:00:00Z",
+  "temporalCoverage": "2019/2026",
   "wasAttributedTo": {
     "@type": "sc:SoftwareApplication",
     "name": "rddc-sidecar",

@@ -60,7 +60,6 @@
       "@id": "sc:additionalType",
       "@type": "@id"
     },
-    "assay": "rddc:assay",
     "batchId": "rddc:batchId",
     "bucket": "rddc:bucket",
     "bundleType": "rddc:bundleType",

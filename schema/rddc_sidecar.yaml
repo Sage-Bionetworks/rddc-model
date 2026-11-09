@@ -118,6 +118,7 @@ classes:
     - description
     - url
     - dateCreated
+    - temporalCoverage
     - wasAttributedTo
     - contributorId
     - sourceId
@@ -272,6 +273,7 @@ classes:
     - excludes
     - conformsTo
     - subjectCount
+    - temporalCoverage
     - wasDerivedFrom
     slot_usage:
       id:
@@ -536,6 +538,14 @@ slots:
     description: "When the sidecar was created."
     slot_uri: sc:dateCreated
     range: datetime
+  temporalCoverage:
+    slot_uri: sc:temporalCoverage
+    description: >-
+      The period the data covers, as an ISO 8601 date or interval "start/end", e.g.
+      "2019/2024" or "2024-03/2024-06"; ".." leaves one end open, e.g. "2021/..". Use
+      year or month precision unless the batch declares containsDates: day-precision
+      dates for a set about one subject can identify them.
+    pattern: "^([0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?(/([0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?|\\.\\.))?|\\.\\./[0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?)$"
   includes:
     slot_uri: cr:includes
     multivalued: true
