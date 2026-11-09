@@ -1137,13 +1137,6 @@
                     "minItems": 1,
                     "type": "array"
                 },
-                "tableName": {
-                    "description": "Table name within its dataset.",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
                 "valueOrigins": {
                     "description": "How tools filled in values on this node.",
                     "items": {
@@ -6901,7 +6894,7 @@
         },
         "TabularFile": {
             "additionalProperties": false,
-            "description": "A clinical table that is not OMOP or FHIR, such as registry, patient-reported outcome, claims or mortality data. Consent tables go in a ConsentFile, sensor data in a SensorDataFile, and tables that describe other files in a DocumentationFile.",
+            "description": "A clinical table that is not OMOP or FHIR, such as registry, patient-reported outcome, claims or mortality data. Consent tables go in a ConsentFile, sensor data in a SensorDataFile, and tables that describe other files in a DocumentationFile. Its name and contentUrl identify the table; record sets describe its columns and joins to other tables.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -7041,10 +7034,6 @@
                         "null"
                     ]
                 },
-                "tableName": {
-                    "description": "Table name within its dataset.",
-                    "type": "string"
-                },
                 "valueOrigins": {
                     "description": "How tools filled in values on this node.",
                     "items": {
@@ -7067,7 +7056,6 @@
                 }
             },
             "required": [
-                "tableName",
                 "contentUrl",
                 "contentSize",
                 "sha256",

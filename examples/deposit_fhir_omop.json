@@ -116,7 +116,6 @@
     "subjectIds": "rddc:subjectIds",
     "subjects": "rddc:subjects",
     "synthetic": "rddc:synthetic",
-    "tableName": "rddc:tableName",
     "valueOrigins": "rddc:valueOrigins",
     "vocabularyVersion": "rddc:vocabularyVersion",
     "wasAttributedTo": "prov:wasAttributedTo",
@@ -305,8 +304,7 @@
       "contentSize": "1030 B",
       "encodingFormat": "text/csv",
       "sha256": "fe839da367b9e09b32a88842ac70277f03e7e9fd032c288d30fa326d1544f290",
-      "md5": "fe839da367b9e09b32a88842ac70277f",
-      "tableName": "patients"
+      "md5": "fe839da367b9e09b32a88842ac70277f"
     },
     {
       "@id": "urn:uuid:0000001f-0000-4000-8000-00000000001f",
@@ -318,13 +316,12 @@
       "encodingFormat": "text/csv",
       "sha256": "bad7f4d826a9ad20c880b6d10366caf036f3b6fd52ea4f86e8591737ffa722da",
       "md5": "bad7f4d826a9ad20c880b6d10366caf0",
-      "tableName": "visits",
+      "recordCount": 30,
       "valueOrigins": [
         {
-          "fieldPath": "/tableName",
+          "fieldPath": "/recordCount",
           "origin": "detected",
-          "method": "file_stem",
-          "confidence": 0.9
+          "method": "row_count"
         }
       ]
     }

@@ -116,7 +116,6 @@
     "subjectIds": "rddc:subjectIds",
     "subjects": "rddc:subjects",
     "synthetic": "rddc:synthetic",
-    "tableName": "rddc:tableName",
     "valueOrigins": "rddc:valueOrigins",
     "vocabularyVersion": "rddc:vocabularyVersion",
     "wasAttributedTo": "prov:wasAttributedTo",
