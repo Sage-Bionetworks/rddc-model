@@ -198,7 +198,7 @@ Rules:
 
 ### CcdaDocumentFile
 
-One HL7 C-CDA document.
+One HL7 C-CDA document. Its template IDs are in the document header and its C-CDA release is in the conformsTo of the file set it belongs to, so neither is repeated per file.
 
 Use as `"@type": "cr:FileObject", "additionalType": "rddc:CcdaDocumentFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `clinical_ccda`.
 
@@ -208,7 +208,6 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 | --- | --- | --- | --- |
 | `encodingFormat` | [`MediaType`](#mediatype) | yes | Media type of the content (after decompression when compression is set). One of: `application/xml`, `text/xml`. |
 | `subjectIds` | [`Identifier`](#identifier) (list) | yes | Subject IDs the file contains. Each must appear in the subject table. |
-| `templateIds` | `string` (list) | | C-CDA template IDs, as an OID root or "root:extension", e.g. "2.16.840.1.113883.10.20.22.1.2:2015-08-01". Pattern: `^[0-2](\.(0\|[1-9][0-9]*))+(:[^\s:]+)?$`. |
 
 ### TabularFile
 

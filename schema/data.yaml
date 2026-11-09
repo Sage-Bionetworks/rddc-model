@@ -1293,12 +1293,13 @@ classes:
 
   CcdaDocumentFile:
     is_a: DataFile
-    description: One HL7 C-CDA document.
+    description: >-
+      One HL7 C-CDA document. Its template IDs are in the document header and its C-CDA
+      release is in the conformsTo of the file set it belongs to, so neither is repeated
+      per file.
     annotations:
       structure: structured
       modality: clinical_ccda
-    slots:
-    - templateIds
     slot_usage:
       encodingFormat:
         any_of:
@@ -1586,14 +1587,6 @@ slots:
   omopCdmVersion:
     description: OMOP CDM version of the table, as major.minor, e.g. "5.4".
     range: OmopCdmVersionEnum
-
-  # --- C-CDA (CcdaDocumentFile) ---------------------------------------------
-  templateIds:
-    description: >-
-      C-CDA template IDs, as an OID root or "root:extension", e.g.
-      "2.16.840.1.113883.10.20.22.1.2:2015-08-01".
-    multivalued: true
-    pattern: "^[0-2](\\.(0|[1-9][0-9]*))+(:[^\\s:]+)?$"
 
   # --- other tables (TabularFile, ConsentFile) ------------------------------
   tableName:

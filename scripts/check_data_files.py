@@ -62,7 +62,6 @@ VALID = {
     "ccda": item(
         "CcdaDocumentFile", 5, contentUrl="ccda/doc.xml", encodingFormat="application/xml",
         subjectIds=["S1"],
-        templateIds=["2.16.840.1.113883.10.20.22.1.2:2015-08-01", "2.16.840.1.113883.10.20.22.1.1"],
     ),
     "tabular": item(
         "TabularFile", 6, contentUrl="registry/visits.csv", encodingFormat="text/csv",
@@ -154,7 +153,7 @@ INVALID = {
     "BAM with an invented media type": put("alignment", ["encodingFormat"], "application/x-bam"),
     "index that is not binary": put("index", ["encodingFormat"], "text/plain"),
     "unknown reference genome": put("variants", ["referenceGenome"], "hg38"),
-    "template ID not an OID": put("ccda", ["templateIds"], ["ccd-1.1"]),
+    "template IDs on a C-CDA file": put("ccda", ["templateIds"], ["2.16.840.1.113883.10.20.22.1.2:2015-08-01"]),
     "processing hint key without namespace": put("scanned_report", ["processingHints", 0, "propertyID"], "ocr"),
     "data dictionary without about": put("documentation", ["about"], []),
     "empty subject list": put("face", ["subjectIds"], []),
