@@ -1551,6 +1551,7 @@ classes:
 # ---------------------------------------------------------------------------
 slots:
 
+  # --- all data files (DataFile) --------------------------------------------
   recordCount:
     description: Rows, resources or documents in the file, when counted.
     range: integer
@@ -1560,21 +1561,9 @@ slots:
     range: ProcessingHint
     multivalued: true
     inlined_as_list: true
-  about:
-    slot_uri: sc:about
-    range: NodeRef
-    multivalued: true
-    inlined_as_list: true
-    minimum_cardinality: 1
-    description: The files or record sets this file documents.
 
-  # --- format-specific -------------------------------------------------------
-  bundleType:
-    description: "The FHIR Bundle.type of the bundle in the file."
-    range: FhirBundleTypeEnum
-  resourceType:
-    description: FHIR resource type of the resources in the file, e.g. Patient.
-    range: FhirResourceTypeEnum
+  # --- FHIR (FhirFile and its subclasses) -----------------------------------
+  # fhirVersion and implementationGuides: every FHIR file.
   fhirVersion:
     description: >-
       FHIR version of the resources in the file. A file holds resources of one
@@ -1587,31 +1576,62 @@ slots:
       these packages. Leave it out for resources that follow only the base specification.
     multivalued: true
     pattern: "^[a-z0-9][a-z0-9_-]*(\\.[a-z0-9_-]+)+#[0-9]+\\.[0-9]+\\.[0-9]+(-[A-Za-z0-9.-]+)?$"
+  # resourceType: single-type files (FhirResourceFile, FhirNdjsonFile).
+  resourceType:
+    description: FHIR resource type of the resources in the file, e.g. Patient.
+    range: FhirResourceTypeEnum
+  # bundleType: FhirBundleFile.
+  bundleType:
+    description: "The FHIR Bundle.type of the bundle in the file."
+    range: FhirBundleTypeEnum
+
+  # --- OMOP (OmopTableFile) -------------------------------------------------
   cdmTable:
     description: OMOP CDM table in the file, e.g. person.
     range: OmopCdmTableEnum
   omopCdmVersion:
     description: OMOP CDM version of the table, as major.minor, e.g. "5.4".
     range: OmopCdmVersionEnum
+
+  # --- C-CDA (CcdaDocumentFile) ---------------------------------------------
   templateIds:
     description: >-
       C-CDA template IDs, as an OID root or "root:extension", e.g.
       "2.16.840.1.113883.10.20.22.1.2:2015-08-01".
     multivalued: true
     pattern: "^[0-2](\\.(0|[1-9][0-9]*))+(:[^\\s:]+)?$"
+
+  # --- other tables (TabularFile, ConsentFile) ------------------------------
   tableName:
     description: Table name within its dataset.
-  assay:
-    description: "The assay that produced the data."
+
+  # --- documentation (DocumentationFile) ------------------------------------
+  about:
+    slot_uri: sc:about
+    range: NodeRef
+    multivalued: true
+    inlined_as_list: true
+    minimum_cardinality: 1
+    description: The files or record sets this file documents.
+
+  # --- instruments (GenomicsFile and its subclasses, SensorDataFile) --------
   platform:
     description: "The instrument, sequencing platform or device that produced the data."
+
+  # --- genomics (GenomicsFile and its subclasses, IndexFile) ----------------
+  # assay: every genomics file.
+  assay:
+    description: "The assay that produced the data."
+  # referenceGenome: aligned or called data (AlignmentFile, VariantFile).
   referenceGenome:
     description: Reference assembly the coordinates refer to, e.g. GRCh38.
     range: ReferenceGenomeEnum
+  # pairedWith: SequenceReadsFile.
   pairedWith:
     description: The mate file of paired-end reads.
     range: NodeRef
     inlined: true
+  # indexOf: IndexFile.
   indexOf:
     description: The file this file indexes.
     range: NodeRef
