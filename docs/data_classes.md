@@ -66,8 +66,8 @@ Every concrete class also requires the fields shared by all data files: `@id`, `
 | [`AlignmentFile`](#alignmentfile) | `genomics` | structured | `text/plain`, `application/octet-stream` | `referenceGenome`, `assay` |
 | [`VariantFile`](#variantfile) | `genomics` | structured | `text/plain`, `application/octet-stream` | `referenceGenome`, `assay` |
 | [`IndexFile`](#indexfile) | `genomics` | structured | `application/octet-stream` | `indexOf` |
-| [`ImagingFile`](#imagingfile) | `imaging` | unstructured | any |  |
-| [`FacialImagingFile`](#facialimagingfile) | `imaging` | unstructured | `image/jpeg`, `image/png`, `image/tiff`, `image/heic`, `application/dicom` | `subjectIds` |
+| [`ImagingFile`](#imagingfile) | `imaging` | unstructured | any | `assay` |
+| [`FacialImagingFile`](#facialimagingfile) | `imaging` | unstructured | `image/jpeg`, `image/png`, `image/tiff`, `image/heic`, `application/dicom`, `model/obj`, `model/stl`, `model/gltf-binary`, `model/gltf+json`, `model/mtl`, `application/octet-stream` | `assay`, `subjectIds` |
 | [`AudioFile`](#audiofile) | `audio` | unstructured | `audio/*` |  |
 | [`VideoFile`](#videofile) | `video` | unstructured | `video/*` |  |
 | [`SensorDataFile`](#sensordatafile) | `wearable` | structured | any |  |
@@ -312,11 +312,15 @@ A medical or photographic image, such as DICOM. A photograph of a person's face 
 
 Use as `"@type": "cr:FileObject", "additionalType": "rddc:ImagingFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Subclasses: [`FacialImagingFile`](#facialimagingfile). Structure: unstructured. Modality: `imaging`. Close to [`EDAM:data_3424`](http://edamontology.org/data_3424).
 
-No fields beyond those of [`DataFile`](#datafile).
+Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
+
+| Field | Type | Required | Meaning and constraints |
+| --- | --- | --- | --- |
+| `assay` | [`ImagingAssayEnum`](#imagingassayenum) | yes | The imaging technique that produced the image, e.g. ct, mri or photography. Analysis depends on it, so every image states it. |
 
 ### FacialImagingFile
 
-A photograph of a person's face, such as those taken for dysmorphology assessment or facial phenotyping. A face is a biometric identifier, so the file always counts as containing biometric identifiers.
+An image or 3D surface model of a person's face, such as those taken for dysmorphology assessment or facial phenotyping. assay says how it was captured: a photograph, a 3D surface scan, or a CT or MRI. A face is a biometric identifier, so the file always counts as containing biometric identifiers.
 
 Use as `"@type": "cr:FileObject", "additionalType": "rddc:FacialImagingFile"`. Inherits from [`ImagingFile`](#imagingfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: unstructured. Modality: `imaging`. A kind of [`EDAM:data_3424`](http://edamontology.org/data_3424). Biometric: always counts as containing biometric identifiers.
 
@@ -324,7 +328,8 @@ Fields it adds or changes; it also has all fields of [`ImagingFile`](#imagingfil
 
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
-| `encodingFormat` | [`MediaType`](#mediatype) | yes | Media type of the content (after decompression when compression is set). One of: `image/jpeg`, `image/png`, `image/tiff`, `image/heic`, `application/dicom`. |
+| `assay` | [`ImagingAssayEnum`](#imagingassayenum) | yes | How the face was captured. Processing differs: 2D photographs and 3D surface models go to different facial analysis tools. One of: `photography`, `surface_scan_3d`, `ct`, `mri`, `other`. |
+| `encodingFormat` | [`MediaType`](#mediatype) | yes | Media type of the image or 3D model. An OBJ model's material file is model/mtl. PLY has no registered media type, so a PLY model is application/octet-stream. One of: `image/jpeg`, `image/png`, `image/tiff`, `image/heic`, `application/dicom`, `model/obj`, `model/stl`, `model/gltf-binary`, `model/gltf+json`, `model/mtl`, `application/octet-stream`. |
 | `subjectIds` | [`Identifier`](#identifier) (list) | yes | Subject IDs the file contains. Each must appear in the subject table. |
 | `sensitivity` | [`BiometricFileSensitivity`](#biometricfilesensitivity) | | Per-file sensitivity overrides. containsBiometricIdentifiers is left out: the class already says the file contains biometric identifiers. |
 
@@ -539,6 +544,22 @@ Sequencing assays accepted for genomics files. Meanings are OBI assay terms (OBI
 | `rna_seq` | [`OBI:0001271`](http://purl.obolibrary.org/obo/OBI_0001271) | Sequencing of RNA (cDNA) to measure the transcriptome of a sample. |
 | `methylation_seq` | [`OBI:0001266`](http://purl.obolibrary.org/obo/OBI_0001266) | Sequencing that determines the methylation state of DNA, such as whole-genome bisulfite sequencing. |
 | `other` |  | A sequencing assay not listed here. Name it in the file's description; a curator decides whether it needs its own value. |
+
+### ImagingAssayEnum
+
+Imaging techniques accepted for imaging files. Meanings are OBI assay terms (release 2026-07-27) where OBI has one, and NCIT (26.02d) or SNOMED CT terms where it does not: OBI has no terms for X-ray radiography, ultrasound or photography. 3D surface scanning has no exact term in any of them, so it has mappings only.
+
+| Value | Term | Meaning |
+| --- | --- | --- |
+| `photography` | [`SNOMEDCT:169283005`](http://identifiers.org/snomedct/169283005) | Two-dimensional clinical photographs taken with a camera. Facial photographs use FacialImagingFile. |
+| `surface_scan_3d` | close: [`NCIT:C190554`](http://purl.obolibrary.org/obo/NCIT_C190554); broader: [`NCIT:C18485`](http://purl.obolibrary.org/obo/NCIT_C18485) | A three-dimensional model of a body surface, such as the face, captured by stereophotogrammetry, structured light or laser scanning. No term covers these methods together: NCIT's Laser Surface Scan names one of them, and its Three-Dimensional Imaging also covers 3D CT and MRI. |
+| `x_ray` | [`NCIT:C38101`](http://purl.obolibrary.org/obo/NCIT_C38101) | Projection images formed by X-rays passing through the body. |
+| `ct` | [`OBI:0002986`](http://purl.obolibrary.org/obo/OBI_0002986) | Cross-sectional images built from a series of X-ray images. |
+| `mri` | [`OBI:0002985`](http://purl.obolibrary.org/obo/OBI_0002985) | Images of the body's interior made with nuclear magnetic resonance. |
+| `ultrasound` | [`NCIT:C17230`](http://purl.obolibrary.org/obo/NCIT_C17230) | Images made with high-frequency sound waves. |
+| `pet` | [`OBI:0002987`](http://purl.obolibrary.org/obo/OBI_0002987) | Images of functional processes made with positron-emitting tracers. |
+| `microscopy` | [`OBI:0002119`](http://purl.obolibrary.org/obo/OBI_0002119) | Magnified images from a microscope, such as histology slides. |
+| `other` |  | An imaging technique not listed here. Name it in the file's description; a curator decides whether it needs its own value. The general term is imaging assay (OBI:0000185). |
 
 ### OmopCdmVersionEnum
 

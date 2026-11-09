@@ -256,11 +256,20 @@ class Page:
             out.append(f"{len(values)} values: " + ", ".join(f"`{v}`" for v in values) + ".")
         elif any(pv.meaning for pv in values.values()):
             out += ["| Value | Term | Meaning |", "| --- | --- | --- |"]
-            out += [f"| `{v}` | {self.term(pv.meaning)} | {cell(pv.description)} |" for v, pv in values.items()]
+            out += [f"| `{v}` | {self.value_terms(pv)} | {cell(pv.description)} |" for v, pv in values.items()]
         else:
             out += ["| Value | Meaning |", "| --- | --- |"]
             out += [f"| `{v}` | {cell(pv.description)} |" for v, pv in values.items()]
         return out + [""]
+
+    def value_terms(self, pv):
+        """A value's meaning, or failing that its mappings, e.g. "close: NCIT:C190554"."""
+        if pv.meaning:
+            return self.term(pv.meaning)
+        parts = [f"{label}: " + ", ".join(self.term(t) for t in getattr(pv, kind) or [])
+                 for kind, label in (("close_mappings", "close"), ("broad_mappings", "broader"))
+                 if getattr(pv, kind)]
+        return "; ".join(parts)
 
     def term(self, curie):
         """An ontology term as a link to its IRI, or empty when the value has none."""

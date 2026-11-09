@@ -46,6 +46,8 @@ prefixes:
   fhir: http://hl7.org/fhir/
   EDAM: http://edamontology.org/
   OBI: http://purl.obolibrary.org/obo/OBI_
+  NCIT: http://purl.obolibrary.org/obo/NCIT_
+  SNOMEDCT: http://identifiers.org/snomedct/
 default_prefix: rddc
 default_range: string
 
@@ -764,6 +766,69 @@ enums:
           A sequencing assay not listed here. Name it in the file's description; a
           curator decides whether it needs its own value.
 
+  ImagingAssayEnum:
+    description: >-
+      Imaging techniques accepted for imaging files. Meanings are OBI assay terms
+      (release 2026-07-27) where OBI has one, and NCIT (26.02d) or SNOMED CT terms where
+      it does not: OBI has no terms for X-ray radiography, ultrasound or photography. 3D
+      surface scanning has no exact term in any of them, so it has mappings only.
+    permissible_values:
+      photography:
+        title: Photography
+        description: >-
+          Two-dimensional clinical photographs taken with a camera. Facial photographs use
+          FacialImagingFile.
+        meaning: SNOMEDCT:169283005
+        close_mappings:
+        - NCIT:C94527
+      surface_scan_3d:
+        title: 3D surface scanning
+        description: >-
+          A three-dimensional model of a body surface, such as the face, captured by
+          stereophotogrammetry, structured light or laser scanning. No term covers these
+          methods together: NCIT's Laser Surface Scan names one of them, and its
+          Three-Dimensional Imaging also covers 3D CT and MRI.
+        close_mappings:
+        - NCIT:C190554
+        broad_mappings:
+        - NCIT:C18485
+      x_ray:
+        title: X-ray radiography
+        description: Projection images formed by X-rays passing through the body.
+        meaning: NCIT:C38101
+      ct:
+        title: Computed tomography
+        description: Cross-sectional images built from a series of X-ray images.
+        meaning: OBI:0002986
+        aliases:
+        - CT
+      mri:
+        title: Magnetic resonance imaging
+        description: Images of the body's interior made with nuclear magnetic resonance.
+        meaning: OBI:0002985
+        aliases:
+        - MRI
+      ultrasound:
+        title: Ultrasound imaging
+        description: Images made with high-frequency sound waves.
+        meaning: NCIT:C17230
+      pet:
+        title: Positron emission tomography
+        description: Images of functional processes made with positron-emitting tracers.
+        meaning: OBI:0002987
+        aliases:
+        - PET
+      microscopy:
+        title: Microscopy
+        description: Magnified images from a microscope, such as histology slides.
+        meaning: OBI:0002119
+      other:
+        title: Other imaging technique
+        description: >-
+          An imaging technique not listed here. Name it in the file's description; a
+          curator decides whether it needs its own value. The general term is imaging
+          assay (OBI:0000185).
+
   OmopCdmVersionEnum:
     description: >-
       OMOP CDM versions accepted in a deposit, as major.minor. Patch releases of a
@@ -1373,20 +1438,40 @@ classes:
     annotations:
       structure: unstructured
       modality: imaging
+    slots:
+    - assay
+    slot_usage:
+      assay:
+        required: true
+        range: ImagingAssayEnum
+        description: >-
+          The imaging technique that produced the image, e.g. ct, mri or photography.
+          Analysis depends on it, so every image states it.
 
   FacialImagingFile:
     is_a: ImagingFile
     broad_mappings:
     - EDAM:data_3424
     description: >-
-      A photograph of a person's face, such as those taken for dysmorphology assessment
-      or facial phenotyping. A face is a biometric identifier, so the file always counts
-      as containing biometric identifiers.
+      An image or 3D surface model of a person's face, such as those taken for
+      dysmorphology assessment or facial phenotyping. assay says how it was captured: a
+      photograph, a 3D surface scan, or a CT or MRI. A face is a biometric identifier, so
+      the file always counts as containing biometric identifiers.
     annotations:
       structure: unstructured
       modality: imaging
       biometric: "true"
     slot_usage:
+      assay:
+        any_of:
+        - equals_string: photography
+        - equals_string: surface_scan_3d
+        - equals_string: ct
+        - equals_string: mri
+        - equals_string: other
+        description: >-
+          How the face was captured. Processing differs: 2D photographs and 3D surface
+          models go to different facial analysis tools.
       sensitivity:
         range: BiometricFileSensitivity
         description: >-
@@ -1399,6 +1484,15 @@ classes:
         - equals_string: image/tiff
         - equals_string: image/heic
         - equals_string: application/dicom
+        - equals_string: model/obj
+        - equals_string: model/stl
+        - equals_string: model/gltf-binary
+        - equals_string: model/gltf+json
+        - equals_string: model/mtl
+        - equals_string: application/octet-stream
+        description: >-
+          Media type of the image or 3D model. An OBJ model's material file is model/mtl.
+          PLY has no registered media type, so a PLY model is application/octet-stream.
       subjectIds:
         required: true
 
@@ -1491,16 +1585,17 @@ slots:
     minimum_cardinality: 1
     description: The files or record sets this file documents.
 
-  # --- instruments (GenomicsFile and its subclasses, SensorDataFile) --------
-  platform:
-    description: "The instrument, sequencing platform or device that produced the data."
-
-  # --- genomics (GenomicsFile and its subclasses, IndexFile) ----------------
-  # assay: every genomics file.
+  # --- assays and instruments -----------------------------------------------
+  # assay: GenomicsFile, ImagingFile and their subclasses.
   assay:
     description: >-
       The assay that produced the data. Each class that uses it sets the allowed
       values.
+  # platform: GenomicsFile and its subclasses, SensorDataFile.
+  platform:
+    description: "The instrument, sequencing platform or device that produced the data."
+
+  # --- genomics (GenomicsFile and its subclasses, IndexFile) ----------------
   # referenceGenome: aligned or called data (AlignmentFile, VariantFile).
   referenceGenome:
     description: Reference assembly the coordinates refer to, e.g. GRCh38.

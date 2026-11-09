@@ -102,11 +102,23 @@ VALID = {
         indexOf=REF,
     ),
     "imaging": item(
-        "ImagingFile", 15, contentUrl="imaging/ct.dcm", encodingFormat="application/dicom",
+        "ImagingFile", 15, contentUrl="imaging/ct.dcm", encodingFormat="application/dicom", assay="ct",
     ),
     "face": item(
         "FacialImagingFile", 16, contentUrl="imaging/face.jpg", encodingFormat="image/jpeg",
-        subjectIds=["S1"], sensitivity={"containsDates": False},
+        assay="photography", subjectIds=["S1"], sensitivity={"containsDates": False},
+    ),
+    "face_scan": item(
+        "FacialImagingFile", 22, contentUrl="imaging/face_3d.obj", encodingFormat="model/obj",
+        assay="surface_scan_3d", subjectIds=["S1"],
+    ),
+    "face_scan_ply": item(
+        "FacialImagingFile", 23, contentUrl="imaging/face_3d.ply", encodingFormat="application/octet-stream",
+        assay="surface_scan_3d", subjectIds=["S1"],
+    ),
+    "face_scan_material": item(
+        "FacialImagingFile", 24, contentUrl="imaging/face_3d.mtl", encodingFormat="model/mtl",
+        assay="surface_scan_3d", subjectIds=["S1"],
     ),
     "audio": item(
         "AudioFile", 17, contentUrl="media/voice.wav", encodingFormat="audio/wav",
@@ -171,6 +183,10 @@ INVALID = {
     "data dictionary with an empty about list": put("documentation", ["about"], []),
     "genomics file without assay": drop("alignment", ["assay"]),
     "assay not in GenomicsAssayEnum": put("reads", ["assay"], "WGS"),
+    "image without assay": drop("imaging", ["assay"]),
+    "imaging assay on a genomics file": put("reads", ["assay"], "mri"),
+    "face image from microscopy": put("face", ["assay"], "microscopy"),
+    "face scan with an invented PLY media type": put("face_scan", ["encodingFormat"], "model/ply"),
     "empty subject list": put("face", ["subjectIds"], []),
 }
 
