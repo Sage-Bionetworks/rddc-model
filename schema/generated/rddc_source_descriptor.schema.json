@@ -397,21 +397,21 @@
             "description": "Per-file sensitivity overrides for a class whose content always identifies a person, such as FacialImagingFile. It has no containsBiometricIdentifiers flag, so a file cannot contradict its class.",
             "properties": {
                 "containsDates": {
-                    "description": "The data includes dates more precise than a year. These are accepted at deposit and masked at release.",
+                    "description": "The data includes dates more precise than a year. These are accepted at deposit and masked at release. HIPAA Safe Harbor identifier (C), 45 CFR 164.514(b)(2)(i)(C), which also covers ages over 89.",
                     "type": [
                         "boolean",
                         "null"
                     ]
                 },
                 "containsFreeText": {
-                    "description": "The data includes unstructured text that needs a de-identification scan.",
+                    "description": "The data includes unstructured text that needs a de-identification scan. Not a HIPAA Safe Harbor identifier itself: free text can contain any of them.",
                     "type": [
                         "boolean",
                         "null"
                     ]
                 },
                 "containsZipCodes": {
-                    "description": "The data includes postal codes. These are accepted at deposit and masked at release.",
+                    "description": "The data includes postal codes. These are accepted at deposit and masked at release. Part of HIPAA Safe Harbor identifier (B), 45 CFR 164.514(b)(2)(i)(B), which covers all geographic subdivisions smaller than a state; this flag covers postal codes only.",
                     "type": [
                         "boolean",
                         "null"
@@ -3869,28 +3869,28 @@
             "description": "Per-file overrides for the header contains* flags. A file can set these to true or false. Only the batch can set directIdentifiersRemoved and synthetic.",
             "properties": {
                 "containsBiometricIdentifiers": {
-                    "description": "The data includes biometric identifiers, full-face images, voice or similar content. These stay in the trusted research environment (TRE).",
+                    "description": "The data includes biometric identifiers, full-face images, voice or similar content. These stay in the trusted research environment (TRE). HIPAA Safe Harbor identifiers (P), biometric identifiers including finger and voice prints, and (Q), full-face photographs and comparable images, 45 CFR 164.514(b)(2)(i).",
                     "type": [
                         "boolean",
                         "null"
                     ]
                 },
                 "containsDates": {
-                    "description": "The data includes dates more precise than a year. These are accepted at deposit and masked at release.",
+                    "description": "The data includes dates more precise than a year. These are accepted at deposit and masked at release. HIPAA Safe Harbor identifier (C), 45 CFR 164.514(b)(2)(i)(C), which also covers ages over 89.",
                     "type": [
                         "boolean",
                         "null"
                     ]
                 },
                 "containsFreeText": {
-                    "description": "The data includes unstructured text that needs a de-identification scan.",
+                    "description": "The data includes unstructured text that needs a de-identification scan. Not a HIPAA Safe Harbor identifier itself: free text can contain any of them.",
                     "type": [
                         "boolean",
                         "null"
                     ]
                 },
                 "containsZipCodes": {
-                    "description": "The data includes postal codes. These are accepted at deposit and masked at release.",
+                    "description": "The data includes postal codes. These are accepted at deposit and masked at release. Part of HIPAA Safe Harbor identifier (B), 45 CFR 164.514(b)(2)(i)(B), which covers all geographic subdivisions smaller than a state; this flag covers postal codes only.",
                     "type": [
                         "boolean",
                         "null"
@@ -5505,35 +5505,35 @@
             "description": "Sensitivity information used for de-identification and routing. Use terms, access tier and date policy come from the source register. The contains* flags apply to every file unless overridden. A missing contains* flag means unknown and is treated as true. A missing synthetic flag is treated as false.",
             "properties": {
                 "containsBiometricIdentifiers": {
-                    "description": "The data includes biometric identifiers, full-face images, voice or similar content. These stay in the trusted research environment (TRE).",
+                    "description": "The data includes biometric identifiers, full-face images, voice or similar content. These stay in the trusted research environment (TRE). HIPAA Safe Harbor identifiers (P), biometric identifiers including finger and voice prints, and (Q), full-face photographs and comparable images, 45 CFR 164.514(b)(2)(i).",
                     "type": [
                         "boolean",
                         "null"
                     ]
                 },
                 "containsDates": {
-                    "description": "The data includes dates more precise than a year. These are accepted at deposit and masked at release.",
+                    "description": "The data includes dates more precise than a year. These are accepted at deposit and masked at release. HIPAA Safe Harbor identifier (C), 45 CFR 164.514(b)(2)(i)(C), which also covers ages over 89.",
                     "type": [
                         "boolean",
                         "null"
                     ]
                 },
                 "containsFreeText": {
-                    "description": "The data includes unstructured text that needs a de-identification scan.",
+                    "description": "The data includes unstructured text that needs a de-identification scan. Not a HIPAA Safe Harbor identifier itself: free text can contain any of them.",
                     "type": [
                         "boolean",
                         "null"
                     ]
                 },
                 "containsZipCodes": {
-                    "description": "The data includes postal codes. These are accepted at deposit and masked at release.",
+                    "description": "The data includes postal codes. These are accepted at deposit and masked at release. Part of HIPAA Safe Harbor identifier (B), 45 CFR 164.514(b)(2)(i)(B), which covers all geographic subdivisions smaller than a state; this flag covers postal codes only.",
                     "type": [
                         "boolean",
                         "null"
                     ]
                 },
                 "directIdentifiersRemoved": {
-                    "description": "The contributor confirms that the Safe Harbor direct identifiers in plan Table 3 were removed before upload. Must be true for non-synthetic data.",
+                    "description": "The contributor confirms that the HIPAA Safe Harbor identifiers the contains* flags do not declare were removed before upload: (A) and (D) to (O), such as names, contact details, record, account and device numbers, and (R), any other unique identifying number, characteristic or code (45 CFR 164.514(b)(2)(i)). Dates (C), postal codes (B), biometric identifiers (P) and full-face images (Q) are declared with the flags instead. Must be true for non-synthetic data.",
                     "type": "boolean"
                 },
                 "notes": {

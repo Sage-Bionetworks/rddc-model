@@ -654,8 +654,12 @@ slots:
   # --- RDDC: sensitivity -----------------------------------------------------
   directIdentifiersRemoved:
     description: >-
-      The contributor confirms that the Safe Harbor direct identifiers in plan Table 3
-      were removed before upload. Must be true for non-synthetic data.
+      The contributor confirms that the HIPAA Safe Harbor identifiers the contains*
+      flags do not declare were removed before upload: (A) and (D) to (O), such as
+      names, contact details, record, account and device numbers, and (R), any other
+      unique identifying number, characteristic or code (45 CFR 164.514(b)(2)(i)).
+      Dates (C), postal codes (B), biometric identifiers (P) and full-face images (Q)
+      are declared with the flags instead. Must be true for non-synthetic data.
     range: boolean
   synthetic:
     description: "The batch contains synthetic data with no real people. Identifier checks become warnings."
