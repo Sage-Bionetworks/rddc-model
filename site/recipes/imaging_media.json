@@ -43,25 +43,20 @@
       "encodingFormat": "application/dicom",
       "sha256": "788e4bc36221d709dc3aa6a69f2f66886b8824f885c201516073ed15df93df93",
       "md5": "8aff8ec69b45840538059f89005322e8",
-      "modality": "imaging",
       "subjectIds": [
         "P0002"
-      ],
-      "sensitivity": {
-        "containsBiometricIdentifiers": true
-      }
+      ]
     },
     {
       "@id": "urn:uuid:0000a602-0000-4000-8000-00000000a602",
       "@type": "cr:FileObject",
-      "additionalType": "rddc:MediaFile",
+      "additionalType": "rddc:VideoFile",
       "name": "video/P0002_gait.mp4",
       "contentUrl": "video/P0002_gait.mp4",
       "contentSize": "85000000 B",
       "encodingFormat": "video/mp4",
       "sha256": "c1740c9c0a89d0b75f6f206307f9bd6dca585f6aa11bd8fa65281c849a5e638c",
       "md5": "fa3a794d6515eb0ce97e971f89371628",
-      "modality": "video",
       "subjectIds": [
         "P0002"
       ],
@@ -73,15 +68,18 @@
     {
       "@id": "urn:uuid:0000a603-0000-4000-8000-00000000a603",
       "@type": "cr:FileObject",
-      "additionalType": "rddc:TabularFile",
+      "additionalType": "rddc:DocumentationFile",
       "name": "photos/acquisition.csv",
       "contentUrl": "photos/acquisition.csv",
       "contentSize": "900 B",
       "encodingFormat": "text/csv",
       "sha256": "9cc20bdf4c747d286700132b4f78c30a3b71f8fc918fcf1b665fdcc05ddf4d5b",
       "md5": "71d04862723227f75ec91992f44ecb1a",
-      "modality": "metadata",
-      "tableName": "acquisition",
+      "about": [
+        {
+          "@id": "urn:uuid:0000a601-0000-4000-8000-00000000a601"
+        }
+      ],
       "sensitivity": {
         "containsDates": false
       }

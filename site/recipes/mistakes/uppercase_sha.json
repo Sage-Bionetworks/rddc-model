@@ -51,7 +51,6 @@
       "encodingFormat": "text/csv",
       "sha256": "FE839DA367B9E09B32A88842AC70277F03E7E9FD032C288D30FA326D1544F290",
       "md5": "4dd68b0c0d3be7e343ec7ac5dccdf066",
-      "modality": "clinical_tabular",
       "tableName": "patients",
       "recordCount": 3
     }

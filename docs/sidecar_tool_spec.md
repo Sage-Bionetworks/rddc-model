@@ -219,7 +219,7 @@ Writes a file-free sidecar: `--subjects <csv>` (columns `subjectId`,
 ### 4.5 from-table (FR-11)
 
 Starts from a contributor manifest CSV with at least a `key` column (optional
-`modality`, `sha256`, `md5`, `subject_id`). Verify supplied checksums; a mismatch is an error. Detection fills the remaining fields.
+`class`, `sha256`, `md5`, `subject_id`). Verify supplied checksums; a mismatch is an error. Detection fills the remaining fields.
 
 ## 5. Detection
 
@@ -237,13 +237,14 @@ that need confirmation.
 | Bulk `$export` status JSON | (metadata; not a data file unless listed) | | Declared outputs reconciled with present files; `exportTime` |
 | CSV/TSV/Parquet whose columns match a CDM 5.4 table | `OmopTableFile` | `text/csv` / `text/tab-separated-values` / `application/vnd.apache.parquet` | `cdmTable`; CDM version from version-specific columns; `cdm_source` row; subjects from `person.person_source_value` |
 | XML `ClinicalDocument` with C-CDA templates | `CcdaDocumentFile` | `application/xml` | `templateIds`, release (2015-08-01 → 2.1), subject from `recordTarget/patientRole/id` |
-| Other delimited tables | `TabularFile` | as above | `tableName` (file stem), columns, direct-identifier-like columns |
-| Text, PDF, RTF | `ClinicalDocumentFile` | `text/plain`, `application/pdf`, `application/rtf` | `containsFreeText: true` |
+| Other delimited tables | `TabularFile` | as above | `tableName` (file stem), columns, direct-identifier-like columns. Consent tables (`ConsentFile`) and sensor data (`SensorDataFile`) are declared, not detected |
+| Text, PDF, RTF | `ClinicalDocumentFile` | `text/plain`, `application/pdf`, `application/rtf` (scans: `image/tiff`, `image/jpeg`, `image/png`, declared) | `containsFreeText: true` |
 | FASTQ / BAM, CRAM / VCF | `SequenceReadsFile` / `AlignmentFile` / `VariantFile` | see 5.2 | `referenceGenome` from VCF `##reference`/BAM `@SQ` when present; R1/R2 pairing (`inferred`) |
 | `.bai`, `.crai`, `.tbi`, `.csi` | `IndexFile` | `application/octet-stream` | `indexOf` from name pairing (`detected` when the target exists) |
 | DICOM, PNG, JPEG, TIFF | `ImagingFile` | `application/dicom`, `image/*` | `containsBiometricIdentifiers` left to the contributor; a warning when not declared |
 | Photographs of faces | `FacialImagingFile` (declared, not detected) | `image/jpeg`, `image/png`, `image/tiff`, `image/heic`, `application/dicom` | Always biometric; the tool cannot tell a face from other images, so the contributor declares the class |
-| MP4, WAV, … | `MediaFile` | `video/*`, `audio/*` | as imaging |
+| MP4, MOV, … | `VideoFile` | `video/*` | as imaging |
+| WAV, MP3, … | `AudioFile` | `audio/*` | as imaging |
 | Data dictionary next to tables (`*dictionary*`, `*codebook*`) | `DocumentationFile` | by format | `about` (`inferred`) |
 | Anything else | `GenericFile` | from magic bytes, else `application/octet-stream` | |
 
@@ -388,7 +389,7 @@ W = warning, I = information.
 | `references.glob_member_mismatch` | W | A `hasPart` member is not matched by `includes` (when both are given) |
 | `references.self` | E | A node derives from itself |
 | `subjects.duplicate` | E | Duplicate (`idSystem`, `identifierSystemUri`, `subjectId`) |
-| `subjects.empty_table` | E | Empty table in a `withdraw`, `restrict` or `consent` batch, or in an `add` batch with any file whose `modality` is not `metadata` |
+| `subjects.empty_table` | E | Empty table in a `withdraw`, `restrict` or `consent` batch, or in an `add` batch with any data file that is not a `DocumentationFile` |
 | `subjects.unresolved` | E | A file's `subjectIds` value is not a `subjectId` in the table |
 | `subjects.files_in_notice` | E | `withdraw` or `restrict` lists data files |
 | `subjects.consent_ref_missing` | E | `consent` row without `consentRef` |
@@ -398,8 +399,7 @@ W = warning, I = information.
 | `sensitivity.identifier_column` | E (W synthetic) | A tabular header matches the direct-identifier column list (names, SSN, MRN, address, phone, email, …) |
 | `sensitivity.identifier_in_key` | E (W synthetic) | `contentUrl` contains name-like tokens or SSN/email/phone patterns (requirements NFR-8) |
 | `sensitivity.free_text_contradiction` | W | The effective `containsFreeText` is false for a `ClinicalDocumentFile` |
-| `sensitivity.biometrics_undeclared` | W | Imaging or media file without an effective `containsBiometricIdentifiers` declared (not for classes annotated `biometric`, which always count as biometric) |
-| `sensitivity.biometric_contradiction` | E | The effective `containsBiometricIdentifiers` is false for a class annotated `biometric` (`FacialImagingFile`) |
+| `sensitivity.biometrics_undeclared` | W | Imaging, video or audio file without an effective `containsBiometricIdentifiers` declared (not for classes annotated `biometric`: they always count as biometric, whatever the batch default, and the schema does not let them set the flag) |
 | `conformance.class_mismatch` | E | Content does not match the declared class (for example `FhirNdjsonFile` that is not NDJSON) |
 | `conformance.resource_type_mismatch` | E | NDJSON lines are not all `resourceType` |
 | `conformance.set_member_class` | E | A member's class does not fit the set (an `OmopTableFile` in a `FhirBulkExport`) |
@@ -411,7 +411,7 @@ W = warning, I = information.
 | `confirmation.unconfirmed_inferred` | E | A `valueOrigins` entry with `origin: inferred` and not `confirmed` |
 | `register.descriptor_absent` | W | No descriptor; register checks deferred to receipt |
 | `register.mismatch` | E | `contributorId`, `sourceId`, bucket or prefix pattern differ from the descriptor |
-| `register.modality` | E | A file's `modality` is not registered for the source |
+| `register.modality` | E | The modality of a file's class is not registered for the source |
 | `register.descriptor_stale` | W | Descriptor `registerVersion` differs from the sidecar's |
 
 Scan reports never contain the matched value. They name the rule, file and

@@ -20,7 +20,7 @@
 <dt>JSON-LD</dt><dd>JSON for Linked Data. JSON plus <code>@context</code>, <code>@id</code> and <code>@type</code>, which tie keys and objects to IRIs.</dd>
 <dt>Lane</dt><dd>A NORMALIZE processing path for one input format: 1 OMOP, 2 FHIR, 3 C-CDA, 4 other clinical tables.</dd>
 <dt>LinkML</dt><dd>The modelling language the sidecar schema is written in. JSON Schema and the JSON-LD context are generated from it.</dd>
-<dt>Modality</dt><dd>The kind of data a file carries, such as <code>clinical_fhir</code> or <code>genomics</code>.</dd>
+<dt>Modality</dt><dd>The kind of data a file carries, such as <code>clinical_fhir</code> or <code>genomics</code>. Each data file class has one, so the sidecar does not state it.</dd>
 <dt>NORMALIZE</dt><dd>The RDDC stage that converts accepted data into common models, by lane.</dd>
 <dt>OMOP CDM</dt><dd>The OHDSI Observational Medical Outcomes Partnership Common Data Model. The sidecar pins version 5.4.</dd>
 <dt>PROV</dt><dd>The W3C vocabulary for provenance. The sidecar uses it to name its author and link files or file sets to their inputs in the same batch.</dd>
@@ -53,6 +53,6 @@
 <details class="faq"><summary>How are unknown sensitivity values handled?</summary>
 <p>Leave the flag out. An unset <code>contains*</code> flag is read as <code>true</code>, so de-identification checks for it.</p></details>
 <details class="faq"><summary>Which class covers file types not listed here?</summary>
-<p>Use <code>rddc:GenericFile</code> with modality <code>other</code>. A curator decides how it is processed.</p></details>
+<p>Use <code>rddc:GenericFile</code> (modality <code>other</code>). A curator decides how it is processed. A kind of data the RDDC accepts regularly gets its own class in a later schema version.</p></details>
 <details class="faq"><summary>Where is the schema, and how are changes proposed?</summary>
 <p><code>schema/rddc_sidecar.yaml</code> in the <code>rddc-model</code> repository. Open a pull request against it; JSON Schema, the context and this site are regenerated from it.</p></details>

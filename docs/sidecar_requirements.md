@@ -107,7 +107,7 @@ RDDC tools that help contributors meet those rules.
 | FR-4 | Each file entry records the object key relative to the prefix, its size, and at least a SHA-256 checksum; MD5 may be added. The entry names each checksum algorithm | M | SHA-256 checks file integrity. Optional MD5 supports comparison with Synapse file handles and single-part S3 ETags |
 | FR-5 | Metadata used for pipeline decisions has defined types and allowed values | M | This covers modality, format, standard and version, file-set role, and sensitivity flags. Allowed values come from enumerations in the declared schema version; where a term has an ontology ID it is stored as both label and CURIE. Processing hints are informational: fields used for pipeline decisions must be defined in the schema |
 | FR-6 | Each file has a unique, stable identifier | M | The identifier is a UUID. IDs are unique within the sidecar, never reused for another file, and retained across platform moves and re-registration. Changed content or separate object keys require distinct IDs. ID generation is a tooling choice (FR-12). External IDs supplied with a file contain only contributor IDs; platform IDs (Synapse, DRS) stay in platform metadata |
-| FR-24 | Each file entry identifies the data modality and file format | M | Use a modality from the schema's allowed values. Initial modalities are listed under "Initial data types" |
+| FR-24 | Each file entry identifies the data modality and file format | M | The file's class identifies both. Each data file class has exactly one modality from the schema's allowed values, so the entry does not state it separately; a new kind of data gets a new class. Initial modalities are listed under "Initial data types" |
 
 #### Subjects
 
@@ -146,7 +146,8 @@ format.
 
 Modalities and file set types are named descriptively here; their
 enumeration values and class names are defined in the schema and published
-with the RDDC data model. The lanes, formats and standards come from the plan.
+with the RDDC data model. Each data file class has one modality, so a file's
+class determines its modality. The lanes, formats and standards come from the plan.
 
 | Modality | Formats | File set | Lane | First accepted |
 | --- | --- | --- | --- | --- |
@@ -240,7 +241,7 @@ Checks, in order:
 8. **Sensitivity:** the direct-identifiers attestation is true for non-synthetic data; tabular headers and object keys do not match known direct-identifier patterns (names, SSN, MRN, address, phone, email); media files flagged for biometrics.
 9. **Conformance:** declared file set type matches detected content; required members present for the declared standard; CDM version consistent across tables.
 10. **Confirmation:** no unconfirmed `inferred` values remain.
-11. **Registry:** contributor ID, source ID and bucket match the source descriptor (local) or the source register (receipt); the prefix matches the source's pattern; every file's modality is one the source is registered for; subject IDs resolve in the participants table (receipt only).
+11. **Registry:** contributor ID, source ID and bucket match the source descriptor (local) or the source register (receipt); the prefix matches the source's pattern; every file's modality (from its class) is one the source is registered for; subject IDs resolve in the participants table (receipt only).
 
 ### Part B: tooling
 
@@ -330,7 +331,7 @@ Pipelines read the sidecar for the batch they process. The steps follow the plan
 3. **Upload.** Data objects first, then the sidecar, under one prefix in the contributor's bucket, using short-term write-only credentials. The sidecar signals that the deposit is complete.
 4. **Receive.** An EventBridge rule starts one receipt workflow when the sidecar arrives. It verifies the delivery role and source ID, waits for every listed object, verifies checksums, reports objects missing from the sidecar or the bucket, checks the subject table against the participants table, and registers files in Synapse (DRS references) with sidecar fields as annotations. If listed objects are still missing at the time limit, the workflow stops the batch with a report.
 5. **Screen.** De-id and QC tasks run in Cirro, reading format and sensitivity facts from the sidecar. Exceptions go to curators with file and subject context.
-6. **Process.** NORMALIZE picks the lane from modality and conformance, reads task parameters from the file set and entries, and verifies inputs by checksum.
+6. **Process.** NORMALIZE picks the lane from each file's modality (from its class) and conformance, reads task parameters from the file set and entries, and verifies inputs by checksum.
 7. **Register outputs.** Synapse registers workflow outputs with the pipeline provenance tracked in Cirro, stored as W3C PROV; each output inherits the access rules of its inputs (plan §4.3). Outputs do not get sidecars. Release manifests are out of scope for this version.
 
 The batch-folder JSON Schema for Synapse annotations (plan Table 4) is generated from the same LinkML model as the sidecar. Registration can copy some sidecar fields directly into annotations.
@@ -380,7 +381,7 @@ Sidecar model:
 - FR-4 requires SHA-256 and allows MD5, absorbing FR-17.
 - FR-6: file IDs are UUIDs assigned without a registry. External IDs are contributor IDs only; platform IDs stay in platform metadata.
 - Pipelines read sidecars but do not write them. Synapse registers pipeline outputs with their provenance (plan §4.3), so FR-7 (derived-output manifests) removed. Release manifests are out of scope.
-- Initial data types are FHIR R4 with US Core, OMOP CDM 5.4 and C-CDA 2.1, with lanes and first-accepted quarters from the plan. Modality replaces `data_type`; biospecimen fields are dropped; enumeration labels are left to the schema.
+- Initial data types are FHIR R4 with US Core, OMOP CDM 5.4 and C-CDA 2.1, with lanes and first-accepted quarters from the plan. Modality, set by the file's class, replaces `data_type`; biospecimen fields are dropped; enumeration labels are left to the schema.
 - Sidecars are not versioned: they are immutable once received, `supersedes` is removed, and corrections are an open question. Schema semantic versioning applies from 1.0, a stricter rule needs a major release, and a sidecar is validated against the schema version it declares.
 
 Validation:

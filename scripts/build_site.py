@@ -212,15 +212,21 @@ def class_yaml(name):
             skip_deeper_than = depth
             continue
         out.append(line[2:])
-    # Drop slot_usage entries left empty once their description is gone.
-    kept = []
-    for i, line in enumerate(out):
-        nxt = out[i + 1] if i + 1 < len(out) else ""
-        depth = len(line) - len(line.lstrip())
-        if line.rstrip().endswith(":") and depth >= 4 and len(nxt) - len(nxt.lstrip()) <= depth:
-            continue
-        kept.append(line)
-    return "\n".join(kept)
+    # Drop keys left empty once their description is gone: slot_usage entries,
+    # then a slot_usage that has none left. Repeat until nothing changes.
+    while True:
+        kept = []
+        for i, line in enumerate(out):
+            nxt = out[i + 1] if i + 1 < len(out) else ""
+            depth = len(line) - len(line.lstrip())
+            nxt_depth = len(nxt) - len(nxt.lstrip())
+            has_items = nxt_depth == depth and nxt.lstrip().startswith("- ")  # block list
+            if line.rstrip().endswith(":") and depth >= 2 and nxt_depth <= depth and not has_items:
+                continue
+            kept.append(line)
+        if kept == out:
+            return "\n".join(kept)
+        out = kept
 
 
 def slide_linkml():
@@ -366,7 +372,7 @@ CLASS_GROUPS = [
      ["Sidecar", "Agent", "SensitivityDeclaration", "SubjectEntry"]),
     ("Distribution: the common base", "Shared by every file and file set. The data file classes "
      "built on FileObject have their own page, <a href='data-classes.html'>Data file classes</a>.",
-     ["DistributionItem", "FileObject", "FileSensitivity"]),
+     ["DistributionItem", "FileObject", "FileSensitivity", "BiometricFileSensitivity"]),
     ("File set classes", "Name one of these in a file set's additionalType. @type stays cr:FileSet.",
      ["FileSet", "FhirBulkExport", "FhirBundleCollection", "OmopCdmInstance", "CdmSource",
       "CcdaDocumentSet", "TabularDataset", "DocumentSet", "FileCollection"]),
@@ -479,6 +485,9 @@ def class_section(name, view=None):
     structure = cls.annotations.get("structure")
     if structure:
         meta.append(f"<span>Content: {html.escape(structure.value)}</span>")
+    modality = cls.annotations.get("modality")
+    if modality:
+        meta.append(f"<span>Modality: <code>{html.escape(modality.value)}</code></span>")
     if cls.annotations.get("biometric"):
         meta.append("<span>Biometric: always counts as containing biometric identifiers</span>")
     if name in DISPATCHED:
@@ -523,24 +532,31 @@ DISPATCHED = set(concrete_descendants("FileObject")) | set(concrete_descendants(
 
 
 def dispatch_table(root, structure=False):
+    """One row per concrete class under root. structure=True adds the data file
+    classes' modality and structure annotations."""
     base = {s.name for s in sv.class_induced_slots("DataFile" if root == "FileObject" else "FileSet") if s.required}
+    order = DATA_CLASSES if root == "FileObject" else [c for _, _, cs in CLASS_GROUPS for c in cs]
     rows = []
-    for name in [c for _, _, cs in CLASS_GROUPS for c in cs if c in concrete_descendants(root)]:
+    for name in [c for c in order if c in concrete_descendants(root)]:
         slots = sv.class_induced_slots(name)
+        ann = sv.get_class(name).annotations
         enc = next(s for s in slots if s.name == "encodingFormat")
         fmts = [enc.equals_string] if enc.equals_string else [a.equals_string for a in (enc.any_of or [])]
+        top = re.match(r"\^([a-z]+)/", enc.pattern or "")
+        fmts = fmts or ([f"{top.group(1)}/*"] if top else [])
         fmt = "<br>".join(f"<code>{html.escape(x)}</code>" for x in fmts) or "<span class=muted>any media type</span>"
         extra = [s.alias or s.name for s in slots if s.required and s.name not in base]
         rows.append(
             f"<tr><td><a href='{class_href(name)}'><code>rddc:{name}</code></a></td>"
-            + (f"<td>{html.escape(sv.get_class(name).annotations['structure'].value)}</td>" if structure else "")
+            + (f"<td><code>{html.escape(ann['modality'].value)}</code></td>"
+               f"<td>{html.escape(ann['structure'].value)}</td>" if structure else "")
             + f"<td>{html.escape(sv.get_class(name).description or '')}</td>"
             f"<td>{fmt}</td>"
             f"<td>{', '.join(f'<code>{e}</code>' for e in extra) or '<span class=muted>none</span>'}</td></tr>"
         )
     return (
         "<div class='table-wrap'><table><thead><tr><th>additionalType</th>"
-        + ("<th>Structure</th>" if structure else "") + "<th>Use for</th>"
+        + ("<th>Modality</th><th>Structure</th>" if structure else "") + "<th>Use for</th>"
         "<th>encodingFormat</th><th>Extra required fields</th></tr></thead><tbody>"
         + "".join(rows) + "</tbody></table></div>"
     )
@@ -593,7 +609,7 @@ def description_html(text):
 def hierarchy_html(name):
     cls = data_sv.get_class(name)
     notes = (["abstract"] if cls.abstract else []) + (
-        [cls.annotations["structure"].value] if cls.annotations.get("structure") else []) + (
+        [cls.annotations[k].value for k in ("structure", "modality") if cls.annotations.get(k)]) + (
         ["biometric"] if cls.annotations.get("biometric") else [])
     label = f"<a href='#{name}'><code>{name}</code></a>" + "".join(f" <span class='badge'>{n}</span>" for n in notes)
     children = data_sv.class_children(name)
@@ -611,11 +627,12 @@ def data_classes_page():
         "Inherited properties are included, so each class lists everything it accepts.</p>",
         description_html(schema.description),
         "<h2 id='hierarchy'>Hierarchy</h2>",
-        f"<p>Data files extend {base}. Badges mark abstract classes and each class's structure.</p>",
+        f"<p>Data files extend {base}. Badges mark abstract classes and each class's structure and modality.</p>",
         "<ul class='tree'>" + hierarchy_html("DataFile") + "</ul>",
         "<h2 id='at-a-glance'>At a glance</h2>",
         "<p>Every file needs <code>@id</code>, <code>name</code>, <code>contentUrl</code>, <code>contentSize</code>, "
-        "<code>encodingFormat</code>, <code>sha256</code> and <code>modality</code>. The class adds the fields below.</p>",
+        "<code>encodingFormat</code> and <code>sha256</code>. The class adds the fields below, and sets the file's "
+        "modality: a sidecar does not state it.</p>",
         dispatch_table("FileObject", structure=True),
         "<h2 id='classes'>Classes</h2>",
     ]
@@ -631,12 +648,13 @@ VALIDATOR_RULES = """
 (<code>idSystem</code>, <code>identifierSystemUri</code>, <code>subjectId</code>).</li>
 <li>Every reference resolves: <code>hasPart</code>, <code>about</code>, <code>indexOf</code>, <code>pairedWith</code>, <code>wasDerivedFrom</code>,
 record set sources and keys, and each file's <code>subjectIds</code> (against the subject table).</li>
-<li>The subject table is non-empty unless the batch is an <code>add</code> batch whose files all have <code>modality</code> <code>metadata</code>
-(documentation only).</li>
+<li>The subject table is non-empty unless the batch is an <code>add</code> batch whose data files are all
+<code>DocumentationFile</code>s (modality <code>metadata</code>).</li>
 <li><code>withdraw</code> and <code>restrict</code> batches list no data files, and every row of a consent batch has a <code>consentRef</code>.</li>
 <li>File set <code>conformsTo</code> values come from the pinned list (FHIR R4, US Core 6.1, OMOP CDM 5.4, C-CDA 2.1).</li>
 <li><code>directIdentifiersRemoved</code> is <code>true</code> unless <code>synthetic</code> is <code>true</code>.</li>
-<li>A file of a biometric class (<code>FacialImagingFile</code>) does not set <code>containsBiometricIdentifiers</code> to <code>false</code>, directly or through the batch default. It always counts as containing biometric identifiers.</li>
+<li>A file of a biometric class (<code>FacialImagingFile</code>) always counts as containing biometric identifiers,
+whatever the batch default. The schema stops the file setting the flag itself.</li>
 </ul>
 """
 
