@@ -237,7 +237,7 @@ that need confirmation.
 | Bulk `$export` status JSON | (metadata; not a data file unless listed) | | Declared outputs reconciled with present files; `exportTime` |
 | CSV/TSV/Parquet whose columns match a CDM 5.4 table | `OmopTableFile` | `text/csv` / `text/tab-separated-values` / `application/vnd.apache.parquet` | `cdmTable`; CDM version from version-specific columns; `cdm_source` row; subjects from `person.person_source_value` |
 | XML `ClinicalDocument` with C-CDA templates | `CcdaDocumentFile` | `application/xml` | Release from the header template IDs (2015-08-01 → 2.1), checked against the set's `conformsTo`; subject from `recordTarget/patientRole/id`. The template IDs are not written to the sidecar |
-| Other delimited tables | `TabularFile` | as above | `tableName` (file stem), columns, direct-identifier-like columns. Consent tables (`ConsentFile`) and sensor data (`SensorDataFile`) are declared, not detected |
+| Other delimited tables | `TabularFile` | as above | `recordCount`, columns, direct-identifier-like columns. Consent tables (`ConsentFile`) and sensor data (`SensorDataFile`) are declared, not detected |
 | Text, PDF, RTF | `ClinicalDocumentFile` | `text/plain`, `application/pdf`, `application/rtf` (scans: `image/tiff`, `image/jpeg`, `image/png`, declared) | `containsFreeText: true` |
 | FASTQ / BAM, CRAM / VCF | `SequenceReadsFile` / `AlignmentFile` / `VariantFile` | see 5.2 | `referenceGenome` from VCF `##reference`/BAM `@SQ` when present; R1/R2 pairing (`inferred`) |
 | `.bai`, `.crai`, `.tbi`, `.csi` | `IndexFile` | `application/octet-stream` | `indexOf` from name pairing (`detected` when the target exists) |

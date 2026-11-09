@@ -39,7 +39,7 @@
 </div>
 
 <h3>Registry tables and their join</h3>
-<p>The registry CSVs are <code>TabularFile</code>s in a <code>TabularDataset</code>. No standard says how they relate, so two Croissant record sets declare it: <code>visits.patient_id</code> references <code>patients.id</code>. The <code>tableName</code> of <code>visits.csv</code> was detected from the file name, recorded in <code>valueOrigins</code>.</p>
+<p>The registry CSVs are <code>TabularFile</code>s in a <code>TabularDataset</code>. No standard says how they relate, so two Croissant record sets declare it: <code>visits.patient_id</code> references <code>patients.id</code>. The <code>recordCount</code> of <code>visits.csv</code> was detected by counting rows, recorded in <code>valueOrigins</code>.</p>
 <div class="tabs">
   <div role="tablist" aria-label="Registry parts">
     <button role="tab" id="t-reg-1" aria-controls="p-reg-1" aria-selected="true">visits.csv</button>
