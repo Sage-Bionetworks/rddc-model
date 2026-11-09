@@ -172,8 +172,9 @@ class Page:
             for key in ("structure", "modality"):
                 if cls.annotations.get(key):
                     notes.append(cls.annotations[key].value)
-            if cls.annotations.get("biometric"):
-                notes.append("biometric")
+            for key in ("biometric", "identifying"):
+                if cls.annotations.get(key):
+                    notes.append(key)
             lines.append(("  " * depth) + name + (f"  ({', '.join(notes)})" if notes else ""))
             for child in self.sv.class_children(name):
                 tree(child, depth + 1)
@@ -234,7 +235,9 @@ class Page:
             if terms:
                 facts.append(f"{label} " + ", ".join(self.term(t) for t in terms) + ".")
         if cls.annotations.get("biometric"):
-            facts.append("Biometric: always counts as containing biometric identifiers.")
+            facts.append("Biometric: always counts as containing biometric identifiers, and so as identifying.")
+        if cls.annotations.get("identifying"):
+            facts.append("Identifying: can identify a person on its own, so it never counts as de-identified.")
         out += [" ".join(facts), ""] if facts else []
         own, parent = self.own_slots(name)
         if parent and own:

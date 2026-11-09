@@ -19,6 +19,8 @@ A class whose data is always collected the same way carries an "rai:dataCollecti
 
 A class whose content always identifies a person carries a "biometric" annotation set to "true" (FacialImagingFile). Its files count as containing biometric identifiers and stay in the trusted research environment, whatever the sensitivity flags say.
 
+A class whose content can identify a person on its own, though it is not a biometric identifier under HIPAA Safe Harbor, carries an "identifying" annotation set to "true": genome sequences, alignments and variant calls (the genomics classes), which DPV classes as genetic data (pd:Genetic). Removing direct identifiers does not make such files de-identified, whatever the sensitivity flags say. "biometric" implies "identifying", so a biometric class does not carry both: consumers treat a biometric class as identifying and, in addition, keep its files in the TRE.
+
 ## Hierarchy
 
 ```
@@ -37,9 +39,9 @@ DistributionItem
       ClinicalDocumentFile  (unstructured, clinical_text)
       DocumentationFile  (mixed, metadata)
       GenomicsFile  (abstract)
-        SequenceReadsFile  (structured, genomics)
-        AlignmentFile  (structured, genomics)
-        VariantFile  (structured, genomics)
+        SequenceReadsFile  (structured, genomics, identifying)
+        AlignmentFile  (structured, genomics, identifying)
+        VariantFile  (structured, genomics, identifying)
       IndexFile  (structured, genomics)
       ImagingFile  (unstructured, imaging)
         FacialImagingFile  (unstructured, imaging, biometric)
@@ -266,7 +268,7 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 Sequencing reads, such as FASTQ or unaligned BAM.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:SequenceReadsFile"`. Inherits from [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`. Data collection (`rai:dataCollectionType`): Direct measurement. Close to [`EDAM:data_2977`](http://edamontology.org/data_2977).
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:SequenceReadsFile"`. Inherits from [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`. Data collection (`rai:dataCollectionType`): Direct measurement. Close to [`EDAM:data_2977`](http://edamontology.org/data_2977). Identifying: can identify a person on its own, so it never counts as de-identified.
 
 Fields it adds or changes; it also has all fields of [`GenomicsFile`](#genomicsfile):
 
@@ -278,7 +280,7 @@ Fields it adds or changes; it also has all fields of [`GenomicsFile`](#genomicsf
 
 Aligned reads, such as BAM or CRAM.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:AlignmentFile"`. Inherits from [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`. Data collection (`rai:dataCollectionType`): Direct measurement. Close to [`EDAM:data_1383`](http://edamontology.org/data_1383).
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:AlignmentFile"`. Inherits from [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`. Data collection (`rai:dataCollectionType`): Direct measurement. Close to [`EDAM:data_1383`](http://edamontology.org/data_1383). Identifying: can identify a person on its own, so it never counts as de-identified.
 
 Fields it adds or changes; it also has all fields of [`GenomicsFile`](#genomicsfile):
 
@@ -290,7 +292,7 @@ Fields it adds or changes; it also has all fields of [`GenomicsFile`](#genomicsf
 
 Variant calls, such as VCF or BCF.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:VariantFile"`. Inherits from [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`. Data collection (`rai:dataCollectionType`): Direct measurement. Close to [`EDAM:data_3498`](http://edamontology.org/data_3498).
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:VariantFile"`. Inherits from [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`. Data collection (`rai:dataCollectionType`): Direct measurement. Close to [`EDAM:data_3498`](http://edamontology.org/data_3498). Identifying: can identify a person on its own, so it never counts as de-identified.
 
 Fields it adds or changes; it also has all fields of [`GenomicsFile`](#genomicsfile):
 
@@ -327,7 +329,7 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 An image or 3D surface model of a person's face, such as those taken for dysmorphology assessment or facial phenotyping. measurementTechnique says how it was captured: a photograph, a 3D surface scan, or a CT or MRI. A face is a biometric identifier, so the file always counts as containing biometric identifiers.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:FacialImagingFile"`. Inherits from [`ImagingFile`](#imagingfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: unstructured. Modality: `imaging`. Data collection (`rai:dataCollectionType`): Direct measurement. A kind of [`EDAM:data_3424`](http://edamontology.org/data_3424). Biometric: always counts as containing biometric identifiers.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:FacialImagingFile"`. Inherits from [`ImagingFile`](#imagingfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: unstructured. Modality: `imaging`. Data collection (`rai:dataCollectionType`): Direct measurement. A kind of [`EDAM:data_3424`](http://edamontology.org/data_3424). Biometric: always counts as containing biometric identifiers, and so as identifying.
 
 Fields it adds or changes; it also has all fields of [`ImagingFile`](#imagingfile):
 

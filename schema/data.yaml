@@ -40,6 +40,15 @@ description: >-
   set to "true" (FacialImagingFile). Its files count as containing biometric
   identifiers and stay in the trusted research environment, whatever the sensitivity
   flags say.
+
+
+  A class whose content can identify a person on its own, though it is not a
+  biometric identifier under HIPAA Safe Harbor, carries an "identifying" annotation set
+  to "true": genome sequences, alignments and variant calls (the genomics classes),
+  which DPV classes as genetic data (pd:Genetic). Removing direct identifiers does not
+  make such files de-identified, whatever the sensitivity flags say. "biometric"
+  implies "identifying", so a biometric class does not carry both: consumers treat a
+  biometric class as identifying and, in addition, keep its files in the TRE.
 license: https://creativecommons.org/publicdomain/zero/1.0/
 
 prefixes:
@@ -1462,6 +1471,7 @@ classes:
       structure: structured
       modality: genomics
       rai:dataCollectionType: Direct measurement
+      identifying: "true"
     slots:
     - pairedWith
 
@@ -1474,6 +1484,7 @@ classes:
       structure: structured
       modality: genomics
       rai:dataCollectionType: Direct measurement
+      identifying: "true"
     slots:
     - referenceGenome
     slot_usage:
@@ -1489,6 +1500,7 @@ classes:
       structure: structured
       modality: genomics
       rai:dataCollectionType: Direct measurement
+      identifying: "true"
     slots:
     - referenceGenome
     slot_usage:
