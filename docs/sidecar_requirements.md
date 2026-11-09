@@ -195,7 +195,7 @@ that applies to each file after overrides and defaults.
 | ID | Requirement | Priority | Notes |
 | --- | --- | --- | --- |
 | NFR-1 | A sidecar supports at least 100,000 file entries and can be read incrementally | M | Needed for large C-CDA deposits from HIE/HIN records (plan Table 5). Consumers can stream the JSON document |
-| NFR-4 | Sidecars contain no direct identifiers or PHI: no names, MRNs, dates of birth, addresses or contact details. Subject IDs are coded | M | Safe Harbor list in plan Table 3 |
+| NFR-4 | Sidecars contain no direct identifiers or PHI: no names, MRNs, dates of birth, addresses or contact details. Subject IDs are coded | M | Safe Harbor list in plan Table 3 (HIPAA, 45 CFR 164.514(b)(2)(i)) |
 | NFR-8 | Object keys listed in the sidecar contain no direct identifiers; the generator warns on name-like tokens and the receipt check rejects known patterns | M | Synthea-style `<First>_<Last>_<uuid>.json` keys must not reach a bucket |
 | NFR-7 | The sidecar schema is defined in LinkML and published with the RDDC data model | M | Plan §1.2. The schema defines field names, types, cardinality and conditional requirements; this document does not repeat them. |
 

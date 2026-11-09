@@ -401,6 +401,17 @@ def range_link(rng):
     return f"<code>{rng}</code>"
 
 
+MAPPING_LABELS = (("exact_mappings", "Same as"), ("close_mappings", "Close to"),
+                  ("broad_mappings", "Narrower than"), ("narrow_mappings", "Broader than"),
+                  ("related_mappings", "Related to"))
+
+
+def slot_mappings(slot):
+    """A slot's mappings to external terms, e.g. "Close to pd:Biometric."."""
+    return "".join(f" {label} " + ", ".join(term_link(t) for t in getattr(slot, kind)) + "."
+                   for kind, label in MAPPING_LABELS if getattr(slot, kind, None))
+
+
 def slot_constraints(slot):
     notes = []
     if slot.equals_string:
@@ -506,7 +517,7 @@ def class_section(name, view=None):
         card = "list" if slot.multivalued else ""
         req = '<span class="req">required</span>' if slot.required else '<span class="opt">optional</span>'
         desc = esc(slot.description)
-        cons = slot_constraints(slot)
+        cons = slot_constraints(slot) + slot_mappings(slot)
         rows.append(
             f"<tr><td><code class='k o-{origin}' title='{html.escape(ORIGIN_LABEL[origin])}: {html.escape(iri)}'>{html.escape(key)}</code></td>"
             f"<td>{range_link(slot.range or 'string')}{' <span class=muted>list</span>' if card else ''}</td>"
