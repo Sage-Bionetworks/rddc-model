@@ -74,7 +74,6 @@
       "sha256": "0e5a8b37fcbc4410dc25d5e4d0d7bc93546dcd813c22d27ef4522ade1a3ac36c",
       "md5": "475dc32dd03216a9a17ed1f0df1b2049",
       "bundleType": "collection",
-      "fhirVersion": "4.0.1",
       "subjectIds": [
         "syn-7f3a"
       ],
@@ -91,7 +90,6 @@
       "sha256": "cfaf88f2b0d1cb51fcc33009cae7a9f7bd652165824f12f2714c4111bc3d9a3f",
       "md5": "12691d6c072e6d92a43fe990affca3c7",
       "bundleType": "collection",
-      "fhirVersion": "4.0.1",
       "subjectIds": [
         "syn-91c0"
       ],
