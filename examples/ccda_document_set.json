@@ -54,7 +54,7 @@
     "source": "cr:source",
     "subField": "cr:subField",
     "transform": "cr:transform",
-    "rddc": "https://w3id.org/rddc/sidecar/",
+    "rddc": "https://w3id.org/rddc/vocab/",
     "prov": "http://www.w3.org/ns/prov#",
     "additionalType": {
       "@id": "sc:additionalType",
@@ -96,7 +96,6 @@
     "issuedBy": "rddc:issuedBy",
     "method": "rddc:method",
     "modalities": "rddc:modalities",
-    "modality": "rddc:modality",
     "notes": "rddc:notes",
     "noticeRef": "rddc:noticeRef",
     "omopCdmVersion": "rddc:omopCdmVersion",
@@ -190,7 +189,6 @@
       "encodingFormat": "application/xml",
       "sha256": "38fbfdfdab53f39ecb0ef6ebab32768a74163a243c3d2e87faf769eb8828014e",
       "md5": "38fbfdfdab53f39ecb0ef6ebab32768a",
-      "modality": "clinical_ccda",
       "subjectIds": [
         "P0001"
       ],
@@ -208,7 +206,6 @@
       "encodingFormat": "application/xml",
       "sha256": "d71fcfaf1d95870510bf2041c4f5d8a3176f26176b288723818ea566769f21c0",
       "md5": "d71fcfaf1d95870510bf2041c4f5d8a3",
-      "modality": "clinical_ccda",
       "subjectIds": [
         "P0002"
       ],
@@ -226,7 +223,6 @@
       "encodingFormat": "application/xml",
       "sha256": "720cf72e066cfdebd12f78cb95cb2ab5bc7619b935df6202fec302c3c0c08ba6",
       "md5": "720cf72e066cfdebd12f78cb95cb2ab5",
-      "modality": "clinical_ccda",
       "subjectIds": [
         "P0003"
       ],

@@ -54,7 +54,7 @@
     "source": "cr:source",
     "subField": "cr:subField",
     "transform": "cr:transform",
-    "rddc": "https://w3id.org/rddc/sidecar/",
+    "rddc": "https://w3id.org/rddc/vocab/",
     "prov": "http://www.w3.org/ns/prov#",
     "additionalType": {
       "@id": "sc:additionalType",
@@ -96,7 +96,6 @@
     "issuedBy": "rddc:issuedBy",
     "method": "rddc:method",
     "modalities": "rddc:modalities",
-    "modality": "rddc:modality",
     "notes": "rddc:notes",
     "noticeRef": "rddc:noticeRef",
     "omopCdmVersion": "rddc:omopCdmVersion",
@@ -251,7 +250,6 @@
       "encodingFormat": "application/fhir+ndjson",
       "sha256": "e047db5fa705c1cd516e0939ba1e07221c45573f06accfe3c5f8a5a4bdc112f4",
       "md5": "e047db5fa705c1cd516e0939ba1e0722",
-      "modality": "clinical_fhir",
       "resourceType": "Observation",
       "fhirVersion": "4.0.1",
       "implementationGuides": [
@@ -273,7 +271,6 @@
       "encodingFormat": "application/fhir+ndjson",
       "sha256": "e90a5d12b9d1e923967675f48ccda22730b9ddf3ea86bcaf97984ca3cbd60912",
       "md5": "e90a5d12b9d1e923967675f48ccda227",
-      "modality": "clinical_fhir",
       "resourceType": "Patient",
       "fhirVersion": "4.0.1",
       "implementationGuides": [
@@ -291,7 +288,6 @@
       "encodingFormat": "text/csv",
       "sha256": "b6d65337119f21b5058e2e91f90899342c698b9c15ee6a6192422a87b93ddb0a",
       "md5": "b6d65337119f21b5058e2e91f9089934",
-      "modality": "clinical_omop",
       "cdmTable": "observation_period",
       "omopCdmVersion": "5.4"
     },
@@ -305,7 +301,6 @@
       "encodingFormat": "text/csv",
       "sha256": "aae5ddf096a0994ba79a254c8a5abc2e95ec2cbfb4d65642d84065c12c88d752",
       "md5": "aae5ddf096a0994ba79a254c8a5abc2e",
-      "modality": "clinical_omop",
       "cdmTable": "person",
       "omopCdmVersion": "5.4"
     },
@@ -319,7 +314,6 @@
       "encodingFormat": "text/csv",
       "sha256": "fe839da367b9e09b32a88842ac70277f03e7e9fd032c288d30fa326d1544f290",
       "md5": "fe839da367b9e09b32a88842ac70277f",
-      "modality": "clinical_tabular",
       "tableName": "patients"
     },
     {
@@ -332,7 +326,6 @@
       "encodingFormat": "text/csv",
       "sha256": "bad7f4d826a9ad20c880b6d10366caf036f3b6fd52ea4f86e8591737ffa722da",
       "md5": "bad7f4d826a9ad20c880b6d10366caf0",
-      "modality": "clinical_tabular",
       "tableName": "visits",
       "valueOrigins": [
         {

@@ -54,7 +54,7 @@
     "source": "cr:source",
     "subField": "cr:subField",
     "transform": "cr:transform",
-    "rddc": "https://w3id.org/rddc/sidecar/",
+    "rddc": "https://w3id.org/rddc/vocab/",
     "prov": "http://www.w3.org/ns/prov#",
     "additionalType": {
       "@id": "sc:additionalType",
@@ -96,7 +96,6 @@
     "issuedBy": "rddc:issuedBy",
     "method": "rddc:method",
     "modalities": "rddc:modalities",
-    "modality": "rddc:modality",
     "notes": "rddc:notes",
     "noticeRef": "rddc:noticeRef",
     "omopCdmVersion": "rddc:omopCdmVersion",

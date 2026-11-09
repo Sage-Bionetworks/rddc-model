@@ -27,7 +27,7 @@ description: >-
 license: https://creativecommons.org/publicdomain/zero/1.0/
 
 prefixes:
-  rddc: https://w3id.org/rddc/sidecar/
+  rddc: https://w3id.org/rddc/vocab/
   linkml: https://w3id.org/linkml/
   sc: https://schema.org/
   cr: http://mlcommons.org/croissant/
@@ -71,7 +71,7 @@ enums:
       restrict:
         description: "Restrict use of the listed subjects' data as directed by noticeRef. No data files."
       consent:
-        description: "Provide consent information. Each subject row needs a consentRef. The batch may include consent files."
+        description: "Provide consent information. Each subject row needs a consentRef. The batch may include ConsentFiles."
 
   IdSystemEnum:
     description: Where a subject ID comes from. Part of the subject's identity.
@@ -180,7 +180,8 @@ classes:
         required: true
         description: >-
           The subject table, listed inline. It may be empty only for an add batch whose
-          files all have modality metadata. The RDDC validator checks this rule.
+          data files are all DocumentationFiles (modality metadata). The RDDC validator
+          checks this rule.
     rules:
     - description: Withdraw and restrict batches name the GOVERN notice they carry out.
       preconditions:
@@ -699,7 +700,9 @@ slots:
   region:
     description: "AWS region of the bucket."
   modalities:
-    description: Modalities the source is registered to deposit.
+    description: >-
+      Modalities the source is registered to deposit. A file's modality is the modality
+      annotation of its class.
     range: ModalityEnum
     multivalued: true
   deliveryRole:
