@@ -245,8 +245,8 @@ that need confirmation.
 | Photographs of faces | `FacialImagingFile` (declared, not detected) | `image/jpeg`, `image/png`, `image/tiff`, `image/heic`, `application/dicom` | Always biometric; the tool cannot tell a face from other images, so the contributor declares the class |
 | MP4, MOV, … | `VideoFile` | `video/*` | as imaging |
 | WAV, MP3, … | `AudioFile` | `audio/*` | as imaging |
-| JSON or JSON Lines whose objects have `header.schema_id.namespace: "ieee"` and a `body` | `SensorMeasureFile` | `application/json`, `application/jsonlines` | IEEE 1752.1 data points or series; the schema named in `schema_id` (e.g. `physical-activity` 1.0) is reported. `assay` is left to the contributor: the data does not say which sensor produced it |
-| EDF/EDF+ (`0       ` header and `.edf`), WFDB (`.hea` with signal files) | `SensorSignalFile` | `application/octet-stream` | `samplingRate` and channel labels from the header; `assay` `inferred` from channel labels (e.g. `ECG`, `EEG`) |
+| JSON or JSON Lines whose objects have `header.schema_id.namespace: "ieee"` and a `body` | `SensorMeasureFile` | `application/json`, `application/jsonlines` | IEEE 1752.1 data points or series; the schema named in `schema_id` (e.g. `physical-activity` 1.0) is reported. `measurementTechnique` is left to the contributor: the data does not say which sensor produced it |
+| EDF/EDF+ (`0       ` header and `.edf`), WFDB (`.hea` with signal files) | `SensorSignalFile` | `application/octet-stream` | `samplingRate` and channel labels from the header; `measurementTechnique` `inferred` from channel labels (e.g. `ECG`, `EEG`) |
 | Data dictionary next to tables (`*dictionary*`, `*codebook*`) | `DocumentationFile` | by format | `about` (`inferred`) |
 | Anything else | `GenericFile` | from magic bytes, else `application/octet-stream` | |
 

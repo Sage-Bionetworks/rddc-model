@@ -54,7 +54,7 @@
 <h2>Genomics</h2>
 <p>Whole-genome sequencing for one proband: paired FASTQ reads, a CRAM alignment with its index, and a VCF.</p>
 <ul>
-<li>Every genomics file states its <code>assay</code>, here <code>wgs</code>, from a <a href="vocabularies.html#GenomicsAssayEnum">fixed list</a> mapped to OBI assay terms. <code>platform</code> is optional. Alignments and variants also require <code>referenceGenome</code>.</li>
+<li>Every genomics file states its assay in <code>measurementTechnique</code>, here <code>wgs</code>, from a <a href="vocabularies.html#GenomicsAssayEnum">fixed list</a> mapped to OBI assay terms. <code>platform</code> is optional. Alignments and variants also require <code>referenceGenome</code>.</li>
 <li>Read pairs point to each other with <code>pairedWith</code>; the index points to its alignment with <code>indexOf</code>.</li>
 <li>Gzipped FASTQ and VCF set <code>compression: gzip</code>.</li>
 </ul>
@@ -64,7 +64,7 @@
 
 <h2>Images and video</h2>
 <p>Facial photographs and gait videos contain biometric identifiers. Here, the acquisition table has none, so the batch sets <code>containsBiometricIdentifiers: false</code>. The video overrides it to <code>true</code>. Files with biometric identifiers stay in the trusted research environment.</p>
-<p>The photograph uses <code>FacialImagingFile</code>, which always counts as biometric whatever the batch default, so it does not set the flag; the schema rejects it if it does. Its <code>assay</code> is <code>photography</code>; a 3D facial scan uses the same class with <code>surface_scan_3d</code>, as an OBJ, STL, glTF or PLY model. The acquisition table is a <code>DocumentationFile</code> whose <code>about</code> points to the photograph.</p>
+<p>The photograph uses <code>FacialImagingFile</code>, which always counts as biometric whatever the batch default, so it does not set the flag; the schema rejects it if it does. Its <code>measurementTechnique</code> is <code>photography</code>; a 3D facial scan uses the same class with <code>surface_scan_3d</code>, as an OBJ, STL, glTF or PLY model. The acquisition table is a <code>DocumentationFile</code> whose <code>about</code> points to the photograph.</p>
 <rddc-json src="site/recipes/imaging_media.json" keys="sensitivity,distribution" title="imaging_media.json (excerpt)"></rddc-json>
 
 <h2>Consent</h2>
