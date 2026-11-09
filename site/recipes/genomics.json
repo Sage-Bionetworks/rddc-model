@@ -70,8 +70,8 @@
       "encodingFormat": "application/octet-stream",
       "sha256": "25f7af75032f1d158c22a559258c07818417341667860d3cffac1b8c0d10c216",
       "md5": "14dd9356e1fb20daec1d0fc959b83b19",
+      "assay": "wgs",
       "referenceGenome": "GRCh38",
-      "assay": "WGS",
       "platform": "Illumina NovaSeq X",
       "subjectIds": [
         "P0001"
@@ -104,9 +104,9 @@
       "encodingFormat": "text/plain",
       "sha256": "23f58c124ae15753d8cbf706d2854ab6f3da1f6e2bc4eac66a36cb7accd2b374",
       "md5": "3dab0a6455df73e2e88f7b6dd9bf4a53",
+      "assay": "wgs",
       "compression": "gzip",
       "referenceGenome": "GRCh38",
-      "assay": "WGS",
       "platform": "Illumina NovaSeq X",
       "subjectIds": [
         "P0001"
@@ -122,11 +122,11 @@
       "encodingFormat": "text/plain",
       "sha256": "3be1876c9d7165f0f1c0531f3aa53b439eca600d16876a750c14cac63983f394",
       "md5": "51be022faa6dbdd6cff37dc1c237add8",
+      "assay": "wgs",
       "compression": "gzip",
       "pairedWith": {
         "@id": "urn:uuid:0000a502-0000-4000-8000-00000000a502"
       },
-      "assay": "WGS",
       "platform": "Illumina NovaSeq X",
       "subjectIds": [
         "P0001"
@@ -142,11 +142,11 @@
       "encodingFormat": "text/plain",
       "sha256": "f5f5674bd7bbbea8cf7e70c68fe2bf36e9120f62c3379faf7fbf4395dd1a56dc",
       "md5": "748222296b958ecfecc64202516d68c4",
+      "assay": "wgs",
       "compression": "gzip",
       "pairedWith": {
         "@id": "urn:uuid:0000a501-0000-4000-8000-00000000a501"
       },
-      "assay": "WGS",
       "platform": "Illumina NovaSeq X",
       "subjectIds": [
         "P0001"
