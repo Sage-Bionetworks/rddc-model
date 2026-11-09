@@ -652,6 +652,8 @@ record set sources and keys, and each file's <code>subjectIds</code> (against th
 <code>DocumentationFile</code>s (modality <code>metadata</code>).</li>
 <li><code>withdraw</code> and <code>restrict</code> batches list no data files, and every row of a consent batch has a <code>consentRef</code>.</li>
 <li>File set <code>conformsTo</code> values come from the pinned list (FHIR R4, US Core 6.1, OMOP CDM 5.4, C-CDA 2.1).</li>
+<li>Every FHIR, OMOP and C-CDA file belongs to a file set of its standard, whose <code>conformsTo</code> gives its version.
+A FHIR file's <code>resourceType</code> is a resource type of that FHIR version.</li>
 <li><code>directIdentifiersRemoved</code> is <code>true</code> unless <code>synthetic</code> is <code>true</code>.</li>
 <li>A file of a biometric class (<code>FacialImagingFile</code>) always counts as containing biometric identifiers,
 whatever the batch default. The schema stops the file setting the flag itself.</li>
