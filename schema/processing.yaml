@@ -1,0 +1,965 @@
+id: https://w3id.org/rddc/processing
+name: rddc-processing
+title: RDDC Processing Rules
+version: 0.1.0
+description: >-
+  Processing rules for RDDC batches, the source register entries they read, and the
+  batch state an orchestrator keeps. A rule set says what must happen to the files a
+  sidecar describes: which workflows exist and what they consume and produce, where each
+  kind of file must end up, and which obligations and prohibitions hold on every route.
+
+
+  The orchestrator is the rules engine. Given a sidecar, the source's register entry
+  and the batch state so far (the steps that ran, what they reported and where their
+  output is), it checks the history against the rules and works out the next steps:
+  which workflow to dispatch on which files, with the input locations, where the
+  output goes and the parameters. Most workflows are Cirro processes (Nextflow, WDL on
+  Cromwell, or AWS HealthOmics Ready2Run), run in a Cirro environment on Cirro datasets;
+  others are containers or services.
+
+
+  A rule set pins a model release (modelRelease). Its conditions name data classes,
+  file set classes, techniques, interactions and source register fields and values from
+  that release by name, and scripts/check_rules.py checks that each name exists there.
+  This module does not import the other modules, so a rule set can be read without them.
+
+
+  Rules are evaluated over the state of an item of data: its data class, the standard
+  it conforms to, the zone it is in, and a set of properties (such as dates or free
+  text) derived from the sidecar, the class annotations and the source register. A
+  workflow moves an item from one state to another.
+
+
+  The source register fields and their values here are a DRAFT: the register is kept
+  by the ACT, and the values of deidentificationClass and datePolicy are placeholders
+  until it defines them.
+license: https://creativecommons.org/publicdomain/zero/1.0/
+
+prefixes:
+  rddc: https://w3id.org/rddc/vocab/
+  linkml: https://w3id.org/linkml/
+  sc: https://schema.org/
+  dct: http://purl.org/dc/terms/
+  prov: http://www.w3.org/ns/prov#
+  odrl: http://www.w3.org/ns/odrl/2/
+  dpv: https://w3id.org/dpv#
+  EDAM: http://edamontology.org/
+  DUO: http://purl.obolibrary.org/obo/DUO_
+default_prefix: rddc
+default_range: string
+
+imports:
+- linkml:types
+
+# ---------------------------------------------------------------------------
+# Types
+# ---------------------------------------------------------------------------
+types:
+  Name:
+    uri: xsd:string
+    typeof: string
+    description: "A local name: a letter, then letters, digits and underscores."
+    pattern: "^[A-Za-z][A-Za-z0-9_]*$"
+  ReleaseTag:
+    uri: xsd:string
+    typeof: string
+    description: "A model release tag, v<major>.<minor>.<patch>."
+    pattern: "^v[0-9]+\\.[0-9]+\\.[0-9]+$"
+
+# ---------------------------------------------------------------------------
+# Enumerations
+# ---------------------------------------------------------------------------
+enums:
+  WorkflowKindEnum:
+    description: >-
+      What a workflow does to the data, as far as the rules are concerned. Obligations
+      name a kind that must run.
+    permissible_values:
+      ingest:
+        description: "Brings deposited files into a Cirro environment as a dataset, unchanged."
+      deidentify:
+        description: "Removes identifiers from data of one class; the output has the same class."
+        meaning: dpv:Deidentification
+      transform:
+        description: "Converts data of one class (and standard) to another, e.g. FHIR to OMOP."
+      load:
+        description: "Loads data into a store without changing its class."
+      confirm:
+        description: >-
+          Checks independently that an earlier de-identification worked, and reports any
+          identifiers it finds. Writes no data.
+      mask:
+        description: "Generalises quasi-identifiers such as dates and ZIP codes for release."
+      expert_review:
+        description: "An expert determination of re-identification risk."
+      process:
+        description: "Runs domain processing (QC, analysis) and leaves the data where it is kept."
+      hold:
+        description: "Holds data for a curator to decide what to do with it."
+      publish:
+        description: "Copies data to a release zone."
+      withdraw:
+        description: "Removes the listed subjects' data from every zone it covers."
+      restrict:
+        description: "Restricts use of the listed subjects' data in every zone it covers."
+
+  RunnerEnum:
+    description: "How the orchestrator dispatches a workflow."
+    permissible_values:
+      cirro:
+        description: >-
+          A Cirro process, run in a Cirro environment: an analysis
+          (POST /projects/{projectId}/execution) on the input files' datasets, or, for
+          an INGEST process, an upload (POST /projects/{projectId}/datasets/upload).
+          Its output is a new Cirro dataset.
+      container:
+        description: "A container image run as a batch job, reading and writing storage locations."
+      service:
+        description: "A call to a service, such as GOVERN or an expert determination service."
+
+  CirroExecutorEnum:
+    description: >-
+      How Cirro executes a process: the values of Executor in the Cirro Data API
+      (https://app.cirro.bio/openapi/cirro-data-latest.yml).
+    permissible_values:
+      INGEST:
+        description: "Registers uploaded files as a dataset."
+      NEXTFLOW:
+        description: "A Nextflow pipeline."
+      CROMWELL:
+        description: "A WDL workflow run by Cromwell."
+      OMICS_READY2RUN:
+        description: "An AWS HealthOmics Ready2Run workflow."
+
+  PropertySourceEnum:
+    description: "Where the value of a data property comes from."
+    permissible_values:
+      flag_true:
+        description: "A sensitivity flag that is true, or missing (unknown counts as present)."
+      flag_false:
+        description: "A sensitivity flag that is false, or missing (unknown counts as present)."
+      annotation:
+        description: 'A class annotation set to "true" on the data class.'
+      data_class:
+        description: "The data class itself (or a superclass) is one of the listed classes."
+      register:
+        description: >-
+          A source register field has one of the listed values. A missing field counts
+          as matching.
+      modality_not_registered:
+        description: "The modality of the data class is not one the source is registered for."
+
+  StepStatusEnum:
+    description: >-
+      Where a step of a batch stands. For a Cirro step, the dispatcher maps the output
+      dataset's status: COMPLETED to succeeded; FAILED to failed; PENDING, STARTING,
+      RUNNING and STOPPING to running.
+    permissible_values:
+      succeeded:
+        description: "The step ran and reported its results."
+      running:
+        description: "The step was dispatched and has not finished."
+      failed:
+        description: "The step ran and failed. Its files wait for a person."
+      ready:
+        description: "The step can be dispatched now."
+      pending:
+        description: "The step will run after the steps before it."
+
+  BatchStatusEnum:
+    description: "Where a batch stands."
+    permissible_values:
+      in_progress:
+        description: "Some steps are ready, running or pending."
+      complete:
+        description: "Every file is at its target."
+      blocked:
+        description: "Some files cannot go on (a step failed, or no route from where they are); the rest may still be in progress."
+      stopped:
+        description: "The steps that ran break a rule. Nothing more is dispatched."
+
+  # --- source register (DRAFT values) ----------------------------------------
+  DeidentificationClassEnum:
+    description: "DRAFT. How a source's data was de-identified before deposit."
+    permissible_values:
+      safe_harbor:
+        description: "The contributor removed the HIPAA Safe Harbor direct identifiers."
+      expert_determination:
+        description: "Releases from the source need an expert determination of re-identification risk."
+  DatePolicyEnum:
+    description: "DRAFT. How dates from a source are masked at release."
+    permissible_values:
+      shift:
+        description: "Dates are shifted by a per-person offset."
+      year_only:
+        description: "Dates are reduced to the year."
+  AccessTierEnum:
+    description: "The access tier of a source's data."
+    permissible_values:
+      open:
+        description: "Open tier: may be published outside the security boundary once anonymized."
+      registered:
+        description: "Registered tier (possible future tier)."
+      controlled:
+        description: "Controlled tier (possible future tier)."
+      enclave:
+        description: "Enclave tier: used only inside the trusted research environment."
+
+# ---------------------------------------------------------------------------
+# Classes: rule sets
+# ---------------------------------------------------------------------------
+classes:
+
+  RuleSet:
+    tree_root: true
+    description: >-
+      The processing rules for one model release. A batch is processed under the rule
+      set whose modelRelease matches the version in its sidecar's conformsTo.
+    slots:
+    - id
+    - version
+    - modelRelease
+    - description
+    - properties
+    - standards
+    - zones
+    - workflows
+    - targets
+    - obligations
+    - prohibitions
+    - interactionRules
+    slot_usage:
+      id:
+        range: Name
+        required: true
+      version:
+        required: true
+      modelRelease:
+        required: true
+      standards:
+        range: Standard
+        inlined_as_list: true
+        description: "Standards the rules refer to, in priority order."
+
+  DataProperty:
+    description: >-
+      A property of an item of data that rules test and workflows can set or clear, such
+      as "dates" or "free_text". Its initial value is true if any of its sources says so;
+      a property with no sources starts false and only workflows set it.
+    slots:
+    - id
+    - description
+    - derivedFrom
+    slot_usage:
+      id:
+        range: Name
+        required: true
+
+  PropertySource:
+    description: "One way a data property can be true at deposit."
+    slots:
+    - source
+    - key
+    - classes
+    - anyOf
+    slot_usage:
+      source:
+        required: true
+      key:
+        description: >-
+          The sensitivity flag (flag_true, flag_false), class annotation (annotation) or
+          source register field (register) to read.
+      anyOf:
+        description: "For register: the values that make the property true."
+
+  Standard:
+    description: >-
+      A standard an item can conform to, as the rules refer to it. An item's standard is
+      the first rule set standard (in rule set order) whose URL is in its file set's
+      conformsTo.
+    slots:
+    - id
+    - url
+    - classes
+    - description
+    slot_usage:
+      id:
+        range: Name
+        required: true
+      url:
+        required: true
+      classes:
+        required: true
+        description: "Data classes that can conform to this standard."
+
+  Zone:
+    description: "A place where data sits, such as the deposit prefix, the TRE or a release store."
+    slots:
+    - id
+    - description
+    - insideTre
+    - initial
+    - location
+    - cirroEnvironment
+    slot_usage:
+      id:
+        range: Name
+        required: true
+      insideTre:
+        required: true
+      location:
+        description: >-
+          Where a container or service step writing to this zone puts its output: a
+          template with {sourceId}, {batchId} and {dispatchId}. Not used for the initial
+          zone, whose location is the sidecar's url, or for a Cirro environment zone, where
+          Cirro chooses each dataset's location.
+      cirroEnvironment:
+        description: >-
+          The Cirro environment that holds this zone's data. Only Cirro processes write to
+          such a zone, and Cirro processes other than ingests read only from such zones.
+
+  Workflow:
+    description: >-
+      An existing workflow the orchestrator can dispatch, described by what it consumes,
+      produces and guarantees, not by how it works.
+    slots:
+    - id
+    - description
+    - runner
+    - cirroProcess
+    - cirroExecutor
+    - pipeline
+    - pipelineVersion
+    - kind
+    - operation
+    - consumes
+    - produces
+    - producesStandard
+    - readsFrom
+    - writesTo
+    - sets
+    - clears
+    - coversZones
+    - priority
+    - parameters
+    slot_usage:
+      id:
+        range: Name
+        required: true
+      runner:
+        required: true
+      pipelineVersion:
+        required: true
+      kind:
+        required: true
+      consumes:
+        description: "Items this workflow accepts. Required unless the kind is withdraw or restrict."
+      readsFrom:
+        description: "Zones it reads input from. Required unless the kind is withdraw or restrict."
+      writesTo:
+        description: "The zone it writes output to. Required unless the kind is withdraw or restrict."
+    rules:
+    - description: A Cirro workflow names its process and executor.
+      preconditions:
+        slot_conditions:
+          runner:
+            equals_string: cirro
+      postconditions:
+        slot_conditions:
+          cirroProcess:
+            required: true
+          cirroExecutor:
+            required: true
+    - description: A container or service workflow names its image or endpoint.
+      preconditions:
+        slot_conditions:
+          runner:
+            none_of:
+            - equals_string: cirro
+      postconditions:
+        slot_conditions:
+          pipeline:
+            required: true
+    - description: A workflow that processes files says what it consumes and where it reads and writes.
+      preconditions:
+        slot_conditions:
+          kind:
+            none_of:
+            - equals_string: withdraw
+            - equals_string: restrict
+      postconditions:
+        slot_conditions:
+          consumes:
+            required: true
+          readsFrom:
+            required: true
+          writesTo:
+            required: true
+    - description: A withdraw or restrict workflow lists the zones it covers.
+      preconditions:
+        slot_conditions:
+          kind:
+            any_of:
+            - equals_string: withdraw
+            - equals_string: restrict
+      postconditions:
+        slot_conditions:
+          coversZones:
+            required: true
+
+  Parameter:
+    description: >-
+      A parameter passed to a workflow. Its value is a literal, a field of the sidecar,
+      or a field of the source register, resolved when the step is dispatched. A literal
+      can contain {sourceId}, {batchId} and {dispatchId}, filled in at dispatch.
+    slots:
+    - id
+    - value
+    - fromSidecar
+    - fromSourceRegister
+    slot_usage:
+      id:
+        range: Name
+        required: true
+
+  Condition:
+    description: >-
+      A test on an item in a state. Each slot that is set must match (and); within a
+      slot, any listed value matches (or). An empty condition matches everything.
+    slots:
+    - classes
+    - standards
+    - anyProperties
+    - noProperties
+    - fileSetClasses
+    - techniques
+    - interactions
+    - sourceFacts
+
+  SourceFactTest:
+    description: >-
+      A test on a source register field. The field must have one of anyOf (if given) and
+      none of noneOf. A missing field matches noneOf tests and no anyOf test, so
+      "noneOf: [open]" also catches a source with no tier.
+    slots:
+    - field
+    - anyOf
+    - noneOf
+    slot_usage:
+      field:
+        required: true
+
+  Target:
+    description: >-
+      Where items matching a condition at deposit must end up. Each item gets the
+      matching target with the lowest priority number; two matching targets with the
+      same priority are a conflict. A target can be a deliberate terminal state, such as
+      holding a file in the TRE for a curator.
+    slots:
+    - id
+    - description
+    - when
+    - goalClasses
+    - goalStandard
+    - goalNoProperties
+    - goalZone
+    - priority
+    slot_usage:
+      id:
+        range: Name
+        required: true
+      when:
+        required: true
+      goalZone:
+        required: true
+      priority:
+        required: true
+
+  Obligation:
+    class_uri: odrl:Duty
+    description: >-
+      A duty: an item matching the condition must pass through a workflow of the
+      required kind before it enters one of the zones, or before one of the workflows
+      runs on it. A required-kind workflow discharges the duty only if its output no
+      longer matches the condition.
+    slots:
+    - id
+    - description
+    - when
+    - requiredKind
+    - beforeZones
+    - beforeWorkflows
+    slot_usage:
+      id:
+        range: Name
+        required: true
+      when:
+        required: true
+      requiredKind:
+        required: true
+    any_of:
+    - slot_conditions:
+        beforeZones:
+          required: true
+    - slot_conditions:
+        beforeWorkflows:
+          required: true
+
+  Prohibition:
+    class_uri: odrl:Prohibition
+    description: "An item matching the condition never enters any of the zones."
+    slots:
+    - id
+    - description
+    - when
+    - zones
+    slot_usage:
+      id:
+        range: Name
+        required: true
+      when:
+        required: true
+      zones:
+        range: string
+        required: true
+        description: "Zone ids the item never enters."
+
+  InteractionRule:
+    description: >-
+      The workflow that carries out a batch-level interaction (withdraw, restrict). It
+      must cover every zone that any item can reach.
+    slots:
+    - interaction
+    - workflow
+    slot_usage:
+      interaction:
+        required: true
+      workflow:
+        required: true
+
+  # -------------------------------------------------------------------------
+  # Classes: source register (DRAFT)
+  # -------------------------------------------------------------------------
+
+  SourceRegister:
+    description: >-
+      DRAFT. The source register as the rules read it: one entry per source. The ACT
+      keeps the register; a source's descriptor (SourceDescriptor) carries the subset
+      its contributor needs.
+    slots:
+    - registerVersion
+    - sources
+    slot_usage:
+      registerVersion:
+        required: true
+
+  SourceRegisterEntry:
+    description: "DRAFT. The register's facts about one source that processing rules can read."
+    slots:
+    - sourceId
+    - contributorId
+    - modalities
+    - useTerms
+    - deidentificationClass
+    - datePolicy
+    - accessTier
+    - deliveryRole
+    slot_usage:
+      sourceId:
+        required: true
+        identifier: true
+      contributorId:
+        required: true
+      modalities:
+        required: true
+
+  # -------------------------------------------------------------------------
+  # Classes: batch state
+  # -------------------------------------------------------------------------
+
+  Plan:
+    description: >-
+      The orchestrator's view of one batch: groups of files, each with the steps that
+      ran and the steps still to run, and any batch-level steps. scripts/orchestrate.py
+      writes it; the dispatcher runs the ready steps and records their status and
+      results in it; the next call reads it back as the batch state.
+    slots:
+    - batch
+    - sidecarConformsTo
+    - ruleSet
+    - ruleSetVersion
+    - modelRelease
+    - registerVersion
+    - status
+    - groups
+    - batchSteps
+    - problems
+    slot_usage:
+      batch:
+        required: true
+      ruleSet:
+        required: true
+      ruleSetVersion:
+        required: true
+      modelRelease:
+        required: true
+      status:
+        range: BatchStatusEnum
+        required: true
+
+  PlanGroup:
+    description: >-
+      Files that take the same route: members of one file set (or files outside any
+      file set) with the same steps so far and the same steps to come.
+    slots:
+    - id
+    - fileSet
+    - files
+    - target
+    - steps
+    - problems
+    slot_usage:
+      id:
+        range: Name
+        required: true
+      files:
+        required: true
+      target:
+        required: true
+
+  PlanStep:
+    description: >-
+      One workflow run on the group's files. A ready step carries everything needed to
+      dispatch it.
+    slots:
+    - dispatchId
+    - workflow
+    - status
+    - runner
+    - cirroProcess
+    - cirroExecutor
+    - pipeline
+    - pipelineVersion
+    - cirroEnvironment
+    - inputs
+    - sourceDatasets
+    - outputLocation
+    - parameters
+    - results
+    slot_usage:
+      workflow:
+        required: true
+      status:
+        range: StepStatusEnum
+        required: true
+      runner:
+        required: true
+      pipelineVersion:
+        required: true
+
+  FileLocation:
+    description: "Where a file's current data is, and the Cirro dataset that holds it, if any."
+    slots:
+    - file
+    - location
+    - dataset
+    slot_usage:
+      file:
+        required: true
+      location:
+        required: true
+
+  FileResult:
+    description: >-
+      What a step reported for one input file: where its output is (for a Cirro step,
+      the output dataset and its location), and which data properties the output still
+      has, if the step checked. Reported properties replace the predicted ones.
+    slots:
+    - file
+    - location
+    - dataset
+    - properties
+    slot_usage:
+      file:
+        required: true
+      properties:
+        range: string
+        description: "Data property ids the output has."
+
+# ---------------------------------------------------------------------------
+# Slots
+# ---------------------------------------------------------------------------
+slots:
+  id:
+    identifier: true
+    description: "A local identifier, unique within its list."
+  version:
+    description: "The version of this rule set. Change it whenever the rules change."
+  description:
+    description: "Plain-language description for reviewers."
+  modelRelease:
+    range: ReleaseTag
+    description: "The model release whose classes, flags, fields and enum values the rules name."
+  properties:
+    description: "Data properties the rules test."
+    range: DataProperty
+    multivalued: true
+    inlined_as_list: true
+  derivedFrom:
+    description: "Sources of the property; any one makes it true."
+    range: PropertySource
+    multivalued: true
+    inlined_as_list: true
+  source:
+    description: "The kind of source."
+    range: PropertySourceEnum
+  key:
+    description: "A sensitivity flag, class annotation or source register field name."
+  classes:
+    multivalued: true
+    description: "Data class names from the pinned release. A class matches its subclasses too."
+  standards:
+    multivalued: true
+    description: "Standard ids from this rule set."
+  url:
+    range: uri
+    description: "The standard's URL as sidecars write it in conformsTo."
+  zones:
+    description: "Zones data can be in."
+    range: Zone
+    multivalued: true
+    inlined_as_list: true
+  insideTre:
+    range: boolean
+    description: "Whether the zone is inside the trusted research environment."
+  initial:
+    range: boolean
+    description: "Deposited files start in this zone. Exactly one zone is initial."
+  location:
+    description: "A storage location (URL or URL template)."
+  workflows:
+    description: "The workflow catalog."
+    range: Workflow
+    multivalued: true
+    inlined_as_list: true
+  runner:
+    description: "How the workflow is dispatched."
+    range: RunnerEnum
+  pipeline:
+    description: "For a container, the image; for a service, the endpoint."
+  cirroProcess:
+    description: 'The Cirro process ID (Process.id), e.g. "process-nf-core-rnaseq-3_8".'
+  cirroExecutor:
+    range: CirroExecutorEnum
+    description: "How Cirro executes the process (Process.executor)."
+  cirroEnvironment:
+    description: >-
+      A Cirro environment ID. The Cirro Data API calls an environment a project, so this
+      is the projectId in its paths, e.g. POST /projects/{projectId}/execution.
+  dataset:
+    description: "A Cirro dataset ID."
+  sourceDatasets:
+    multivalued: true
+    description: "The Cirro datasets a Cirro analysis reads (sourceDatasetIds): those of its inputs."
+  pipelineVersion:
+    description: "The workflow version the rules were written against."
+  kind:
+    description: "What the workflow does, for obligations."
+    range: WorkflowKindEnum
+  operation:
+    range: uriorcurie
+    description: "What the workflow does, as an EDAM operation, e.g. EDAM:operation_3283 (Anonymisation)."
+  consumes:
+    description: "Items the workflow accepts."
+    range: Condition
+    inlined: true
+  produces:
+    description: "The data class of the output. Unset: the same class as the input."
+  producesStandard:
+    description: "The standard id of the output. Unset: the same standard as the input."
+  readsFrom:
+    multivalued: true
+    description: "Zone ids."
+  writesTo:
+    description: "Zone id."
+  sets:
+    multivalued: true
+    description: "Data property ids the output has (after clears are applied)."
+  clears:
+    multivalued: true
+    description: "Data property ids the output no longer has."
+  coversZones:
+    multivalued: true
+    description: "Zone ids a withdraw or restrict workflow acts on."
+  priority:
+    range: integer
+    description: "Lower wins. For workflows, breaks ties between equally short routes."
+  parameters:
+    description: "Parameters passed to the workflow."
+    range: Parameter
+    multivalued: true
+    inlined_as_list: true
+  value:
+    description: "A literal parameter value."
+  fromSidecar:
+    description: >-
+      A sidecar field: "batch.<field>" for the sidecar header, or "fileSet.<field>" for
+      the file set the group belongs to.
+  fromSourceRegister:
+    description: "A source register field (SourceRegisterEntry)."
+  anyProperties:
+    multivalued: true
+    description: "Data property ids; the item has at least one."
+  noProperties:
+    multivalued: true
+    description: "Data property ids; the item has none of them."
+  fileSetClasses:
+    multivalued: true
+    description: "File set class names (additionalType of the file set the file belongs to)."
+  techniques:
+    multivalued: true
+    description: "measurementTechnique values; the file declares at least one."
+  interactions:
+    multivalued: true
+    description: "InteractionEnum values of the batch."
+  sourceFacts:
+    description: "Tests on the source's register entry; all must hold."
+    range: SourceFactTest
+    multivalued: true
+    inlined_as_list: true
+  field:
+    description: "A SourceRegisterEntry slot name."
+  anyOf:
+    multivalued: true
+    description: "Values, one of which must be present."
+  noneOf:
+    multivalued: true
+    description: "Values that must not be present."
+  targets:
+    description: "Where each kind of item must end up."
+    range: Target
+    multivalued: true
+    inlined_as_list: true
+  when:
+    description: "The condition the rule applies to, tested on the item."
+    range: Condition
+    inlined: true
+  goalClasses:
+    multivalued: true
+    description: "Data classes the item must end as (subclasses match). Unset: any."
+  goalStandard:
+    description: "Standard id the item must end in. Unset: any."
+  goalZone:
+    description: "Zone id the item must end in."
+  goalNoProperties:
+    multivalued: true
+    description: "Data property ids the item must not have at the end. Unset: any."
+  obligations:
+    description: "Duties that hold on every route."
+    range: Obligation
+    multivalued: true
+    inlined_as_list: true
+  requiredKind:
+    description: "The kind of workflow that discharges the duty."
+    range: WorkflowKindEnum
+  beforeZones:
+    multivalued: true
+    description: "Zone ids."
+  beforeWorkflows:
+    multivalued: true
+    description: "Workflow ids."
+  prohibitions:
+    description: "Zones some items never enter."
+    range: Prohibition
+    multivalued: true
+    inlined_as_list: true
+  interactionRules:
+    description: "Workflows that carry out batch-level interactions."
+    range: InteractionRule
+    multivalued: true
+    inlined_as_list: true
+  interaction:
+    description: "An InteractionEnum value."
+  workflow:
+    description: "A workflow id."
+  registerVersion:
+    description: "The version of the source register."
+  sources:
+    description: "One entry per source."
+    range: SourceRegisterEntry
+    multivalued: true
+    inlined_as_list: true
+  sourceId:
+    description: "The source's identifier, as in sidecars."
+  contributorId:
+    description: "The contributor's identifier, as in sidecars."
+  modalities:
+    multivalued: true
+    description: "ModalityEnum values the source is registered for."
+  useTerms:
+    multivalued: true
+    range: uriorcurie
+    description: "The source's data use terms, as GA4GH DUO terms, e.g. DUO:0000042."
+  deidentificationClass:
+    range: DeidentificationClassEnum
+    description: "How the source's data was de-identified."
+  datePolicy:
+    range: DatePolicyEnum
+    description: "How the source's dates are masked at release."
+  accessTier:
+    range: AccessTierEnum
+    description: "The access tier of the source's data."
+  deliveryRole:
+    description: "The delivery role the source uploads with."
+  batch:
+    description: "The sidecar's name, <sourceId>/<batchId>."
+  sidecarConformsTo:
+    range: uri
+    description: "The sidecar version URI the plan was derived from."
+  ruleSet:
+    description: "The rule set id."
+  ruleSetVersion:
+    description: "The rule set version."
+  status:
+    description: "Where the batch or step stands."
+  groups:
+    description: "Groups of files with their steps."
+    range: PlanGroup
+    multivalued: true
+    inlined_as_list: true
+  batchSteps:
+    range: PlanStep
+    multivalued: true
+    inlined_as_list: true
+    description: "Steps that act on the batch as a whole, such as a withdrawal."
+  problems:
+    multivalued: true
+    description: "Why the batch or group is blocked or stopped."
+  fileSet:
+    description: "The @id of the file set the files belong to, if any."
+  files:
+    multivalued: true
+    description: "@ids of the files."
+  target:
+    description: "The target id."
+  steps:
+    description: "Steps that ran, then steps to run, in order."
+    range: PlanStep
+    multivalued: true
+    inlined_as_list: true
+  dispatchId:
+    description: "Identifies one run of a step. Kept across calls."
+  inputs:
+    description: "Where each input file's current data is."
+    range: FileLocation
+    multivalued: true
+    inlined_as_list: true
+  outputLocation:
+    description: "Where a container or service step writes its output. A Cirro step's output location is its new dataset's."
+  results:
+    description: "What the step reported for each file (filled in by the dispatcher)."
+    range: FileResult
+    multivalued: true
+    inlined_as_list: true
+  file:
+    description: "The @id of a data file in the sidecar."

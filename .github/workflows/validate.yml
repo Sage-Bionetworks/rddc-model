@@ -20,9 +20,9 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install LinkML and mlcroissant
+      - name: Install LinkML, mlcroissant and clingo
         # mlcroissant 1.1.1 is the version schema/croissant-1.1-context.json is vendored from.
-        run: pip install "linkml==1.11.1" "mlcroissant==1.1.1"
+        run: pip install "linkml==1.11.1" "mlcroissant==1.1.1" "clingo==5.8.3"
 
       - name: Collect schema files
         id: files
@@ -85,6 +85,12 @@ jobs:
 
       - name: Build the documentation site (checks the recipes and data file examples)
         run: python scripts/build_site.py "$RUNNER_TEMP/site"
+
+      - name: Check the processing rules (names, verification properties, seeded broken rules)
+        run: python scripts/check_rules.py rules/rules.yaml
+
+      - name: Check the orchestrator on the example sidecars and batch states
+        run: python scripts/check_orchestration.py
 
   release:
     needs: validate

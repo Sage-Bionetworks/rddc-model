@@ -1,0 +1,128 @@
+{
+  "batch": "src-ta2-01/2026-10-b01",
+  "sidecarConformsTo": "https://w3id.org/rddc/sidecar/0.1.0",
+  "ruleSet": "rddc_rules",
+  "ruleSetVersion": "0.3.0-draft",
+  "modelRelease": "v0.1.0",
+  "registerVersion": "2026-10-20",
+  "groups": [
+    {
+      "id": "fhir_export_fhir_to_omop",
+      "files": [
+        "urn:uuid:0000000b-0000-4000-8000-00000000000b",
+        "urn:uuid:0000000a-0000-4000-8000-00000000000a"
+      ],
+      "target": "fhir_to_omop",
+      "steps": [
+        {
+          "workflow": "ingest_files",
+          "status": "ready",
+          "runner": "cirro",
+          "cirroProcess": "process-rddc-provisional-ingest-files-0_0",
+          "cirroExecutor": "INGEST",
+          "pipelineVersion": "0.0.0",
+          "dispatchId": "ingest_files-6f846f9d6f",
+          "cirroEnvironment": "provisional-rddc-tre",
+          "inputs": [
+            {
+              "file": "urn:uuid:0000000b-0000-4000-8000-00000000000b",
+              "location": "s3://rddc-deposit-ta2/src-ta2-01/2026-10-b01/fhir/Observation.ndjson.gz"
+            },
+            {
+              "file": "urn:uuid:0000000a-0000-4000-8000-00000000000a",
+              "location": "s3://rddc-deposit-ta2/src-ta2-01/2026-10-b01/fhir/Patient.ndjson"
+            }
+          ]
+        },
+        {
+          "workflow": "fhir_to_omop",
+          "status": "pending",
+          "runner": "cirro",
+          "cirroProcess": "process-rddc-provisional-fhir-to-omop-0_0",
+          "cirroExecutor": "NEXTFLOW",
+          "pipelineVersion": "0.0.0"
+        }
+      ],
+      "fileSet": "fhir_export"
+    },
+    {
+      "id": "omop_omop_load",
+      "files": [
+        "urn:uuid:00000015-0000-4000-8000-000000000015",
+        "urn:uuid:00000014-0000-4000-8000-000000000014"
+      ],
+      "target": "omop_load",
+      "steps": [
+        {
+          "workflow": "ingest_files",
+          "status": "ready",
+          "runner": "cirro",
+          "cirroProcess": "process-rddc-provisional-ingest-files-0_0",
+          "cirroExecutor": "INGEST",
+          "pipelineVersion": "0.0.0",
+          "dispatchId": "ingest_files-3400b04f05",
+          "cirroEnvironment": "provisional-rddc-tre",
+          "inputs": [
+            {
+              "file": "urn:uuid:00000015-0000-4000-8000-000000000015",
+              "location": "s3://rddc-deposit-ta2/src-ta2-01/2026-10-b01/omop/observation_period.csv"
+            },
+            {
+              "file": "urn:uuid:00000014-0000-4000-8000-000000000014",
+              "location": "s3://rddc-deposit-ta2/src-ta2-01/2026-10-b01/omop/person.csv"
+            }
+          ]
+        },
+        {
+          "workflow": "omop_load",
+          "status": "pending",
+          "runner": "cirro",
+          "cirroProcess": "process-rddc-provisional-omop-load-0_0",
+          "cirroExecutor": "NEXTFLOW",
+          "pipelineVersion": "0.0.0"
+        }
+      ],
+      "fileSet": "omop"
+    },
+    {
+      "id": "registry_tables_and_text",
+      "files": [
+        "urn:uuid:0000001e-0000-4000-8000-00000000001e",
+        "urn:uuid:0000001f-0000-4000-8000-00000000001f"
+      ],
+      "target": "tables_and_text",
+      "steps": [
+        {
+          "workflow": "ingest_files",
+          "status": "ready",
+          "runner": "cirro",
+          "cirroProcess": "process-rddc-provisional-ingest-files-0_0",
+          "cirroExecutor": "INGEST",
+          "pipelineVersion": "0.0.0",
+          "dispatchId": "ingest_files-640299868c",
+          "cirroEnvironment": "provisional-rddc-tre",
+          "inputs": [
+            {
+              "file": "urn:uuid:0000001e-0000-4000-8000-00000000001e",
+              "location": "s3://rddc-deposit-ta2/src-ta2-01/2026-10-b01/registry/patients.csv"
+            },
+            {
+              "file": "urn:uuid:0000001f-0000-4000-8000-00000000001f",
+              "location": "s3://rddc-deposit-ta2/src-ta2-01/2026-10-b01/registry/visits.csv"
+            }
+          ]
+        },
+        {
+          "workflow": "tabular_load",
+          "status": "pending",
+          "runner": "cirro",
+          "cirroProcess": "process-rddc-provisional-tabular-load-0_0",
+          "cirroExecutor": "NEXTFLOW",
+          "pipelineVersion": "0.0.0"
+        }
+      ],
+      "fileSet": "registry"
+    }
+  ],
+  "status": "in_progress"
+}

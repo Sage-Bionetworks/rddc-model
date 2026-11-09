@@ -1,0 +1,55 @@
+{
+  "batch": "src-ta2-01/2026-12-ccda",
+  "sidecarConformsTo": "https://w3id.org/rddc/sidecar/0.1.0",
+  "ruleSet": "rddc_rules",
+  "ruleSetVersion": "0.3.0-draft",
+  "modelRelease": "v0.1.0",
+  "registerVersion": "2026-10-20",
+  "groups": [
+    {
+      "id": "ccda_ccda",
+      "files": [
+        "urn:uuid:00000029-0000-4000-8000-000000000029",
+        "urn:uuid:0000002a-0000-4000-8000-00000000002a",
+        "urn:uuid:0000002b-0000-4000-8000-00000000002b"
+      ],
+      "target": "ccda",
+      "steps": [
+        {
+          "workflow": "ingest_files",
+          "status": "ready",
+          "runner": "cirro",
+          "cirroProcess": "process-rddc-provisional-ingest-files-0_0",
+          "cirroExecutor": "INGEST",
+          "pipelineVersion": "0.0.0",
+          "dispatchId": "ingest_files-3a23f33884",
+          "cirroEnvironment": "provisional-rddc-tre",
+          "inputs": [
+            {
+              "file": "urn:uuid:00000029-0000-4000-8000-000000000029",
+              "location": "s3://rddc-deposit-ta2/src-ta2-01/2026-12-ccda/ccda/0000/doc_0000001.xml"
+            },
+            {
+              "file": "urn:uuid:0000002a-0000-4000-8000-00000000002a",
+              "location": "s3://rddc-deposit-ta2/src-ta2-01/2026-12-ccda/ccda/0000/doc_0000002.xml"
+            },
+            {
+              "file": "urn:uuid:0000002b-0000-4000-8000-00000000002b",
+              "location": "s3://rddc-deposit-ta2/src-ta2-01/2026-12-ccda/ccda/0000/doc_0000003.xml"
+            }
+          ]
+        },
+        {
+          "workflow": "ccda_to_omop",
+          "status": "pending",
+          "runner": "cirro",
+          "cirroProcess": "process-rddc-provisional-ccda-to-omop-0_0",
+          "cirroExecutor": "CROMWELL",
+          "pipelineVersion": "0.0.0"
+        }
+      ],
+      "fileSet": "ccda"
+    }
+  ],
+  "status": "in_progress"
+}

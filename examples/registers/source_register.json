@@ -1,0 +1,14 @@
+{
+  "registerVersion": "2026-10-20",
+  "sources": [
+    {
+      "sourceId": "src-ta2-01",
+      "contributorId": "ta2-site-a",
+      "modalities": ["clinical_fhir", "clinical_omop", "clinical_tabular", "clinical_ccda"],
+      "useTerms": ["DUO:0000042"],
+      "deidentificationClass": "safe_harbor",
+      "datePolicy": "shift",
+      "accessTier": "enclave"
+    }
+  ]
+}

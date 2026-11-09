@@ -11,21 +11,29 @@ schema: context
 	gen-shacl schema/data.yaml > schema/generated/data.shacl.ttl
 	gen-json-schema --closed $(SCHEMA) > schema/generated/rddc_sidecar.schema.json
 	gen-json-schema --closed --top-class SourceDescriptor $(SCHEMA) > schema/generated/rddc_source_descriptor.schema.json
+	gen-json-schema --closed --top-class RuleSet schema/processing.yaml > schema/generated/rddc_processing_rules.schema.json
+	gen-json-schema --closed --top-class Plan schema/processing.yaml > schema/generated/rddc_plan.schema.json
+	gen-json-schema --closed --top-class SourceRegister schema/processing.yaml > schema/generated/rddc_source_register.schema.json
 
 context:
 	python3 scripts/build_context.py $(SCHEMA) schema/croissant-1.1-context.json \
 		schema/generated/rddc_sidecar.context.jsonld examples/*.json
 
 # Example sidecars and data file objects, plus mutations of them that must fail.
+# Processing rules: names and verification properties (with seeded broken rules), and
+# the orchestrator on the examples (routes, batch states, dispatch). Needs clingo.
 check:
 	python3 scripts/check_data_files.py schema/data.yaml
 	$(CROISSANT_PY) scripts/check_examples.py
+	python3 scripts/check_rules.py rules/rules.yaml
+	python3 scripts/check_orchestration.py
 
 lint:
 	linkml-lint --config .linkml-lint.yaml header.yaml
 	linkml-lint --config .linkml-lint.yaml schema/core.yaml
 	linkml-lint --config .linkml-lint.yaml schema/data.yaml
 	linkml-lint --config .linkml-lint.yaml $(SCHEMA)
+	linkml-lint --config .linkml-lint.yaml schema/processing.yaml
 	python3 scripts/check_structure.py schema/data.yaml
 
 # Documentation site into site/dist, including the data class pages; checks the

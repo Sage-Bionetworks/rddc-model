@@ -1,0 +1,1521 @@
+{
+    "$defs": {
+        "AccessTierEnum": {
+            "description": "The access tier of a source's data.",
+            "enum": [
+                "open",
+                "registered",
+                "controlled",
+                "enclave"
+            ],
+            "title": "AccessTierEnum",
+            "type": "string"
+        },
+        "BatchStatusEnum": {
+            "description": "Where a batch stands.",
+            "enum": [
+                "in_progress",
+                "complete",
+                "blocked",
+                "stopped"
+            ],
+            "title": "BatchStatusEnum",
+            "type": "string"
+        },
+        "CirroExecutorEnum": {
+            "description": "How Cirro executes a process: the values of Executor in the Cirro Data API (https://app.cirro.bio/openapi/cirro-data-latest.yml).",
+            "enum": [
+                "INGEST",
+                "NEXTFLOW",
+                "CROMWELL",
+                "OMICS_READY2RUN"
+            ],
+            "title": "CirroExecutorEnum",
+            "type": "string"
+        },
+        "Condition": {
+            "additionalProperties": false,
+            "description": "A test on an item in a state. Each slot that is set must match (and); within a slot, any listed value matches (or). An empty condition matches everything.",
+            "properties": {
+                "anyProperties": {
+                    "description": "Data property ids; the item has at least one.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "classes": {
+                    "description": "Data class names from the pinned release. A class matches its subclasses too.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "fileSetClasses": {
+                    "description": "File set class names (additionalType of the file set the file belongs to).",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "interactions": {
+                    "description": "InteractionEnum values of the batch.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "noProperties": {
+                    "description": "Data property ids; the item has none of them.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "sourceFacts": {
+                    "description": "Tests on the source's register entry; all must hold.",
+                    "items": {
+                        "$ref": "#/$defs/SourceFactTest"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "standards": {
+                    "description": "Standard ids from this rule set.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "techniques": {
+                    "description": "measurementTechnique values; the file declares at least one.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "title": "Condition",
+            "type": "object"
+        },
+        "DataProperty": {
+            "additionalProperties": false,
+            "description": "A property of an item of data that rules test and workflows can set or clear, such as \"dates\" or \"free_text\". Its initial value is true if any of its sources says so; a property with no sources starts false and only workflows set it.",
+            "properties": {
+                "derivedFrom": {
+                    "description": "Sources of the property; any one makes it true.",
+                    "items": {
+                        "$ref": "#/$defs/PropertySource"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "description": {
+                    "description": "Plain-language description for reviewers.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "id": {
+                    "description": "A local identifier, unique within its list.",
+                    "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "id"
+            ],
+            "title": "DataProperty",
+            "type": "object"
+        },
+        "DatePolicyEnum": {
+            "description": "DRAFT. How dates from a source are masked at release.",
+            "enum": [
+                "shift",
+                "year_only"
+            ],
+            "title": "DatePolicyEnum",
+            "type": "string"
+        },
+        "DeidentificationClassEnum": {
+            "description": "DRAFT. How a source's data was de-identified before deposit.",
+            "enum": [
+                "safe_harbor",
+                "expert_determination"
+            ],
+            "title": "DeidentificationClassEnum",
+            "type": "string"
+        },
+        "FileLocation": {
+            "additionalProperties": false,
+            "description": "Where a file's current data is, and the Cirro dataset that holds it, if any.",
+            "properties": {
+                "dataset": {
+                    "description": "A Cirro dataset ID.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "file": {
+                    "description": "The @id of a data file in the sidecar.",
+                    "type": "string"
+                },
+                "location": {
+                    "description": "A storage location (URL or URL template).",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "file",
+                "location"
+            ],
+            "title": "FileLocation",
+            "type": "object"
+        },
+        "FileResult": {
+            "additionalProperties": false,
+            "description": "What a step reported for one input file: where its output is (for a Cirro step, the output dataset and its location), and which data properties the output still has, if the step checked. Reported properties replace the predicted ones.",
+            "properties": {
+                "dataset": {
+                    "description": "A Cirro dataset ID.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "file": {
+                    "description": "The @id of a data file in the sidecar.",
+                    "type": "string"
+                },
+                "location": {
+                    "description": "A storage location (URL or URL template).",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "properties": {
+                    "description": "Data property ids the output has.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "file"
+            ],
+            "title": "FileResult",
+            "type": "object"
+        },
+        "InteractionRule": {
+            "additionalProperties": false,
+            "description": "The workflow that carries out a batch-level interaction (withdraw, restrict). It must cover every zone that any item can reach.",
+            "properties": {
+                "interaction": {
+                    "description": "An InteractionEnum value.",
+                    "type": "string"
+                },
+                "workflow": {
+                    "description": "A workflow id.",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "interaction",
+                "workflow"
+            ],
+            "title": "InteractionRule",
+            "type": "object"
+        },
+        "Obligation": {
+            "additionalProperties": false,
+            "anyOf": [
+                {
+                    "properties": {
+                        "beforeZones": {
+                            "items": {},
+                            "type": "array"
+                        }
+                    },
+                    "required": [
+                        "beforeZones"
+                    ]
+                },
+                {
+                    "properties": {
+                        "beforeWorkflows": {
+                            "items": {},
+                            "type": "array"
+                        }
+                    },
+                    "required": [
+                        "beforeWorkflows"
+                    ]
+                }
+            ],
+            "description": "A duty: an item matching the condition must pass through a workflow of the required kind before it enters one of the zones, or before one of the workflows runs on it. A required-kind workflow discharges the duty only if its output no longer matches the condition.",
+            "properties": {
+                "beforeWorkflows": {
+                    "description": "Workflow ids.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "beforeZones": {
+                    "description": "Zone ids.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "description": {
+                    "description": "Plain-language description for reviewers.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "id": {
+                    "description": "A local identifier, unique within its list.",
+                    "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+                    "type": "string"
+                },
+                "requiredKind": {
+                    "$ref": "#/$defs/WorkflowKindEnum",
+                    "description": "The kind of workflow that discharges the duty."
+                },
+                "when": {
+                    "$ref": "#/$defs/Condition",
+                    "description": "The condition the rule applies to, tested on the item."
+                }
+            },
+            "required": [
+                "id",
+                "when",
+                "requiredKind"
+            ],
+            "title": "Obligation",
+            "type": "object"
+        },
+        "Parameter": {
+            "additionalProperties": false,
+            "description": "A parameter passed to a workflow. Its value is a literal, a field of the sidecar, or a field of the source register, resolved when the step is dispatched. A literal can contain {sourceId}, {batchId} and {dispatchId}, filled in at dispatch.",
+            "properties": {
+                "fromSidecar": {
+                    "description": "A sidecar field: \"batch.<field>\" for the sidecar header, or \"fileSet.<field>\" for the file set the group belongs to.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "fromSourceRegister": {
+                    "description": "A source register field (SourceRegisterEntry).",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "id": {
+                    "description": "A local identifier, unique within its list.",
+                    "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+                    "type": "string"
+                },
+                "value": {
+                    "description": "A literal parameter value.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "id"
+            ],
+            "title": "Parameter",
+            "type": "object"
+        },
+        "Plan": {
+            "additionalProperties": false,
+            "description": "The orchestrator's view of one batch: groups of files, each with the steps that ran and the steps still to run, and any batch-level steps. scripts/orchestrate.py writes it; the dispatcher runs the ready steps and records their status and results in it; the next call reads it back as the batch state.",
+            "properties": {
+                "batch": {
+                    "description": "The sidecar's name, <sourceId>/<batchId>.",
+                    "type": "string"
+                },
+                "batchSteps": {
+                    "description": "Steps that act on the batch as a whole, such as a withdrawal.",
+                    "items": {
+                        "$ref": "#/$defs/PlanStep"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "groups": {
+                    "description": "Groups of files with their steps.",
+                    "items": {
+                        "$ref": "#/$defs/PlanGroup"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "modelRelease": {
+                    "description": "The model release whose classes, flags, fields and enum values the rules name.",
+                    "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+$",
+                    "type": "string"
+                },
+                "problems": {
+                    "description": "Why the batch or group is blocked or stopped.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "registerVersion": {
+                    "description": "The version of the source register.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "ruleSet": {
+                    "description": "The rule set id.",
+                    "type": "string"
+                },
+                "ruleSetVersion": {
+                    "description": "The rule set version.",
+                    "type": "string"
+                },
+                "sidecarConformsTo": {
+                    "description": "The sidecar version URI the plan was derived from.",
+                    "format": "uri",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "status": {
+                    "$ref": "#/$defs/BatchStatusEnum",
+                    "description": "Where the batch or step stands."
+                }
+            },
+            "required": [
+                "batch",
+                "ruleSet",
+                "ruleSetVersion",
+                "modelRelease",
+                "status"
+            ],
+            "title": "Plan",
+            "type": "object"
+        },
+        "PlanGroup": {
+            "additionalProperties": false,
+            "description": "Files that take the same route: members of one file set (or files outside any file set) with the same steps so far and the same steps to come.",
+            "properties": {
+                "fileSet": {
+                    "description": "The @id of the file set the files belong to, if any.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "files": {
+                    "description": "@ids of the files.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "id": {
+                    "description": "A local identifier, unique within its list.",
+                    "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+                    "type": "string"
+                },
+                "problems": {
+                    "description": "Why the batch or group is blocked or stopped.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "steps": {
+                    "description": "Steps that ran, then steps to run, in order.",
+                    "items": {
+                        "$ref": "#/$defs/PlanStep"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "target": {
+                    "description": "The target id.",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "id",
+                "files",
+                "target"
+            ],
+            "title": "PlanGroup",
+            "type": "object"
+        },
+        "PlanStep": {
+            "additionalProperties": false,
+            "description": "One workflow run on the group's files. A ready step carries everything needed to dispatch it.",
+            "properties": {
+                "cirroEnvironment": {
+                    "description": "A Cirro environment ID. The Cirro Data API calls an environment a project, so this is the projectId in its paths, e.g. POST /projects/{projectId}/execution.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "cirroExecutor": {
+                    "$ref": "#/$defs/CirroExecutorEnum",
+                    "description": "How Cirro executes the process (Process.executor)."
+                },
+                "cirroProcess": {
+                    "description": "The Cirro process ID (Process.id), e.g. \"process-nf-core-rnaseq-3_8\".",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "dispatchId": {
+                    "description": "Identifies one run of a step. Kept across calls.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "inputs": {
+                    "description": "Where each input file's current data is.",
+                    "items": {
+                        "$ref": "#/$defs/FileLocation"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "outputLocation": {
+                    "description": "Where a container or service step writes its output. A Cirro step's output location is its new dataset's.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "parameters": {
+                    "description": "Parameters passed to the workflow.",
+                    "items": {
+                        "$ref": "#/$defs/Parameter"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "pipeline": {
+                    "description": "For a container, the image; for a service, the endpoint.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "pipelineVersion": {
+                    "description": "The workflow version the rules were written against.",
+                    "type": "string"
+                },
+                "results": {
+                    "description": "What the step reported for each file (filled in by the dispatcher).",
+                    "items": {
+                        "$ref": "#/$defs/FileResult"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "runner": {
+                    "$ref": "#/$defs/RunnerEnum",
+                    "description": "How the workflow is dispatched."
+                },
+                "sourceDatasets": {
+                    "description": "The Cirro datasets a Cirro analysis reads (sourceDatasetIds): those of its inputs.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "status": {
+                    "$ref": "#/$defs/StepStatusEnum",
+                    "description": "Where the batch or step stands."
+                },
+                "workflow": {
+                    "description": "A workflow id.",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "workflow",
+                "status",
+                "runner",
+                "pipelineVersion"
+            ],
+            "title": "PlanStep",
+            "type": "object"
+        },
+        "Prohibition": {
+            "additionalProperties": false,
+            "description": "An item matching the condition never enters any of the zones.",
+            "properties": {
+                "description": {
+                    "description": "Plain-language description for reviewers.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "id": {
+                    "description": "A local identifier, unique within its list.",
+                    "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+                    "type": "string"
+                },
+                "when": {
+                    "$ref": "#/$defs/Condition",
+                    "description": "The condition the rule applies to, tested on the item."
+                },
+                "zones": {
+                    "description": "Zone ids the item never enters.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                }
+            },
+            "required": [
+                "id",
+                "when",
+                "zones"
+            ],
+            "title": "Prohibition",
+            "type": "object"
+        },
+        "PropertySource": {
+            "additionalProperties": false,
+            "description": "One way a data property can be true at deposit.",
+            "properties": {
+                "anyOf": {
+                    "description": "For register: the values that make the property true.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "classes": {
+                    "description": "Data class names from the pinned release. A class matches its subclasses too.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "key": {
+                    "description": "The sensitivity flag (flag_true, flag_false), class annotation (annotation) or source register field (register) to read.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "source": {
+                    "$ref": "#/$defs/PropertySourceEnum",
+                    "description": "The kind of source."
+                }
+            },
+            "required": [
+                "source"
+            ],
+            "title": "PropertySource",
+            "type": "object"
+        },
+        "PropertySourceEnum": {
+            "description": "Where the value of a data property comes from.",
+            "enum": [
+                "flag_true",
+                "flag_false",
+                "annotation",
+                "data_class",
+                "register",
+                "modality_not_registered"
+            ],
+            "title": "PropertySourceEnum",
+            "type": "string"
+        },
+        "RuleSet": {
+            "additionalProperties": false,
+            "description": "The processing rules for one model release. A batch is processed under the rule set whose modelRelease matches the version in its sidecar's conformsTo.",
+            "properties": {
+                "description": {
+                    "description": "Plain-language description for reviewers.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "id": {
+                    "description": "A local identifier, unique within its list.",
+                    "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+                    "type": "string"
+                },
+                "interactionRules": {
+                    "description": "Workflows that carry out batch-level interactions.",
+                    "items": {
+                        "$ref": "#/$defs/InteractionRule"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "modelRelease": {
+                    "description": "The model release whose classes, flags, fields and enum values the rules name.",
+                    "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+$",
+                    "type": "string"
+                },
+                "obligations": {
+                    "description": "Duties that hold on every route.",
+                    "items": {
+                        "$ref": "#/$defs/Obligation"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "prohibitions": {
+                    "description": "Zones some items never enter.",
+                    "items": {
+                        "$ref": "#/$defs/Prohibition"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "properties": {
+                    "description": "Data properties the rules test.",
+                    "items": {
+                        "$ref": "#/$defs/DataProperty"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "standards": {
+                    "description": "Standards the rules refer to, in priority order.",
+                    "items": {
+                        "$ref": "#/$defs/Standard"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "targets": {
+                    "description": "Where each kind of item must end up.",
+                    "items": {
+                        "$ref": "#/$defs/Target"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "version": {
+                    "description": "The version of this rule set. Change it whenever the rules change.",
+                    "type": "string"
+                },
+                "workflows": {
+                    "description": "The workflow catalog.",
+                    "items": {
+                        "$ref": "#/$defs/Workflow"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "zones": {
+                    "description": "Zones data can be in.",
+                    "items": {
+                        "$ref": "#/$defs/Zone"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "id",
+                "version",
+                "modelRelease"
+            ],
+            "title": "RuleSet",
+            "type": "object"
+        },
+        "RunnerEnum": {
+            "description": "How the orchestrator dispatches a workflow.",
+            "enum": [
+                "cirro",
+                "container",
+                "service"
+            ],
+            "title": "RunnerEnum",
+            "type": "string"
+        },
+        "SourceFactTest": {
+            "additionalProperties": false,
+            "description": "A test on a source register field. The field must have one of anyOf (if given) and none of noneOf. A missing field matches noneOf tests and no anyOf test, so \"noneOf: [open]\" also catches a source with no tier.",
+            "properties": {
+                "anyOf": {
+                    "description": "Values, one of which must be present.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "field": {
+                    "description": "A SourceRegisterEntry slot name.",
+                    "type": "string"
+                },
+                "noneOf": {
+                    "description": "Values that must not be present.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "field"
+            ],
+            "title": "SourceFactTest",
+            "type": "object"
+        },
+        "SourceRegister": {
+            "additionalProperties": false,
+            "description": "DRAFT. The source register as the rules read it: one entry per source. The ACT keeps the register; a source's descriptor (SourceDescriptor) carries the subset its contributor needs.",
+            "properties": {
+                "registerVersion": {
+                    "description": "The version of the source register.",
+                    "type": "string"
+                },
+                "sources": {
+                    "description": "One entry per source.",
+                    "items": {
+                        "$ref": "#/$defs/SourceRegisterEntry"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "registerVersion"
+            ],
+            "title": "SourceRegister",
+            "type": "object"
+        },
+        "SourceRegisterEntry": {
+            "additionalProperties": false,
+            "description": "DRAFT. The register's facts about one source that processing rules can read.",
+            "properties": {
+                "accessTier": {
+                    "$ref": "#/$defs/AccessTierEnum",
+                    "description": "The access tier of the source's data."
+                },
+                "contributorId": {
+                    "description": "The contributor's identifier, as in sidecars.",
+                    "type": "string"
+                },
+                "datePolicy": {
+                    "$ref": "#/$defs/DatePolicyEnum",
+                    "description": "How the source's dates are masked at release."
+                },
+                "deidentificationClass": {
+                    "$ref": "#/$defs/DeidentificationClassEnum",
+                    "description": "How the source's data was de-identified."
+                },
+                "deliveryRole": {
+                    "description": "The delivery role the source uploads with.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "modalities": {
+                    "description": "ModalityEnum values the source is registered for.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "sourceId": {
+                    "description": "The source's identifier, as in sidecars.",
+                    "type": "string"
+                },
+                "useTerms": {
+                    "description": "The source's data use terms, as GA4GH DUO terms, e.g. DUO:0000042.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "sourceId",
+                "contributorId",
+                "modalities"
+            ],
+            "title": "SourceRegisterEntry",
+            "type": "object"
+        },
+        "Standard": {
+            "additionalProperties": false,
+            "description": "A standard an item can conform to, as the rules refer to it. An item's standard is the first rule set standard (in rule set order) whose URL is in its file set's conformsTo.",
+            "properties": {
+                "classes": {
+                    "description": "Data classes that can conform to this standard.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "description": {
+                    "description": "Plain-language description for reviewers.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "id": {
+                    "description": "A local identifier, unique within its list.",
+                    "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+                    "type": "string"
+                },
+                "url": {
+                    "description": "The standard's URL as sidecars write it in conformsTo.",
+                    "format": "uri",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "id",
+                "url",
+                "classes"
+            ],
+            "title": "Standard",
+            "type": "object"
+        },
+        "StepStatusEnum": {
+            "description": "Where a step of a batch stands. For a Cirro step, the dispatcher maps the output dataset's status: COMPLETED to succeeded; FAILED to failed; PENDING, STARTING, RUNNING and STOPPING to running.",
+            "enum": [
+                "succeeded",
+                "running",
+                "failed",
+                "ready",
+                "pending"
+            ],
+            "title": "StepStatusEnum",
+            "type": "string"
+        },
+        "Target": {
+            "additionalProperties": false,
+            "description": "Where items matching a condition at deposit must end up. Each item gets the matching target with the lowest priority number; two matching targets with the same priority are a conflict. A target can be a deliberate terminal state, such as holding a file in the TRE for a curator.",
+            "properties": {
+                "description": {
+                    "description": "Plain-language description for reviewers.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "goalClasses": {
+                    "description": "Data classes the item must end as (subclasses match). Unset: any.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "goalNoProperties": {
+                    "description": "Data property ids the item must not have at the end. Unset: any.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "goalStandard": {
+                    "description": "Standard id the item must end in. Unset: any.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "goalZone": {
+                    "description": "Zone id the item must end in.",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "A local identifier, unique within its list.",
+                    "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+                    "type": "string"
+                },
+                "priority": {
+                    "description": "Lower wins. For workflows, breaks ties between equally short routes.",
+                    "type": "integer"
+                },
+                "when": {
+                    "$ref": "#/$defs/Condition",
+                    "description": "The condition the rule applies to, tested on the item."
+                }
+            },
+            "required": [
+                "id",
+                "when",
+                "goalZone",
+                "priority"
+            ],
+            "title": "Target",
+            "type": "object"
+        },
+        "Workflow": {
+            "additionalProperties": false,
+            "allOf": [
+                {
+                    "if": {
+                        "properties": {
+                            "runner": {
+                                "const": "cirro"
+                            }
+                        },
+                        "required": [
+                            "runner"
+                        ]
+                    },
+                    "then": {
+                        "properties": {
+                            "cirroExecutor": {},
+                            "cirroProcess": {}
+                        },
+                        "required": [
+                            "cirroProcess",
+                            "cirroExecutor"
+                        ]
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "runner": {
+                                "not": {
+                                    "anyOf": [
+                                        {
+                                            "const": "cirro"
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        "required": [
+                            "runner"
+                        ]
+                    },
+                    "then": {
+                        "properties": {
+                            "pipeline": {}
+                        },
+                        "required": [
+                            "pipeline"
+                        ]
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "kind": {
+                                "not": {
+                                    "anyOf": [
+                                        {
+                                            "const": "withdraw"
+                                        },
+                                        {
+                                            "const": "restrict"
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        "required": [
+                            "kind"
+                        ]
+                    },
+                    "then": {
+                        "properties": {
+                            "consumes": {},
+                            "readsFrom": {
+                                "items": {},
+                                "type": "array"
+                            },
+                            "writesTo": {}
+                        },
+                        "required": [
+                            "consumes",
+                            "readsFrom",
+                            "writesTo"
+                        ]
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "kind": {
+                                "anyOf": [
+                                    {
+                                        "const": "withdraw"
+                                    },
+                                    {
+                                        "const": "restrict"
+                                    }
+                                ]
+                            }
+                        },
+                        "required": [
+                            "kind"
+                        ]
+                    },
+                    "then": {
+                        "properties": {
+                            "coversZones": {
+                                "items": {},
+                                "type": "array"
+                            }
+                        },
+                        "required": [
+                            "coversZones"
+                        ]
+                    }
+                }
+            ],
+            "description": "An existing workflow the orchestrator can dispatch, described by what it consumes, produces and guarantees, not by how it works.",
+            "properties": {
+                "cirroExecutor": {
+                    "$ref": "#/$defs/CirroExecutorEnum",
+                    "description": "How Cirro executes the process (Process.executor)."
+                },
+                "cirroProcess": {
+                    "description": "The Cirro process ID (Process.id), e.g. \"process-nf-core-rnaseq-3_8\".",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "clears": {
+                    "description": "Data property ids the output no longer has.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "consumes": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/Condition"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Items this workflow accepts. Required unless the kind is withdraw or restrict."
+                },
+                "coversZones": {
+                    "description": "Zone ids a withdraw or restrict workflow acts on.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "description": {
+                    "description": "Plain-language description for reviewers.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "id": {
+                    "description": "A local identifier, unique within its list.",
+                    "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+                    "type": "string"
+                },
+                "kind": {
+                    "$ref": "#/$defs/WorkflowKindEnum",
+                    "description": "What the workflow does, for obligations."
+                },
+                "operation": {
+                    "description": "What the workflow does, as an EDAM operation, e.g. EDAM:operation_3283 (Anonymisation).",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "parameters": {
+                    "description": "Parameters passed to the workflow.",
+                    "items": {
+                        "$ref": "#/$defs/Parameter"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "pipeline": {
+                    "description": "For a container, the image; for a service, the endpoint.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "pipelineVersion": {
+                    "description": "The workflow version the rules were written against.",
+                    "type": "string"
+                },
+                "priority": {
+                    "description": "Lower wins. For workflows, breaks ties between equally short routes.",
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "produces": {
+                    "description": "The data class of the output. Unset: the same class as the input.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "producesStandard": {
+                    "description": "The standard id of the output. Unset: the same standard as the input.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "readsFrom": {
+                    "description": "Zones it reads input from. Required unless the kind is withdraw or restrict.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "runner": {
+                    "$ref": "#/$defs/RunnerEnum",
+                    "description": "How the workflow is dispatched."
+                },
+                "sets": {
+                    "description": "Data property ids the output has (after clears are applied).",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "writesTo": {
+                    "description": "The zone it writes output to. Required unless the kind is withdraw or restrict.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "id",
+                "runner",
+                "pipelineVersion",
+                "kind"
+            ],
+            "title": "Workflow",
+            "type": "object"
+        },
+        "WorkflowKindEnum": {
+            "description": "What a workflow does to the data, as far as the rules are concerned. Obligations name a kind that must run.",
+            "enum": [
+                "ingest",
+                "deidentify",
+                "transform",
+                "load",
+                "confirm",
+                "mask",
+                "expert_review",
+                "process",
+                "hold",
+                "publish",
+                "withdraw",
+                "restrict"
+            ],
+            "title": "WorkflowKindEnum",
+            "type": "string"
+        },
+        "Zone": {
+            "additionalProperties": false,
+            "description": "A place where data sits, such as the deposit prefix, the TRE or a release store.",
+            "properties": {
+                "cirroEnvironment": {
+                    "description": "The Cirro environment that holds this zone's data. Only Cirro processes write to such a zone, and Cirro processes other than ingests read only from such zones.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "description": {
+                    "description": "Plain-language description for reviewers.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "id": {
+                    "description": "A local identifier, unique within its list.",
+                    "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+                    "type": "string"
+                },
+                "initial": {
+                    "description": "Deposited files start in this zone. Exactly one zone is initial.",
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                },
+                "insideTre": {
+                    "description": "Whether the zone is inside the trusted research environment.",
+                    "type": "boolean"
+                },
+                "location": {
+                    "description": "Where a container or service step writing to this zone puts its output: a template with {sourceId}, {batchId} and {dispatchId}. Not used for the initial zone, whose location is the sidecar's url, or for a Cirro environment zone, where Cirro chooses each dataset's location.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "id",
+                "insideTre"
+            ],
+            "title": "Zone",
+            "type": "object"
+        }
+    },
+    "$id": "https://w3id.org/rddc/processing",
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "additionalProperties": false,
+    "description": "The processing rules for one model release. A batch is processed under the rule set whose modelRelease matches the version in its sidecar's conformsTo.",
+    "metamodel_version": "1.11.0",
+    "properties": {
+        "description": {
+            "description": "Plain-language description for reviewers.",
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "id": {
+            "description": "A local identifier, unique within its list.",
+            "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+            "type": "string"
+        },
+        "interactionRules": {
+            "description": "Workflows that carry out batch-level interactions.",
+            "items": {
+                "$ref": "#/$defs/InteractionRule"
+            },
+            "type": [
+                "array",
+                "null"
+            ]
+        },
+        "modelRelease": {
+            "description": "The model release whose classes, flags, fields and enum values the rules name.",
+            "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+$",
+            "type": "string"
+        },
+        "obligations": {
+            "description": "Duties that hold on every route.",
+            "items": {
+                "$ref": "#/$defs/Obligation"
+            },
+            "type": [
+                "array",
+                "null"
+            ]
+        },
+        "prohibitions": {
+            "description": "Zones some items never enter.",
+            "items": {
+                "$ref": "#/$defs/Prohibition"
+            },
+            "type": [
+                "array",
+                "null"
+            ]
+        },
+        "properties": {
+            "description": "Data properties the rules test.",
+            "items": {
+                "$ref": "#/$defs/DataProperty"
+            },
+            "type": [
+                "array",
+                "null"
+            ]
+        },
+        "standards": {
+            "description": "Standards the rules refer to, in priority order.",
+            "items": {
+                "$ref": "#/$defs/Standard"
+            },
+            "type": [
+                "array",
+                "null"
+            ]
+        },
+        "targets": {
+            "description": "Where each kind of item must end up.",
+            "items": {
+                "$ref": "#/$defs/Target"
+            },
+            "type": [
+                "array",
+                "null"
+            ]
+        },
+        "version": {
+            "description": "The version of this rule set. Change it whenever the rules change.",
+            "type": "string"
+        },
+        "workflows": {
+            "description": "The workflow catalog.",
+            "items": {
+                "$ref": "#/$defs/Workflow"
+            },
+            "type": [
+                "array",
+                "null"
+            ]
+        },
+        "zones": {
+            "description": "Zones data can be in.",
+            "items": {
+                "$ref": "#/$defs/Zone"
+            },
+            "type": [
+                "array",
+                "null"
+            ]
+        }
+    },
+    "required": [
+        "id",
+        "version",
+        "modelRelease"
+    ],
+    "title": "rddc-processing",
+    "type": "object",
+    "version": "0.1.0"
+}
+
