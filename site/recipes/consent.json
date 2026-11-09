@@ -42,14 +42,17 @@
     {
       "@id": "urn:uuid:0000a701-0000-4000-8000-00000000a701",
       "@type": "cr:FileObject",
-      "additionalType": "rddc:TabularFile",
+      "additionalType": "rddc:ConsentFile",
       "name": "consent/elements.csv",
       "contentUrl": "consent/elements.csv",
       "contentSize": "1300 B",
       "encodingFormat": "text/csv",
       "sha256": "ab29482a180190ce1e1e77c6caaa06c73e67c893f5e60141204ce901a30bb90c",
       "md5": "66aa38d69477e902636ce39622b26163",
-      "modality": "consent",
+      "subjectIds": [
+        "P0001",
+        "P0003"
+      ],
       "tableName": "consent_elements"
     }
   ]

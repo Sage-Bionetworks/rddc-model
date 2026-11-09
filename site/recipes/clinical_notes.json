@@ -65,7 +65,6 @@
       "encodingFormat": "text/plain",
       "sha256": "6ec97b50558c5f10891ee4d83f8fe6798bcf05d7d39f9632fd7d30205d78c050",
       "md5": "f33aebc38851adc955e66565885aa39a",
-      "modality": "clinical_text",
       "subjectIds": [
         "P0001"
       ]
@@ -80,7 +79,6 @@
       "encodingFormat": "application/pdf",
       "sha256": "b7cd59d5284e4793bbe7b332f24a1d5bfae6cd610587b15db601171b72ad1d61",
       "md5": "1bb2271e1f58d1c277df2b27caaffd01",
-      "modality": "clinical_text",
       "subjectIds": [
         "P0002"
       ],
