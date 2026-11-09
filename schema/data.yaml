@@ -88,7 +88,7 @@ enums:
       audio:
         description: Audio recordings, including voice (AudioFile).
       wearable:
-        description: Device or wearable sensor streams (SensorDataFile).
+        description: Device or wearable sensor data (SensorSignalFile, SensorMeasureFile).
       metadata:
         description: Files that describe other files, such as data dictionaries or acquisition metadata (DocumentationFile).
       other:
@@ -829,6 +829,84 @@ enums:
           curator decides whether it needs its own value. The general term is imaging
           assay (OBI:0000185).
 
+  SensorAssayEnum:
+    description: >-
+      Sensing techniques accepted for sensor data. Meanings are NCIT (26.02d) terms, OBI
+      assay terms (release 2026-07-27) where OBI has one, and SNOMED CT for continuous
+      glucose monitoring. No term describes measuring electrodermal activity, so that
+      value has only a close mapping.
+    permissible_values:
+      accelerometry:
+        title: Accelerometry
+        description: Movement measured by accelerometers, including actigraphy.
+        meaning: NCIT:C176739
+        close_mappings:
+        - NCIT:C180883
+      ecg:
+        title: Electrocardiography
+        description: Electrical activity of the heart.
+        meaning: NCIT:C38053
+        aliases:
+        - ECG
+        - EKG
+      ppg:
+        title: Photoplethysmography
+        description: >-
+          Optical measurement of blood volume changes, the usual source of heart rate on
+          wrist-worn devices.
+        meaning: NCIT:C198843
+        aliases:
+        - PPG
+      pulse_oximetry:
+        title: Pulse oximetry
+        description: Estimates of blood oxygen saturation (SpO2).
+        meaning: NCIT:C38085
+      cgm:
+        title: Continuous glucose monitoring
+        description: Interstitial glucose measured continuously by a sensor under the skin.
+        meaning: SNOMEDCT:439926003
+        aliases:
+        - CGM
+      eeg:
+        title: Electroencephalography
+        description: Electrical activity of the brain.
+        meaning: OBI:0002186
+        aliases:
+        - EEG
+      emg:
+        title: Electromyography
+        description: Electrical activity of skeletal muscle.
+        meaning: NCIT:C38056
+        aliases:
+        - EMG
+      blood_pressure:
+        title: Blood pressure measurement
+        description: Systolic and diastolic blood pressure, by cuff or continuous sensor.
+        meaning: NCIT:C167233
+      temperature:
+        title: Body temperature measurement
+        description: Skin or core body temperature.
+        meaning: OBI:0003080
+      respiration:
+        title: Respiratory monitoring
+        description: Breathing measured by a chest band or similar sensor.
+        meaning: NCIT:C176738
+      eda:
+        title: Electrodermal activity
+        description: >-
+          Changes in the skin's electrical conductance, also called galvanic skin
+          response.
+        close_mappings:
+        - NCIT:C93039
+        aliases:
+        - EDA
+        - GSR
+      other:
+        title: Other sensing technique
+        description: >-
+          A sensing technique not listed here. Name it in the file's description; a
+          curator decides whether it needs its own value.
+
   OmopCdmVersionEnum:
     description: >-
       OMOP CDM versions accepted in a deposit, as major.minor. Patch releases of a
@@ -1260,7 +1338,7 @@ classes:
     description: >-
       A clinical table that is not OMOP or FHIR, such as registry, patient-reported
       outcome, claims or mortality data. Consent tables go in a ConsentFile, sensor data
-      in a SensorDataFile, and tables that describe other files in a DocumentationFile.
+      in a SensorMeasureFile, and tables that describe other files in a DocumentationFile.
       Its name and contentUrl identify the table; record sets describe its columns and
       joins to other tables.
     annotations:
@@ -1524,16 +1602,58 @@ classes:
 
   SensorDataFile:
     is_a: DataFile
+    abstract: true
     description: >-
-      Data recorded by a wearable or other sensor device, such as accelerometry, heart
-      rate or continuous glucose readings. It may be a table (CSV, Parquet) or a device
-      or vendor format; encodingFormat names it, application/octet-stream if no media
-      type fits.
+      Base class for data recorded by a wearable or other sensor device. A raw signal
+      goes in a SensorSignalFile and measures derived from it in a SensorMeasureFile,
+      since they need different processing. Sensor data already in FHIR form, such as
+      device Observations, goes in a FHIR file instead.
+    slots:
+    - assay
+    - platform
+    slot_usage:
+      assay:
+        required: true
+        multivalued: true
+        minimum_cardinality: 1
+        range: SensorAssayEnum
+        description: >-
+          The sensing techniques that produced the data, e.g. accelerometry or ecg. A list,
+          since one recording or summary can combine several, such as a sleep study's EEG
+          and ECG channels.
+      platform:
+        description: The device that recorded the data, e.g. "ActiGraph GT9X".
+
+  SensorSignalFile:
+    is_a: SensorDataFile
+    description: >-
+      A raw sensor signal, such as 100 Hz accelerometry or an ECG waveform, before any
+      aggregation. Common formats are EDF/EDF+, WFDB, DICOM waveform and device or
+      vendor formats; EDF, WFDB and vendor formats have no registered media type, so they
+      are application/octet-stream.
     annotations:
       structure: structured
       modality: wearable
     slots:
-    - platform
+    - samplingRate
+
+  SensorMeasureFile:
+    is_a: SensorDataFile
+    description: >-
+      Measures derived from sensor data, such as per-minute step counts, sleep stages or
+      daily heart rate summaries. IEEE 1752.1 (Open mHealth) defines JSON schemas for
+      sleep and physical activity measures.
+    annotations:
+      structure: structured
+      modality: wearable
+    slot_usage:
+      encodingFormat:
+        any_of:
+        - equals_string: text/csv
+        - equals_string: text/tab-separated-values
+        - equals_string: application/vnd.apache.parquet
+        - equals_string: application/json
+        - equals_string: application/jsonlines
 
   GenericFile:
     is_a: DataFile
@@ -1586,14 +1706,22 @@ slots:
     description: The files or record sets this file documents.
 
   # --- assays and instruments -----------------------------------------------
-  # assay: GenomicsFile, ImagingFile and their subclasses.
+  # assay: GenomicsFile, ImagingFile, SensorDataFile and their subclasses.
   assay:
     description: >-
       The assay that produced the data. Each class that uses it sets the allowed
       values.
-  # platform: GenomicsFile and its subclasses, SensorDataFile.
+  # platform: GenomicsFile, SensorDataFile and their subclasses.
   platform:
     description: "The instrument, sequencing platform or device that produced the data."
+
+  # --- sensor data (SensorSignalFile) ----------------------------------------
+  samplingRate:
+    description: >-
+      Samples per second of the recorded signal, in hertz. When channels differ, the
+      highest rate.
+    range: float
+    minimum_value: 0
 
   # --- genomics (GenomicsFile and its subclasses, IndexFile) ----------------
   # referenceGenome: aligned or called data (AlignmentFile, VariantFile).

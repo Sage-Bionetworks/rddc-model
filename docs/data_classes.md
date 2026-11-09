@@ -43,7 +43,9 @@ DistributionItem
         FacialImagingFile  (unstructured, imaging, biometric)
       AudioFile  (unstructured, audio)
       VideoFile  (unstructured, video)
-      SensorDataFile  (structured, wearable)
+      SensorDataFile  (abstract)
+        SensorSignalFile  (structured, wearable)
+        SensorMeasureFile  (structured, wearable)
       GenericFile  (mixed, other)
 ```
 
@@ -70,7 +72,8 @@ Every concrete class also requires the fields shared by all data files: `@id`, `
 | [`FacialImagingFile`](#facialimagingfile) | `imaging` | unstructured | `image/jpeg`, `image/png`, `image/tiff`, `image/heic`, `application/dicom`, `model/obj`, `model/stl`, `model/gltf-binary`, `model/gltf+json`, `model/mtl`, `application/octet-stream` | `assay`, `subjectIds` |
 | [`AudioFile`](#audiofile) | `audio` | unstructured | `audio/*` |  |
 | [`VideoFile`](#videofile) | `video` | unstructured | `video/*` |  |
-| [`SensorDataFile`](#sensordatafile) | `wearable` | structured | any |  |
+| [`SensorSignalFile`](#sensorsignalfile) | `wearable` | structured | any | `assay` |
+| [`SensorMeasureFile`](#sensormeasurefile) | `wearable` | structured | `text/csv`, `text/tab-separated-values`, `application/vnd.apache.parquet`, `application/json`, `application/jsonlines` | `assay` |
 | [`GenericFile`](#genericfile) | `other` | mixed | any |  |
 
 ## Classes
@@ -195,7 +198,7 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 ### TabularFile
 
-A clinical table that is not OMOP or FHIR, such as registry, patient-reported outcome, claims or mortality data. Consent tables go in a ConsentFile, sensor data in a SensorDataFile, and tables that describe other files in a DocumentationFile. Its name and contentUrl identify the table; record sets describe its columns and joins to other tables.
+A clinical table that is not OMOP or FHIR, such as registry, patient-reported outcome, claims or mortality data. Consent tables go in a ConsentFile, sensor data in a SensorMeasureFile, and tables that describe other files in a DocumentationFile. Its name and contentUrl identify the table; record sets describe its columns and joins to other tables.
 
 Use as `"@type": "cr:FileObject", "additionalType": "rddc:TabularFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `clinical_tabular`. A kind of [`EDAM:data_3861`](http://edamontology.org/data_3861).
 
@@ -359,15 +362,40 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 ### SensorDataFile
 
-Data recorded by a wearable or other sensor device, such as accelerometry, heart rate or continuous glucose readings. It may be a table (CSV, Parquet) or a device or vendor format; encodingFormat names it, application/octet-stream if no media type fits.
+Base class for data recorded by a wearable or other sensor device. A raw signal goes in a SensorSignalFile and measures derived from it in a SensorMeasureFile, since they need different processing. Sensor data already in FHIR form, such as device Observations, goes in a FHIR file instead.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:SensorDataFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `wearable`.
+Abstract: not used directly. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Subclasses: [`SensorSignalFile`](#sensorsignalfile), [`SensorMeasureFile`](#sensormeasurefile).
 
 Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
-| `platform` | `string` | | The instrument, sequencing platform or device that produced the data. |
+| `assay` | [`SensorAssayEnum`](#sensorassayenum) (list) | yes | The sensing techniques that produced the data, e.g. accelerometry or ecg. A list, since one recording or summary can combine several, such as a sleep study's EEG and ECG channels. |
+| `platform` | `string` | | The device that recorded the data, e.g. "ActiGraph GT9X". |
+
+### SensorSignalFile
+
+A raw sensor signal, such as 100 Hz accelerometry or an ECG waveform, before any aggregation. Common formats are EDF/EDF+, WFDB, DICOM waveform and device or vendor formats; EDF, WFDB and vendor formats have no registered media type, so they are application/octet-stream.
+
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:SensorSignalFile"`. Inherits from [`SensorDataFile`](#sensordatafile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `wearable`.
+
+Fields it adds or changes; it also has all fields of [`SensorDataFile`](#sensordatafile):
+
+| Field | Type | Required | Meaning and constraints |
+| --- | --- | --- | --- |
+| `samplingRate` | `float` | | Samples per second of the recorded signal, in hertz. When channels differ, the highest rate. Minimum: 0. |
+
+### SensorMeasureFile
+
+Measures derived from sensor data, such as per-minute step counts, sleep stages or daily heart rate summaries. IEEE 1752.1 (Open mHealth) defines JSON schemas for sleep and physical activity measures.
+
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:SensorMeasureFile"`. Inherits from [`SensorDataFile`](#sensordatafile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `wearable`.
+
+Fields it adds or changes; it also has all fields of [`SensorDataFile`](#sensordatafile):
+
+| Field | Type | Required | Meaning and constraints |
+| --- | --- | --- | --- |
+| `encodingFormat` | [`MediaType`](#mediatype) | yes | Media type of the content (after decompression when compression is set). One of: `text/csv`, `text/tab-separated-values`, `application/vnd.apache.parquet`, `application/json`, `application/jsonlines`. |
 
 ### GenericFile
 
@@ -493,7 +521,7 @@ The kind of data in a file: the values of the "modality" class annotation. Each 
 | `imaging` | Medical images such as DICOM. |
 | `video` | Video recordings (VideoFile). |
 | `audio` | Audio recordings, including voice (AudioFile). |
-| `wearable` | Device or wearable sensor streams (SensorDataFile). |
+| `wearable` | Device or wearable sensor data (SensorSignalFile, SensorMeasureFile). |
 | `metadata` | Files that describe other files, such as data dictionaries or acquisition metadata (DocumentationFile). |
 | `other` | Anything else, routed by curator decision (GenericFile). |
 
@@ -560,6 +588,25 @@ Imaging techniques accepted for imaging files. Meanings are OBI assay terms (rel
 | `pet` | [`OBI:0002987`](http://purl.obolibrary.org/obo/OBI_0002987) | Images of functional processes made with positron-emitting tracers. |
 | `microscopy` | [`OBI:0002119`](http://purl.obolibrary.org/obo/OBI_0002119) | Magnified images from a microscope, such as histology slides. |
 | `other` |  | An imaging technique not listed here. Name it in the file's description; a curator decides whether it needs its own value. The general term is imaging assay (OBI:0000185). |
+
+### SensorAssayEnum
+
+Sensing techniques accepted for sensor data. Meanings are NCIT (26.02d) terms, OBI assay terms (release 2026-07-27) where OBI has one, and SNOMED CT for continuous glucose monitoring. No term describes measuring electrodermal activity, so that value has only a close mapping.
+
+| Value | Term | Meaning |
+| --- | --- | --- |
+| `accelerometry` | [`NCIT:C176739`](http://purl.obolibrary.org/obo/NCIT_C176739) | Movement measured by accelerometers, including actigraphy. |
+| `ecg` | [`NCIT:C38053`](http://purl.obolibrary.org/obo/NCIT_C38053) | Electrical activity of the heart. |
+| `ppg` | [`NCIT:C198843`](http://purl.obolibrary.org/obo/NCIT_C198843) | Optical measurement of blood volume changes, the usual source of heart rate on wrist-worn devices. |
+| `pulse_oximetry` | [`NCIT:C38085`](http://purl.obolibrary.org/obo/NCIT_C38085) | Estimates of blood oxygen saturation (SpO2). |
+| `cgm` | [`SNOMEDCT:439926003`](http://identifiers.org/snomedct/439926003) | Interstitial glucose measured continuously by a sensor under the skin. |
+| `eeg` | [`OBI:0002186`](http://purl.obolibrary.org/obo/OBI_0002186) | Electrical activity of the brain. |
+| `emg` | [`NCIT:C38056`](http://purl.obolibrary.org/obo/NCIT_C38056) | Electrical activity of skeletal muscle. |
+| `blood_pressure` | [`NCIT:C167233`](http://purl.obolibrary.org/obo/NCIT_C167233) | Systolic and diastolic blood pressure, by cuff or continuous sensor. |
+| `temperature` | [`OBI:0003080`](http://purl.obolibrary.org/obo/OBI_0003080) | Skin or core body temperature. |
+| `respiration` | [`NCIT:C176738`](http://purl.obolibrary.org/obo/NCIT_C176738) | Breathing measured by a chest band or similar sensor. |
+| `eda` | close: [`NCIT:C93039`](http://purl.obolibrary.org/obo/NCIT_C93039) | Changes in the skin's electrical conductance, also called galvanic skin response. |
+| `other` |  | A sensing technique not listed here. Name it in the file's description; a curator decides whether it needs its own value. |
 
 ### OmopCdmVersionEnum
 

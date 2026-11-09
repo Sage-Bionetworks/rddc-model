@@ -127,9 +127,14 @@ VALID = {
     "video": item(
         "VideoFile", 18, contentUrl="media/gait.mp4", encodingFormat="video/mp4",
     ),
-    "sensor": item(
-        "SensorDataFile", 19, contentUrl="wearable/S1_accel.parquet",
-        encodingFormat="application/vnd.apache.parquet", platform="ActiGraph GT9X", subjectIds=["S1"],
+    "sensor_signal": item(
+        "SensorSignalFile", 19, contentUrl="wearable/S1_psg.edf", encodingFormat="application/octet-stream",
+        assay=["eeg", "ecg"], samplingRate=256, platform="Compumedics Grael", subjectIds=["S1"],
+    ),
+    "sensor_measure": item(
+        "SensorMeasureFile", 25, contentUrl="wearable/S1_steps.parquet",
+        encodingFormat="application/vnd.apache.parquet", assay=["accelerometry"],
+        platform="ActiGraph GT9X", subjectIds=["S1"],
     ),
     "generic": item(
         "GenericFile", 20, contentUrl="other/file.bin", encodingFormat="application/octet-stream",
@@ -184,6 +189,14 @@ INVALID = {
     "genomics file without assay": drop("alignment", ["assay"]),
     "assay not in GenomicsAssayEnum": put("reads", ["assay"], "WGS"),
     "image without assay": drop("imaging", ["assay"]),
+    "sensor file without assay": drop("sensor_measure", ["assay"]),
+    "sensor file with an empty assay list": put("sensor_measure", ["assay"], []),
+    "sensor assay as a string, not a list": put("sensor_signal", ["assay"], "ecg"),
+    "genomics assay on a sensor file": put("sensor_signal", ["assay"], ["wgs"]),
+    "derived measures as EDF": put("sensor_measure", ["encodingFormat"], "application/octet-stream"),
+    "negative sampling rate": put("sensor_signal", ["samplingRate"], -1),
+    "sampling rate on derived measures": put("sensor_measure", ["samplingRate"], 1),
+    "removed SensorDataFile class used directly": put("sensor_measure", ["additionalType"], "rddc:SensorDataFile"),
     "imaging assay on a genomics file": put("reads", ["assay"], "mri"),
     "face image from microscopy": put("face", ["assay"], "microscopy"),
     "face scan with an invented PLY media type": put("face_scan", ["encodingFormat"], "model/ply"),
