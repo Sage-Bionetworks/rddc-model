@@ -1804,7 +1804,7 @@
         },
         "FacialImagingFile": {
             "additionalProperties": false,
-            "description": "A photograph of a person's face, such as those taken for dysmorphology assessment or facial phenotyping. A face is a biometric identifier, so the file always counts as containing biometric identifiers.",
+            "description": "An image or 3D surface model of a person's face, such as those taken for dysmorphology assessment or facial phenotyping. assay says how it was captured: a photograph, a 3D surface scan, or a CT or MRI. A face is a biometric identifier, so the file always counts as containing biometric identifiers.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -1832,6 +1832,27 @@
                         "rddc:FacialImagingFile"
                     ],
                     "type": "string"
+                },
+                "assay": {
+                    "$ref": "#/$defs/ImagingAssayEnum",
+                    "anyOf": [
+                        {
+                            "const": "photography"
+                        },
+                        {
+                            "const": "surface_scan_3d"
+                        },
+                        {
+                            "const": "ct"
+                        },
+                        {
+                            "const": "mri"
+                        },
+                        {
+                            "const": "other"
+                        }
+                    ],
+                    "description": "How the face was captured. Processing differs: 2D photographs and 3D surface models go to different facial analysis tools."
                 },
                 "compression": {
                     "$ref": "#/$defs/CompressionEnum",
@@ -1870,9 +1891,27 @@
                         },
                         {
                             "const": "application/dicom"
+                        },
+                        {
+                            "const": "model/obj"
+                        },
+                        {
+                            "const": "model/stl"
+                        },
+                        {
+                            "const": "model/gltf-binary"
+                        },
+                        {
+                            "const": "model/gltf+json"
+                        },
+                        {
+                            "const": "model/mtl"
+                        },
+                        {
+                            "const": "application/octet-stream"
                         }
                     ],
-                    "description": "Media type of the content (after decompression when compression is set).",
+                    "description": "Media type of the image or 3D model. An OBJ model's material file is model/mtl. PLY has no registered media type, so a PLY model is application/octet-stream.",
                     "pattern": "^[a-z]+/[A-Za-z0-9.+_-]+$",
                     "type": "string"
                 },
@@ -1963,6 +2002,7 @@
                 }
             },
             "required": [
+                "assay",
                 "subjectIds",
                 "contentUrl",
                 "contentSize",
@@ -4354,6 +4394,22 @@
             "title": "IdSystemEnum",
             "type": "string"
         },
+        "ImagingAssayEnum": {
+            "description": "Imaging techniques accepted for imaging files. Meanings are OBI assay terms (release 2026-07-27) where OBI has one, and NCIT (26.02d) or SNOMED CT terms where it does not: OBI has no terms for X-ray radiography, ultrasound or photography. 3D surface scanning has no exact term in any of them, so it has mappings only.",
+            "enum": [
+                "photography",
+                "surface_scan_3d",
+                "x_ray",
+                "ct",
+                "mri",
+                "ultrasound",
+                "pet",
+                "microscopy",
+                "other"
+            ],
+            "title": "ImagingAssayEnum",
+            "type": "string"
+        },
         "ImagingFile": {
             "additionalProperties": false,
             "description": "A medical or photographic image, such as DICOM. A photograph of a person's face goes in a FacialImagingFile instead.",
@@ -4384,6 +4440,10 @@
                         "rddc:ImagingFile"
                     ],
                     "type": "string"
+                },
+                "assay": {
+                    "$ref": "#/$defs/ImagingAssayEnum",
+                    "description": "The imaging technique that produced the image, e.g. ct, mri or photography. Analysis depends on it, so every image states it."
                 },
                 "compression": {
                     "$ref": "#/$defs/CompressionEnum",
@@ -4501,6 +4561,7 @@
                 }
             },
             "required": [
+                "assay",
                 "contentUrl",
                 "contentSize",
                 "sha256",
