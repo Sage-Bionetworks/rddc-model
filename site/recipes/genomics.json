@@ -72,6 +72,7 @@
       "md5": "14dd9356e1fb20daec1d0fc959b83b19",
       "measurementTechnique": "wgs",
       "referenceGenome": "GRCh38",
+      "sequencingPlatform": "illumina",
       "platform": "Illumina NovaSeq X",
       "subjectIds": [
         "P0001"
@@ -107,6 +108,7 @@
       "measurementTechnique": "wgs",
       "compression": "gzip",
       "referenceGenome": "GRCh38",
+      "sequencingPlatform": "illumina",
       "platform": "Illumina NovaSeq X",
       "subjectIds": [
         "P0001"
@@ -127,6 +129,7 @@
       "pairedWith": {
         "@id": "urn:uuid:0000a502-0000-4000-8000-00000000a502"
       },
+      "sequencingPlatform": "illumina",
       "platform": "Illumina NovaSeq X",
       "subjectIds": [
         "P0001"
@@ -147,6 +150,7 @@
       "pairedWith": {
         "@id": "urn:uuid:0000a501-0000-4000-8000-00000000a501"
       },
+      "sequencingPlatform": "illumina",
       "platform": "Illumina NovaSeq X",
       "subjectIds": [
         "P0001"

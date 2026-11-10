@@ -54,7 +54,8 @@
 <h2>Genomics</h2>
 <p>Whole-genome sequencing for one proband: paired FASTQ reads, a CRAM alignment with its index, and a VCF.</p>
 <ul>
-<li>Every genomics file states its assay in <code>measurementTechnique</code>, here <code>wgs</code>, from a <a href="vocabularies.html#GenomicsAssayEnum">fixed list</a> mapped to OBI assay terms. <code>platform</code> is optional. Alignments and variants also require <code>referenceGenome</code>.</li>
+<li>Every genomics file states its assay in <code>measurementTechnique</code>, here <code>wgs</code>, from a <a href="vocabularies.html#GenomicsAssayEnum">fixed list</a> mapped to OBI assay terms. Alignments and variants also require <code>referenceGenome</code>.</li>
+<li>Every genomics file also states its sequencing technology in <code>sequencingPlatform</code>, here <code>illumina</code>, from a <a href="vocabularies.html#SequencingPlatformEnum">fixed list</a> based on the INSDC platform types. It tells short reads from long reads (<code>pacbio_smrt</code>, <code>oxford_nanopore</code>), which need different processing. The instrument model is optional and goes in <code>platform</code>, here <code>Illumina NovaSeq X</code>.</li>
 <li>Read pairs point to each other with <code>pairedWith</code>; the index points to its alignment with <code>indexOf</code>.</li>
 <li>Gzipped FASTQ and VCF set <code>compression: gzip</code>.</li>
 </ul>
