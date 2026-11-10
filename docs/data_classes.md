@@ -68,9 +68,9 @@ Every concrete class also requires the fields shared by all data files: `@id`, `
 | [`ConsentFile`](#consentfile) | `consent` | structured | `text/csv`, `text/tab-separated-values`, `application/json`, `application/jsonlines` | `subjectIds` |
 | [`ClinicalDocumentFile`](#clinicaldocumentfile) | `clinical_text` | unstructured | `text/plain`, `application/pdf`, `application/rtf`, `image/tiff`, `image/jpeg`, `image/png` | `subjectIds` |
 | [`DocumentationFile`](#documentationfile) | `metadata` | mixed | any |  |
-| [`SequenceReadsFile`](#sequencereadsfile) | `genomics` | structured | `text/plain`, `application/octet-stream` | `measurementTechnique` |
-| [`AlignmentFile`](#alignmentfile) | `genomics` | structured | `text/plain`, `application/octet-stream` | `referenceGenome`, `measurementTechnique` |
-| [`VariantFile`](#variantfile) | `genomics` | structured | `text/plain`, `application/octet-stream` | `referenceGenome`, `measurementTechnique` |
+| [`SequenceReadsFile`](#sequencereadsfile) | `genomics` | structured | `text/plain`, `application/octet-stream` | `measurementTechnique`, `sequencingPlatform` |
+| [`AlignmentFile`](#alignmentfile) | `genomics` | structured | `text/plain`, `application/octet-stream` | `referenceGenome`, `measurementTechnique`, `sequencingPlatform` |
+| [`VariantFile`](#variantfile) | `genomics` | structured | `text/plain`, `application/octet-stream` | `referenceGenome`, `measurementTechnique`, `sequencingPlatform` |
 | [`IndexFile`](#indexfile) | `genomics` | structured | `application/octet-stream` | `indexOf` |
 | [`ImagingFile`](#imagingfile) | `imaging` | unstructured | any | `measurementTechnique` |
 | [`FacialImagingFile`](#facialimagingfile) | `imaging` | unstructured | `image/jpeg`, `image/png`, `image/tiff`, `image/heic`, `application/dicom`, `model/obj`, `model/stl`, `model/gltf-binary`, `model/gltf+json`, `model/mtl`, `application/octet-stream` | `measurementTechnique`, `subjectIds` |
@@ -262,7 +262,8 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 | --- | --- | --- | --- |
 | `encodingFormat` | [`MediaType`](#mediatype) | yes | Media type of the content (after decompression when compression is set). One of: `text/plain`, `application/octet-stream`. |
 | `measurementTechnique` | [`GenomicsAssayEnum`](#genomicsassayenum) | yes | The sequencing assay that produced the data, e.g. wgs or wes. Downstream analysis depends on it, so every genomics file states it. |
-| `platform` | `string` | | The instrument, sequencing platform or device that produced the data. |
+| `sequencingPlatform` | [`SequencingPlatformEnum`](#sequencingplatformenum) | yes | The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing. |
+| `platform` | `string` | | The sequencing instrument model, e.g. "Illumina NovaSeq X". |
 
 ### SequenceReadsFile
 
@@ -566,7 +567,7 @@ Human reference assemblies accepted in a deposit. UCSC builds use the matching G
 
 ### GenomicsAssayEnum
 
-Sequencing assays accepted for genomics files. Meanings are OBI assay terms (OBI release 2026-07-27). OBI has no term for targeted gene panels, so that value has no meaning. The sequencing platform (short-read, long-read) goes in platform, not here.
+Sequencing assays accepted for genomics files. Meanings are OBI assay terms (OBI release 2026-07-27). OBI has no term for targeted gene panels, so that value has no meaning. The sequencing platform (short-read, long-read) goes in sequencingPlatform, not here.
 
 | Value | Term | Meaning |
 | --- | --- | --- |
@@ -576,6 +577,21 @@ Sequencing assays accepted for genomics files. Meanings are OBI assay terms (OBI
 | `rna_seq` | [`OBI:0001271`](http://purl.obolibrary.org/obo/OBI_0001271) | Sequencing of RNA (cDNA) to measure the transcriptome of a sample. |
 | `methylation_seq` | [`OBI:0001266`](http://purl.obolibrary.org/obo/OBI_0001266) | Sequencing that determines the methylation state of DNA, such as whole-genome bisulfite sequencing. |
 | `other` |  | A sequencing assay not listed here. Name it in the file's description; a curator decides whether it needs its own value. |
+
+### SequencingPlatformEnum
+
+Sequencing technologies, from the INSDC platform types that ENA and SRA use for submissions (PlatformType in the SRA schema; values lower-cased). Each value is annotated with the read length it produces: short reads of a few hundred bases, or long reads of thousands of bases or more. Long reads need different processing. The instrument model, such as "Illumina NovaSeq X", goes in platform.
+
+| Value | Meaning | readLength |
+| --- | --- | --- |
+| `illumina` | Illumina sequencing by synthesis, e.g. | short |
+| `element` | Element Biosciences avidity sequencing, e.g. | short |
+| `dnbseq` | DNA nanoball sequencing by MGI and BGI, e.g. | short |
+| `ion_torrent` | Ion Torrent semiconductor sequencing, e.g. | short |
+| `ultima` | Ultima Genomics sequencing, e.g. | short |
+| `pacbio_smrt` | Pacific Biosciences single-molecule real-time sequencing, e.g. | long |
+| `oxford_nanopore` | Oxford Nanopore sequencing, e.g. | long |
+| `other` | A platform not listed here. |  |
 
 ### ImagingAssayEnum
 

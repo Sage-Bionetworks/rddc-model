@@ -740,7 +740,8 @@ enums:
     description: >-
       Sequencing assays accepted for genomics files. Meanings are OBI assay terms (OBI
       release 2026-07-27). OBI has no term for targeted gene panels, so that value has no
-      meaning. The sequencing platform (short-read, long-read) goes in platform, not here.
+      meaning. The sequencing platform (short-read, long-read) goes in sequencingPlatform,
+      not here.
     permissible_values:
       wgs:
         title: Whole genome sequencing
@@ -780,6 +781,66 @@ enums:
         title: Other sequencing assay
         description: >-
           A sequencing assay not listed here. Name it in the file's description; a
+          curator decides whether it needs its own value.
+
+  SequencingPlatformEnum:
+    description: >-
+      Sequencing technologies, from the INSDC platform types that ENA and SRA use for
+      submissions (PlatformType in the SRA schema; values lower-cased). Each value is
+      annotated with the read length it produces: short reads of a few hundred bases, or
+      long reads of thousands of bases or more. Long reads need different processing. The
+      instrument model, such as "Illumina NovaSeq X", goes in platform.
+    permissible_values:
+      illumina:
+        title: Illumina
+        description: Illumina sequencing by synthesis, e.g. NovaSeq, NextSeq, MiSeq.
+        aliases:
+        - ILLUMINA
+        annotations: {readLength: short}
+      element:
+        title: Element Biosciences
+        description: Element Biosciences avidity sequencing, e.g. AVITI.
+        aliases:
+        - ELEMENT
+        - AVITI
+        annotations: {readLength: short}
+      dnbseq:
+        title: DNBSEQ (MGI, BGI)
+        description: DNA nanoball sequencing by MGI and BGI, e.g. DNBSEQ-G400, BGISEQ-500.
+        aliases:
+        - DNBSEQ
+        - BGISEQ
+        annotations: {readLength: short}
+      ion_torrent:
+        title: Ion Torrent
+        description: Ion Torrent semiconductor sequencing, e.g. Ion GeneStudio S5.
+        aliases:
+        - ION_TORRENT
+        annotations: {readLength: short}
+      ultima:
+        title: Ultima Genomics
+        description: Ultima Genomics sequencing, e.g. UG 100.
+        aliases:
+        - ULTIMA
+        annotations: {readLength: short}
+      pacbio_smrt:
+        title: PacBio SMRT
+        description: Pacific Biosciences single-molecule real-time sequencing, e.g. Revio, Sequel II (HiFi reads).
+        aliases:
+        - PACBIO_SMRT
+        - PacBio
+        annotations: {readLength: long}
+      oxford_nanopore:
+        title: Oxford Nanopore
+        description: Oxford Nanopore sequencing, e.g. PromethION, GridION, MinION.
+        aliases:
+        - OXFORD_NANOPORE
+        - ONT
+        annotations: {readLength: long}
+      other:
+        title: Other sequencing platform
+        description: >-
+          A platform not listed here. Name it in platform and the file's description; a
           curator decides whether it needs its own value.
 
   ImagingAssayEnum:
@@ -1449,6 +1510,7 @@ classes:
       the format, so they leave compression unset.
     slots:
     - measurementTechnique
+    - sequencingPlatform
     - platform
     slot_usage:
       measurementTechnique:
@@ -1457,6 +1519,10 @@ classes:
         description: >-
           The sequencing assay that produced the data, e.g. wgs or wes. Downstream
           analysis depends on it, so every genomics file states it.
+      sequencingPlatform:
+        required: true
+      platform:
+        description: The sequencing instrument model, e.g. "Illumina NovaSeq X".
       encodingFormat:
         any_of:
         - equals_string: text/plain
@@ -1740,6 +1806,13 @@ slots:
       The assay or technique that produced the data, schema.org's measurementTechnique.
       Each class that uses it sets the allowed values, from an enum whose values map to
       ontology terms.
+  # sequencingPlatform: GenomicsFile and its subclasses.
+  sequencingPlatform:
+    range: SequencingPlatformEnum
+    description: >-
+      The sequencing technology that produced the data, e.g. illumina or
+      oxford_nanopore. It tells short reads from long reads, which need different
+      processing.
   # platform: GenomicsFile, SensorDataFile and their subclasses.
   platform:
     description: "The instrument, sequencing platform or device that produced the data."

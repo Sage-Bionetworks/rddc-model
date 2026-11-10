@@ -87,15 +87,15 @@ VALID = {
     ),
     "reads": item(
         "SequenceReadsFile", 11, contentUrl="genomics/S1_R1.fastq.gz", encodingFormat="text/plain",
-        compression="gzip", measurementTechnique="wgs", pairedWith=REF,
+        compression="gzip", measurementTechnique="wgs", sequencingPlatform="illumina", pairedWith=REF,
     ),
     "alignment": item(
         "AlignmentFile", 12, contentUrl="genomics/S1.bam", encodingFormat="application/octet-stream",
-        measurementTechnique="wgs", referenceGenome="GRCh38",
+        measurementTechnique="wgs", sequencingPlatform="pacbio_smrt", referenceGenome="GRCh38",
     ),
     "variants": item(
         "VariantFile", 13, contentUrl="genomics/S1.vcf.gz", encodingFormat="text/plain",
-        compression="gzip", measurementTechnique="wes", referenceGenome="T2T-CHM13v2.0",
+        compression="gzip", measurementTechnique="wes", sequencingPlatform="illumina", referenceGenome="T2T-CHM13v2.0",
     ),
     "index": item(
         "IndexFile", 14, contentUrl="genomics/S1.bam.bai", encodingFormat="application/octet-stream",
@@ -188,6 +188,9 @@ INVALID = {
     "data dictionary with an empty about list": put("documentation", ["about"], []),
     "genomics file without measurementTechnique": drop("alignment", ["measurementTechnique"]),
     "assay not in GenomicsAssayEnum": put("reads", ["measurementTechnique"], "WGS"),
+    "genomics file without sequencingPlatform": drop("reads", ["sequencingPlatform"]),
+    "INSDC platform token instead of the enum value": put("reads", ["sequencingPlatform"], "OXFORD_NANOPORE"),
+    "sequencing platform on a sensor file": put("sensor_signal", ["sequencingPlatform"], "illumina"),
     "old assay key": put("reads", ["assay"], "wgs"),
     "image without measurementTechnique": drop("imaging", ["measurementTechnique"]),
     "sensor file without measurementTechnique": drop("sensor_measure", ["measurementTechnique"]),
