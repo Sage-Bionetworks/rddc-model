@@ -129,7 +129,7 @@
                     "type": "string"
                 },
                 "platform": {
-                    "description": "The instrument, sequencing platform or device that produced the data.",
+                    "description": "The sequencing instrument model, e.g. \"Illumina NovaSeq X\".",
                     "type": [
                         "string",
                         "null"
@@ -167,6 +167,10 @@
                         }
                     ],
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
+                },
+                "sequencingPlatform": {
+                    "$ref": "#/$defs/SequencingPlatformEnum",
+                    "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
                 },
                 "sha256": {
                     "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
@@ -209,6 +213,7 @@
             "required": [
                 "referenceGenome",
                 "measurementTechnique",
+                "sequencingPlatform",
                 "contentUrl",
                 "contentSize",
                 "sha256",
@@ -4238,7 +4243,7 @@
             "type": "object"
         },
         "GenomicsAssayEnum": {
-            "description": "Sequencing assays accepted for genomics files. Meanings are OBI assay terms (OBI release 2026-07-27). OBI has no term for targeted gene panels, so that value has no meaning. The sequencing platform (short-read, long-read) goes in platform, not here.",
+            "description": "Sequencing assays accepted for genomics files. Meanings are OBI assay terms (OBI release 2026-07-27). OBI has no term for targeted gene panels, so that value has no meaning. The sequencing platform (short-read, long-read) goes in sequencingPlatform, not here.",
             "enum": [
                 "wgs",
                 "wes",
@@ -4342,7 +4347,7 @@
                     "type": "string"
                 },
                 "platform": {
-                    "description": "The instrument, sequencing platform or device that produced the data.",
+                    "description": "The sequencing instrument model, e.g. \"Illumina NovaSeq X\".",
                     "type": [
                         "string",
                         "null"
@@ -4376,6 +4381,10 @@
                         }
                     ],
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
+                },
+                "sequencingPlatform": {
+                    "$ref": "#/$defs/SequencingPlatformEnum",
+                    "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
                 },
                 "sha256": {
                     "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
@@ -4417,6 +4426,7 @@
             },
             "required": [
                 "measurementTechnique",
+                "sequencingPlatform",
                 "contentUrl",
                 "contentSize",
                 "sha256",
@@ -6229,7 +6239,7 @@
                     "description": "The mate file of paired-end reads."
                 },
                 "platform": {
-                    "description": "The instrument, sequencing platform or device that produced the data.",
+                    "description": "The sequencing instrument model, e.g. \"Illumina NovaSeq X\".",
                     "type": [
                         "string",
                         "null"
@@ -6263,6 +6273,10 @@
                         }
                     ],
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
+                },
+                "sequencingPlatform": {
+                    "$ref": "#/$defs/SequencingPlatformEnum",
+                    "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
                 },
                 "sha256": {
                     "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
@@ -6304,6 +6318,7 @@
             },
             "required": [
                 "measurementTechnique",
+                "sequencingPlatform",
                 "contentUrl",
                 "contentSize",
                 "sha256",
@@ -6315,6 +6330,21 @@
             ],
             "title": "SequenceReadsFile",
             "type": "object"
+        },
+        "SequencingPlatformEnum": {
+            "description": "Sequencing technologies, from the INSDC platform types that ENA and SRA use for submissions (PlatformType in the SRA schema; values lower-cased). Each value is annotated with the read length it produces: short reads of a few hundred bases, or long reads of thousands of bases or more. Long reads need different processing. The instrument model, such as \"Illumina NovaSeq X\", goes in platform.",
+            "enum": [
+                "illumina",
+                "element",
+                "dnbseq",
+                "ion_torrent",
+                "ultima",
+                "pacbio_smrt",
+                "oxford_nanopore",
+                "other"
+            ],
+            "title": "SequencingPlatformEnum",
+            "type": "string"
         },
         "Sidecar": {
             "additionalProperties": false,
@@ -7227,7 +7257,7 @@
                     "type": "string"
                 },
                 "platform": {
-                    "description": "The instrument, sequencing platform or device that produced the data.",
+                    "description": "The sequencing instrument model, e.g. \"Illumina NovaSeq X\".",
                     "type": [
                         "string",
                         "null"
@@ -7265,6 +7295,10 @@
                         }
                     ],
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
+                },
+                "sequencingPlatform": {
+                    "$ref": "#/$defs/SequencingPlatformEnum",
+                    "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
                 },
                 "sha256": {
                     "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
@@ -7307,6 +7341,7 @@
             "required": [
                 "referenceGenome",
                 "measurementTechnique",
+                "sequencingPlatform",
                 "contentUrl",
                 "contentSize",
                 "sha256",

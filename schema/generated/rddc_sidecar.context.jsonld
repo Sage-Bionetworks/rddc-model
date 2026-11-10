@@ -107,6 +107,7 @@
     "registerVersion": "rddc:registerVersion",
     "resourceType": "rddc:resourceType",
     "sensitivity": "rddc:sensitivity",
+    "sequencingPlatform": "rddc:sequencingPlatform",
     "sourceId": "rddc:sourceId",
     "sourceReleaseDate": "rddc:sourceReleaseDate",
     "subjectCount": "rddc:subjectCount",
