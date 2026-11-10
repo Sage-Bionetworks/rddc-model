@@ -87,31 +87,49 @@ def group_of(plan, key):
 
 # name: (sidecar, register, {file key: expected route} or fragment of the expected error)
 ROUTES = {
-    "free text in one table is de-identified before lane 4": (
+    # Patient.ndjson has no free text, but moves with Observation.ndjson (same file set
+    # and target), so FHIR-to-OMOP runs once on the whole export.
+    "FHIR free text is de-identified and confirmed before lane 2, with its whole file set": (
+        sidecar(), register(),
+        {"Observation": ["ingest_files", "deid_fhir", "confirm_deid", "fhir_to_omop"],
+         "Patient": ["ingest_files", "deid_fhir", "confirm_deid", "fhir_to_omop"]}),
+    "free text in one table is de-identified before lane 4, with its whole file set": (
         sidecar(free_text_visits), register(),
-        {"visits": ["ingest_files", "text_deid", "confirm_deid", "tabular_load"],
-         "patients": ["ingest_files", "tabular_load"],
-         "Patient": ["ingest_files", "fhir_to_omop"]}),
+        {"visits": ["ingest_files", "deid_tabular", "confirm_deid", "tabular_load"],
+         "patients": ["ingest_files", "deid_tabular", "confirm_deid", "tabular_load"],
+         "Patient": ["ingest_files", "deid_fhir", "confirm_deid", "fhir_to_omop"]}),
     # The seed rules require de-identification only before release, so direct
     # identifiers reach the normalized store. To confirm with the team.
     "unconfirmed direct identifiers do not change the lanes": (
         sidecar(lambda d: d["sensitivity"].update(directIdentifiersRemoved=False)), register(),
-        {"visits": ["ingest_files", "tabular_load"], "Patient": ["ingest_files", "fhir_to_omop"]}),
+        {"visits": ["ingest_files", "tabular_load"],
+         "Patient": ["ingest_files", "deid_fhir", "confirm_deid", "fhir_to_omop"]}),
     "a FHIR file with biometric identifiers is held for a curator": (
         sidecar(lambda d: file_obj(d, "Patient").update(sensitivity={"containsBiometricIdentifiers": True})),
-        register(), {"Patient": ["curation_hold"], "Observation": ["ingest_files", "fhir_to_omop"]}),
+        register(), {"Patient": ["curation_hold"],
+                     "Observation": ["ingest_files", "deid_fhir", "confirm_deid", "fhir_to_omop"]}),
     "a missing flag counts as present": (
         sidecar(lambda d: d["sensitivity"].pop("containsBiometricIdentifiers")), register(),
         {"Patient": ["curation_hold"], "patients": ["curation_hold"]}),
     "register: sensor signals from a source registered for wearables become measures": (
         sidecar(sensor_visits), register(lambda s: s["modalities"].append("wearable")),
-        {"visits": ["ingest_files", "sensor_to_measures", "sensor_load"]}),
+        {"visits": ["ingest_files", "qc_sensory", "sensor_to_measures", "sensor_load"]}),
     "register: sensor signals from a source not registered for wearables are held": (
         sidecar(sensor_visits), register(), {"visits": ["curation_hold"], "patients": ["ingest_files", "tabular_load"]}),
     "register: consent elements are recorded in GOVERN; the file stays in INTAKE": (
         sidecar(lambda d: file_obj(d, "visits").update(additionalType="rddc:ConsentFile")),
         register(lambda s: s["modalities"].append("consent")),
         {"visits": ["ingest_files", "record_consent"], "patients": ["ingest_files", "tabular_load"]}),
+    "normalization: a VCF is represented in GA4GH VRS in the normalized store": (
+        sidecar(lambda d: file_obj(d, "visits").update(additionalType="rddc:VariantFile", measurementTechnique="wgs",
+                                                        referenceGenome="GRCh38", encodingFormat="text/plain")),
+        register(lambda s: s["modalities"].append("genomics")),
+        {"visits": ["ingest_files", "vcf_to_vrs"]}),
+    "audio and video go to INTAKE's de-id/QC environment, not to a curator": (
+        sidecar(lambda d: (file_obj(d, "visits").update(additionalType="rddc:AudioFile", encodingFormat="audio/wav"),
+                           file_obj(d, "patients").update(additionalType="rddc:VideoFile", encodingFormat="video/mp4"))),
+        register(lambda s: s["modalities"].extend(["audio", "video"])),
+        {"visits": ["ingest_files"], "patients": ["ingest_files"]}),
     "register: a source that is not in the register is refused": (
         sidecar(lambda d: d.update(sourceId="src-unknown")), register(), "is not in the source register"),
     "a sidecar for another release is refused": (
@@ -122,7 +140,7 @@ ROUTES = {
 
 def residual_free_text(group, step):
     # The text de-identification run reports that free text is left in visits.
-    if step["workflow"] == "text_deid":
+    if step["workflow"].startswith("deid_"):
         return [{"file": f, "properties": ["free_text"]} for f in group["files"]]
     return None
 
@@ -170,17 +188,18 @@ def state_checks():
     out = []
     p = run(sidecar(free_text_visits), REGISTER, phi_found)
     g = group_of(p, "visits")
-    out.append(("PHI found by the confirmation check blocks the file, not the batch",
+    out.append(("PHI found by the confirmation check blocks its file set, not the batch",
                 p["status"] == "blocked" and "no route" in " ".join(g.get("problems", []))
-                and routes(p)[FILES["visits"]] == ["ingest_files", "text_deid", "confirm_deid"]
-                and group_of(p, "patients")["steps"][-1]["status"] == "succeeded",
+                and routes(p)[FILES["visits"]] == ["ingest_files", "deid_tabular", "confirm_deid"]
+                and routes(p)[FILES["patients"]] == ["ingest_files", "deid_tabular", "confirm_deid"]
+                and group_of(p, "Patient")["steps"][-1]["status"] == "succeeded",
                 f"status {p['status']}, visits {routes(p)[FILES['visits']]}"))
     p = run(sidecar(free_text_visits), REGISTER, residual_free_text)
     g = group_of(p, "visits")
-    out.append(("residual free text after de-identification blocks the file, not the batch",
+    out.append(("residual free text after de-identification blocks its file set, not the batch",
                 p["status"] == "blocked" and "no route" in " ".join(g.get("problems", []))
-                and routes(p)[FILES["patients"]] == ["ingest_files", "tabular_load"]
-                and group_of(p, "patients")["steps"][-1]["status"] == "succeeded",
+                and routes(p)[FILES["patients"]] == ["ingest_files", "deid_tabular"]
+                and group_of(p, "Patient")["steps"][-1]["status"] == "succeeded",
                 f"status {p['status']}, visits {routes(p)[FILES['visits']]}"))
     p = plan_with(sidecar(), {"fhir_to_omop": "failed"})
     g = group_of(p, "Patient")
@@ -188,18 +207,18 @@ def state_checks():
                 p["status"] == "blocked" and "failed" in " ".join(g.get("problems", []))
                 and all(s["status"] == "succeeded" for s in group_of(p, "patients")["steps"]),
                 f"status {p['status']}"))
-    p = plan_with(sidecar(free_text_visits), {"text_deid": "running"})
+    p = plan_with(sidecar(free_text_visits), {"deid_tabular": "running"})
     steps = [s["status"] for s in group_of(p, "visits")["steps"]]
     out.append(("files with a step running wait for it",
                 p["status"] == "in_progress" and steps == ["succeeded", "running", "pending", "pending"],
                 f"visits steps {steps}"))
-    p = made_up_history(sidecar(free_text_visits), ["ingest_files", "text_deid", "text_deid"])
+    p = made_up_history(sidecar(free_text_visits), ["ingest_files", "deid_tabular", "deid_tabular"])
     out.append(("a step run twice on a file (a retry) stops the batch",
-                p["status"] == "stopped" and any("repeated text_deid" in x for x in p.get("problems", [])),
+                p["status"] == "stopped" and any("repeated deid_tabular" in x for x in p.get("problems", [])),
                 f"status {p['status']}, problems {p.get('problems')}"))
     p = made_up_history(sidecar(free_text_visits), ["ingest_files", "tabular_load"])
-    out.append(("a step that broke a rule stops the batch",
-                p["status"] == "stopped" and any("text_deid_before_lane4" in x for x in p.get("problems", [])),
+    out.append(("a step the rules do not allow (lane 4 on free text) stops the batch",
+                p["status"] == "stopped" and any("cannot_run tabular_load" in x for x in p.get("problems", [])),
                 f"status {p['status']}, problems {p.get('problems')}"))
     return out
 
@@ -214,7 +233,8 @@ def dispatch_checks():
     out.append(("Cirro: an ingest uploads the deposited files into the de-id/QC environment",
                 ingest["runner"] == "cirro" and ingest["cirroExecutor"] == "INGEST"
                 and ingest["cirroEnvironment"] == "provisional-rddc-intake"
-                and ingest["inputs"] == [{"file": FILES["visits"], "location": deposit}]
+                and ingest["inputs"] == [{"file": FILES["patients"], "location": deposit.replace("visits", "patients")},
+                                         {"file": FILES["visits"], "location": deposit}]
                 and "outputLocation" not in ingest and "sourceDatasets" not in ingest,
                 json.dumps(ingest)))
     p2 = O.orchestrate(doc, rules, REGISTER, O.stub_dispatch(p1))
@@ -222,8 +242,8 @@ def dispatch_checks():
     ds = f"stub-dataset-{ingest['dispatchId']}"
     params = {x["id"]: x["value"] for x in deid.get("parameters", [])}
     out.append(("Cirro: an analysis reads its inputs' datasets, with parameters from the register",
-                deid["workflow"] == "text_deid" and deid["status"] == "ready"
-                and deid["cirroProcess"] == "process-rddc-provisional-text-deid-0_0"
+                deid["workflow"] == "deid_tabular" and deid["status"] == "ready"
+                and deid["cirroProcess"] == "process-rddc-provisional-tabular-deid-0_0"
                 and deid["sourceDatasets"] == [ds] and deid["inputs"][0]["dataset"] == ds
                 and params == {"deid_class": "safe_harbor"},
                 json.dumps(deid)))
@@ -233,7 +253,7 @@ def dispatch_checks():
     out.append(("a service step (Comprehend Medical) reads the de-identified dataset and writes its report",
                 check["workflow"] == "confirm_deid" and check["status"] == "ready" and check["runner"] == "service"
                 and check["pipeline"] == "aws:comprehendmedical:StartPHIDetectionJob"
-                and check["inputs"][0]["location"].startswith("s3://provisional-rddc-intake/datasets/stub-dataset-text_deid-")
+                and check["inputs"][0]["location"].startswith("s3://provisional-rddc-intake/datasets/stub-dataset-deid_tabular-")
                 and params["output_s3_uri"] == f"s3://provisional-rddc-deid-reports/src-ta2-01/2026-10-b01/{check['dispatchId']}/"
                 and params["language_code"] == "en"
                 and "outputLocation" not in check and "cirroEnvironment" not in check,
@@ -296,9 +316,18 @@ def main():
         files = E.sidecar_files(doc, E.register_entry(reg, doc["sourceId"]), rules, rel)
         explained = E.deposit_routes(rules, rel, [(f["profile"], f["class"], f["standard"], f["mask"]) for f in files])
         got = routes(plan)
-        wrong = [f"{f['id']}: site {[w for w, _ in r['path'] or []]}, orchestrator {got.get(f['id'])}"
-                 for f, r in zip(files, explained)
-                 if [w for w, _ in r["path"] or []] != got.get(f["id"]) or r["ambiguous"]]
+        # The site explains one file. Files of a file set with the same target move
+        # together, so within such a group every file gets the same route, and it is the
+        # site's route for at least one of them (the one that needs the most).
+        groups = {}
+        for f, r in zip(files, explained):
+            groups.setdefault((f["fileSet"] or f["id"], r["target"]), []).append((f, [w for w, _ in r["path"] or []], r))
+        wrong = []
+        for members in groups.values():
+            shared = {tuple(got.get(f["id"]) or []) for f, _, _ in members}
+            own = [tuple(p) for _, p, _ in members]
+            if len(shared) != 1 or next(iter(shared)) not in own or any(r["ambiguous"] for _, _, r in members):
+                wrong.append(f"{[f['id'][-4:] for f, _, _ in members]}: site {own}, orchestrator {sorted(shared)}")
         report(not wrong, name, "; ".join(wrong))
 
     print("\nBatch states:")

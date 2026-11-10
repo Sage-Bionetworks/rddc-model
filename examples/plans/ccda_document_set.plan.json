@@ -2,7 +2,7 @@
   "batch": "src-ta2-01/2026-12-ccda",
   "sidecarConformsTo": "https://w3id.org/rddc/sidecar/0.1.0",
   "ruleSet": "rddc_rules",
-  "ruleSetVersion": "0.3.0-draft",
+  "ruleSetVersion": "0.7.0-draft",
   "modelRelease": "v0.1.0",
   "registerVersion": "2026-10-20",
   "groups": [
@@ -38,6 +38,21 @@
               "location": "s3://rddc-deposit-ta2/src-ta2-01/2026-12-ccda/ccda/0000/doc_0000003.xml"
             }
           ]
+        },
+        {
+          "workflow": "deid_ccda",
+          "status": "pending",
+          "runner": "cirro",
+          "cirroProcess": "process-rddc-provisional-ccda-deid-0_0",
+          "cirroExecutor": "NEXTFLOW",
+          "pipelineVersion": "0.0.0"
+        },
+        {
+          "workflow": "confirm_deid",
+          "status": "pending",
+          "runner": "service",
+          "pipeline": "aws:comprehendmedical:StartPHIDetectionJob",
+          "pipelineVersion": "2018-10-30"
         },
         {
           "workflow": "ccda_to_omop",

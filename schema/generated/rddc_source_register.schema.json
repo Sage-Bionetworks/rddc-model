@@ -984,6 +984,13 @@
                     "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
                     "type": "string"
                 },
+                "outputOnly": {
+                    "description": "The standard is only produced by workflows, never declared in a sidecar, so it need not be a pinned conformsTo value, and no deposited file takes it.",
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                },
                 "url": {
                     "description": "The standard's URL as sidecars write it in conformsTo.",
                     "format": "uri",
@@ -1357,6 +1364,7 @@
                 "deidentify",
                 "transform",
                 "load",
+                "qc",
                 "confirm",
                 "mask",
                 "expert_review",

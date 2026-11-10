@@ -38,7 +38,8 @@
   }
   function runnerLabel(wf) {
     var r = { cirro: "Cirro", container: "Container", service: "Service" }[wf.runner] || wf.runner;
-    return wf.cirroExecutor ? r + " · " + wf.cirroExecutor : r;
+    if (wf.cirroExecutor) r += " · " + wf.cirroExecutor;
+    return wf.pipelineVersion ? r + " · v" + wf.pipelineVersion : r;
   }
 
   fetch(root.getAttribute("data-src")).then(function (r) { return r.json(); }).then(start, function () {
@@ -389,7 +390,8 @@
       result.appendChild(el("div", { "class": "pr-card" }, [
         el("div", { "class": "pr-card-head" }, [el("strong", {}, [txt("Target "), code(r.target)]),
           el("span", { "class": "badge", text: "ends in zone " + t.zone })]),
-        el("p", { text: t.description })]));
+        el("p", { text: t.sentence }),
+        t.note ? el("p", { "class": "muted", text: t.note }) : null]));
       if (r.noRoute) result.appendChild(el("div", { "class": "note pr-fail", text: "No route reaches this target." }));
       if (r.ambiguous) result.appendChild(el("div", { "class": "note pr-fail",
         text: "Two routes tie for this file; the orchestrator would refuse to choose. Set workflow priorities." }));
@@ -408,8 +410,9 @@
         result.appendChild(el("h3", { text: "Duties from the start" }));
         var ul = el("ul", {});
         r.duties.forEach(function (o) {
+          var ob = data.obligations[o];
           ul.appendChild(el("li", {}, [el("a", { href: "processing-rules.html#obligation-" + o }, [code(o)]),
-            txt(": " + data.obligations[o])]));
+            txt(": " + ob.sentence + (ob.note ? " " + ob.note : ""))]));
         });
         result.appendChild(ul);
       }

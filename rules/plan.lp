@@ -3,6 +3,7 @@
 % Input facts, besides those of route.lp
 %   done(X, T, W).   step T of file X ran (or is running): it is part of the route
 %   active(X).       file X can take new steps (nothing running or failed)
+%   in_set(X, S).    file X is a member of file set S
 %
 % For each active file, choose the shortest continuation to its target that breaks no
 % rule. A file with no such continuation is stuck; the orchestrator reports it. Ties
@@ -15,6 +16,12 @@ go(X, T, W) :- done(X, T, W).
 ran(X, N) :- file(X, _, _, _, _), N = #count { T : done(X, T, _) }.
 { go(X, T, W) : step(P, St, W, _) } 1 :-
     active(X), fprof(X, P), at(X, St, T), ran(X, N), T >= N, T < horizon, not at_goal(X, T).
+
+% Files of one file set that share a target move together: they take the same steps,
+% so a step such as FHIR-to-OMOP runs once on the whole set. If one of them needs a step
+% (de-identification, say), all of them take it; if one is blocked, so is the set.
+together(X, Y) :- in_set(X, S), in_set(Y, S), X != Y, ftarget(X, T), ftarget(Y, T).
+:- together(X, Y), go(X, I, W), not go(Y, I, W).
 
 reached(X) :- route_end(X, T), at_goal(X, T).
 stuck(X) :- active(X), not reached(X).

@@ -167,7 +167,7 @@ def name_errors(rules, rel):
                         for v in values if v not in known)
     for s in rules.get("standards", []):
         need(f"standard {s['id']}", s["classes"], rel.data_classes, "data class")
-        if s["url"] not in rel.pinned_standards:
+        if not s.get("outputOnly") and s["url"] not in rel.pinned_standards:
             errs.append(f"standard {s['id']}: {s['url']} is not a pinned conformsTo value in release {rel.tag}")
     for where, c in conditions(rules):
         need(where, c.get("classes"), rel.data_classes, "data class")
@@ -368,7 +368,9 @@ def register_props(rules, rel, register, cls):
 
 
 def class_standards(rules, rel, cls):
-    return [s["id"] for s in rules.get("standards", []) if any(rel.is_a(cls, c) for c in s["classes"])]
+    """Standards a deposited file of this class can conform to (not output-only ones)."""
+    return [s["id"] for s in rules.get("standards", [])
+            if not s.get("outputOnly") and any(rel.is_a(cls, c) for c in s["classes"])]
 
 
 OTHER = "(another value)"
@@ -607,6 +609,8 @@ def file_facts(files):
         out.append(start_fact(names[key], f["class"], f["standard"], f["mask"]))
         out.append(f"file({q(f['id'])}, {q(names[key])}, {q(f['class'])}, "
                    f"{q(f['standard']) if f['standard'] else 'none'}, {f['mask']}).")
+        if f["fileSet"]:
+            out.append(f"in_set({q(f['id'])}, {q(f['fileSet'])}).")
     return "\n".join(out)
 
 

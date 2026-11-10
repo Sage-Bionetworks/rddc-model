@@ -118,16 +118,25 @@ MUTATIONS = {
         "a container writes to zone normalized, a Cirro environment"),
     "lane 4 accepts free text": (
         edit(lambda r: wf(r, "tabular_load")["consumes"]["noProperties"].remove("free_text")),
-        "obligation text_deid_before_lane4"),
+        "obligation text_deid_before_loading"),
     "lane 4 loads de-identified text that was not confirmed": (
         edit(lambda r: wf(r, "tabular_load")["consumes"]["noProperties"].remove("deid_unconfirmed")),
         "obligation confirm_deid_before_loading"),
     "the Comprehend Medical check is recorded as a process": (
         edit(lambda r: wf(r, "confirm_deid").update(kind="process")),
         "a service writes to zone deid_qc, a Cirro environment"),
-    "text de-identification is recorded as a transform": (
-        edit(lambda r: wf(r, "text_deid").update(kind="transform")),
-        "obligation text_deid_before_lane4"),
+    "table de-identification is recorded as a transform": (
+        edit(lambda r: wf(r, "deid_tabular").update(kind="transform")),
+        "obligation text_deid_before_loading"),
+    "normalization: the VRS workflow does not produce VRS": (
+        edit(lambda r: wf(r, "vcf_to_vrs").pop("producesStandard")),
+        "no_route vrs"),
+    "lane 2 takes FHIR free text": (
+        edit(lambda r: wf(r, "fhir_to_omop")["consumes"]["noProperties"].remove("free_text")),
+        "obligation text_deid_before_loading"),
+    "sensor measures load without QC": (
+        edit(lambda r: wf(r, "sensor_load")["consumes"]["noProperties"].remove("sensor_qc_pending")),
+        "obligation sensor_qc_before_loading"),
     "no workflow turns sensor signals into measures": (
         edit(lambda r: r["workflows"].remove(wf(r, "sensor_to_measures"))),
         "no_route sensor"),

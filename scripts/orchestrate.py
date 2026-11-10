@@ -233,6 +233,8 @@ def orchestrate(sidecar, rules, register, state=None):
         future = route.get(f["id"], [])[len([s for s in steps if s["status"] != "failed"]):]
         last = steps[-1]["status"] if steps else None
         why = (f"step {steps[-1]['dispatchId']} failed" if last == "failed"
+               else "no route from the current state to the target (that the other files of its file set "
+                    "with the same target can share)" if f["id"] in stuck and f["fileSet"]
                else "no route from the current state to the target" if f["id"] in stuck else None)
         key = (f["fileSet"], tuple(s["dispatchId"] for s in steps), tuple(future), target.get(f["id"]), why)
         groups.setdefault(key, []).append(f)

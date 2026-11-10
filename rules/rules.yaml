@@ -8,7 +8,7 @@
 # Checked by scripts/check_rules.py (names exist in the pinned release; verification
 # properties hold). scripts/orchestrate.py works out the next steps for a batch.
 id: rddc_rules
-version: 0.3.0-draft
+version: 0.7.0-draft
 modelRelease: v0.1.0
 description: Draft processing rules with provisional workflows.
 
@@ -58,6 +58,13 @@ properties:
   derivedFrom:
   - source: data_class
     classes: [ConsentFile]
+- id: deid_confirmed
+  description: An independent check confirmed the file's de-identification. Set by workflows only.
+- id: sensor_qc_pending
+  description: Sensor data that has not yet passed qc_sensory.
+  derivedFrom:
+  - source: data_class
+    classes: [SensorDataFile]
 - id: unregistered_modality
   description: "Register: the file's modality is not one the source is registered for."
   derivedFrom:
@@ -88,6 +95,11 @@ standards:
   description: IEEE 1752.1
   url: https://standards.ieee.org/ieee/1752.1/6982/
   classes: [SensorMeasureFile]
+- id: ga4gh_vrs_2
+  description: GA4GH VRS 2.0
+  url: https://vrs.ga4gh.org/en/2.0/
+  classes: [VariantFile]
+  outputOnly: true
 
 # --- zones ------------------------------------------------------------------
 # Each zone belongs to a platform module (INTAKE, NORMALIZE, DISCOVER). From the deposit,
@@ -126,30 +138,22 @@ zones:
 # --- workflows (PROVISIONAL) -----------------------------------------------
 # Cirro process ids follow Cirro's pattern but are made up. Workflows that write
 # outside INTAKE refuse biometric data and data of a modality the source is not
-# registered for. Domain analyses that leave the rules' view of the data unchanged
+# registered for, and lanes into the normalized store refuse free text that has not been
+# de-identified and confirmed. Domain analyses that leave the rules' view of the data unchanged
 # (genomics QC, facial phenotyping) run in the de-id/QC environment and are not listed: as
 # routing steps they would be cycles.
 workflows:
 - id: ingest_files
-  description: Brings deposited files into the de-id/QC environment as a Cirro dataset.
+  description: >-
+    The one generic step: brings deposited files of any type into the de-id/QC
+    environment as a Cirro dataset, unchanged. Every other pipeline is specific to a data
+    type and has its own version.
   runner: cirro
   cirroProcess: process-rddc-provisional-ingest-files-0_0
   cirroExecutor: INGEST
   pipelineVersion: 0.0.0
   kind: ingest
-  priority: 1
   consumes: {}
-  readsFrom: [deposit]
-  writesTo: deid_qc
-- id: ingest_sequencing
-  description: Brings deposited sequencing files into the de-id/QC environment, with sample detection.
-  runner: cirro
-  cirroProcess: process-rddc-provisional-ingest-sequencing-0_0
-  cirroExecutor: INGEST
-  pipelineVersion: 0.0.0
-  kind: ingest
-  consumes:
-    classes: [GenomicsFile, IndexFile]
   readsFrom: [deposit]
   writesTo: deid_qc
 - id: fhir_to_omop
@@ -163,7 +167,7 @@ workflows:
   consumes:
     classes: [FhirFile]
     standards: [fhir_r4]
-    noProperties: [biometric, unregistered_modality]
+    noProperties: [free_text, deid_unconfirmed, biometric, unregistered_modality]
   produces: OmopTableFile
   producesStandard: omop_cdm_54
   readsFrom: [deid_qc]
@@ -184,7 +188,7 @@ workflows:
     classes: [OmopTableFile]
     standards: [omop_cdm_54]
     fileSetClasses: [OmopCdmInstance]
-    noProperties: [biometric, unregistered_modality]
+    noProperties: [free_text, deid_unconfirmed, biometric, unregistered_modality]
   readsFrom: [deid_qc]
   writesTo: normalized
   parameters:
@@ -201,23 +205,104 @@ workflows:
   consumes:
     classes: [CcdaDocumentFile]
     standards: [ccda_21]
-    noProperties: [biometric, unregistered_modality]
+    noProperties: [free_text, deid_unconfirmed, biometric, unregistered_modality]
   produces: OmopTableFile
   producesStandard: omop_cdm_54
   readsFrom: [deid_qc]
   writesTo: normalized
-- id: text_deid
-  description: Removes identifiers from free text in documents and tables.
+- id: deid_fhir
+  description: >-
+    Removes identifiers from free text in FHIR resources: narrative, notes and other string fields. Output stays FHIR R4. Runs once per file, also on files of the same file set that need no
+    de-identification themselves, so that the set moves together.
   runner: cirro
-  cirroProcess: process-rddc-provisional-text-deid-0_0
+  cirroProcess: process-rddc-provisional-fhir-deid-0_0
   cirroExecutor: NEXTFLOW
   pipelineVersion: 0.0.0
   kind: deidentify
   operation: EDAM:operation_3283
   consumes:
-    classes: [ClinicalDocumentFile, TabularFile]
-    anyProperties: [free_text, direct_identifiers]
-    noProperties: [identifying]
+    classes: [FhirFile]
+    noProperties: [identifying, deid_unconfirmed, deid_confirmed]
+  readsFrom: [deid_qc]
+  writesTo: deid_qc
+  clears: [free_text, direct_identifiers]
+  sets: [deid_unconfirmed]
+  parameters:
+  - id: deid_class
+    fromSourceRegister: deidentificationClass
+- id: deid_ccda
+  description: >-
+    Removes identifiers from the narrative sections of C-CDA documents. Output stays C-CDA. Runs once per file, also on files of the same file set that need no
+    de-identification themselves, so that the set moves together.
+  runner: cirro
+  cirroProcess: process-rddc-provisional-ccda-deid-0_0
+  cirroExecutor: NEXTFLOW
+  pipelineVersion: 0.0.0
+  kind: deidentify
+  operation: EDAM:operation_3283
+  consumes:
+    classes: [CcdaDocumentFile]
+    noProperties: [identifying, deid_unconfirmed, deid_confirmed]
+  readsFrom: [deid_qc]
+  writesTo: deid_qc
+  clears: [free_text, direct_identifiers]
+  sets: [deid_unconfirmed]
+  parameters:
+  - id: deid_class
+    fromSourceRegister: deidentificationClass
+- id: deid_tabular
+  description: >-
+    Removes identifiers from free-text columns of registry and other tables. Runs once per file, also on files of the same file set that need no
+    de-identification themselves, so that the set moves together.
+  runner: cirro
+  cirroProcess: process-rddc-provisional-tabular-deid-0_0
+  cirroExecutor: NEXTFLOW
+  pipelineVersion: 0.0.0
+  kind: deidentify
+  operation: EDAM:operation_3283
+  consumes:
+    classes: [TabularFile]
+    noProperties: [identifying, deid_unconfirmed, deid_confirmed]
+  readsFrom: [deid_qc]
+  writesTo: deid_qc
+  clears: [free_text, direct_identifiers]
+  sets: [deid_unconfirmed]
+  parameters:
+  - id: deid_class
+    fromSourceRegister: deidentificationClass
+- id: deid_clinical_documents
+  description: >-
+    Removes identifiers from clinical notes and scanned reports (text and OCR). Runs once per file, also on files of the same file set that need no
+    de-identification themselves, so that the set moves together.
+  runner: cirro
+  cirroProcess: process-rddc-provisional-clinical-document-deid-0_0
+  cirroExecutor: NEXTFLOW
+  pipelineVersion: 0.0.0
+  kind: deidentify
+  operation: EDAM:operation_3283
+  consumes:
+    classes: [ClinicalDocumentFile]
+    noProperties: [identifying, deid_unconfirmed, deid_confirmed]
+  readsFrom: [deid_qc]
+  writesTo: deid_qc
+  clears: [free_text, direct_identifiers]
+  sets: [deid_unconfirmed]
+  parameters:
+  - id: deid_class
+    fromSourceRegister: deidentificationClass
+- id: deid_omop_notes
+  description: >-
+    Removes identifiers from the free text of a deposited OMOP CDM instance (note and note_nlp tables). Runs once per file, also on files of the same file set that need no
+    de-identification themselves, so that the set moves together.
+  runner: cirro
+  cirroProcess: process-rddc-provisional-omop-note-deid-0_0
+  cirroExecutor: NEXTFLOW
+  pipelineVersion: 0.0.0
+  kind: deidentify
+  operation: EDAM:operation_3283
+  consumes:
+    classes: [OmopTableFile]
+    noProperties: [identifying, deid_unconfirmed, deid_confirmed]
   readsFrom: [deid_qc]
   writesTo: deid_qc
   clears: [free_text, direct_identifiers]
@@ -227,19 +312,19 @@ workflows:
     fromSourceRegister: deidentificationClass
 - id: confirm_deid
   description: >-
-    Confirms text de-identification with Amazon Comprehend Medical PHI detection (an
-    asynchronous job over the files in S3). The dispatcher reports any PHI found as
+    Confirms de-identification, after the pipeline for the file's data type, with Amazon
+    Comprehend Medical PHI detection (an asynchronous job over the files in S3). The dispatcher reports any PHI found as
     the free_text and direct_identifiers properties, which blocks the file for a person.
   runner: service
   pipeline: aws:comprehendmedical:StartPHIDetectionJob
   pipelineVersion: "2018-10-30"
   kind: confirm
   consumes:
-    classes: [ClinicalDocumentFile, TabularFile]
     anyProperties: [deid_unconfirmed]
   readsFrom: [deid_qc]
   writesTo: deid_qc
   clears: [deid_unconfirmed]
+  sets: [deid_confirmed]
   parameters:
   - id: language_code
     value: en
@@ -289,6 +374,41 @@ workflows:
   readsFrom: [deid_qc]
   writesTo: deid_qc
   clears: [direct_identifiers]
+- id: vcf_to_vrs
+  description: >-
+    Normalization requirement: represents the variant calls in a VCF as GA4GH VRS 2.0
+    alleles with computed identifiers, and loads them into the normalized store.
+  runner: cirro
+  cirroProcess: process-rddc-provisional-vcf-to-vrs-0_0
+  cirroExecutor: NEXTFLOW
+  pipelineVersion: 0.0.0
+  kind: transform
+  operation: EDAM:operation_0335
+  consumes:
+    classes: [VariantFile]
+    noProperties: [free_text, deid_unconfirmed, biometric, unregistered_modality]
+  producesStandard: ga4gh_vrs_2
+  readsFrom: [deid_qc]
+  writesTo: normalized
+  parameters:
+  - id: vrs_version
+    value: "2.0"
+- id: qc_sensory
+  description: >-
+    Quality control for sensor data (signals and measures): checks completeness,
+    sampling and device metadata. The only INTAKE pipeline for sensor data; it has no
+    de-identification pipeline.
+  runner: cirro
+  cirroProcess: process-rddc-provisional-qc-sensory-0_0
+  cirroExecutor: NEXTFLOW
+  pipelineVersion: 0.0.0
+  kind: qc
+  consumes:
+    classes: [SensorDataFile]
+    anyProperties: [sensor_qc_pending]
+  readsFrom: [deid_qc]
+  writesTo: deid_qc
+  clears: [sensor_qc_pending]
 - id: sensor_to_measures
   description: Derives measures (IEEE 1752.1) from raw sensor signals.
   runner: cirro
@@ -299,6 +419,7 @@ workflows:
   operation: EDAM:operation_0335
   consumes:
     classes: [SensorSignalFile]
+    noProperties: [sensor_qc_pending]
   produces: SensorMeasureFile
   producesStandard: ieee_1752_1
   readsFrom: [deid_qc]
@@ -312,7 +433,7 @@ workflows:
   kind: load
   consumes:
     classes: [SensorMeasureFile]
-    noProperties: [biometric, unregistered_modality]
+    noProperties: [free_text, deid_unconfirmed, sensor_qc_pending, biometric, unregistered_modality]
   readsFrom: [deid_qc]
   writesTo: normalized
 - id: curation_hold
@@ -427,71 +548,84 @@ workflows:
   - id: subjects
     fromSidecar: batch.subjects
 
-# --- targets (seed rules 2, 3, 4, 5, 6, 8) -------------------------------------
+# --- targets (seed rules 2, 3, 4, 5, 6, 8; normalization requirements) ---------
 targets:
 - id: unregistered
-  description: "Register: a file of a modality the source is not registered for is held for a curator."
   when: {anyProperties: [unregistered_modality]}
   goalZone: curation
   priority: 0
 - id: fhir_to_omop
-  description: "Seed rule 2: FHIR R4 data ends as OMOP CDM 5.4 in the normalized store."
+  description: Seed rule 2.
   when: {classes: [FhirFile], standards: [fhir_r4], noProperties: [biometric]}
   goalClasses: [OmopTableFile]
   goalStandard: omop_cdm_54
   goalZone: normalized
   priority: 1
 - id: omop_load
-  description: "Seed rule 3: an OMOP CDM 5.4 instance is loaded."
+  description: Seed rule 3.
   when: {classes: [OmopTableFile], standards: [omop_cdm_54], fileSetClasses: [OmopCdmInstance], noProperties: [biometric]}
   goalClasses: [OmopTableFile]
   goalZone: normalized
   priority: 1
 - id: ccda
-  description: "Seed rule 4: C-CDA documents go through lane 3."
+  description: Seed rule 4 (lane 3).
   when: {classes: [CcdaDocumentFile], standards: [ccda_21], noProperties: [biometric]}
   goalClasses: [OmopTableFile]
   goalZone: normalized
   priority: 1
 - id: tables_and_text
-  description: "Seed rule 5: tables and clinical documents go through lane 4."
+  description: Seed rule 5 (lane 4).
   when: {classes: [TabularFile, ClinicalDocumentFile], noProperties: [identifying, biometric]}
   goalZone: normalized
   priority: 1
 - id: consent
   description: >-
-    Seed rule 6: a consent file's consent elements are recorded in GOVERN's participants
-    table, and the file stays in INTAKE, out of the clinical lanes.
+    Seed rule 6. record_consent writes the consent elements to GOVERN's participants
+    table; the file stays out of the clinical lanes.
   when: {classes: [ConsentFile], noProperties: [biometric]}
   goalNoProperties: [consent_unrecorded]
   goalZone: deid_qc
   priority: 1
+- id: vrs
+  description: Normalization requirement.
+  when: {classes: [VariantFile], noProperties: [biometric, free_text]}
+  goalClasses: [VariantFile]
+  goalStandard: ga4gh_vrs_2
+  goalZone: normalized
+  priority: 1
 - id: genomics
-  description: Genomics data stays in the de-id/QC environment in INTAKE for omics workflows.
+  description: For omics workflows. Includes variant files the vrs target does not take.
   when: {classes: [GenomicsFile, IndexFile]}
   goalZone: deid_qc
-  priority: 1
+  priority: 2
 - id: imaging
-  description: Images are kept in the de-id/QC environment for imaging workflows, without direct identifiers.
+  description: For imaging workflows.
   when: {classes: [ImagingFile], noProperties: [biometric]}
   goalNoProperties: [direct_identifiers]
   goalZone: deid_qc
   priority: 1
 - id: facial
-  description: Facial images stay in the de-id/QC environment for facial phenotyping.
+  description: For facial phenotyping.
   when: {classes: [FacialImagingFile]}
   goalZone: deid_qc
   priority: 1
+- id: media
+  description: >-
+    A recording of a voice or face contains biometric identifiers, which INTAKE may
+    hold.
+  when: {classes: [AudioFile, VideoFile]}
+  goalZone: deid_qc
+  priority: 1
 - id: sensor
-  description: "Seed rule 8: raw sensor signals become measures before analysis."
-  when: {classes: [SensorDataFile], noProperties: [biometric]}
+  description: Seed rule 8.
+  when: {classes: [SensorDataFile], noProperties: [biometric, free_text]}
   goalClasses: [SensorMeasureFile]
   goalZone: normalized
   priority: 1
 - id: curation
   description: >-
-    Anything else is held for a curator (a deliberate terminal state),
-    including clinical data flagged (or not stated not to contain) biometric identifiers.
+    A deliberate terminal state, not a gap. It catches, for example, clinical files
+    flagged (or not stated not) to contain biometric identifiers.
   when: {}
   goalZone: curation
   priority: 9
@@ -499,46 +633,50 @@ targets:
 # --- obligations and prohibitions (seed rules 1, 5, 7; register) ----------------
 obligations:
 - id: deidentify_before_release
-  description: "Seed rule 1: identifying data is de-identified before release."
+  description: Seed rule 1.
   when: {anyProperties: [identifying, direct_identifiers, biometric]}
   requiredKind: deidentify
   beforeZones: [release, public]
-- id: text_deid_before_lane4
-  description: "Seed rule 5: free text is de-identified before lane 4."
+- id: text_deid_before_loading
+  description: >-
+    Seed rule 5, extended from lane 4 to every lane, so that FHIR narrative and notes,
+    and C-CDA sections, do not reach the OMOP note table unde-identified.
   when: {anyProperties: [free_text]}
   requiredKind: deidentify
-  beforeWorkflows: [tabular_load]
+  beforeZones: [normalized, release, public]
 - id: confirm_deid_before_loading
-  description: De-identified text is confirmed by an independent check before it is loaded or released.
+  description: The check is Amazon Comprehend Medical PHI detection (confirm_deid).
   when: {anyProperties: [deid_unconfirmed]}
   requiredKind: confirm
   beforeZones: [normalized, release, public]
+- id: sensor_qc_before_loading
+  when: {anyProperties: [sensor_qc_pending]}
+  requiredKind: qc
+  beforeZones: [normalized]
 - id: mask_before_release
-  description: "Seed rule 7: dates and ZIP codes are masked, per the source's date policy, before release."
+  description: Seed rule 7. Which masking workflow runs depends on the source's date policy.
   when: {anyProperties: [dates, zip_codes]}
   requiredKind: mask
   beforeZones: [release, public]
 - id: expert_review_before_release
-  description: "Register: data from an expert-determination source is reviewed before release."
   when: {anyProperties: [needs_expert_review]}
   requiredKind: expert_review
   beforeZones: [release, public]
 
 prohibitions:
 - id: biometric_stays_in_intake
-  description: "Seed rule 1: biometric data stays in INTAKE: never normalized or released."
+  description: Seed rule 1.
   when: {anyProperties: [biometric]}
   zones: [normalized, release, public]
 - id: consent_not_clinical
-  description: "Seed rule 6: consent files do not enter clinical stores."
+  description: Seed rule 6.
   when: {classes: [ConsentFile]}
   zones: [normalized, release, public]
 - id: unregistered_stays_in_intake
-  description: "Register: data of an unregistered modality stays in INTAKE until a curator decides."
+  description: Until a curator decides.
   when: {anyProperties: [unregistered_modality]}
   zones: [normalized, release, public]
 - id: only_open_tier_is_public
-  description: "Register: only Open-tier sources are published outside the boundary."
   when:
     sourceFacts:
     - field: accessTier

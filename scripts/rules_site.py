@@ -84,15 +84,18 @@ def explorer_data(rules, rel):
         "properties": [[p["id"], p.get("description", "")] for p in rules.get("properties", [])],
         "initialZone": next(z["id"] for z in rules["zones"] if z.get("initial")),
         "workflows": {w["id"]: {k: w[k] for k in ("runner", "cirroExecutor", "kind", "description", "produces",
-                                                   "producesStandard", "readsFrom", "writesTo", "clears", "sets", "recordsTo")
+                                                   "producesStandard", "readsFrom", "writesTo", "clears", "sets", "recordsTo",
+                                                   "pipelineVersion")
                                 if k in w}
                       for w in rules["workflows"]},
         "governance": {"label": "GOVERN", "description": module_description("GOVERN"),
                        "records": sorted({w["recordsTo"] for w in rules["workflows"] if w.get("recordsTo")})},
         "zoneList": [{k: z[k] for k in ("id", "description", "module", "initial", "cirroEnvironment") if k in z}
                      for z in rules["zones"]],
-        "targets": {t["id"]: {"description": t.get("description", ""), "zone": t["goalZone"]} for t in rules["targets"]},
-        "obligations": {o["id"]: o.get("description", "") for o in rules.get("obligations", [])},
+        "targets": {t["id"]: {"sentence": plain(target_sentence(t, rules)), "note": t.get("description", ""),
+                              "zone": t["goalZone"]} for t in rules["targets"]},
+        "obligations": {o["id"]: {"sentence": plain(obligation_sentence(o, rules)), "note": o.get("description", "")}
+                        for o in rules.get("obligations", [])},
         "zones": {z["id"]: z.get("description", "") for z in rules["zones"]},
         "routeFields": ["target", "startMask", "workflows", "duties", "release", "public", "flags"],
         "routes": routes, "table": table,
@@ -216,7 +219,7 @@ def workflow_chip(wid, rules):
     w = next(x for x in rules["workflows"] if x["id"] == wid)
     return (f"<span class='pr-step' title='{esc(w.get('description', ''))}'>"
             f"<a href='#wf-{esc(wid)}'>{soft(wid)}</a>"
-            f"<small>{esc(RUNNER_LABEL.get(w['runner'], w['runner']))}</small></span>")
+            f"<small>{esc(RUNNER_LABEL.get(w['runner'], w['runner']))} · v{esc(w['pipelineVersion'])}</small></span>")
 
 
 def route_html(steps, rules):
@@ -318,8 +321,90 @@ def targets_map(rules, rel, data):
         note = f"<p>For every class below that is not already there:</p><ul>{items}</ul>"
     return (note + "<div class='table-wrap'><table class='pr-map'><colgroup><col class='pr-c-class'><col class='pr-c-route'>"
             "<col class='pr-c-end'><col class='pr-c-why'></colgroup><thead><tr><th scope='col'>Deposited as</th>"
-            "<th scope='col'>Route (default)</th><th scope='col'>Ends as</th>"
+            "<th scope='col'>Route (default)</th><th scope='col'>Normalization target</th>"
             "<th scope='col'>Goes elsewhere if (one change)</th></tr></thead>" + "".join(body) + "</table></div>")
+
+
+def target_sentence(t, rules):
+    stds = {s["id"]: s.get("description", s["id"]) for s in rules.get("standards", [])}
+    goal = f"zone {code(t['goalZone'])}"
+    if t.get("goalClasses"):
+        goal += " as " + join_or(code(c) for c in t["goalClasses"])
+    if t.get("goalStandard"):
+        goal += f" conforming to {esc(stds.get(t['goalStandard'], t['goalStandard']))}"
+    if t.get("goalNoProperties"):
+        goal += ", without " + join_or(code(p) for p in t["goalNoProperties"])
+    return f"{subject(t['when'], rules)} end{'s' if not (t['when'] or {}).get('classes') else ''} in {goal}."
+
+
+def obligation_sentence(o, rules):
+    before = []
+    if o.get("beforeZones"):
+        before.append("before entering " + zone_list(o["beforeZones"]))
+    if o.get("beforeWorkflows"):
+        before.append("before " + join_or(code(w) for w in o["beforeWorkflows"]) + " runs")
+    article = "an" if o["requiredKind"][0] in "aeiou" else "a"
+    return (f"{subject(o['when'], rules)} must go through {article} {code(o['requiredKind'])} workflow "
+            f"{' or '.join(before)}.")
+
+
+def plain(html_text):
+    """A generated sentence without its markup, for the page's script."""
+    import re
+    return html.unescape(re.sub(r"<[^>]+>", "", html_text))
+
+
+def note(rule):
+    """A rule's description, when it has one: origin or rationale, not a restatement."""
+    return f"<p class='muted'>{esc(rule['description'])}</p>" if rule.get("description") else ""
+
+
+INTAKE_KINDS = {"deidentify", "qc", "record"}
+
+
+def stage(w, zones):
+    """Where a workflow acts: release (from the normalized store on); for workflows that
+    take any data type, ingest (the one generic pipeline), check (a confirmation service)
+    or hold (for a curator); for the rest, intake (de-identification, QC or record for one
+    data type) or normalization (into the normalized store, or a transform in INTAKE);
+    and batch (withdraw, restrict)."""
+    if w["kind"] in E.BATCH_LEVEL:
+        return "batch"
+    if any(zones[z].get("module") not in ("INTAKE", None) for z in w["readsFrom"]):
+        return "release"
+    if not (w.get("consumes") or {}).get("classes"):
+        return {"ingest": "ingest", "confirm": "check"}.get(w["kind"], "hold")
+    if w["kind"] in INTAKE_KINDS:
+        return "intake"
+    return "normalization"
+
+
+def pipelines_by_type(rules, rel):
+    zones = {z["id"]: z for z in rules["zones"]}
+    by_stage = {}
+    for w in rules["workflows"]:
+        by_stage.setdefault(stage(w, zones), []).append(w)
+    rows = []
+    for cls in rel.concrete:
+        # A pipeline applies if it takes the class and does not refuse a property every
+        # file of the class has (imaging_deid refuses biometric data, so not facial images).
+        always = E.class_props(rules, rel, cls)[0]
+        cells = []
+        for st in ("intake", "normalization"):
+            ws = [w for w in by_stage.get(st, []) if any(rel.is_a(cls, c) for c in w["consumes"]["classes"])
+                  and not always & set(w["consumes"].get("noProperties") or [])]
+            cells.append(" ".join(workflow_chip(w["id"], rules) for w in ws) or "<span class='muted'>—</span>")
+        rows.append(f"<tr><td>{scode(cls)}</td><td>{cells[0]}</td><td>{cells[1]}</td></tr>")
+    chips = lambda st: " ".join(workflow_chip(w["id"], rules) for w in by_stage.get(st, [])) or "none"
+    return f"""<h2>Pipelines by data type</h2>
+<p>De-identification, QC and normalization pipelines are specific to a data type, and each
+has its own version. Only the ingest is generic: {chips('ingest')} brings files of any type
+into INTAKE. Two steps are not pipelines and apply to any type: {chips('check')} confirms a
+de-identification, and {chips('hold')} holds a file for a curator. After normalization, the
+release steps are {chips('release')}.</p>
+<div class="table-wrap"><table class="pr-map"><colgroup><col class="pr-c-class"><col style="width:38%"><col style="width:38%"></colgroup>
+<thead><tr><th scope="col">Data class</th><th scope="col">In INTAKE (de-identification, QC, record)</th>
+<th scope="col">Normalization</th></tr></thead><tbody>{''.join(rows)}</tbody></table></div>"""
 
 
 def card(anchor, title, badge, sentence, extra=""):
@@ -356,37 +441,26 @@ reach.</div>""")
 <p>Each row is a data class deposited in the usual way: with its standard, no sensitivity
 flags set except that direct identifiers are removed, from a source registered for its
 modality. The last column lists single changes that send it elsewhere. Hover over a
-workflow for what it does.</p>""")
+workflow for what it does. Files of one file set with the same target move together, so a
+file can take an extra step that another member of its set needs.</p>""")
     out.append(targets_map(rules, rel, data))
+
+    out.append(pipelines_by_type(rules, rel))
 
     out.append("<h2>Targets</h2><p>Each file gets the first matching target, by priority (lowest first).</p>")
     for t in sorted(rules["targets"], key=lambda t: (t["priority"], t["id"])):
-        goal = f"zone {code(t['goalZone'])}"
-        if t.get("goalClasses"):
-            goal += " as " + join_or(code(c) for c in t["goalClasses"])
-        if t.get("goalStandard"):
-            goal += f" conforming to {esc(stds.get(t['goalStandard'], t['goalStandard']))}"
-        if t.get("goalNoProperties"):
-            goal += ", without " + join_or(code(p) for p in t["goalNoProperties"])
         out.append(card(f"target-{t['id']}", code(t["id"]), f"<span class='badge'>priority {t['priority']}</span>",
-                        f"{subject(t['when'], rules)} end{'s' if not (t['when'] or {}).get('classes') else ''} in {goal}.",
-                        f"<p class='muted'>{esc(t.get('description', ''))}</p>"))
+                        target_sentence(t, rules), note(t)))
 
     out.append("<h2>Obligations</h2><p>Duties that hold on every route a file can take.</p>")
     for o in rules.get("obligations", []):
-        before = []
-        if o.get("beforeZones"):
-            before.append("before entering " + zone_list(o["beforeZones"]))
-        if o.get("beforeWorkflows"):
-            before.append("before " + join_or(code(w) for w in o["beforeWorkflows"]) + " runs")
         out.append(card(f"obligation-{o['id']}", code(o["id"]), "<span class='badge'>duty</span>",
-                        f"{subject(o['when'], rules)} must go through a {code(o['requiredKind'])} workflow "
-                        f"{' or '.join(before)}.", f"<p class='muted'>{esc(o.get('description', ''))}</p>"))
+                        obligation_sentence(o, rules), note(o)))
     out.append("<h2>Prohibitions</h2>")
     for h in rules.get("prohibitions", []):
         out.append(card(f"prohibition-{h['id']}", code(h["id"]), "<span class='badge'>never</span>",
                         f"{subject(h['when'], rules)} never enter{'s' if not (h['when'] or {}).get('classes') else ''} {zone_list(h['zones'])}.",
-                        f"<p class='muted'>{esc(h.get('description', ''))}</p>"))
+                        note(h)))
 
     out.append("""<h2>Workflows</h2><p>The workflow catalog. Cirro workflows run as Cirro processes in a
 Cirro environment on Cirro datasets; container and service workflows read and write storage
@@ -456,7 +530,8 @@ def explorer_page(rules):
 workflows, and why. Generated from the rule set {code(rules['id'])} {esc(rules['version'])}.</p>
 <div class="note"><strong>Prototype for discussion.</strong> Workflows and register values are provisional.
 A sensitivity flag left unstated in a sidecar counts as true. The route shown is the one the
-orchestrator would choose; see <a href="processing-rules.html">Rules and targets</a>
+orchestrator would choose for this file on its own. Files of one file set with the same target
+move together: if one of them needs a step, such as de-identification, all of them take it. See <a href="processing-rules.html">Rules and targets</a>
 for every rule.</div>
 <div id="pr-explorer" class="pr-explorer" data-src="assets/data-trajectory.json">
   <p class="muted">Loading the rules…</p>

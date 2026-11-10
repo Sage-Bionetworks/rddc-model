@@ -84,6 +84,10 @@ enums:
         description: "Converts data of one class (and standard) to another, e.g. FHIR to OMOP."
       load:
         description: "Loads data into a store without changing its class."
+      qc:
+        description: >-
+          Checks the quality of data of one type, such as sensor signals or measures, and
+          reports findings. Leaves the data unchanged.
       confirm:
         description: >-
           Checks independently that an earlier de-identification worked, and reports any
@@ -303,6 +307,7 @@ classes:
     - id
     - url
     - classes
+    - outputOnly
     - description
     slot_usage:
       id:
@@ -313,6 +318,10 @@ classes:
       classes:
         required: true
         description: "Data classes that can conform to this standard."
+      outputOnly:
+        description: >-
+          The standard is only produced by workflows, never declared in a sidecar, so it
+          need not be a pinned conformsTo value, and no deposited file takes it.
 
   Zone:
     description: >-
@@ -744,6 +753,9 @@ slots:
   standards:
     multivalued: true
     description: "Standard ids from this rule set."
+  outputOnly:
+    range: boolean
+    description: "Whether only workflows produce data in this standard."
   url:
     range: uri
     description: "The standard's URL as sidecars write it in conformsTo."
