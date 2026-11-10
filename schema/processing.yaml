@@ -92,6 +92,10 @@ enums:
         description: "Generalises quasi-identifiers such as dates and ZIP codes for release."
       expert_review:
         description: "An expert determination of re-identification risk."
+      record:
+        description: >-
+          Records register entries taken from the file in GOVERN, such as consent elements
+          in the participants table. Writes no data files.
       process:
         description: "Runs domain processing (QC, analysis) and leaves the data where it is kept."
       hold:
@@ -193,6 +197,24 @@ enums:
         description: "Dates are shifted by a per-person offset."
       year_only:
         description: "Dates are reduced to the year."
+  ModuleEnum:
+    description: "The platform modules of the RDDC infrastructure that hold data."
+    permissible_values:
+      INTAKE:
+        description: "Receives deposits; holds files for curation; runs de-identification and QC."
+      NORMALIZE:
+        description: "The normalized, analysis-ready store."
+      DISCOVER:
+        description: >-
+          Where researchers use released data. The trusted research environment (TRE)
+          is part of DISCOVER and is reached only after release.
+      GOVERN:
+        description: >-
+          The registers (source register, project register, participants table, batch
+          and release register), approvals and audit records that govern every data
+          pathway. Other modules read its registers to enforce its decisions. It holds no
+          patient-level data, so no zone belongs to it.
+
   AccessTierEnum:
     description: "The access tier of a source's data."
     permissible_values:
@@ -293,19 +315,19 @@ classes:
         description: "Data classes that can conform to this standard."
 
   Zone:
-    description: "A place where data sits, such as the deposit prefix, the TRE or a release store."
+    description: >-
+      A place where data sits, such as the deposit prefix, the de-identification and QC
+      environment, the normalized store or the release database.
     slots:
     - id
     - description
-    - insideTre
+    - module
     - initial
     - location
     - cirroEnvironment
     slot_usage:
       id:
         range: Name
-        required: true
-      insideTre:
         required: true
       location:
         description: >-
@@ -339,6 +361,7 @@ classes:
     - writesTo
     - sets
     - clears
+    - recordsTo
     - coversZones
     - priority
     - parameters
@@ -454,7 +477,7 @@ classes:
       Where items matching a condition at deposit must end up. Each item gets the
       matching target with the lowest priority number; two matching targets with the
       same priority are a conflict. A target can be a deliberate terminal state, such as
-      holding a file in the TRE for a curator.
+      holding a file for a curator.
     slots:
     - id
     - description
@@ -729,9 +752,9 @@ slots:
     range: Zone
     multivalued: true
     inlined_as_list: true
-  insideTre:
-    range: boolean
-    description: "Whether the zone is inside the trusted research environment."
+  module:
+    range: ModuleEnum
+    description: "The platform module the zone belongs to. Unset: outside the platform, such as public content."
   initial:
     range: boolean
     description: "Deposited files start in this zone. Exactly one zone is initial."
@@ -788,6 +811,8 @@ slots:
   clears:
     multivalued: true
     description: "Data property ids the output no longer has."
+  recordsTo:
+    description: 'For a record workflow, the GOVERN register it writes to, e.g. "participants table".'
   coversZones:
     multivalued: true
     description: "Zone ids a withdraw or restrict workflow acts on."

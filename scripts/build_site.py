@@ -141,6 +141,10 @@ NAV = [
         ("recipes.html", "Recipes by data type"),
         ("mistakes.html", "Common mistakes"),
     ]),
+    ("Processing configuration (prototype)", [
+        ("processing-rules.html", "Rules and targets"),
+        ("data-trajectory.html", "Data trajectory"),
+    ]),
     ("Reference", [
         ("reference.html", "Sidecar schema reference"),
         ("vocabularies.html", "Sidecar vocabularies"),
@@ -1363,6 +1367,24 @@ def check_recipes():
         raise SystemExit("recipe check failed:\n  " + "\n  ".join(problems))
 
 
+def processing_rules(out):
+    """The processing configuration pages, and the data trajectory page's data in assets/. They are
+    generated from rules/rules.yaml, with what scripts/check_rules.py proves."""
+    import check_rules
+    import rules_engine
+    import rules_site
+
+    rules = rules_engine.load_rules()
+    rel = rules_engine.Release(rules["modelRelease"])
+    problems = check_rules.check(rules, rel, verbose=False)
+    deposits = rules_engine.verification_deposits(rules, rel)[0].count("start(")
+    data = rules_site.explorer_data(rules, rel)
+    with open(os.path.join(out, "assets", "data-trajectory.json"), "w") as f:
+        json.dump(data, f, separators=(",", ":"))
+    return {"processing-rules.html": rules_site.rules_page(rules, rel, data, problems, deposits),
+            "data-trajectory.html": rules_site.explorer_page(rules)}
+
+
 def main():
     out = sys.argv[1] if len(sys.argv) > 1 else os.path.join(SITE, "dist")
     check_recipes()
@@ -1388,6 +1410,7 @@ def main():
     shutil.copy(os.path.join(ROOT, "schema", "croissant-1.1-context.json"), dl)
 
     template = open(os.path.join(SITE, "template.html")).read()
+    rules_pages = processing_rules(out)
     index = []
     generated = {"reference.html": reference_page, "vocabularies.html": vocab_page,
                  "data-classes.html": data_classes_page, "data-vocabularies.html": data_vocab_page}
@@ -1395,7 +1418,7 @@ def main():
     # table links each class to the page that covers it.
     bodies = {}
     for fname, _ in PAGES:
-        if fname not in generated:
+        if fname not in generated and fname not in rules_pages:
             bodies[fname] = open(os.path.join(SITE, "pages", fname)).read()
     for fname in list(bodies):
         if "<rddc-classification>" not in bodies[fname]:
@@ -1404,7 +1427,7 @@ def main():
         bodies[fname] = expand_generators(bodies[fname], fname)
     check_data_coverage()
     for fname, title in PAGES:
-        body = generated[fname]() if fname in generated else bodies[fname]
+        body = generated[fname]() if fname in generated else rules_pages.get(fname) or bodies[fname]
         body = body.replace("{{version}}", VERSION)
         page, rendered = render(fname, title, body, template, home=fname == "index.html")
         open(os.path.join(out, fname), "w").write(page)

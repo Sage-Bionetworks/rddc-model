@@ -23,7 +23,7 @@
           "cirroExecutor": "INGEST",
           "pipelineVersion": "0.0.0",
           "dispatchId": "ingest_files-3a23f33884",
-          "cirroEnvironment": "provisional-rddc-tre",
+          "cirroEnvironment": "provisional-rddc-intake",
           "inputs": [
             {
               "file": "urn:uuid:00000029-0000-4000-8000-000000000029",

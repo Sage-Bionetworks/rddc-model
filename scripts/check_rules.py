@@ -109,7 +109,7 @@ MUTATIONS = {
         "obligation mask_before_release"),
     "the curation hold writes to the release": (
         edit(lambda r: wf(r, "curation_hold").update(writesTo="release")),
-        "prohibition biometric_stays_in_tre"),
+        "prohibition biometric_stays_in_intake"),
     "Cirro: a Cirro pipeline reads straight from the deposit": (
         edit(lambda r: wf(r, "fhir_to_omop")["readsFrom"].append("deposit")),
         "reads from zone deposit, which is not a Cirro environment (ingest first)"),
@@ -124,7 +124,7 @@ MUTATIONS = {
         "obligation confirm_deid_before_loading"),
     "the Comprehend Medical check is recorded as a process": (
         edit(lambda r: wf(r, "confirm_deid").update(kind="process")),
-        "a service writes to zone tre, a Cirro environment"),
+        "a service writes to zone deid_qc, a Cirro environment"),
     "text de-identification is recorded as a transform": (
         edit(lambda r: wf(r, "text_deid").update(kind="transform")),
         "obligation text_deid_before_lane4"),
@@ -133,11 +133,11 @@ MUTATIONS = {
         "no_route sensor"),
     "two targets claim FHIR at the same priority": (
         edit(lambda r: r["targets"].append(
-            {"id": "fhir_hold", "when": {"classes": ["FhirFile"]}, "goalZone": "tre", "priority": 1})),
+            {"id": "fhir_hold", "when": {"classes": ["FhirFile"]}, "goalZone": "deid_qc", "priority": 1})),
         "target_conflict"),
-    "withdraw does not reach GOVERN": (
-        edit(lambda r: wf(r, "withdraw_subjects")["coversZones"].remove("govern")),
-        "interaction withdraw does not cover zone govern"),
+    "withdraw does not reach the curation hold": (
+        edit(lambda r: wf(r, "withdraw_subjects")["coversZones"].remove("curation")),
+        "interaction withdraw does not cover zone curation"),
     "masking runs on data with nothing to mask": (
         edit(lambda r: wf(r, "release_mask_shift")["consumes"].pop("anyProperties")),
         "cycle"),
@@ -149,7 +149,7 @@ MUTATIONS = {
         "obligation expert_review_before_release"),
     "register: lane 2 takes a modality the source is not registered for": (
         edit(lambda r: wf(r, "fhir_to_omop")["consumes"]["noProperties"].remove("unregistered_modality")),
-        "prohibition unregistered_stays_in_tre"),
+        "prohibition unregistered_stays_in_intake"),
     "register: a value that is not in the release": (
         edit(lambda r: wf(r, "publish_open")["consumes"]["sourceFacts"][0].update(anyOf=["Open"])),
         "'Open' is not a value of register field accessTier"),

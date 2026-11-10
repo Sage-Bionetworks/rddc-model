@@ -490,3 +490,123 @@ details.faq[open] summary { margin-bottom: 8px; }
   .top, .side, .toc, .pager, .copy { display: none !important; }
   .shell { display: block; }
 }
+
+/* hero legend sits above the code */
+.hero-code .legend { margin: 0 0 8px; }
+.hero-code .hint { margin: 0 0 4px; }
+.legend .chip { font-size: 0.85rem; }
+.hero > div { min-width: 0; }
+.hero h1 { overflow-wrap: break-word; }
+.legend li { display: flex; }
+.legend button { margin: 0; padding: 3px 10px; line-height: 1.4; }
+@media (max-width: 480px) {
+  .hero h1 { font-size: 2.1rem; }
+  .brand span { display: none; }
+}
+
+/* --- Processing rules (pr-) -------------------------------------------------
+   Colour carries one thing here: where a data class ends up (four destinations,
+   categorical slots 1-4, validated for both themes). It marks swatches and row
+   edges only; every destination is also named in text. */
+:root {
+  --pr-d1: #2a78d6; --pr-d2: #eb6834; --pr-d3: #1baf7a; --pr-d4: #eda100;
+  --pr-ok: #0b7566; --pr-fail: #b42318;
+}
+[data-theme="dark"] {
+  --pr-d1: #3987e5; --pr-d2: #d95926; --pr-d3: #199e70; --pr-d4: #c98500;
+  --pr-ok: #4fd1b8; --pr-fail: #ff8a80;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --pr-d1: #3987e5; --pr-d2: #d95926; --pr-d3: #199e70; --pr-d4: #c98500;
+    --pr-ok: #4fd1b8; --pr-fail: #ff8a80;
+  }
+}
+.pr-d1 { --pr-c: var(--pr-d1); } .pr-d2 { --pr-c: var(--pr-d2); }
+.pr-d3 { --pr-c: var(--pr-d3); } .pr-d4 { --pr-c: var(--pr-d4); }
+
+.pr-status.pr-ok { border-left: 4px solid var(--pr-ok); }
+.pr-fail { border-left: 4px solid var(--pr-fail); }
+
+table.pr-map { table-layout: fixed; }
+table.pr-map th, table.pr-map td { vertical-align: top; white-space: normal; }
+table.pr-map code { white-space: normal; }
+table.pr-map .pr-c-class { width: 24%; } table.pr-map .pr-c-route { width: 31%; }
+table.pr-map .pr-c-end { width: 19%; } table.pr-map .pr-c-why { width: 26%; }
+table.pr-map .pr-step { white-space: normal; }
+table.pr-map tbody.pr-dest td:first-child { border-left: 4px solid var(--pr-c); }
+table.pr-map tr.pr-group th { text-align: left; font-weight: 600; padding-top: 14px; background: var(--paper); }
+.pr-swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; background: var(--pr-c); margin-right: 8px; vertical-align: -1px; }
+.pr-route { white-space: normal; }
+.pr-why { margin: 0; padding-left: 18px; font-size: 0.85rem; color: var(--ink-2); }
+
+.pr-step { display: inline-flex; align-items: baseline; gap: 6px; padding: 2px 8px; border: 1px solid var(--rule); border-radius: 6px; background: var(--surface); font: 500 0.82rem var(--mono); white-space: nowrap; margin: 2px 0; }
+.pr-step a { color: var(--ink); text-decoration: none; }
+.pr-step a:hover { text-decoration: underline; }
+.pr-step small { font: 500 0.68rem var(--sans); color: var(--ink-3); }
+.pr-arrow { color: var(--ink-3); margin: 0 6px; }
+
+.pr-card { border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); padding: 12px 16px; margin: 12px 0; }
+.pr-card > p { margin: 8px 0 0; }
+.pr-card-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.pr-runner { font: 600 0.72rem var(--sans); color: var(--ink-2); background: var(--code-bg); border-radius: 999px; padding: 1px 8px; margin-left: 6px; }
+table.pr-kv { margin-top: 8px; font-size: 0.86rem; }
+table.pr-kv th { width: 170px; text-align: left; font-weight: 500; color: var(--ink-3); vertical-align: top; }
+
+.pr-explorer { margin-top: 20px; }
+.pr-body { display: grid; grid-template-columns: minmax(260px, 340px) minmax(0, 1fr); gap: 28px; align-items: start; margin-top: 20px; }
+
+/* The zone map stays in view while the reader changes the description. */
+.pr-map-wrap { position: sticky; top: var(--top-h); z-index: 5; background: var(--paper); padding: 10px 0 8px; border-bottom: 1px solid var(--rule); }
+.pr-map-svg { display: block; width: 100%; height: auto; max-height: 360px; }
+.pr-map-svg text { font-family: var(--sans); text-anchor: middle; fill: var(--ink); }
+.pr-module { fill: none; stroke: var(--ink-3); stroke-dasharray: 6 5; stroke-width: 1.2; }
+.pr-map-svg .pr-module-label { text-anchor: start; font: 600 11px var(--sans); fill: var(--ink-3); letter-spacing: 0.06em; }
+.pr-node rect { fill: var(--surface); stroke: var(--rule); stroke-width: 1.5; transition: stroke 0.25s, stroke-width 0.25s; }
+.pr-map-svg .pr-node-name { font: 600 14px var(--mono); fill: var(--ink-3); transition: fill 0.25s; }
+.pr-map-svg .pr-node-sub { font: 500 10px var(--sans); fill: var(--ink-3); }
+.pr-map-svg .pr-node-tag { font: 600 11px var(--sans); fill: var(--ink-2); }
+.pr-node.pr-on rect { stroke: var(--ink-2); }
+.pr-node.pr-on .pr-node-name { fill: var(--ink); }
+.pr-node.pr-target rect { stroke: var(--pr-d1); stroke-width: 3; }
+.pr-e { fill: none; stroke: var(--rule); stroke-width: 1.5; }
+.pr-ah-faint { fill: var(--rule); }
+.pr-e-on { fill: none; stroke: var(--pr-d1); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 0; animation: pr-draw 0.45s ease-out; }
+.pr-ah-on { fill: var(--pr-d1); }
+.pr-e-alt { fill: none; stroke: var(--ink-3); stroke-width: 2; stroke-dasharray: 5 5; }
+.pr-ah-alt { fill: var(--ink-3); }
+.pr-tie { stroke: var(--ink-3); stroke-width: 1.2; stroke-dasharray: 2 4; }
+.pr-band rect { fill: var(--code-bg); stroke: var(--rule); stroke-width: 1.2; }
+.pr-map-svg .pr-band-label { text-anchor: start; font: 600 12px var(--sans); fill: var(--ink-2); letter-spacing: 0.02em; }
+.pr-e-rec { fill: none; stroke: var(--pr-d1); stroke-width: 2.5; stroke-dasharray: 2 5; stroke-linecap: round; }
+.pr-badge circle { fill: var(--ink); stroke: var(--paper); stroke-width: 2; }
+.pr-map-svg .pr-badge text { font: 700 11px var(--sans); fill: var(--surface); }
+@keyframes pr-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) { .pr-e-on { animation: none; } .pr-node rect, .pr-node-name { transition: none; } }
+.pr-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; font-size: 0.8rem; color: var(--ink-2); margin-top: 4px; }
+.pr-legend-item { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.pr-key { display: inline-block; width: 26px; height: 0; border-top: 3px solid var(--pr-d1); }
+.pr-key-alt { border-top: 2px dashed var(--ink-3); }
+.pr-key-faint { border-top: 2px solid var(--rule); }
+.pr-key-rec { border-top: 3px dotted var(--pr-d1); }
+.pr-key-module { width: 18px; height: 12px; border: 1.2px dashed var(--ink-3); border-radius: 3px; }
+.pr-num { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--ink); color: var(--surface); font: 700 0.72rem var(--sans); margin-right: 6px; vertical-align: 1px; }
+.pr-form { display: grid; gap: 14px; }
+.pr-group-box { border: 1px solid var(--rule); border-radius: 10px; padding: 10px 14px 12px; margin: 0; background: var(--surface); }
+.pr-group-box legend { font-weight: 600; padding: 0 4px; }
+.pr-field { display: grid; gap: 4px; margin: 8px 0; }
+.pr-field select { font: inherit; padding: 5px 8px; border: 1px solid var(--rule); border-radius: 6px; background: var(--surface); color: var(--ink); }
+.pr-check { display: grid; grid-template-columns: auto 1fr; column-gap: 8px; align-items: baseline; margin: 8px 0; }
+.pr-check .pr-hint { grid-column: 2; }
+.pr-hint { margin: 0; font-size: 0.78rem; color: var(--ink-3); line-height: 1.4; }
+.pr-result h2 { margin-top: 0; }
+.pr-steps { list-style: none; padding: 0; margin: 8px 0 16px; border-left: 2px solid var(--rule); }
+.pr-steps li { padding: 6px 0 10px 16px; position: relative; }
+.pr-steps li::before { content: ""; position: absolute; left: -6px; top: 12px; width: 10px; height: 10px; border-radius: 50%; background: var(--surface); border: 2px solid var(--ink-3); }
+.pr-step-name { font-weight: 600; margin-bottom: 4px; }
+.pr-state { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; font-size: 0.88rem; color: var(--ink-2); }
+.pr-zone { font: 600 0.72rem var(--sans); text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-2); border: 1px solid var(--rule); border-radius: 999px; padding: 1px 8px; }
+.pr-props { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+.pr-prop { font: 500 0.74rem var(--mono); color: var(--ink-2); background: var(--code-bg); border-radius: 4px; padding: 1px 6px; cursor: help; }
+@media (max-width: 900px) { .pr-body { grid-template-columns: 1fr; } }
+@media (max-height: 760px) { .pr-map-wrap { position: static; } }

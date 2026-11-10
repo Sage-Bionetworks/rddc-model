@@ -37,6 +37,22 @@ python scripts/check_orchestration.py    # routes, batch states, dispatch
 
 `make check` runs both checkers, and so does CI.
 
+## On the documentation site
+
+`python scripts/build_site.py` generates a **Processing configuration (prototype)** section from
+`rules.yaml` (code in `scripts/rules_site.py`):
+
+- **Rules and targets** (`processing-rules.html`): where each data class ends up by
+  default and which single changes send it elsewhere (the targets map); every target,
+  obligation, prohibition and workflow as a sentence; and what the checker proved when
+  the page was built.
+- **Data trajectory** (`data-trajectory.html`): describe a file (class,
+  standard, sensitivity flags) and its source (register values, registered
+  modalities) and see its target, route, duties and release options. The routes are
+  computed at build time by `rules_engine.deposit_routes`, which picks routes the way
+  the orchestrator does. `check_orchestration.py` checks that the two agree. The
+  address bar holds the description, so a link can be shared.
+
 ## How the rules are read
 
 An **item** is a file at deposit. Its **state** is its data class, the standard it
@@ -156,8 +172,13 @@ orchestration fails rather than pick one.
 
 ## Known limits
 
-- **Workflows, zones, locations and register values are placeholders.** Whether the
-  normalized store is inside the TRE is open; here it is treated as outside.
+- **Workflows, zones, locations and register values are placeholders.** Each zone
+  belongs to a platform module (INTAKE, NORMALIZE, DISCOVER). The TRE is part of
+  DISCOVER and is reached only after release, so no zone before release is TRE.
+- **GOVERN is not a zone.** It holds registers and approvals, not patient-level data.
+  The rules read its source register. Workflows of kind `record` write register
+  entries to it and no data files; for example, `record_consent` writes a consent
+  file's consent elements to the participants table, and the file stays in INTAKE.
 - **One standard per item**: the first rule set standard listed in the file set's
   `conformsTo`.
 - **A file set can split** into groups when its files' properties differ. For example,
@@ -172,7 +193,7 @@ orchestration fails rather than pick one.
   status maps to step status in the same way as a Cirro dataset's.
 - **Analyses that leave the rules' view of the data unchanged** (genomics QC, facial
   phenotyping) are not in the catalog: as routing steps they would be cycles. They run
-  in the TRE environment on the ingested datasets.
+  in the INTAKE de-id/QC environment on the ingested datasets.
 - **Cirro's own process graph** (`childProcessIds`, `parentProcessIds`) is not
   checked. A check with Cirro credentials could confirm that each Cirro step on a
   route may follow the one before it, and that each `cirroProcess` exists with the

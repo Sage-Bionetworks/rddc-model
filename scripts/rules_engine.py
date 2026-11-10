@@ -27,7 +27,7 @@ ASSAY_ENUMS = ("GenomicsAssayEnum", "ImagingAssayEnum", "SensorAssayEnum")
 BATCH_LEVEL = {"withdraw", "restrict"}
 FLAG_SOURCES = {"flag_true", "flag_false"}
 # Kinds of workflow that record a finding or decision and write no data.
-NO_DATA_KINDS = {"expert_review", "confirm"}
+NO_DATA_KINDS = {"expert_review", "confirm", "record"}
 
 
 # --- the pinned release ---------------------------------------------------------
@@ -220,7 +220,7 @@ def name_errors(rules, rel):
 def cirro_errors(rules):
     """Cirro works on datasets in environments. A Cirro process other than an ingest reads
     only from zones that are Cirro environments, and only Cirro processes write data to
-    them (an expert review or a confirmation records a finding and writes no data)."""
+    them (an expert review, a confirmation or a GOVERN record writes no data)."""
     environments = {z["id"] for z in rules.get("zones", []) if "cirroEnvironment" in z}
     errs = []
     for w in rules.get("workflows", []):
@@ -403,29 +403,55 @@ def register_options(rules):
     return out
 
 
+def profile_dims(rules):
+    """The dimensions of a deposit profile, in the order profiles are enumerated:
+    [(name, options)]. Names are fileSetClass, techniques, interaction and
+    "register:<field>"; options include None (none, or a missing register field)."""
+    used = {k: set() for k in ("fileSetClasses", "techniques", "interactions")}
+    for _, c in conditions(rules):
+        for k in used:
+            used[k] |= set(c.get(k) or [])
+    dims = [("fileSetClass", [None] + sorted(used["fileSetClasses"])),
+            ("techniques", [None] + sorted(used["techniques"])),
+            ("interaction", [None] + sorted(used["interactions"]))]
+    fields = register_options(rules)
+    dims += [(f"register:{f}", fields[f]) for f in sorted(fields)]
+    return dims
+
+
+def profile_of(dims, values):
+    """A profile dict from one option per dimension."""
+    prof = {"register": {}}
+    for (name, _), v in zip(dims, values):
+        if name.startswith("register:"):
+            if v is not None:
+                prof["register"][name.split(":", 1)[1]] = [v]
+        elif name == "techniques":
+            prof["techniques"] = (v,) if v else ()
+        else:
+            prof[name] = v
+    return prof
+
+
+def modality_props(rules):
+    return {p["id"] for p in rules.get("properties", [])
+            if any(s["source"] == "modality_not_registered" for s in p.get("derivedFrom", []))}
+
+
 def verification_deposits(rules, rel):
     """Facts for every kind of deposit that matters to the rules.
 
     A profile takes each file set class, technique and interaction the rules mention
     (or none), and for each register field the rules read, one value per distinct
-    behaviour (see register_options). Within a profile, each concrete class is deposited with each standard it can
-    conform to (or none) and each combination of flag-decided properties; whether its
-    modality is registered is decided both ways."""
-    used = {k: set() for k in ("fileSetClasses", "techniques", "interactions")}
-    for _, c in conditions(rules):
-        for k in used:
-            used[k] |= set(c.get(k) or [])
-    fields = register_options(rules)
-    modality_props = {p["id"] for p in rules.get("properties", [])
-                      if any(s["source"] == "modality_not_registered" for s in p.get("derivedFrom", []))}
-    names = sorted(fields)
+    behaviour (see register_options). Within a profile, each concrete class is
+    deposited with each standard it can conform to (or none) and each combination of
+    flag-decided properties; whether its modality is registered is decided both ways."""
+    dims = profile_dims(rules)
     bits = prop_bits(rules)
     out, profiles = [], {}
-    dims = product([None] + sorted(used["fileSetClasses"]), [()] + [(t,) for t in sorted(used["techniques"])],
-                   [None] + sorted(used["interactions"]), product(*[fields[f] for f in names]))
-    for i, (fs, tech, inter, values) in enumerate(dims):
-        register = {f: [v] for f, v in zip(names, values) if v is not None}
-        prof = {"fileSetClass": fs, "techniques": tech, "interaction": inter, "register": register}
+    for i, values in enumerate(product(*[opts for _, opts in dims])):
+        prof = profile_of(dims, values)
+        register = prof["register"]
         name = f"p{i}"
         profiles[name] = prof
         out += profile_facts(name, prof)
@@ -433,12 +459,43 @@ def verification_deposits(rules, rel):
             forced, free = class_props(rules, rel, cls)
             # Register-derived properties, except the modality one, which goes both ways.
             forced |= register_props(rules, rel, dict(register, modalities=[rel.modality(cls)]), cls)
-            free = sorted(free | modality_props)
+            free = sorted(free | modality_props(rules))
             for std in [None] + class_standards(rules, rel, cls):
                 for on in product((0, 1), repeat=len(free)):
                     present = forced | {p for p, x in zip(free, on) if x}
                     out.append(start_fact(name, cls, std, sum(bits[p] for p in present)))
     return "\n".join(out), profiles
+
+
+def flag_keys(rules):
+    """The sensitivity flags the properties read, in rule set order."""
+    out = []
+    for p in rules.get("properties", []):
+        for src in p.get("derivedFrom", []):
+            if src["source"] in FLAG_SOURCES and src["key"] not in out:
+                out.append(src["key"])
+    return out
+
+
+def flag_props(rules, flags):
+    """Properties the sensitivity flags make true. flags: {key: bool}; a missing flag
+    means unknown, which counts as present."""
+    out = set()
+    for p in rules.get("properties", []):
+        for src in p.get("derivedFrom", []):
+            if src["source"] == "flag_true" and flags.get(src["key"], True) is True:
+                out.add(p["id"])
+            elif src["source"] == "flag_false" and flags.get(src["key"], False) is False:
+                out.add(p["id"])
+    return out
+
+
+def deposit_mask(rules, rel, cls, flags, register, modality_registered):
+    """The starting property mask of a file: from its class, its flags and the register."""
+    reg = dict(register, modalities=[rel.modality(cls)] if modality_registered else [])
+    present = class_props(rules, rel, cls)[0] | flag_props(rules, flags) | register_props(rules, rel, reg, cls)
+    bits = prop_bits(rules)
+    return sum(bits[p] for p in present)
 
 
 def describe_deposit(prof, state, rules):
@@ -523,14 +580,7 @@ def sidecar_files(sidecar, entry, rules, rel):
         fs_id = member_of.get(d["@id"])
         fs = sets.get(fs_id, {})
         sens = dict(batch_sens, **d.get("sensitivity", {}))
-        present = class_props(rules, rel, cls)[0] | register_props(rules, rel, register, cls)
-        for p in rules.get("properties", []):
-            for src in p.get("derivedFrom", []):
-                # A missing flag means unknown, which counts as present.
-                if src["source"] == "flag_true" and sens.get(src["key"], True) is True:
-                    present.add(p["id"])
-                elif src["source"] == "flag_false" and sens.get(src["key"], False) is False:
-                    present.add(p["id"])
+        present = class_props(rules, rel, cls)[0] | register_props(rules, rel, register, cls) | flag_props(rules, sens)
         std = next((s["id"] for s in rules.get("standards", [])
                     if s["url"] in fs.get("conformsTo", []) and s["id"] in class_standards(rules, rel, cls)), None)
         tech = d.get("measurementTechnique", [])
@@ -598,6 +648,84 @@ def by_name(symbols):
     out = {}
     for s in symbols:
         out.setdefault(s.name, []).append(tuple(py(a) for a in s.arguments))
+    return out
+
+
+# --- routes for deposits (site explorer and targets map) ---------------------------
+
+def best_route(edges, start, is_goal, prio):
+    """The route the orchestrator would pick: fewest steps, then lowest total workflow
+    priority (as rules/plan.lp). Returns (path, ambiguous) with path a list of
+    (workflow, state), or (None, False) if no goal is reachable. ambiguous is True if
+    another route ties with it."""
+    import heapq
+    best = {start: ((0, 0), ())}
+    tied = set()
+    heap = [((0, 0), (), start)]
+    while heap:
+        cost, path, a = heapq.heappop(heap)
+        if best[a][0] != cost or best[a][1] != path:
+            continue
+        if is_goal(a):
+            ambiguous = a in tied or any(s in tied for _, s in path)
+            # Another goal state at the same cost is a tie too.
+            ambiguous |= any(c == cost and b != a and is_goal(b) for c, _, b in heap)
+            return list(path), ambiguous
+        for w, b in edges.get(a, ()):
+            c = (cost[0] + 1, cost[1] + prio.get(w, 0))
+            p = path + ((w, b),)
+            if b not in best or c < best[b][0]:
+                best[b] = (c, p)
+                tied.discard(b)
+                heapq.heappush(heap, (c, p, b))
+            elif c == best[b][0] and [x for x, _ in p] != [x for x, _ in best[b][1]]:
+                tied.add(b)
+    return None, False
+
+
+def deposit_routes(rules, rel, deposits):
+    """For each deposit (profile dict, class, standard or None, mask): its target, the
+    route to it, the duties open at deposit, and the routes to the release and public
+    zones if any. The states come from rules/engine.lp; the route is picked as the
+    orchestrator picks one (best_route)."""
+    names, facts = {}, []
+    for prof, cls, std, mask in deposits:
+        key = json.dumps(prof, sort_keys=True, default=list)
+        if key not in names:
+            names[key] = f"q{len(names)}"
+            facts += profile_facts(names[key], prof)
+        facts.append(start_fact(names[key], cls, std, mask))
+    extra = """
+#show step/4. #show chosen/3. #show goal/3.
+start_open(P, O, St) :- st0(P, St), open(P, O, St).
+#show start_open/3.
+"""
+    found = by_name(solve(["engine.lp"], catalog_facts(rules, rel) + "\n" + "\n".join(sorted(set(facts))) + extra))
+    edges = {}
+    for p, a, w, b in found.get("step", []):
+        edges.setdefault(p, {}).setdefault(a, []).append((w, b))
+    chosen = {(p, st): t for p, st, t in found.get("chosen", [])}
+    goals = {}
+    for p, t, st in found.get("goal", []):
+        goals.setdefault((p, t), set()).add(st)
+    duties = {}
+    for p, o, st in found.get("start_open", []):
+        duties.setdefault((p, st), []).append(o)
+    initial = next(z["id"] for z in rules["zones"] if z.get("initial"))
+    prio = {w["id"]: w.get("priority", 0) for w in rules["workflows"]}
+    out = []
+    for prof, cls, std, mask in deposits:
+        p = names[json.dumps(prof, sort_keys=True, default=list)]
+        start = ("s", cls, std or "none", initial, mask)
+        target = chosen.get((p, start))
+        g = goals.get((p, target), set())
+        path, ambiguous = best_route(edges.get(p, {}), start, g.__contains__, prio)
+        zone_route = {}
+        for z in ("release", "public"):
+            zp, _ = best_route(edges.get(p, {}), start, lambda st, z=z: st[3] == z, prio)
+            zone_route[z] = [w for w, _ in zp] if zp is not None else None
+        out.append({"target": target, "start": start, "path": path, "ambiguous": ambiguous,
+                    "duties": sorted(duties.get((p, start), [])), **zone_route})
     return out
 
 

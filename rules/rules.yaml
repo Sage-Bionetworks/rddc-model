@@ -53,6 +53,11 @@ properties:
     key: containsZipCodes
 - id: deid_unconfirmed
   description: De-identification ran, and an independent check has not yet confirmed it. Set by workflows only.
+- id: consent_unrecorded
+  description: The file's consent elements are not yet recorded in GOVERN's participants table.
+  derivedFrom:
+  - source: data_class
+    classes: [ConsentFile]
 - id: unregistered_modality
   description: "Register: the file's modality is not one the source is registered for."
   derivedFrom:
@@ -68,62 +73,65 @@ properties:
 # Order matters: an item takes the first standard listed in its file set's conformsTo.
 standards:
 - id: fhir_r4
+  description: FHIR R4
   url: http://hl7.org/fhir/R4
   classes: [FhirFile]
 - id: omop_cdm_54
+  description: OMOP CDM 5.4
   url: https://ohdsi.github.io/CommonDataModel/cdm54.html
   classes: [OmopTableFile]
 - id: ccda_21
+  description: C-CDA 2.1
   url: http://hl7.org/cda/us/ccda/2.1
   classes: [CcdaDocumentFile]
 - id: ieee_1752_1
+  description: IEEE 1752.1
   url: https://standards.ieee.org/ieee/1752.1/6982/
   classes: [SensorMeasureFile]
 
 # --- zones ------------------------------------------------------------------
-# Open question: is the normalized store inside the TRE? Treated as outside here,
-# so that "biometric data stays in the TRE" has something to check.
-# Zones with a cirroEnvironment are Cirro environments: only Cirro processes write to them,
-# and Cirro processes other than ingests read only from them.
+# Each zone belongs to a platform module (INTAKE, NORMALIZE, DISCOVER). From the deposit,
+# a file is held for curation or ingested into the de-identification and QC environment,
+# from which the lanes load it into the normalized store. GOVERN holds registers, not
+# data, so no zone belongs to it: the register facts the rules read are its source
+# register, and record workflows write register entries such as consent elements. The TRE is part of DISCOVER: researchers reach released data from it, so no zone
+# before release is TRE.
+# Zones with a cirroEnvironment are Cirro environments: only Cirro processes write to
+# them, and Cirro processes other than ingests read only from them.
 zones:
 - id: deposit
   description: The raw deposit prefix.
-  insideTre: true
+  module: INTAKE
   initial: true
-- id: tre
-  description: The TRE's Cirro environment, where de-identification and domain workflows run.
-  insideTre: true
-  cirroEnvironment: provisional-rddc-tre
+- id: deid_qc
+  description: The INTAKE Cirro environment where de-identification, QC and domain workflows run.
+  module: INTAKE
+  cirroEnvironment: provisional-rddc-intake
 - id: curation
   description: Files held for a curator to decide what to do with them.
-  insideTre: true
+  module: INTAKE
   location: s3://provisional-rddc-curation/{sourceId}/{batchId}/{dispatchId}/
 - id: normalized
   description: The normalized, analysis-ready store (OMOP and tables), a Cirro environment.
-  insideTre: false
+  module: NORMALIZE
   cirroEnvironment: provisional-rddc-normalized
-- id: govern
-  description: The consent and governance system (GOVERN).
-  insideTre: false
-  location: govern://provisional/{sourceId}/{batchId}/{dispatchId}
 - id: release
-  description: The release database, for the protected tier.
-  insideTre: false
+  description: The release database, for the protected tier; researchers reach it from the TRE in DISCOVER.
+  module: DISCOVER
   location: s3://provisional-rddc-release/{sourceId}/{batchId}/{dispatchId}/
 - id: public
   description: Open-tier content published outside the security boundary.
-  insideTre: false
   location: s3://provisional-rddc-public/{sourceId}/{batchId}/{dispatchId}/
 
 # --- workflows (PROVISIONAL) -----------------------------------------------
 # Cirro process ids follow Cirro's pattern but are made up. Workflows that write
-# outside the TRE refuse biometric data and data of a modality the source is not
+# outside INTAKE refuse biometric data and data of a modality the source is not
 # registered for. Domain analyses that leave the rules' view of the data unchanged
-# (genomics QC, facial phenotyping) run in the TRE environment and are not listed: as
+# (genomics QC, facial phenotyping) run in the de-id/QC environment and are not listed: as
 # routing steps they would be cycles.
 workflows:
 - id: ingest_files
-  description: Brings deposited files into the TRE environment as a Cirro dataset.
+  description: Brings deposited files into the de-id/QC environment as a Cirro dataset.
   runner: cirro
   cirroProcess: process-rddc-provisional-ingest-files-0_0
   cirroExecutor: INGEST
@@ -132,9 +140,9 @@ workflows:
   priority: 1
   consumes: {}
   readsFrom: [deposit]
-  writesTo: tre
+  writesTo: deid_qc
 - id: ingest_sequencing
-  description: Brings deposited sequencing files into the TRE environment, with sample detection.
+  description: Brings deposited sequencing files into the de-id/QC environment, with sample detection.
   runner: cirro
   cirroProcess: process-rddc-provisional-ingest-sequencing-0_0
   cirroExecutor: INGEST
@@ -143,7 +151,7 @@ workflows:
   consumes:
     classes: [GenomicsFile, IndexFile]
   readsFrom: [deposit]
-  writesTo: tre
+  writesTo: deid_qc
 - id: fhir_to_omop
   description: Lane 2. Transforms a FHIR R4 export to OMOP CDM 5.4 and loads it.
   runner: cirro
@@ -158,7 +166,7 @@ workflows:
     noProperties: [biometric, unregistered_modality]
   produces: OmopTableFile
   producesStandard: omop_cdm_54
-  readsFrom: [tre]
+  readsFrom: [deid_qc]
   writesTo: normalized
   parameters:
   - id: source_id
@@ -177,7 +185,7 @@ workflows:
     standards: [omop_cdm_54]
     fileSetClasses: [OmopCdmInstance]
     noProperties: [biometric, unregistered_modality]
-  readsFrom: [tre]
+  readsFrom: [deid_qc]
   writesTo: normalized
   parameters:
   - id: vocabulary_version
@@ -196,7 +204,7 @@ workflows:
     noProperties: [biometric, unregistered_modality]
   produces: OmopTableFile
   producesStandard: omop_cdm_54
-  readsFrom: [tre]
+  readsFrom: [deid_qc]
   writesTo: normalized
 - id: text_deid
   description: Removes identifiers from free text in documents and tables.
@@ -210,8 +218,8 @@ workflows:
     classes: [ClinicalDocumentFile, TabularFile]
     anyProperties: [free_text, direct_identifiers]
     noProperties: [identifying]
-  readsFrom: [tre]
-  writesTo: tre
+  readsFrom: [deid_qc]
+  writesTo: deid_qc
   clears: [free_text, direct_identifiers]
   sets: [deid_unconfirmed]
   parameters:
@@ -229,8 +237,8 @@ workflows:
   consumes:
     classes: [ClinicalDocumentFile, TabularFile]
     anyProperties: [deid_unconfirmed]
-  readsFrom: [tre]
-  writesTo: tre
+  readsFrom: [deid_qc]
+  writesTo: deid_qc
   clears: [deid_unconfirmed]
   parameters:
   - id: language_code
@@ -249,19 +257,23 @@ workflows:
   consumes:
     classes: [TabularFile, ClinicalDocumentFile]
     noProperties: [free_text, deid_unconfirmed, biometric, unregistered_modality]
-  readsFrom: [tre]
+  readsFrom: [deid_qc]
   writesTo: normalized
-- id: consent_to_govern
-  description: Sends consent elements to GOVERN.
+- id: record_consent
+  description: >-
+    Matches the consent elements in a consent file to persons by PPRL linkage ID and
+    writes them to GOVERN's participants table. The file stays in INTAKE.
   runner: service
-  pipeline: https://provisional.govern.example/consent
+  pipeline: https://provisional.govern.example/participants-table
   pipelineVersion: 0.0.0
-  kind: load
+  kind: record
+  recordsTo: participants table
   consumes:
     classes: [ConsentFile]
-    noProperties: [biometric, unregistered_modality]
-  readsFrom: [deposit]
-  writesTo: govern
+    anyProperties: [consent_unrecorded]
+  readsFrom: [deid_qc]
+  writesTo: deid_qc
+  clears: [consent_unrecorded]
 - id: imaging_deid
   description: Removes identifiers from DICOM headers. Not for facial images.
   runner: cirro
@@ -274,8 +286,8 @@ workflows:
     classes: [ImagingFile]
     anyProperties: [direct_identifiers]
     noProperties: [biometric]
-  readsFrom: [tre]
-  writesTo: tre
+  readsFrom: [deid_qc]
+  writesTo: deid_qc
   clears: [direct_identifiers]
 - id: sensor_to_measures
   description: Derives measures (IEEE 1752.1) from raw sensor signals.
@@ -289,8 +301,8 @@ workflows:
     classes: [SensorSignalFile]
   produces: SensorMeasureFile
   producesStandard: ieee_1752_1
-  readsFrom: [tre]
-  writesTo: tre
+  readsFrom: [deid_qc]
+  writesTo: deid_qc
 - id: sensor_load
   description: Loads sensor measures.
   runner: cirro
@@ -301,7 +313,7 @@ workflows:
   consumes:
     classes: [SensorMeasureFile]
     noProperties: [biometric, unregistered_modality]
-  readsFrom: [tre]
+  readsFrom: [deid_qc]
   writesTo: normalized
 - id: curation_hold
   description: Holds a file for a curator.
@@ -396,7 +408,7 @@ workflows:
   pipeline: https://provisional.govern.example/withdraw
   pipelineVersion: 0.0.0
   kind: withdraw
-  coversZones: [deposit, tre, curation, normalized, govern, release, public]
+  coversZones: [deposit, deid_qc, curation, normalized, release, public]
   parameters:
   - id: notice
     fromSidecar: batch.noticeRef
@@ -408,7 +420,7 @@ workflows:
   pipeline: https://provisional.govern.example/restrict
   pipelineVersion: 0.0.0
   kind: restrict
-  coversZones: [deposit, tre, curation, normalized, govern, release, public]
+  coversZones: [deposit, deid_qc, curation, normalized, release, public]
   parameters:
   - id: notice
     fromSidecar: batch.noticeRef
@@ -447,25 +459,28 @@ targets:
   goalZone: normalized
   priority: 1
 - id: consent
-  description: "Seed rule 6: consent goes to GOVERN."
+  description: >-
+    Seed rule 6: a consent file's consent elements are recorded in GOVERN's participants
+    table, and the file stays in INTAKE, out of the clinical lanes.
   when: {classes: [ConsentFile], noProperties: [biometric]}
-  goalZone: govern
+  goalNoProperties: [consent_unrecorded]
+  goalZone: deid_qc
   priority: 1
 - id: genomics
-  description: Genomics data stays in the TRE environment for omics workflows.
+  description: Genomics data stays in the de-id/QC environment in INTAKE for omics workflows.
   when: {classes: [GenomicsFile, IndexFile]}
-  goalZone: tre
+  goalZone: deid_qc
   priority: 1
 - id: imaging
-  description: Images are kept in the TRE environment for imaging workflows, without direct identifiers.
+  description: Images are kept in the de-id/QC environment for imaging workflows, without direct identifiers.
   when: {classes: [ImagingFile], noProperties: [biometric]}
   goalNoProperties: [direct_identifiers]
-  goalZone: tre
+  goalZone: deid_qc
   priority: 1
 - id: facial
-  description: Facial images stay in the TRE environment for facial phenotyping.
+  description: Facial images stay in the de-id/QC environment for facial phenotyping.
   when: {classes: [FacialImagingFile]}
-  goalZone: tre
+  goalZone: deid_qc
   priority: 1
 - id: sensor
   description: "Seed rule 8: raw sensor signals become measures before analysis."
@@ -475,7 +490,7 @@ targets:
   priority: 1
 - id: curation
   description: >-
-    Anything else is held in the TRE for a curator (a deliberate terminal state),
+    Anything else is held for a curator (a deliberate terminal state),
     including clinical data flagged (or not stated not to contain) biometric identifiers.
   when: {}
   goalZone: curation
@@ -510,18 +525,18 @@ obligations:
   beforeZones: [release, public]
 
 prohibitions:
-- id: biometric_stays_in_tre
-  description: "Seed rule 1: biometric data never leaves the TRE."
+- id: biometric_stays_in_intake
+  description: "Seed rule 1: biometric data stays in INTAKE: never normalized or released."
   when: {anyProperties: [biometric]}
-  zones: [normalized, govern, release, public]
+  zones: [normalized, release, public]
 - id: consent_not_clinical
   description: "Seed rule 6: consent files do not enter clinical stores."
   when: {classes: [ConsentFile]}
   zones: [normalized, release, public]
-- id: unregistered_stays_in_tre
-  description: "Register: data of an unregistered modality stays in the TRE until a curator decides."
+- id: unregistered_stays_in_intake
+  description: "Register: data of an unregistered modality stays in INTAKE until a curator decides."
   when: {anyProperties: [unregistered_modality]}
-  zones: [normalized, govern, release, public]
+  zones: [normalized, release, public]
 - id: only_open_tier_is_public
   description: "Register: only Open-tier sources are published outside the boundary."
   when:

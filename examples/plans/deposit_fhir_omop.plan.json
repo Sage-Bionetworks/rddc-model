@@ -22,7 +22,7 @@
           "cirroExecutor": "INGEST",
           "pipelineVersion": "0.0.0",
           "dispatchId": "ingest_files-6f846f9d6f",
-          "cirroEnvironment": "provisional-rddc-tre",
+          "cirroEnvironment": "provisional-rddc-intake",
           "inputs": [
             {
               "file": "urn:uuid:0000000b-0000-4000-8000-00000000000b",
@@ -61,7 +61,7 @@
           "cirroExecutor": "INGEST",
           "pipelineVersion": "0.0.0",
           "dispatchId": "ingest_files-3400b04f05",
-          "cirroEnvironment": "provisional-rddc-tre",
+          "cirroEnvironment": "provisional-rddc-intake",
           "inputs": [
             {
               "file": "urn:uuid:00000015-0000-4000-8000-000000000015",
@@ -100,7 +100,7 @@
           "cirroExecutor": "INGEST",
           "pipelineVersion": "0.0.0",
           "dispatchId": "ingest_files-640299868c",
-          "cirroEnvironment": "provisional-rddc-tre",
+          "cirroEnvironment": "provisional-rddc-intake",
           "inputs": [
             {
               "file": "urn:uuid:0000001e-0000-4000-8000-00000000001e",

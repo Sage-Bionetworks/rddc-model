@@ -108,6 +108,10 @@ ROUTES = {
         {"visits": ["ingest_files", "sensor_to_measures", "sensor_load"]}),
     "register: sensor signals from a source not registered for wearables are held": (
         sidecar(sensor_visits), register(), {"visits": ["curation_hold"], "patients": ["ingest_files", "tabular_load"]}),
+    "register: consent elements are recorded in GOVERN; the file stays in INTAKE": (
+        sidecar(lambda d: file_obj(d, "visits").update(additionalType="rddc:ConsentFile")),
+        register(lambda s: s["modalities"].append("consent")),
+        {"visits": ["ingest_files", "record_consent"], "patients": ["ingest_files", "tabular_load"]}),
     "register: a source that is not in the register is refused": (
         sidecar(lambda d: d.update(sourceId="src-unknown")), register(), "is not in the source register"),
     "a sidecar for another release is refused": (
@@ -207,9 +211,9 @@ def dispatch_checks():
     p1 = O.orchestrate(doc, rules, REGISTER)
     ingest = group_of(p1, "visits")["steps"][0]
     deposit = "s3://rddc-deposit-ta2/src-ta2-01/2026-10-b01/registry/visits.csv"
-    out.append(("Cirro: an ingest uploads the deposited files into the TRE environment",
+    out.append(("Cirro: an ingest uploads the deposited files into the de-id/QC environment",
                 ingest["runner"] == "cirro" and ingest["cirroExecutor"] == "INGEST"
-                and ingest["cirroEnvironment"] == "provisional-rddc-tre"
+                and ingest["cirroEnvironment"] == "provisional-rddc-intake"
                 and ingest["inputs"] == [{"file": FILES["visits"], "location": deposit}]
                 and "outputLocation" not in ingest and "sourceDatasets" not in ingest,
                 json.dumps(ingest)))
@@ -229,7 +233,7 @@ def dispatch_checks():
     out.append(("a service step (Comprehend Medical) reads the de-identified dataset and writes its report",
                 check["workflow"] == "confirm_deid" and check["status"] == "ready" and check["runner"] == "service"
                 and check["pipeline"] == "aws:comprehendmedical:StartPHIDetectionJob"
-                and check["inputs"][0]["location"].startswith("s3://provisional-rddc-tre/datasets/stub-dataset-text_deid-")
+                and check["inputs"][0]["location"].startswith("s3://provisional-rddc-intake/datasets/stub-dataset-text_deid-")
                 and params["output_s3_uri"] == f"s3://provisional-rddc-deid-reports/src-ta2-01/2026-10-b01/{check['dispatchId']}/"
                 and params["language_code"] == "en"
                 and "outputLocation" not in check and "cirroEnvironment" not in check,
@@ -282,6 +286,20 @@ def main():
         wrong = {k: got.get(FILES[k]) for k, v in expect.items() if got.get(FILES[k]) != v}
         report(not wrong and plan["status"] in ("complete", "blocked"), name,
                "; ".join(f"{k}: got {v}" for k, v in wrong.items()) or f"status {plan['status']}")
+
+    print("\nSite explorer agrees with the orchestrator:")
+    for name, (doc, reg, expect) in ROUTES.items():
+        if isinstance(expect, str):
+            continue
+        plan = run(doc, reg)
+        rel = E.Release(rules["modelRelease"])
+        files = E.sidecar_files(doc, E.register_entry(reg, doc["sourceId"]), rules, rel)
+        explained = E.deposit_routes(rules, rel, [(f["profile"], f["class"], f["standard"], f["mask"]) for f in files])
+        got = routes(plan)
+        wrong = [f"{f['id']}: site {[w for w, _ in r['path'] or []]}, orchestrator {got.get(f['id'])}"
+                 for f, r in zip(files, explained)
+                 if [w for w, _ in r["path"] or []] != got.get(f["id"]) or r["ambiguous"]]
+        report(not wrong, name, "; ".join(wrong))
 
     print("\nBatch states:")
     for name, ok, detail in state_checks():

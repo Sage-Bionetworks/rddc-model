@@ -258,6 +258,17 @@
             "title": "InteractionRule",
             "type": "object"
         },
+        "ModuleEnum": {
+            "description": "The platform modules of the RDDC infrastructure that hold data.",
+            "enum": [
+                "INTAKE",
+                "NORMALIZE",
+                "DISCOVER",
+                "GOVERN"
+            ],
+            "title": "ModuleEnum",
+            "type": "string"
+        },
         "Obligation": {
             "additionalProperties": false,
             "anyOf": [
@@ -1001,7 +1012,7 @@
         },
         "Target": {
             "additionalProperties": false,
-            "description": "Where items matching a condition at deposit must end up. Each item gets the matching target with the lowest priority number; two matching targets with the same priority are a conflict. A target can be a deliberate terminal state, such as holding a file in the TRE for a curator.",
+            "description": "Where items matching a condition at deposit must end up. Each item gets the matching target with the lowest priority number; two matching targets with the same priority are a conflict. A target can be a deliberate terminal state, such as holding a file for a curator.",
             "properties": {
                 "description": {
                     "description": "Plain-language description for reviewers.",
@@ -1301,6 +1312,13 @@
                         "null"
                     ]
                 },
+                "recordsTo": {
+                    "description": "For a record workflow, the GOVERN register it writes to, e.g. \"participants table\".",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
                 "runner": {
                     "$ref": "#/$defs/RunnerEnum",
                     "description": "How the workflow is dispatched."
@@ -1342,6 +1360,7 @@
                 "confirm",
                 "mask",
                 "expert_review",
+                "record",
                 "process",
                 "hold",
                 "publish",
@@ -1353,7 +1372,7 @@
         },
         "Zone": {
             "additionalProperties": false,
-            "description": "A place where data sits, such as the deposit prefix, the TRE or a release store.",
+            "description": "A place where data sits, such as the deposit prefix, the de-identification and QC environment, the normalized store or the release database.",
             "properties": {
                 "cirroEnvironment": {
                     "description": "The Cirro environment that holds this zone's data. Only Cirro processes write to such a zone, and Cirro processes other than ingests read only from such zones.",
@@ -1381,21 +1400,20 @@
                         "null"
                     ]
                 },
-                "insideTre": {
-                    "description": "Whether the zone is inside the trusted research environment.",
-                    "type": "boolean"
-                },
                 "location": {
                     "description": "Where a container or service step writing to this zone puts its output: a template with {sourceId}, {batchId} and {dispatchId}. Not used for the initial zone, whose location is the sidecar's url, or for a Cirro environment zone, where Cirro chooses each dataset's location.",
                     "type": [
                         "string",
                         "null"
                     ]
+                },
+                "module": {
+                    "$ref": "#/$defs/ModuleEnum",
+                    "description": "The platform module the zone belongs to. Unset: outside the platform, such as public content."
                 }
             },
             "required": [
-                "id",
-                "insideTre"
+                "id"
             ],
             "title": "Zone",
             "type": "object"
