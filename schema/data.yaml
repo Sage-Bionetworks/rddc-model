@@ -99,6 +99,8 @@ enums:
         description: Unstructured clinical text such as notes. De-identified before use.
       consent:
         description: Consent elements for subjects (ConsentFile).
+      intake_form:
+        description: Responses to patient intake forms, read with the form's definition (IntakeFormFile).
       genomics:
         description: >-
           Sequencing reads, alignments, variant calls, gene expression quantifications
@@ -1420,8 +1422,9 @@ classes:
     - EDAM:data_3861
     description: >-
       A clinical table that is not OMOP or FHIR, such as registry, patient-reported
-      outcome, claims or mortality data. Consent tables go in a ConsentFile, sensor data
-      in a SensorMeasureFile, and tables that describe other files in a DocumentationFile.
+      outcome, claims or mortality data. Consent tables go in a ConsentFile, intake form
+      responses in an IntakeFormFile, sensor data in a SensorMeasureFile, and tables
+      that describe other files in a DocumentationFile.
       Its name and contentUrl identify the table; record sets describe its columns and
       joins to other tables.
     annotations:
@@ -1455,6 +1458,37 @@ classes:
       subjectIds:
         required: true
 
+  IntakeFormFile:
+    is_a: DataFile
+    close_mappings:
+    - fhir:QuestionnaireResponse
+    description: >-
+      Responses to a patient intake form, exported as a table, such as from REDCap or a
+      clinic portal: one row per completed form, or one per answer. Its columns are the
+      form's questions and its values are coded answers, so it is read with the form's
+      definition, named in formDefinition, rather than as a generic table. Intake forms
+      in FHIR form, QuestionnaireResponse resources, go in a FHIR file, and scanned
+      paper forms in a ClinicalDocumentFile. Free-text answers make the file contain
+      free text (containsFreeText).
+    annotations:
+      structure: structured
+      modality: intake_form
+    slots:
+    - formDefinition
+    - formVersion
+    slot_usage:
+      encodingFormat:
+        any_of:
+        - equals_string: text/csv
+        - equals_string: text/tab-separated-values
+        - equals_string: application/vnd.apache.parquet
+        - equals_string: application/json
+        - equals_string: application/jsonlines
+      formDefinition:
+        required: true
+      subjectIds:
+        required: true
+
   ClinicalDocumentFile:
     is_a: DataFile
     broad_mappings:
@@ -1482,7 +1516,8 @@ classes:
     broad_mappings:
     - EDAM:data_2337
     description: >-
-      A file that documents other files, such as a data dictionary or a README. When it
+      A file that documents other files, such as a data dictionary, the codebook of an
+      intake form, or a README. When it
       documents particular files or record sets, about points to them; a README for the
       whole batch leaves about out.
     annotations:
@@ -1848,6 +1883,20 @@ slots:
   omopCdmVersion:
     description: OMOP CDM version of the table, as major.minor, e.g. "5.4".
     range: OmopCdmVersionEnum
+
+  # --- intake forms (IntakeFormFile) ----------------------------------------
+  formDefinition:
+    range: NodeRef
+    inlined: true
+    description: >-
+      The definition of the form the responses answer: its questions, answer codes and
+      skip logic. Either the @id of a DocumentationFile in this sidecar that holds it,
+      such as a REDCap data dictionary, or the canonical URL or CURIE of a published
+      definition, such as a FHIR Questionnaire or a LOINC panel.
+  formVersion:
+    description: >-
+      The version of the form the responses answer, as the form's owner numbers it.
+      Answer codes can change between versions.
 
   # --- documentation (DocumentationFile) ------------------------------------
   about:

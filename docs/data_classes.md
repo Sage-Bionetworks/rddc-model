@@ -36,6 +36,7 @@ DistributionItem
       CcdaDocumentFile  (structured, clinical_ccda)
       TabularFile  (structured, clinical_tabular)
       ConsentFile  (structured, consent)
+      IntakeFormFile  (structured, intake_form)
       ClinicalDocumentFile  (unstructured, clinical_text)
       DocumentationFile  (mixed, metadata)
       GenomicsFile  (abstract)
@@ -69,6 +70,7 @@ Every concrete class also requires the fields shared by all data files: `@id`, `
 | [`CcdaDocumentFile`](#ccdadocumentfile) | `clinical_ccda` | structured | `application/xml`, `text/xml` | `subjectIds` |
 | [`TabularFile`](#tabularfile) | `clinical_tabular` | structured | `text/csv`, `text/tab-separated-values`, `application/vnd.apache.parquet`, `application/json`, `application/jsonlines` |  |
 | [`ConsentFile`](#consentfile) | `consent` | structured | `text/csv`, `text/tab-separated-values`, `application/json`, `application/jsonlines` | `subjectIds` |
+| [`IntakeFormFile`](#intakeformfile) | `intake_form` | structured | `text/csv`, `text/tab-separated-values`, `application/vnd.apache.parquet`, `application/json`, `application/jsonlines` | `formDefinition`, `subjectIds` |
 | [`ClinicalDocumentFile`](#clinicaldocumentfile) | `clinical_text` | unstructured | `text/plain`, `application/pdf`, `application/rtf`, `image/tiff`, `image/jpeg`, `image/png` | `subjectIds` |
 | [`DocumentationFile`](#documentationfile) | `metadata` | mixed | any |  |
 | [`SequenceReadsFile`](#sequencereadsfile) | `genomics` | structured | `text/plain`, `application/octet-stream` | `measurementTechnique`, `sequencingPlatform` |
@@ -91,7 +93,7 @@ Every concrete class also requires the fields shared by all data files: `@id`, `
 
 A data object of the batch, with subjects, sensitivity and provenance. Its class determines its modality (see the modality annotation).
 
-Abstract: not used directly. Inherits from `FileObject` → `DistributionItem`. Subclasses: [`FhirFile`](#fhirfile), [`OmopTableFile`](#omoptablefile), [`CcdaDocumentFile`](#ccdadocumentfile), [`TabularFile`](#tabularfile), [`ConsentFile`](#consentfile), [`ClinicalDocumentFile`](#clinicaldocumentfile), [`DocumentationFile`](#documentationfile), [`GenomicsFile`](#genomicsfile), [`IndexFile`](#indexfile), [`ImagingFile`](#imagingfile), [`AudioFile`](#audiofile), [`VideoFile`](#videofile), [`SensorDataFile`](#sensordatafile), [`GenericFile`](#genericfile).
+Abstract: not used directly. Inherits from `FileObject` → `DistributionItem`. Subclasses: [`FhirFile`](#fhirfile), [`OmopTableFile`](#omoptablefile), [`CcdaDocumentFile`](#ccdadocumentfile), [`TabularFile`](#tabularfile), [`ConsentFile`](#consentfile), [`IntakeFormFile`](#intakeformfile), [`ClinicalDocumentFile`](#clinicaldocumentfile), [`DocumentationFile`](#documentationfile), [`GenomicsFile`](#genomicsfile), [`IndexFile`](#indexfile), [`ImagingFile`](#imagingfile), [`AudioFile`](#audiofile), [`VideoFile`](#videofile), [`SensorDataFile`](#sensordatafile), [`GenericFile`](#genericfile).
 
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
@@ -207,7 +209,7 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 ### TabularFile
 
-A clinical table that is not OMOP or FHIR, such as registry, patient-reported outcome, claims or mortality data. Consent tables go in a ConsentFile, sensor data in a SensorMeasureFile, and tables that describe other files in a DocumentationFile. Its name and contentUrl identify the table; record sets describe its columns and joins to other tables.
+A clinical table that is not OMOP or FHIR, such as registry, patient-reported outcome, claims or mortality data. Consent tables go in a ConsentFile, intake form responses in an IntakeFormFile, sensor data in a SensorMeasureFile, and tables that describe other files in a DocumentationFile. Its name and contentUrl identify the table; record sets describe its columns and joins to other tables.
 
 Use as `"@type": "cr:FileObject", "additionalType": "rddc:TabularFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `clinical_tabular`. A kind of [`EDAM:data_3861`](http://edamontology.org/data_3861).
 
@@ -230,6 +232,21 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 | `encodingFormat` | [`MediaType`](#mediatype) | yes | Media type of the content (after decompression when compression is set). One of: `text/csv`, `text/tab-separated-values`, `application/json`, `application/jsonlines`. |
 | `subjectIds` | [`Identifier`](#identifier) (list) | yes | Subject IDs the file contains. Each must appear in the subject table. |
 
+### IntakeFormFile
+
+Responses to a patient intake form, exported as a table, such as from REDCap or a clinic portal: one row per completed form, or one per answer. Its columns are the form's questions and its values are coded answers, so it is read with the form's definition, named in formDefinition, rather than as a generic table. Intake forms in FHIR form, QuestionnaireResponse resources, go in a FHIR file, and scanned paper forms in a ClinicalDocumentFile. Free-text answers make the file contain free text (containsFreeText).
+
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:IntakeFormFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `intake_form`. Close to [`fhir:QuestionnaireResponse`](http://hl7.org/fhir/QuestionnaireResponse).
+
+Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
+
+| Field | Type | Required | Meaning and constraints |
+| --- | --- | --- | --- |
+| `encodingFormat` | [`MediaType`](#mediatype) | yes | Media type of the content (after decompression when compression is set). One of: `text/csv`, `text/tab-separated-values`, `application/vnd.apache.parquet`, `application/json`, `application/jsonlines`. |
+| `formDefinition` | [`NodeRef`](#noderef) | yes | The definition of the form the responses answer: its questions, answer codes and skip logic. Either the @id of a DocumentationFile in this sidecar that holds it, such as a REDCap data dictionary, or the canonical URL or CURIE of a published definition, such as a FHIR Questionnaire or a LOINC panel. |
+| `subjectIds` | [`Identifier`](#identifier) (list) | yes | Subject IDs the file contains. Each must appear in the subject table. |
+| `formVersion` | `string` | | The version of the form the responses answer, as the form's owner numbers it. Answer codes can change between versions. |
+
 ### ClinicalDocumentFile
 
 An unstructured clinical document, such as a note or a scanned report. A scan is a PDF or an image (TIFF, JPEG or PNG).
@@ -245,7 +262,7 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 ### DocumentationFile
 
-A file that documents other files, such as a data dictionary or a README. When it documents particular files or record sets, about points to them; a README for the whole batch leaves about out.
+A file that documents other files, such as a data dictionary, the codebook of an intake form, or a README. When it documents particular files or record sets, about points to them; a README for the whole batch leaves about out.
 
 Use as `"@type": "cr:FileObject", "additionalType": "rddc:DocumentationFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: mixed. Modality: `metadata`. A kind of [`EDAM:data_2337`](http://edamontology.org/data_2337).
 
@@ -556,6 +573,7 @@ The kind of data in a file: the values of the "modality" class annotation. Each 
 | `clinical_tabular` | Registry, patient-reported, claims or mortality tables not in OMOP or FHIR form (TabularFile). |
 | `clinical_text` | Unstructured clinical text such as notes. De-identified before use. |
 | `consent` | Consent elements for subjects (ConsentFile). |
+| `intake_form` | Responses to patient intake forms, read with the form's definition (IntakeFormFile). |
 | `genomics` | Sequencing reads, alignments, variant calls, gene expression quantifications and related indexes. |
 | `imaging` | Medical images such as DICOM. |
 | `video` | Video recordings (VideoFile). |

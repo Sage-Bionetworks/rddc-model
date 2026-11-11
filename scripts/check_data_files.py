@@ -73,6 +73,14 @@ VALID = {
         "ConsentFile", 8, contentUrl="consent/elements.csv", encodingFormat="text/csv",
         subjectIds=["S1", "S2"],
     ),
+    "intake_form": item(
+        "IntakeFormFile", 30, contentUrl="intake/responses.csv", encodingFormat="text/csv",
+        formDefinition=REF, formVersion="3", subjectIds=["S1", "S2"],
+    ),
+    "intake_form_published": item(
+        "IntakeFormFile", 31, contentUrl="intake/responses.jsonl", encodingFormat="application/jsonlines",
+        formDefinition={"@id": "https://example.org/fhir/Questionnaire/intake"}, subjectIds=["S1"],
+    ),
     "scanned_report": item(
         "ClinicalDocumentFile", 9, contentUrl="notes/report.tif", encodingFormat="image/tiff",
         subjectIds=["S1"],
@@ -223,6 +231,11 @@ INVALID = {
     "expression quantified from a DNA assay": put("expression", ["measurementTechnique"], "wgs"),
     "expression matrix as an image": put("expression", ["encodingFormat"], "image/png"),
     "reference genome on an expression matrix": put("expression", ["referenceGenome"], "GRCh38"),
+    "intake form without a form definition": drop("intake_form", ["formDefinition"]),
+    "form definition as a bare string": put("intake_form", ["formDefinition"], "intake-v3"),
+    "intake form without subjects": drop("intake_form", ["subjectIds"]),
+    "scanned intake form as a PDF": put("intake_form", ["encodingFormat"], "application/pdf"),
+    "form definition on a tabular file": put("tabular", ["formDefinition"], REF),
     "face image from microscopy": put("face", ["measurementTechnique"], "microscopy"),
     "face scan with an invented PLY media type": put("face_scan", ["encodingFormat"], "model/ply"),
     "empty subject list": put("face", ["subjectIds"], []),
