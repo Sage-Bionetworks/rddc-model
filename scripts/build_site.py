@@ -27,6 +27,7 @@ never copy class or enum details:
   <rddc-enum name="GenomicsAssayEnum"></rddc-enum>  an enum's values
   <rddc-flags></rddc-flags>                    the sensitivity flags
   <rddc-terms></rddc-terms>                    external vocabularies the model maps to
+  <rddc-term-chips origins="sc,cr"></rddc-term-chips>  every key from those vocabularies
 
 Every concrete data class must be named by exactly one rddc-family directive and
 shown by at least one rddc-example; the build stops otherwise.
@@ -1037,7 +1038,23 @@ def gen_terms(attrs):
     )
 
 
+def gen_term_chips(attrs):
+    """Every JSON key in the schema from the given vocabularies, as coloured chips."""
+    wanted = attrs["origins"].split(",")
+    keys = {}
+    for slot in sv.all_slots().values():
+        key = slot.alias or slot.name
+        origin, iri = slot_origin(slot)
+        if origin in wanted and not key.startswith("@"):
+            keys[key] = (origin, iri)
+    ordered = sorted(keys.items(), key=lambda kv: (wanted.index(kv[1][0]), kv[0].lower()))
+    return "<p>" + " ".join(
+        f'<span class="chip o-{o}" title="{html.escape(ORIGIN_LABEL[o])}: {html.escape(iri)}">{html.escape(k)}</span>'
+        for k, (o, iri) in ordered) + "</p>"
+
+
 GENERATORS = {
+    "term-chips": gen_term_chips,
     "family": gen_family,
     "example": gen_example,
     "classification": gen_classification,
