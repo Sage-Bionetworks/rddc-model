@@ -70,7 +70,6 @@
     "cdmSourceAbbreviation": "rddc:cdmSourceAbbreviation",
     "cdmSourceName": "rddc:cdmSourceName",
     "cdmTable": "rddc:cdmTable",
-    "cdmVersion": "rddc:cdmVersion",
     "compression": "rddc:compression",
     "confidence": "rddc:confidence",
     "confirmed": "rddc:confirmed",
@@ -95,7 +94,6 @@
     "modalities": "rddc:modalities",
     "notes": "rddc:notes",
     "noticeRef": "rddc:noticeRef",
-    "omopCdmVersion": "rddc:omopCdmVersion",
     "origin": "rddc:origin",
     "pairedWith": "rddc:pairedWith",
     "platform": "rddc:platform",
@@ -210,7 +208,6 @@
       "vocabularyVersion": "v5.0 25-AUG-2026",
       "cdmSource": {
         "cdmSourceName": "Site A EHR",
-        "cdmVersion": "5.4",
         "sourceReleaseDate": "2026-10-01"
       },
       "wasDerivedFrom": [
@@ -277,8 +274,7 @@
       "encodingFormat": "text/csv",
       "sha256": "b6d65337119f21b5058e2e91f90899342c698b9c15ee6a6192422a87b93ddb0a",
       "md5": "b6d65337119f21b5058e2e91f9089934",
-      "cdmTable": "observation_period",
-      "omopCdmVersion": "5.4"
+      "cdmTable": "observation_period"
     },
     {
       "@id": "urn:uuid:00000014-0000-4000-8000-000000000014",
@@ -290,8 +286,7 @@
       "encodingFormat": "text/csv",
       "sha256": "aae5ddf096a0994ba79a254c8a5abc2e95ec2cbfb4d65642d84065c12c88d752",
       "md5": "aae5ddf096a0994ba79a254c8a5abc2e",
-      "cdmTable": "person",
-      "omopCdmVersion": "5.4"
+      "cdmTable": "person"
     },
     {
       "@id": "urn:uuid:0000001e-0000-4000-8000-00000000001e",

@@ -39,7 +39,7 @@
         },
         "AlignmentFile": {
             "additionalProperties": false,
-            "description": "Aligned reads, such as BAM or CRAM.",
+            "description": "Base class for aligned reads: a BamFile or a CramFile. SAM, the text form, is not accepted; convert it to BAM.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -90,14 +90,6 @@
                     ]
                 },
                 "encodingFormat": {
-                    "anyOf": [
-                        {
-                            "const": "text/plain"
-                        },
-                        {
-                            "const": "application/octet-stream"
-                        }
-                    ],
                     "description": "Media type of the content (after decompression when compression is set).",
                     "pattern": "^[a-z]+/[A-Za-z0-9.+_-]+$",
                     "type": "string"
@@ -160,13 +152,13 @@
                 "sensitivity": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/FileSensitivity"
+                            "$ref": "#/$defs/FixedSensitivity"
                         },
                         {
                             "type": "null"
                         }
                     ],
-                    "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
+                    "description": "Notes only. The class fixes every sensitivity flag."
                 },
                 "sequencingPlatform": {
                     "$ref": "#/$defs/SequencingPlatformEnum",
@@ -240,7 +232,7 @@
         },
         "AudioFile": {
             "additionalProperties": false,
-            "description": "An audio recording. A recording of a person's voice contains biometric identifiers, so set sensitivity.containsBiometricIdentifiers to true.",
+            "description": "An audio recording. A recording of a person's voice contains biometric identifiers, so set sensitivity.containsBiometricIdentifiers to true. Audio formats have no field for an address, so a file contains no postal codes unless it says so; speech counts as free text.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -397,9 +389,371 @@
             "title": "AudioFile",
             "type": "object"
         },
+        "BamFile": {
+            "additionalProperties": false,
+            "description": "Aligned reads in BAM. Its index (.bai) is an IndexFile.",
+            "properties": {
+                "@id": {
+                    "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
+                    "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                    "type": "string"
+                },
+                "@type": {
+                    "const": "cr:FileObject",
+                    "description": "The JSON-LD type. cr:FileObject or cr:FileSet for distribution items.",
+                    "type": "string"
+                },
+                "additionalProperty": {
+                    "description": "Namespaced extension key-value pairs.",
+                    "items": {
+                        "$ref": "#/$defs/Extension"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "additionalType": {
+                    "description": "The RDDC class of a distribution item, as a CURIE such as rddc:FhirNdjsonFile. Selects the required fields.",
+                    "enum": [
+                        "rddc:BamFile"
+                    ],
+                    "type": "string"
+                },
+                "compression": {
+                    "$ref": "#/$defs/CompressionEnum",
+                    "description": "Compression applied to the file's bytes, if any."
+                },
+                "contentSize": {
+                    "description": "Size of the file in bytes.",
+                    "pattern": "^[0-9]+ B$",
+                    "type": "string"
+                },
+                "contentUrl": {
+                    "description": "Object key relative to the batch prefix; Croissant resolves it against the sidecar's location.",
+                    "pattern": "^(?!(.*/)?\\.\\.?(/|$))[^/\\\\]+(/[^/\\\\]+)*$",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Free-text description.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "encodingFormat": {
+                    "const": "application/octet-stream",
+                    "description": "Media type of the content (after decompression when compression is set).",
+                    "type": "string"
+                },
+                "identifier": {
+                    "description": "IDs assigned to the file by other systems.",
+                    "items": {
+                        "$ref": "#/$defs/ExternalIdentifier"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "md5": {
+                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "pattern": "^[0-9a-f]{32}$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "measurementTechnique": {
+                    "$ref": "#/$defs/GenomicsAssayEnum",
+                    "description": "The sequencing assay that produced the data, e.g. wgs or wes. Downstream analysis depends on it, so every genomics file states it."
+                },
+                "name": {
+                    "description": "File name, by convention the contentUrl.",
+                    "type": "string"
+                },
+                "platform": {
+                    "description": "The sequencing instrument model, e.g. \"Illumina NovaSeq X\".",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "processingHints": {
+                    "description": "Informational key-value pairs for downstream pipelines.",
+                    "items": {
+                        "$ref": "#/$defs/ProcessingHint"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "recordCount": {
+                    "description": "Number of rows, resources or documents, if known.",
+                    "minimum": 0,
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "referenceGenome": {
+                    "$ref": "#/$defs/ReferenceGenomeEnum",
+                    "description": "Reference assembly the coordinates refer to, e.g. GRCh38."
+                },
+                "sensitivity": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/FixedSensitivity"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Notes only. The class fixes every sensitivity flag."
+                },
+                "sequencingPlatform": {
+                    "$ref": "#/$defs/SequencingPlatformEnum",
+                    "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It distinguishes short and long reads, which require different processing."
+                },
+                "sha256": {
+                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "pattern": "^[0-9a-f]{64}$",
+                    "type": "string"
+                },
+                "subjectIds": {
+                    "description": "Subject IDs the file contains. Each must appear in the subject table.",
+                    "items": {
+                        "pattern": "^[A-Za-z0-9._:-]+$",
+                        "type": "string"
+                    },
+                    "minItems": 1,
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "valueOrigins": {
+                    "description": "How tools populated this node's values.",
+                    "items": {
+                        "$ref": "#/$defs/ValueOrigin"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "wasDerivedFrom": {
+                    "description": "References to input files in this sidecar, such as the alignment used to call variants.",
+                    "items": {
+                        "$ref": "#/$defs/NodeRef"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "referenceGenome",
+                "measurementTechnique",
+                "sequencingPlatform",
+                "contentUrl",
+                "contentSize",
+                "sha256",
+                "@id",
+                "@type",
+                "additionalType",
+                "name",
+                "encodingFormat"
+            ],
+            "title": "BamFile",
+            "type": "object"
+        },
+        "BcfFile": {
+            "additionalProperties": false,
+            "description": "Variant calls in BCF, the binary form of VCF. Its index (.csi) is an IndexFile.",
+            "properties": {
+                "@id": {
+                    "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
+                    "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                    "type": "string"
+                },
+                "@type": {
+                    "const": "cr:FileObject",
+                    "description": "The JSON-LD type. cr:FileObject or cr:FileSet for distribution items.",
+                    "type": "string"
+                },
+                "additionalProperty": {
+                    "description": "Namespaced extension key-value pairs.",
+                    "items": {
+                        "$ref": "#/$defs/Extension"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "additionalType": {
+                    "description": "The RDDC class of a distribution item, as a CURIE such as rddc:FhirNdjsonFile. Selects the required fields.",
+                    "enum": [
+                        "rddc:BcfFile"
+                    ],
+                    "type": "string"
+                },
+                "compression": {
+                    "$ref": "#/$defs/CompressionEnum",
+                    "description": "Compression applied to the file's bytes, if any."
+                },
+                "contentSize": {
+                    "description": "Size of the file in bytes.",
+                    "pattern": "^[0-9]+ B$",
+                    "type": "string"
+                },
+                "contentUrl": {
+                    "description": "Object key relative to the batch prefix; Croissant resolves it against the sidecar's location.",
+                    "pattern": "^(?!(.*/)?\\.\\.?(/|$))[^/\\\\]+(/[^/\\\\]+)*$",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Free-text description.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "encodingFormat": {
+                    "const": "application/octet-stream",
+                    "description": "Media type of the content (after decompression when compression is set).",
+                    "type": "string"
+                },
+                "identifier": {
+                    "description": "IDs assigned to the file by other systems.",
+                    "items": {
+                        "$ref": "#/$defs/ExternalIdentifier"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "md5": {
+                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "pattern": "^[0-9a-f]{32}$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "measurementTechnique": {
+                    "$ref": "#/$defs/GenomicsAssayEnum",
+                    "description": "The sequencing assay that produced the data, e.g. wgs or wes. Downstream analysis depends on it, so every genomics file states it."
+                },
+                "name": {
+                    "description": "File name, by convention the contentUrl.",
+                    "type": "string"
+                },
+                "platform": {
+                    "description": "The sequencing instrument model, e.g. \"Illumina NovaSeq X\".",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "processingHints": {
+                    "description": "Informational key-value pairs for downstream pipelines.",
+                    "items": {
+                        "$ref": "#/$defs/ProcessingHint"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "recordCount": {
+                    "description": "Number of rows, resources or documents, if known.",
+                    "minimum": 0,
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "referenceGenome": {
+                    "$ref": "#/$defs/ReferenceGenomeEnum",
+                    "description": "Reference assembly the coordinates refer to, e.g. GRCh38."
+                },
+                "sensitivity": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/FixedSensitivity"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Notes only. The class fixes every sensitivity flag."
+                },
+                "sequencingPlatform": {
+                    "$ref": "#/$defs/SequencingPlatformEnum",
+                    "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It distinguishes short and long reads, which require different processing."
+                },
+                "sha256": {
+                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "pattern": "^[0-9a-f]{64}$",
+                    "type": "string"
+                },
+                "subjectIds": {
+                    "description": "Subject IDs the file contains. Each must appear in the subject table.",
+                    "items": {
+                        "pattern": "^[A-Za-z0-9._:-]+$",
+                        "type": "string"
+                    },
+                    "minItems": 1,
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "valueOrigins": {
+                    "description": "How tools populated this node's values.",
+                    "items": {
+                        "$ref": "#/$defs/ValueOrigin"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "wasDerivedFrom": {
+                    "description": "References to input files in this sidecar, such as the alignment used to call variants.",
+                    "items": {
+                        "$ref": "#/$defs/NodeRef"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "referenceGenome",
+                "measurementTechnique",
+                "sequencingPlatform",
+                "contentUrl",
+                "contentSize",
+                "sha256",
+                "@id",
+                "@type",
+                "additionalType",
+                "name",
+                "encodingFormat"
+            ],
+            "title": "BcfFile",
+            "type": "object"
+        },
         "BiometricFileSensitivity": {
             "additionalProperties": false,
-            "description": "Per-file sensitivity overrides for a class whose content always identifies a person, such as FacialImagingFile. It has no containsBiometricIdentifiers flag, so a file cannot contradict its class.",
+            "description": "Per-file sensitivity overrides for a biometric class (FacialImagingFile). It has no containsBiometricIdentifiers flag: the class already says every file contains biometric identifiers.",
             "properties": {
                 "containsDates": {
                     "description": "The data includes dates more precise than a year. These are accepted at deposit and masked at release. HIPAA Safe Harbor identifier (C), 45 CFR 164.514(b)(2)(i)(C), which also covers ages over 89.",
@@ -435,7 +789,7 @@
         },
         "CcdaDocumentFile": {
             "additionalProperties": false,
-            "description": "One HL7 C-CDA document. Its template IDs are in the document header and its C-CDA release is in the conformsTo of the file set it belongs to, so neither is repeated per file.",
+            "description": "One HL7 C-CDA document, in a CcdaDocumentSet. Its template IDs are in the document header and its C-CDA release is in the conformsTo of the set, so neither is repeated per file.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -638,7 +992,7 @@
                     "type": "string"
                 },
                 "conformsTo": {
-                    "description": "Standards the collection follows, as versioned URLs. Pinned values: http://hl7.org/fhir/R4 (FHIR 4.0.1), http://hl7.org/fhir/us/core/STU6.1 (US Core 6.1.0), http://hl7.org/fhir/uv/phd/STU2 (HL7 Personal Health Device IG 2.0.0, for device data in FHIR), https://ohdsi.github.io/CommonDataModel/cdm54.html (OMOP CDM 5.4), http://hl7.org/cda/us/ccda/2.1 (C-CDA 2.1), https://standards.ieee.org/ieee/1752.1/6982/ (IEEE 1752.1-2021, for sleep and physical activity measures). The validator checks values against the pinned list.",
+                    "description": "Standards the collection follows, as versioned URLs. A data class with a fileSetClass annotation (FHIR, OMOP and C-CDA files) takes its standard and version from here. Pinned values: http://hl7.org/fhir/R4 (FHIR 4.0.1), http://hl7.org/fhir/us/core/STU6.1 (US Core 6.1.0), http://hl7.org/fhir/uv/phd/STU2 (HL7 Personal Health Device IG 2.0.0, for device data in FHIR), https://ohdsi.github.io/CommonDataModel/cdm54.html (OMOP CDM 5.4), http://hl7.org/cda/us/ccda/2.1 (C-CDA 2.1), https://standards.ieee.org/ieee/1752.1/6982/ (IEEE 1752.1-2021, for sleep and physical activity measures). The validator checks values against the pinned list.",
                     "items": {
                         "format": "uri",
                         "type": "string"
@@ -769,7 +1123,7 @@
         },
         "CdmSource": {
             "additionalProperties": false,
-            "description": "Fields of the OMOP cdm_source table that a lane 1 load needs.",
+            "description": "Fields of the OMOP cdm_source table that the OMOP load needs. cdm_version is left out: the instance's conformsTo gives the CDM version.",
             "properties": {
                 "cdmEtlReference": {
                     "description": "OMOP cdm_etl_reference: a reference to the ETL code or its documentation.",
@@ -804,10 +1158,6 @@
                     "description": "OMOP cdm_source_name: the name of the CDM instance.",
                     "type": "string"
                 },
-                "cdmVersion": {
-                    "description": "OMOP cdm_version: the CDM version, e.g. 5.4.",
-                    "type": "string"
-                },
                 "sourceReleaseDate": {
                     "description": "OMOP source_release_date: when the data was extracted from the source system.",
                     "format": "date",
@@ -818,15 +1168,14 @@
                 }
             },
             "required": [
-                "cdmSourceName",
-                "cdmVersion"
+                "cdmSourceName"
             ],
             "title": "CdmSource",
             "type": "object"
         },
         "ClinicalDocumentFile": {
             "additionalProperties": false,
-            "description": "An unstructured clinical document, such as a note or a scanned report. A scan is a PDF or an image (TIFF, JPEG or PNG).",
+            "description": "An unstructured clinical document, such as a note or a scanned report. A scan is a PDF or an image (TIFF, JPEG or PNG). The whole document is free text, so every file counts as containing free text and cannot set containsFreeText.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -944,13 +1293,13 @@
                 "sensitivity": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/FileSensitivity"
+                            "$ref": "#/$defs/DocumentFileSensitivity"
                         },
                         {
                             "type": "null"
                         }
                     ],
-                    "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
+                    "description": "Per-file sensitivity overrides. containsFreeText is left out: the class already says the file is free text."
                 },
                 "sha256": {
                     "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
@@ -1005,6 +1354,7 @@
             "description": "Compression applied to the file's bytes. encodingFormat names the media type of the content after decompression. Croissant has no compression property; generic Croissant tools ignore this term.",
             "enum": [
                 "gzip",
+                "bgzf",
                 "bzip2",
                 "xz",
                 "zstd"
@@ -1014,7 +1364,7 @@
         },
         "ConsentFile": {
             "additionalProperties": false,
-            "description": "Permitted data uses for each listed subject. The platform applies them to access decisions rather than processing them as clinical data.",
+            "description": "Permitted data uses for each listed subject. The platform applies them to access decisions rather than processing them as clinical data. A consent elements table holds coded uses and dates, so postal codes, free text and biometric identifiers are absent unless the file says otherwise.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -1183,9 +1533,190 @@
             "title": "ConsentFile",
             "type": "object"
         },
+        "CramFile": {
+            "additionalProperties": false,
+            "description": "Aligned reads in CRAM, which needs the assembly named in referenceGenome to be read. Its index (.crai) is an IndexFile.",
+            "properties": {
+                "@id": {
+                    "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
+                    "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                    "type": "string"
+                },
+                "@type": {
+                    "const": "cr:FileObject",
+                    "description": "The JSON-LD type. cr:FileObject or cr:FileSet for distribution items.",
+                    "type": "string"
+                },
+                "additionalProperty": {
+                    "description": "Namespaced extension key-value pairs.",
+                    "items": {
+                        "$ref": "#/$defs/Extension"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "additionalType": {
+                    "description": "The RDDC class of a distribution item, as a CURIE such as rddc:FhirNdjsonFile. Selects the required fields.",
+                    "enum": [
+                        "rddc:CramFile"
+                    ],
+                    "type": "string"
+                },
+                "compression": {
+                    "$ref": "#/$defs/CompressionEnum",
+                    "description": "Compression applied to the file's bytes, if any."
+                },
+                "contentSize": {
+                    "description": "Size of the file in bytes.",
+                    "pattern": "^[0-9]+ B$",
+                    "type": "string"
+                },
+                "contentUrl": {
+                    "description": "Object key relative to the batch prefix; Croissant resolves it against the sidecar's location.",
+                    "pattern": "^(?!(.*/)?\\.\\.?(/|$))[^/\\\\]+(/[^/\\\\]+)*$",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Free-text description.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "encodingFormat": {
+                    "const": "application/octet-stream",
+                    "description": "Media type of the content (after decompression when compression is set).",
+                    "type": "string"
+                },
+                "identifier": {
+                    "description": "IDs assigned to the file by other systems.",
+                    "items": {
+                        "$ref": "#/$defs/ExternalIdentifier"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "md5": {
+                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "pattern": "^[0-9a-f]{32}$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "measurementTechnique": {
+                    "$ref": "#/$defs/GenomicsAssayEnum",
+                    "description": "The sequencing assay that produced the data, e.g. wgs or wes. Downstream analysis depends on it, so every genomics file states it."
+                },
+                "name": {
+                    "description": "File name, by convention the contentUrl.",
+                    "type": "string"
+                },
+                "platform": {
+                    "description": "The sequencing instrument model, e.g. \"Illumina NovaSeq X\".",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "processingHints": {
+                    "description": "Informational key-value pairs for downstream pipelines.",
+                    "items": {
+                        "$ref": "#/$defs/ProcessingHint"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "recordCount": {
+                    "description": "Number of rows, resources or documents, if known.",
+                    "minimum": 0,
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "referenceGenome": {
+                    "$ref": "#/$defs/ReferenceGenomeEnum",
+                    "description": "Reference assembly the coordinates refer to, e.g. GRCh38."
+                },
+                "sensitivity": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/FixedSensitivity"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Notes only. The class fixes every sensitivity flag."
+                },
+                "sequencingPlatform": {
+                    "$ref": "#/$defs/SequencingPlatformEnum",
+                    "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It distinguishes short and long reads, which require different processing."
+                },
+                "sha256": {
+                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "pattern": "^[0-9a-f]{64}$",
+                    "type": "string"
+                },
+                "subjectIds": {
+                    "description": "Subject IDs the file contains. Each must appear in the subject table.",
+                    "items": {
+                        "pattern": "^[A-Za-z0-9._:-]+$",
+                        "type": "string"
+                    },
+                    "minItems": 1,
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "valueOrigins": {
+                    "description": "How tools populated this node's values.",
+                    "items": {
+                        "$ref": "#/$defs/ValueOrigin"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "wasDerivedFrom": {
+                    "description": "References to input files in this sidecar, such as the alignment used to call variants.",
+                    "items": {
+                        "$ref": "#/$defs/NodeRef"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "referenceGenome",
+                "measurementTechnique",
+                "sequencingPlatform",
+                "contentUrl",
+                "contentSize",
+                "sha256",
+                "@id",
+                "@type",
+                "additionalType",
+                "name",
+                "encodingFormat"
+            ],
+            "title": "CramFile",
+            "type": "object"
+        },
         "DataFile": {
             "additionalProperties": false,
-            "description": "A data object of the batch, with subjects, sensitivity and provenance. Its class determines its modality (see the modality annotation).",
+            "description": "A data object of the batch, with subjects, sensitivity and provenance. Its class determines its modality and how it is processed (see the class annotations).",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -1342,6 +1873,353 @@
             "title": "DataFile",
             "type": "object"
         },
+        "DicomImageFile": {
+            "additionalProperties": false,
+            "description": "A DICOM image or series, such as a CT or MRI. DICOM headers carry study dates, patient details and comments, and images can carry burned-in text, so the sensitivity flags apply as the batch declares them.",
+            "properties": {
+                "@id": {
+                    "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
+                    "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                    "type": "string"
+                },
+                "@type": {
+                    "const": "cr:FileObject",
+                    "description": "The JSON-LD type. cr:FileObject or cr:FileSet for distribution items.",
+                    "type": "string"
+                },
+                "additionalProperty": {
+                    "description": "Namespaced extension key-value pairs.",
+                    "items": {
+                        "$ref": "#/$defs/Extension"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "additionalType": {
+                    "description": "The RDDC class of a distribution item, as a CURIE such as rddc:FhirNdjsonFile. Selects the required fields.",
+                    "enum": [
+                        "rddc:DicomImageFile"
+                    ],
+                    "type": "string"
+                },
+                "compression": {
+                    "$ref": "#/$defs/CompressionEnum",
+                    "description": "Compression applied to the file's bytes, if any."
+                },
+                "contentSize": {
+                    "description": "Size of the file in bytes.",
+                    "pattern": "^[0-9]+ B$",
+                    "type": "string"
+                },
+                "contentUrl": {
+                    "description": "Object key relative to the batch prefix; Croissant resolves it against the sidecar's location.",
+                    "pattern": "^(?!(.*/)?\\.\\.?(/|$))[^/\\\\]+(/[^/\\\\]+)*$",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Free-text description.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "encodingFormat": {
+                    "const": "application/dicom",
+                    "description": "Media type of the content (after decompression when compression is set).",
+                    "type": "string"
+                },
+                "identifier": {
+                    "description": "IDs assigned to the file by other systems.",
+                    "items": {
+                        "$ref": "#/$defs/ExternalIdentifier"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "md5": {
+                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "pattern": "^[0-9a-f]{32}$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "measurementTechnique": {
+                    "$ref": "#/$defs/ImagingAssayEnum",
+                    "description": "The imaging technique that produced the image, e.g. ct, mri or photography. Analysis depends on it, so every image states it."
+                },
+                "name": {
+                    "description": "File name, by convention the contentUrl.",
+                    "type": "string"
+                },
+                "processingHints": {
+                    "description": "Informational key-value pairs for downstream pipelines.",
+                    "items": {
+                        "$ref": "#/$defs/ProcessingHint"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "recordCount": {
+                    "description": "Number of rows, resources or documents, if known.",
+                    "minimum": 0,
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "sensitivity": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/FileSensitivity"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
+                },
+                "sha256": {
+                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "pattern": "^[0-9a-f]{64}$",
+                    "type": "string"
+                },
+                "subjectIds": {
+                    "description": "Subject IDs the file contains. Each must appear in the subject table.",
+                    "items": {
+                        "pattern": "^[A-Za-z0-9._:-]+$",
+                        "type": "string"
+                    },
+                    "minItems": 1,
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "valueOrigins": {
+                    "description": "How tools populated this node's values.",
+                    "items": {
+                        "$ref": "#/$defs/ValueOrigin"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "wasDerivedFrom": {
+                    "description": "References to input files in this sidecar, such as the alignment used to call variants.",
+                    "items": {
+                        "$ref": "#/$defs/NodeRef"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "measurementTechnique",
+                "contentUrl",
+                "contentSize",
+                "sha256",
+                "@id",
+                "@type",
+                "additionalType",
+                "name",
+                "encodingFormat"
+            ],
+            "title": "DicomImageFile",
+            "type": "object"
+        },
+        "DicomWaveformFile": {
+            "additionalProperties": false,
+            "description": "A DICOM waveform object, such as a 12-lead ECG. Its headers carry the same patient details as a DICOM image, including an address, so every flag except biometric identifiers applies as the batch declares it.",
+            "properties": {
+                "@id": {
+                    "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
+                    "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                    "type": "string"
+                },
+                "@type": {
+                    "const": "cr:FileObject",
+                    "description": "The JSON-LD type. cr:FileObject or cr:FileSet for distribution items.",
+                    "type": "string"
+                },
+                "additionalProperty": {
+                    "description": "Namespaced extension key-value pairs.",
+                    "items": {
+                        "$ref": "#/$defs/Extension"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "additionalType": {
+                    "description": "The RDDC class of a distribution item, as a CURIE such as rddc:FhirNdjsonFile. Selects the required fields.",
+                    "enum": [
+                        "rddc:DicomWaveformFile"
+                    ],
+                    "type": "string"
+                },
+                "compression": {
+                    "$ref": "#/$defs/CompressionEnum",
+                    "description": "Compression applied to the file's bytes, if any."
+                },
+                "contentSize": {
+                    "description": "Size of the file in bytes.",
+                    "pattern": "^[0-9]+ B$",
+                    "type": "string"
+                },
+                "contentUrl": {
+                    "description": "Object key relative to the batch prefix; Croissant resolves it against the sidecar's location.",
+                    "pattern": "^(?!(.*/)?\\.\\.?(/|$))[^/\\\\]+(/[^/\\\\]+)*$",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Free-text description.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "encodingFormat": {
+                    "const": "application/dicom",
+                    "description": "Media type of the content (after decompression when compression is set).",
+                    "type": "string"
+                },
+                "identifier": {
+                    "description": "IDs assigned to the file by other systems.",
+                    "items": {
+                        "$ref": "#/$defs/ExternalIdentifier"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "md5": {
+                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "pattern": "^[0-9a-f]{32}$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "measurementTechnique": {
+                    "description": "The sensing techniques that produced the data, e.g. accelerometry or ecg. A list, since one recording or summary can combine several, such as a sleep study's EEG and ECG channels.",
+                    "items": {
+                        "$ref": "#/$defs/SensorAssayEnum"
+                    },
+                    "minItems": 1,
+                    "type": "array"
+                },
+                "name": {
+                    "description": "File name, by convention the contentUrl.",
+                    "type": "string"
+                },
+                "platform": {
+                    "description": "The device that recorded the data, e.g. \"ActiGraph GT9X\".",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "processingHints": {
+                    "description": "Informational key-value pairs for downstream pipelines.",
+                    "items": {
+                        "$ref": "#/$defs/ProcessingHint"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "recordCount": {
+                    "description": "Number of rows, resources or documents, if known.",
+                    "minimum": 0,
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "samplingRate": {
+                    "description": "Samples per second of the recorded signal, in hertz. When channels differ, the highest rate. Croissant's term, which Croissant sets on audio fields.",
+                    "minimum": 0,
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                },
+                "sensitivity": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/FileSensitivity"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
+                },
+                "sha256": {
+                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "pattern": "^[0-9a-f]{64}$",
+                    "type": "string"
+                },
+                "subjectIds": {
+                    "description": "Subject IDs the file contains. Each must appear in the subject table.",
+                    "items": {
+                        "pattern": "^[A-Za-z0-9._:-]+$",
+                        "type": "string"
+                    },
+                    "minItems": 1,
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "valueOrigins": {
+                    "description": "How tools populated this node's values.",
+                    "items": {
+                        "$ref": "#/$defs/ValueOrigin"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "wasDerivedFrom": {
+                    "description": "References to input files in this sidecar, such as the alignment used to call variants.",
+                    "items": {
+                        "$ref": "#/$defs/NodeRef"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "measurementTechnique",
+                "contentUrl",
+                "contentSize",
+                "sha256",
+                "@id",
+                "@type",
+                "additionalType",
+                "name",
+                "encodingFormat"
+            ],
+            "title": "DicomWaveformFile",
+            "type": "object"
+        },
         "DistributionItem": {
             "additionalProperties": false,
             "description": "A FileObject or FileSet in distribution. Its additionalType names the RDDC class and determines the required fields.",
@@ -1410,6 +2288,42 @@
             "title": "DistributionItem",
             "type": "object"
         },
+        "DocumentFileSensitivity": {
+            "additionalProperties": false,
+            "description": "Per-file sensitivity overrides for an unstructured document class (ClinicalDocumentFile). It has no containsFreeText flag: the class already says every file is free text.",
+            "properties": {
+                "containsBiometricIdentifiers": {
+                    "description": "The data includes biometric identifiers, full-face images, voice or similar content. Such files never leave INTAKE: they are not loaded into the normalized store or released. HIPAA Safe Harbor identifiers (P), biometric identifiers including finger and voice prints, and (Q), full-face photographs and comparable images, 45 CFR 164.514(b)(2)(i).",
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                },
+                "containsDates": {
+                    "description": "The data includes dates more precise than a year. These are accepted at deposit and masked at release. HIPAA Safe Harbor identifier (C), 45 CFR 164.514(b)(2)(i)(C), which also covers ages over 89.",
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                },
+                "containsZipCodes": {
+                    "description": "The data includes postal codes. These are accepted at deposit and masked at release. Part of HIPAA Safe Harbor identifier (B), 45 CFR 164.514(b)(2)(i)(B), which covers all geographic subdivisions smaller than a state; this flag covers postal codes only.",
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                },
+                "notes": {
+                    "description": "Free-text notes on the sensitivity values.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "title": "DocumentFileSensitivity",
+            "type": "object"
+        },
         "DocumentSet": {
             "additionalProperties": false,
             "description": "Unstructured documents such as clinical notes.",
@@ -1450,7 +2364,7 @@
                     "type": "string"
                 },
                 "conformsTo": {
-                    "description": "Standards the collection follows, as versioned URLs. Pinned values: http://hl7.org/fhir/R4 (FHIR 4.0.1), http://hl7.org/fhir/us/core/STU6.1 (US Core 6.1.0), http://hl7.org/fhir/uv/phd/STU2 (HL7 Personal Health Device IG 2.0.0, for device data in FHIR), https://ohdsi.github.io/CommonDataModel/cdm54.html (OMOP CDM 5.4), http://hl7.org/cda/us/ccda/2.1 (C-CDA 2.1), https://standards.ieee.org/ieee/1752.1/6982/ (IEEE 1752.1-2021, for sleep and physical activity measures). The validator checks values against the pinned list.",
+                    "description": "Standards the collection follows, as versioned URLs. A data class with a fileSetClass annotation (FHIR, OMOP and C-CDA files) takes its standard and version from here. Pinned values: http://hl7.org/fhir/R4 (FHIR 4.0.1), http://hl7.org/fhir/us/core/STU6.1 (US Core 6.1.0), http://hl7.org/fhir/uv/phd/STU2 (HL7 Personal Health Device IG 2.0.0, for device data in FHIR), https://ohdsi.github.io/CommonDataModel/cdm54.html (OMOP CDM 5.4), http://hl7.org/cda/us/ccda/2.1 (C-CDA 2.1), https://standards.ieee.org/ieee/1752.1/6982/ (IEEE 1752.1-2021, for sleep and physical activity measures). The validator checks values against the pinned list.",
                     "items": {
                         "format": "uri",
                         "type": "string"
@@ -1583,7 +2497,7 @@
         },
         "DocumentationFile": {
             "additionalProperties": false,
-            "description": "A file that documents other files, such as a data dictionary or a README. When it documents particular files or record sets, about points to them; a README for the whole batch leaves about out.",
+            "description": "A file that documents other files, such as a data dictionary or a README. When it documents particular files or record sets, about points to them; a README for the whole batch leaves about out. Documentation describes the data and holds no subject-level content, so every flag is false unless the file says otherwise.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -1751,6 +2665,189 @@
             "title": "DocumentationFile",
             "type": "object"
         },
+        "EdfSignalFile": {
+            "additionalProperties": false,
+            "description": "A signal in EDF or EDF+ (European Data Format), the usual format for polysomnography and EEG. Its header has fields for the patient's identification and the recording start date, and EDF+ annotation channels hold free text, so those flags apply as the batch declares them. EDF has no registered media type, so it is application/octet-stream.",
+            "properties": {
+                "@id": {
+                    "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
+                    "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                    "type": "string"
+                },
+                "@type": {
+                    "const": "cr:FileObject",
+                    "description": "The JSON-LD type. cr:FileObject or cr:FileSet for distribution items.",
+                    "type": "string"
+                },
+                "additionalProperty": {
+                    "description": "Namespaced extension key-value pairs.",
+                    "items": {
+                        "$ref": "#/$defs/Extension"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "additionalType": {
+                    "description": "The RDDC class of a distribution item, as a CURIE such as rddc:FhirNdjsonFile. Selects the required fields.",
+                    "enum": [
+                        "rddc:EdfSignalFile"
+                    ],
+                    "type": "string"
+                },
+                "compression": {
+                    "$ref": "#/$defs/CompressionEnum",
+                    "description": "Compression applied to the file's bytes, if any."
+                },
+                "contentSize": {
+                    "description": "Size of the file in bytes.",
+                    "pattern": "^[0-9]+ B$",
+                    "type": "string"
+                },
+                "contentUrl": {
+                    "description": "Object key relative to the batch prefix; Croissant resolves it against the sidecar's location.",
+                    "pattern": "^(?!(.*/)?\\.\\.?(/|$))[^/\\\\]+(/[^/\\\\]+)*$",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Free-text description.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "encodingFormat": {
+                    "const": "application/octet-stream",
+                    "description": "Media type of the content (after decompression when compression is set).",
+                    "type": "string"
+                },
+                "identifier": {
+                    "description": "IDs assigned to the file by other systems.",
+                    "items": {
+                        "$ref": "#/$defs/ExternalIdentifier"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "md5": {
+                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "pattern": "^[0-9a-f]{32}$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "measurementTechnique": {
+                    "description": "The sensing techniques that produced the data, e.g. accelerometry or ecg. A list, since one recording or summary can combine several, such as a sleep study's EEG and ECG channels.",
+                    "items": {
+                        "$ref": "#/$defs/SensorAssayEnum"
+                    },
+                    "minItems": 1,
+                    "type": "array"
+                },
+                "name": {
+                    "description": "File name, by convention the contentUrl.",
+                    "type": "string"
+                },
+                "platform": {
+                    "description": "The device that recorded the data, e.g. \"ActiGraph GT9X\".",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "processingHints": {
+                    "description": "Informational key-value pairs for downstream pipelines.",
+                    "items": {
+                        "$ref": "#/$defs/ProcessingHint"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "recordCount": {
+                    "description": "Number of rows, resources or documents, if known.",
+                    "minimum": 0,
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "samplingRate": {
+                    "description": "Samples per second of the recorded signal, in hertz. When channels differ, the highest rate. Croissant's term, which Croissant sets on audio fields.",
+                    "minimum": 0,
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                },
+                "sensitivity": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/FileSensitivity"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
+                },
+                "sha256": {
+                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "pattern": "^[0-9a-f]{64}$",
+                    "type": "string"
+                },
+                "subjectIds": {
+                    "description": "Subject IDs the file contains. Each must appear in the subject table.",
+                    "items": {
+                        "pattern": "^[A-Za-z0-9._:-]+$",
+                        "type": "string"
+                    },
+                    "minItems": 1,
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "valueOrigins": {
+                    "description": "How tools populated this node's values.",
+                    "items": {
+                        "$ref": "#/$defs/ValueOrigin"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "wasDerivedFrom": {
+                    "description": "References to input files in this sidecar, such as the alignment used to call variants.",
+                    "items": {
+                        "$ref": "#/$defs/NodeRef"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "measurementTechnique",
+                "contentUrl",
+                "contentSize",
+                "sha256",
+                "@id",
+                "@type",
+                "additionalType",
+                "name",
+                "encodingFormat"
+            ],
+            "title": "EdfSignalFile",
+            "type": "object"
+        },
         "Extension": {
             "additionalProperties": false,
             "description": "A project-specific key-value pair with a namespace, stored in additionalProperty. Unknown properties elsewhere fail validation. Tools that rewrite sidecars preserve extensions.",
@@ -1825,7 +2922,7 @@
         },
         "FacialImagingFile": {
             "additionalProperties": false,
-            "description": "An image or 3D surface model of a person's face, such as those taken for dysmorphology assessment or facial phenotyping. measurementTechnique says how it was captured: a photograph, a 3D surface scan, or a CT or MRI. A face is a biometric identifier, so the file always counts as containing biometric identifiers.",
+            "description": "An image or 3D surface model of a person's face, such as those taken for dysmorphology assessment or facial phenotyping. measurementTechnique says how it was captured: a photograph, a 3D surface scan, or a CT or MRI. A face is a biometric identifier, so the file always counts as containing biometric identifiers. Not a subclass of ImagingFile: facial images are processed by their own tools and never leave INTAKE.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -2037,6 +3134,204 @@
             "title": "FacialImagingFile",
             "type": "object"
         },
+        "FastqFile": {
+            "additionalProperties": false,
+            "description": "Sequencing reads in FASTQ, usually gzip or BGZF-compressed (.fastq.gz).",
+            "properties": {
+                "@id": {
+                    "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
+                    "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                    "type": "string"
+                },
+                "@type": {
+                    "const": "cr:FileObject",
+                    "description": "The JSON-LD type. cr:FileObject or cr:FileSet for distribution items.",
+                    "type": "string"
+                },
+                "additionalProperty": {
+                    "description": "Namespaced extension key-value pairs.",
+                    "items": {
+                        "$ref": "#/$defs/Extension"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "additionalType": {
+                    "description": "The RDDC class of a distribution item, as a CURIE such as rddc:FhirNdjsonFile. Selects the required fields.",
+                    "enum": [
+                        "rddc:FastqFile"
+                    ],
+                    "type": "string"
+                },
+                "compression": {
+                    "$ref": "#/$defs/CompressionEnum",
+                    "anyOf": [
+                        {
+                            "const": "gzip"
+                        },
+                        {
+                            "const": "bgzf"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Compression applied to the file's bytes, if any."
+                },
+                "contentSize": {
+                    "description": "Size of the file in bytes.",
+                    "pattern": "^[0-9]+ B$",
+                    "type": "string"
+                },
+                "contentUrl": {
+                    "description": "Object key relative to the batch prefix; Croissant resolves it against the sidecar's location.",
+                    "pattern": "^(?!(.*/)?\\.\\.?(/|$))[^/\\\\]+(/[^/\\\\]+)*$",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Free-text description.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "encodingFormat": {
+                    "const": "text/plain",
+                    "description": "Media type of the content (after decompression when compression is set).",
+                    "type": "string"
+                },
+                "identifier": {
+                    "description": "IDs assigned to the file by other systems.",
+                    "items": {
+                        "$ref": "#/$defs/ExternalIdentifier"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "md5": {
+                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "pattern": "^[0-9a-f]{32}$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "measurementTechnique": {
+                    "$ref": "#/$defs/GenomicsAssayEnum",
+                    "description": "The sequencing assay that produced the data, e.g. wgs or wes. Downstream analysis depends on it, so every genomics file states it."
+                },
+                "name": {
+                    "description": "File name, by convention the contentUrl.",
+                    "type": "string"
+                },
+                "pairedWith": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/NodeRef"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "The mate file of paired-end reads."
+                },
+                "platform": {
+                    "description": "The sequencing instrument model, e.g. \"Illumina NovaSeq X\".",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "processingHints": {
+                    "description": "Informational key-value pairs for downstream pipelines.",
+                    "items": {
+                        "$ref": "#/$defs/ProcessingHint"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "recordCount": {
+                    "description": "Number of rows, resources or documents, if known.",
+                    "minimum": 0,
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "sensitivity": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/FixedSensitivity"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Notes only. The class fixes every sensitivity flag."
+                },
+                "sequencingPlatform": {
+                    "$ref": "#/$defs/SequencingPlatformEnum",
+                    "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It distinguishes short and long reads, which require different processing."
+                },
+                "sha256": {
+                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "pattern": "^[0-9a-f]{64}$",
+                    "type": "string"
+                },
+                "subjectIds": {
+                    "description": "Subject IDs the file contains. Each must appear in the subject table.",
+                    "items": {
+                        "pattern": "^[A-Za-z0-9._:-]+$",
+                        "type": "string"
+                    },
+                    "minItems": 1,
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "valueOrigins": {
+                    "description": "How tools populated this node's values.",
+                    "items": {
+                        "$ref": "#/$defs/ValueOrigin"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "wasDerivedFrom": {
+                    "description": "References to input files in this sidecar, such as the alignment used to call variants.",
+                    "items": {
+                        "$ref": "#/$defs/NodeRef"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "measurementTechnique",
+                "sequencingPlatform",
+                "contentUrl",
+                "contentSize",
+                "sha256",
+                "@id",
+                "@type",
+                "additionalType",
+                "name",
+                "encodingFormat"
+            ],
+            "title": "FastqFile",
+            "type": "object"
+        },
         "FhirBulkExport": {
             "additionalProperties": false,
             "description": "A FHIR Bulk Data export, one NDJSON file per resource type.",
@@ -2077,7 +3372,7 @@
                     "type": "string"
                 },
                 "conformsTo": {
-                    "description": "Standards the collection follows, as versioned URLs. Pinned values: http://hl7.org/fhir/R4 (FHIR 4.0.1), http://hl7.org/fhir/us/core/STU6.1 (US Core 6.1.0), http://hl7.org/fhir/uv/phd/STU2 (HL7 Personal Health Device IG 2.0.0, for device data in FHIR), https://ohdsi.github.io/CommonDataModel/cdm54.html (OMOP CDM 5.4), http://hl7.org/cda/us/ccda/2.1 (C-CDA 2.1), https://standards.ieee.org/ieee/1752.1/6982/ (IEEE 1752.1-2021, for sleep and physical activity measures). The validator checks values against the pinned list.",
+                    "description": "Standards the collection follows, as versioned URLs. A data class with a fileSetClass annotation (FHIR, OMOP and C-CDA files) takes its standard and version from here. Pinned values: http://hl7.org/fhir/R4 (FHIR 4.0.1), http://hl7.org/fhir/us/core/STU6.1 (US Core 6.1.0), http://hl7.org/fhir/uv/phd/STU2 (HL7 Personal Health Device IG 2.0.0, for device data in FHIR), https://ohdsi.github.io/CommonDataModel/cdm54.html (OMOP CDM 5.4), http://hl7.org/cda/us/ccda/2.1 (C-CDA 2.1), https://standards.ieee.org/ieee/1752.1/6982/ (IEEE 1752.1-2021, for sleep and physical activity measures). The validator checks values against the pinned list.",
                     "items": {
                         "format": "uri",
                         "type": "string"
@@ -2214,7 +3509,7 @@
         },
         "FhirBundleCollection": {
             "additionalProperties": false,
-            "description": "A set of FHIR Bundle documents, typically one per subject.",
+            "description": "A set of FHIR Bundle documents (FhirBundleFiles), typically one per subject.",
             "if": {
                 "properties": {
                     "name": {}
@@ -2252,7 +3547,7 @@
                     "type": "string"
                 },
                 "conformsTo": {
-                    "description": "Standards the collection follows, as versioned URLs. Pinned values: http://hl7.org/fhir/R4 (FHIR 4.0.1), http://hl7.org/fhir/us/core/STU6.1 (US Core 6.1.0), http://hl7.org/fhir/uv/phd/STU2 (HL7 Personal Health Device IG 2.0.0, for device data in FHIR), https://ohdsi.github.io/CommonDataModel/cdm54.html (OMOP CDM 5.4), http://hl7.org/cda/us/ccda/2.1 (C-CDA 2.1), https://standards.ieee.org/ieee/1752.1/6982/ (IEEE 1752.1-2021, for sleep and physical activity measures). The validator checks values against the pinned list.",
+                    "description": "Standards the collection follows, as versioned URLs. A data class with a fileSetClass annotation (FHIR, OMOP and C-CDA files) takes its standard and version from here. Pinned values: http://hl7.org/fhir/R4 (FHIR 4.0.1), http://hl7.org/fhir/us/core/STU6.1 (US Core 6.1.0), http://hl7.org/fhir/uv/phd/STU2 (HL7 Personal Health Device IG 2.0.0, for device data in FHIR), https://ohdsi.github.io/CommonDataModel/cdm54.html (OMOP CDM 5.4), http://hl7.org/cda/us/ccda/2.1 (C-CDA 2.1), https://standards.ieee.org/ieee/1752.1/6982/ (IEEE 1752.1-2021, for sleep and physical activity measures). The validator checks values against the pinned list.",
                     "items": {
                         "format": "uri",
                         "type": "string"
@@ -2383,7 +3678,7 @@
         },
         "FhirBundleFile": {
             "additionalProperties": false,
-            "description": "One FHIR Bundle JSON document.",
+            "description": "One FHIR Bundle JSON document, in a FhirBundleCollection.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -2558,7 +3853,7 @@
         },
         "FhirFile": {
             "additionalProperties": false,
-            "description": "Base class for FHIR JSON files. The FHIR version and the implementation guides the resources follow, such as US Core, are declared once in the conformsTo of the file set the file belongs to, not per file.",
+            "description": "Base class for FHIR JSON files. The FHIR version and the implementation guides the resources follow, such as US Core, are declared once in the conformsTo of the file set the file belongs to (its fileSetClass), not per file.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -2717,7 +4012,7 @@
         },
         "FhirNdjsonFile": {
             "additionalProperties": false,
-            "description": "FHIR Bulk Data NDJSON, one resource type per file.",
+            "description": "FHIR Bulk Data NDJSON, one resource type per file, in a FhirBulkExport.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -3032,9 +4327,178 @@
             "title": "FhirR4ResourceTypeEnum",
             "type": "string"
         },
+        "FhirResourceCollection": {
+            "additionalProperties": false,
+            "description": "A set of single-resource FHIR JSON documents (FhirResourceFiles).",
+            "if": {
+                "properties": {
+                    "name": {}
+                },
+                "required": [
+                    "name"
+                ]
+            },
+            "properties": {
+                "@id": {
+                    "description": "JSON-LD node identifier (@id). Unique within the sidecar.",
+                    "pattern": "^[A-Za-z0-9._/-]+$",
+                    "type": "string"
+                },
+                "@type": {
+                    "const": "cr:FileSet",
+                    "description": "The JSON-LD type. cr:FileObject or cr:FileSet for distribution items.",
+                    "type": "string"
+                },
+                "additionalProperty": {
+                    "description": "Namespaced extension key-value pairs.",
+                    "items": {
+                        "$ref": "#/$defs/Extension"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "additionalType": {
+                    "description": "The RDDC class of a distribution item, as a CURIE such as rddc:FhirNdjsonFile. Selects the required fields.",
+                    "enum": [
+                        "rddc:FhirResourceCollection"
+                    ],
+                    "type": "string"
+                },
+                "conformsTo": {
+                    "description": "Standards the collection follows, as versioned URLs. A data class with a fileSetClass annotation (FHIR, OMOP and C-CDA files) takes its standard and version from here. Pinned values: http://hl7.org/fhir/R4 (FHIR 4.0.1), http://hl7.org/fhir/us/core/STU6.1 (US Core 6.1.0), http://hl7.org/fhir/uv/phd/STU2 (HL7 Personal Health Device IG 2.0.0, for device data in FHIR), https://ohdsi.github.io/CommonDataModel/cdm54.html (OMOP CDM 5.4), http://hl7.org/cda/us/ccda/2.1 (C-CDA 2.1), https://standards.ieee.org/ieee/1752.1/6982/ (IEEE 1752.1-2021, for sleep and physical activity measures). The validator checks values against the pinned list.",
+                    "items": {
+                        "format": "uri",
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "description": {
+                    "description": "Free-text description.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "encodingFormat": {
+                    "description": "Media type of the content (after decompression when compression is set).",
+                    "pattern": "^[a-z]+/[A-Za-z0-9.+_-]+$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "excludes": {
+                    "description": "Glob patterns relative to the batch prefix for files to leave out of the set.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "hasPart": {
+                    "description": "Member files, by @id.",
+                    "items": {
+                        "$ref": "#/$defs/NodeRef"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "includes": {
+                    "description": "Glob patterns relative to the batch prefix.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "description": "Human-readable name.",
+                    "type": "string"
+                },
+                "subjectCount": {
+                    "description": "Number of distinct subjects in the file set.",
+                    "minimum": 0,
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "temporalCoverage": {
+                    "description": "The period the data covers, as an ISO 8601 date or interval \"start/end\", e.g. \"2019/2024\" or \"2024-03/2024-06\"; \"..\" leaves one end open, e.g. \"2021/..\". Use year or month precision unless the batch declares containsDates: day-precision dates for a set about one subject can identify them.",
+                    "pattern": "^([0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?(/([0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?|\\.\\.))?|\\.\\./[0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?)$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "valueOrigins": {
+                    "description": "How tools populated this node's values.",
+                    "items": {
+                        "$ref": "#/$defs/ValueOrigin"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "wasDerivedFrom": {
+                    "description": "References to input file sets in this sidecar.",
+                    "items": {
+                        "$ref": "#/$defs/NodeRef"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "conformsTo",
+                "@id",
+                "@type",
+                "additionalType",
+                "name"
+            ],
+            "then": {
+                "anyOf": [
+                    {
+                        "properties": {
+                            "hasPart": {
+                                "items": {},
+                                "type": "array"
+                            }
+                        },
+                        "required": [
+                            "hasPart"
+                        ]
+                    },
+                    {
+                        "properties": {
+                            "includes": {
+                                "items": {},
+                                "type": "array"
+                            }
+                        },
+                        "required": [
+                            "includes"
+                        ]
+                    }
+                ]
+            },
+            "title": "FhirResourceCollection",
+            "type": "object"
+        },
         "FhirResourceFile": {
             "additionalProperties": false,
-            "description": "One FHIR resource JSON document that is not a Bundle.",
+            "description": "One FHIR resource JSON document that is not a Bundle, in a FhirResourceCollection.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -3640,7 +5104,7 @@
                     "type": "string"
                 },
                 "conformsTo": {
-                    "description": "Standards the collection follows, as versioned URLs. Pinned values: http://hl7.org/fhir/R4 (FHIR 4.0.1), http://hl7.org/fhir/us/core/STU6.1 (US Core 6.1.0), http://hl7.org/fhir/uv/phd/STU2 (HL7 Personal Health Device IG 2.0.0, for device data in FHIR), https://ohdsi.github.io/CommonDataModel/cdm54.html (OMOP CDM 5.4), http://hl7.org/cda/us/ccda/2.1 (C-CDA 2.1), https://standards.ieee.org/ieee/1752.1/6982/ (IEEE 1752.1-2021, for sleep and physical activity measures). The validator checks values against the pinned list.",
+                    "description": "Standards the collection follows, as versioned URLs. A data class with a fileSetClass annotation (FHIR, OMOP and C-CDA files) takes its standard and version from here. Pinned values: http://hl7.org/fhir/R4 (FHIR 4.0.1), http://hl7.org/fhir/us/core/STU6.1 (US Core 6.1.0), http://hl7.org/fhir/uv/phd/STU2 (HL7 Personal Health Device IG 2.0.0, for device data in FHIR), https://ohdsi.github.io/CommonDataModel/cdm54.html (OMOP CDM 5.4), http://hl7.org/cda/us/ccda/2.1 (C-CDA 2.1), https://standards.ieee.org/ieee/1752.1/6982/ (IEEE 1752.1-2021, for sleep and physical activity measures). The validator checks values against the pinned list.",
                     "items": {
                         "format": "uri",
                         "type": "string"
@@ -3871,10 +5335,10 @@
         },
         "FileSensitivity": {
             "additionalProperties": false,
-            "description": "Per-file overrides for the header contains* flags. A file can set these to true or false. Only the batch can set directIdentifiersRemoved and synthetic.",
+            "description": "Per-file overrides for the header contains* flags. A file can set these to true or false, unless its class fixes the flag (see the class annotations in data.yaml): such classes use a variant of this class without that flag. Only the batch can set directIdentifiersRemoved and synthetic.",
             "properties": {
                 "containsBiometricIdentifiers": {
-                    "description": "The data includes biometric identifiers, full-face images, voice or similar content. These stay in the trusted research environment (TRE). HIPAA Safe Harbor identifiers (P), biometric identifiers including finger and voice prints, and (Q), full-face photographs and comparable images, 45 CFR 164.514(b)(2)(i).",
+                    "description": "The data includes biometric identifiers, full-face images, voice or similar content. Such files never leave INTAKE: they are not loaded into the normalized store or released. HIPAA Safe Harbor identifiers (P), biometric identifiers including finger and voice prints, and (Q), full-face photographs and comparable images, 45 CFR 164.514(b)(2)(i).",
                     "type": [
                         "boolean",
                         "null"
@@ -3952,7 +5416,7 @@
                     "type": "string"
                 },
                 "conformsTo": {
-                    "description": "Standards the collection follows, as versioned URLs. Pinned values: http://hl7.org/fhir/R4 (FHIR 4.0.1), http://hl7.org/fhir/us/core/STU6.1 (US Core 6.1.0), http://hl7.org/fhir/uv/phd/STU2 (HL7 Personal Health Device IG 2.0.0, for device data in FHIR), https://ohdsi.github.io/CommonDataModel/cdm54.html (OMOP CDM 5.4), http://hl7.org/cda/us/ccda/2.1 (C-CDA 2.1), https://standards.ieee.org/ieee/1752.1/6982/ (IEEE 1752.1-2021, for sleep and physical activity measures). The validator checks values against the pinned list.",
+                    "description": "Standards the collection follows, as versioned URLs. A data class with a fileSetClass annotation (FHIR, OMOP and C-CDA files) takes its standard and version from here. Pinned values: http://hl7.org/fhir/R4 (FHIR 4.0.1), http://hl7.org/fhir/us/core/STU6.1 (US Core 6.1.0), http://hl7.org/fhir/uv/phd/STU2 (HL7 Personal Health Device IG 2.0.0, for device data in FHIR), https://ohdsi.github.io/CommonDataModel/cdm54.html (OMOP CDM 5.4), http://hl7.org/cda/us/ccda/2.1 (C-CDA 2.1), https://standards.ieee.org/ieee/1752.1/6982/ (IEEE 1752.1-2021, for sleep and physical activity measures). The validator checks values against the pinned list.",
                     "items": {
                         "format": "uri",
                         "type": "string"
@@ -4081,6 +5545,21 @@
                 ]
             },
             "title": "FileSet",
+            "type": "object"
+        },
+        "FixedSensitivity": {
+            "additionalProperties": false,
+            "description": "Per-file sensitivity for a class whose format can carry none of the flagged content (the genomics classes and IndexFile). Notes only.",
+            "properties": {
+                "notes": {
+                    "description": "Free-text notes on the sensitivity values.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "title": "FixedSensitivity",
             "type": "object"
         },
         "GenericFile": {
@@ -4257,7 +5736,7 @@
         },
         "GenomicsFile": {
             "additionalProperties": false,
-            "description": "Base class for genomic sequencing data. These formats have no registered media type, so encodingFormat names the container: text/plain for text formats (FASTQ, SAM, VCF) and application/octet-stream for binary ones (BAM, CRAM, BCF). The class says which format it is. A gzip or BGZF-compressed text file (.fastq.gz, .vcf.gz) sets compression to gzip. BAM, CRAM and BCF compress internally as part of the format, so they leave compression unset.",
+            "description": "Base class for genomic sequencing data. The class names the format, and maps to its EDAM format term; encodingFormat names only the container, text/plain for text formats (FASTQ, VCF) and application/octet-stream for binary ones (BAM, CRAM, BCF). A gzip or BGZF-compressed text file (.fastq.gz, .vcf.gz) says so in compression. BAM, CRAM and BCF compress internally as part of the format, so they leave compression unset. The formats hold sequence data and run metadata, not subject-level dates, addresses, narrative or biometric identifiers, so the sensitivity flags do not apply: what identifies the person is the sequence itself (the identifying annotation).",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -4308,14 +5787,6 @@
                     ]
                 },
                 "encodingFormat": {
-                    "anyOf": [
-                        {
-                            "const": "text/plain"
-                        },
-                        {
-                            "const": "application/octet-stream"
-                        }
-                    ],
                     "description": "Media type of the content (after decompression when compression is set).",
                     "pattern": "^[a-z]+/[A-Za-z0-9.+_-]+$",
                     "type": "string"
@@ -4374,13 +5845,13 @@
                 "sensitivity": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/FileSensitivity"
+                            "$ref": "#/$defs/FixedSensitivity"
                         },
                         {
                             "type": "null"
                         }
                     ],
-                    "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
+                    "description": "Notes only. The class fixes every sensitivity flag."
                 },
                 "sequencingPlatform": {
                     "$ref": "#/$defs/SequencingPlatformEnum",
@@ -4452,6 +5923,187 @@
             "title": "IdSystemEnum",
             "type": "string"
         },
+        "ImageFile": {
+            "additionalProperties": false,
+            "description": "An image in a format other than DICOM: TIFF or OME-TIFF, PNG, JPEG, JPEG 2000, or a whole-slide, microscopy or NIfTI volume format with no registered media type (application/octet-stream). These formats have no field for an address, so a file contains no postal codes unless it says so; burned-in text counts as free text.",
+            "properties": {
+                "@id": {
+                    "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
+                    "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                    "type": "string"
+                },
+                "@type": {
+                    "const": "cr:FileObject",
+                    "description": "The JSON-LD type. cr:FileObject or cr:FileSet for distribution items.",
+                    "type": "string"
+                },
+                "additionalProperty": {
+                    "description": "Namespaced extension key-value pairs.",
+                    "items": {
+                        "$ref": "#/$defs/Extension"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "additionalType": {
+                    "description": "The RDDC class of a distribution item, as a CURIE such as rddc:FhirNdjsonFile. Selects the required fields.",
+                    "enum": [
+                        "rddc:ImageFile"
+                    ],
+                    "type": "string"
+                },
+                "compression": {
+                    "$ref": "#/$defs/CompressionEnum",
+                    "description": "Compression applied to the file's bytes, if any."
+                },
+                "contentSize": {
+                    "description": "Size of the file in bytes.",
+                    "pattern": "^[0-9]+ B$",
+                    "type": "string"
+                },
+                "contentUrl": {
+                    "description": "Object key relative to the batch prefix; Croissant resolves it against the sidecar's location.",
+                    "pattern": "^(?!(.*/)?\\.\\.?(/|$))[^/\\\\]+(/[^/\\\\]+)*$",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Free-text description.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "encodingFormat": {
+                    "anyOf": [
+                        {
+                            "const": "image/tiff"
+                        },
+                        {
+                            "const": "image/png"
+                        },
+                        {
+                            "const": "image/jpeg"
+                        },
+                        {
+                            "const": "image/jp2"
+                        },
+                        {
+                            "const": "application/octet-stream"
+                        }
+                    ],
+                    "description": "Media type of the image. Whole-slide (SVS, NDPI, CZI) and NIfTI files have no registered media type, so they are application/octet-stream.",
+                    "pattern": "^[a-z]+/[A-Za-z0-9.+_-]+$",
+                    "type": "string"
+                },
+                "identifier": {
+                    "description": "IDs assigned to the file by other systems.",
+                    "items": {
+                        "$ref": "#/$defs/ExternalIdentifier"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "md5": {
+                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "pattern": "^[0-9a-f]{32}$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "measurementTechnique": {
+                    "$ref": "#/$defs/ImagingAssayEnum",
+                    "description": "The imaging technique that produced the image, e.g. ct, mri or photography. Analysis depends on it, so every image states it."
+                },
+                "name": {
+                    "description": "File name, by convention the contentUrl.",
+                    "type": "string"
+                },
+                "processingHints": {
+                    "description": "Informational key-value pairs for downstream pipelines.",
+                    "items": {
+                        "$ref": "#/$defs/ProcessingHint"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "recordCount": {
+                    "description": "Number of rows, resources or documents, if known.",
+                    "minimum": 0,
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "sensitivity": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/FileSensitivity"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
+                },
+                "sha256": {
+                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "pattern": "^[0-9a-f]{64}$",
+                    "type": "string"
+                },
+                "subjectIds": {
+                    "description": "Subject IDs the file contains. Each must appear in the subject table.",
+                    "items": {
+                        "pattern": "^[A-Za-z0-9._:-]+$",
+                        "type": "string"
+                    },
+                    "minItems": 1,
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "valueOrigins": {
+                    "description": "How tools populated this node's values.",
+                    "items": {
+                        "$ref": "#/$defs/ValueOrigin"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "wasDerivedFrom": {
+                    "description": "References to input files in this sidecar, such as the alignment used to call variants.",
+                    "items": {
+                        "$ref": "#/$defs/NodeRef"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "measurementTechnique",
+                "contentUrl",
+                "contentSize",
+                "sha256",
+                "@id",
+                "@type",
+                "additionalType",
+                "name",
+                "encodingFormat"
+            ],
+            "title": "ImageFile",
+            "type": "object"
+        },
         "ImagingAssayEnum": {
             "description": "Imaging techniques accepted for imaging files. Meanings are OBI assay terms (release 2026-07-27) where OBI has one, and NCIT (26.02d) or SNOMED CT terms where it does not: OBI has no terms for X-ray radiography, ultrasound or photography. 3D surface scanning has no exact term in any of them, so it has mappings only.",
             "enum": [
@@ -4470,7 +6122,7 @@
         },
         "ImagingFile": {
             "additionalProperties": false,
-            "description": "A medical or photographic image, such as DICOM. A photograph of a person's face goes in a FacialImagingFile instead.",
+            "description": "Base class for medical and clinical images other than facial images: a DicomImageFile or, for other formats, an ImageFile. A photograph or 3D model of a person's face goes in a FacialImagingFile, which is not a subclass of this one: rules for images must not apply to it.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -4634,7 +6286,7 @@
         },
         "IndexFile": {
             "additionalProperties": false,
-            "description": "An index of another file in the sidecar, such as .bai, .crai or .tbi. Indexes are binary, so encodingFormat is application/octet-stream.",
+            "description": "An index of another file in the sidecar. The index format follows the indexed file's class: .bai for a BamFile, .crai for a CramFile, .tbi or .csi for a VcfFile and .csi for a BcfFile. Indexes are binary, so encodingFormat is application/octet-stream, and they hold offsets, not content, so the sensitivity flags do not apply.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -4736,13 +6388,13 @@
                 "sensitivity": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/FileSensitivity"
+                            "$ref": "#/$defs/FixedSensitivity"
                         },
                         {
                             "type": "null"
                         }
                     ],
-                    "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
+                    "description": "Notes only. The class fixes every sensitivity flag."
                 },
                 "sha256": {
                     "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
@@ -4808,7 +6460,7 @@
             "type": "string"
         },
         "ModalityEnum": {
-            "description": "Data categories used for processing. Each file class defines one modality.",
+            "description": "The kinds of data a source registers to deposit: the values of the \"modality\" class annotation. Each concrete data file class has exactly one, so a sidecar does not state it; the platform reads it from the file's class and checks it against the source register. How a file is processed follows from its class, not from its modality.",
             "enum": [
                 "clinical_fhir",
                 "clinical_omop",
@@ -4820,7 +6472,7 @@
                 "imaging",
                 "video",
                 "audio",
-                "wearable",
+                "sensor",
                 "metadata",
                 "other"
             ],
@@ -4932,7 +6584,7 @@
                     "description": "Values from the OMOP cdm_source table."
                 },
                 "conformsTo": {
-                    "description": "Standards the collection follows, as versioned URLs. Pinned values: http://hl7.org/fhir/R4 (FHIR 4.0.1), http://hl7.org/fhir/us/core/STU6.1 (US Core 6.1.0), http://hl7.org/fhir/uv/phd/STU2 (HL7 Personal Health Device IG 2.0.0, for device data in FHIR), https://ohdsi.github.io/CommonDataModel/cdm54.html (OMOP CDM 5.4), http://hl7.org/cda/us/ccda/2.1 (C-CDA 2.1), https://standards.ieee.org/ieee/1752.1/6982/ (IEEE 1752.1-2021, for sleep and physical activity measures). The validator checks values against the pinned list.",
+                    "description": "Standards the collection follows, as versioned URLs. A data class with a fileSetClass annotation (FHIR, OMOP and C-CDA files) takes its standard and version from here. Pinned values: http://hl7.org/fhir/R4 (FHIR 4.0.1), http://hl7.org/fhir/us/core/STU6.1 (US Core 6.1.0), http://hl7.org/fhir/uv/phd/STU2 (HL7 Personal Health Device IG 2.0.0, for device data in FHIR), https://ohdsi.github.io/CommonDataModel/cdm54.html (OMOP CDM 5.4), http://hl7.org/cda/us/ccda/2.1 (C-CDA 2.1), https://standards.ieee.org/ieee/1752.1/6982/ (IEEE 1752.1-2021, for sleep and physical activity measures). The validator checks values against the pinned list.",
                     "items": {
                         "format": "uri",
                         "type": "string"
@@ -5068,7 +6720,7 @@
             "type": "object"
         },
         "OmopCdmTableEnum": {
-            "description": "Allowed cdmTable values across supported OMOP CDM versions. A rule on OmopTableFile narrows the values to the file's omopCdmVersion. The descriptions and groups are in the per-version enums, such as OmopCdm54TableEnum. All tables, including vocabulary and results tables, may be deposited.",
+            "description": "OMOP CDM tables of every accepted CDM version, the range of cdmTable. The RDDC validator checks that the table exists in the CDM version the file's OmopCdmInstance declares in conformsTo. The descriptions and groups are in the per-version enums, such as OmopCdm54TableEnum. All tables, including vocabulary and results tables, may be deposited.",
             "enum": [
                 "person",
                 "observation_period",
@@ -5113,27 +6765,9 @@
             "title": "OmopCdmTableEnum",
             "type": "string"
         },
-        "OmopCdmVersionEnum": {
-            "description": "OMOP CDM versions accepted in a deposit, as major.minor. Patch releases of a version share its tables.",
-            "enum": [
-                "5.4"
-            ],
-            "title": "OmopCdmVersionEnum",
-            "type": "string"
-        },
         "OmopTableFile": {
             "additionalProperties": false,
-            "description": "One OMOP CDM table.",
-            "if": {
-                "properties": {
-                    "omopCdmVersion": {
-                        "const": "5.4"
-                    }
-                },
-                "required": [
-                    "omopCdmVersion"
-                ]
-            },
+            "description": "One OMOP CDM table, in an OmopCdmInstance. The instance's conformsTo gives the CDM version, and the RDDC validator checks that cdmTable exists in that version. CDM tables have no column for images or recordings, so a file contains no biometric identifiers unless it says so.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -5164,7 +6798,7 @@
                 },
                 "cdmTable": {
                     "$ref": "#/$defs/OmopCdmTableEnum",
-                    "description": "OMOP CDM table in the file, e.g. person."
+                    "description": "OMOP CDM table in the file, e.g. person. It must exist in the CDM version the file's OmopCdmInstance declares in conformsTo."
                 },
                 "compression": {
                     "$ref": "#/$defs/CompressionEnum",
@@ -5224,10 +6858,6 @@
                 "name": {
                     "description": "File name, by convention the contentUrl.",
                     "type": "string"
-                },
-                "omopCdmVersion": {
-                    "$ref": "#/$defs/OmopCdmVersionEnum",
-                    "description": "OMOP CDM version of the table, as major.minor, e.g. \"5.4\"."
                 },
                 "processingHints": {
                     "description": "Informational key-value pairs for downstream pipelines.",
@@ -5298,7 +6928,6 @@
             },
             "required": [
                 "cdmTable",
-                "omopCdmVersion",
                 "contentUrl",
                 "contentSize",
                 "sha256",
@@ -5308,56 +6937,6 @@
                 "name",
                 "encodingFormat"
             ],
-            "then": {
-                "properties": {
-                    "cdmTable": {
-                        "enum": [
-                            "person",
-                            "observation_period",
-                            "visit_occurrence",
-                            "visit_detail",
-                            "condition_occurrence",
-                            "drug_exposure",
-                            "procedure_occurrence",
-                            "device_exposure",
-                            "measurement",
-                            "observation",
-                            "death",
-                            "note",
-                            "note_nlp",
-                            "specimen",
-                            "fact_relationship",
-                            "location",
-                            "care_site",
-                            "provider",
-                            "payer_plan_period",
-                            "cost",
-                            "drug_era",
-                            "dose_era",
-                            "condition_era",
-                            "episode",
-                            "episode_event",
-                            "metadata",
-                            "cdm_source",
-                            "concept",
-                            "vocabulary",
-                            "domain",
-                            "concept_class",
-                            "concept_relationship",
-                            "relationship",
-                            "concept_synonym",
-                            "concept_ancestor",
-                            "source_to_concept_map",
-                            "drug_strength",
-                            "cohort",
-                            "cohort_definition"
-                        ]
-                    }
-                },
-                "required": [
-                    "cdmTable"
-                ]
-            },
             "title": "OmopTableFile",
             "type": "object"
         },
@@ -5512,10 +7091,10 @@
         },
         "SensitivityDeclaration": {
             "additionalProperties": false,
-            "description": "Sensitivity information used for de-identification and routing. Use terms, access tier and date policy come from the source register. The contains* flags apply to every file unless overridden. A missing contains* flag means unknown and is treated as true. A missing synthetic flag is treated as false.",
+            "description": "Sensitivity information used for de-identification and routing. Use terms, access tier and date policy come from the source register. The contains* flags apply to every file unless the file overrides them or its class fixes the flag or gives a default (the class annotations in data.yaml). A contains* flag that nothing sets is unknown and treated as true. A missing synthetic flag is treated as false.",
             "properties": {
                 "containsBiometricIdentifiers": {
-                    "description": "The data includes biometric identifiers, full-face images, voice or similar content. These stay in the trusted research environment (TRE). HIPAA Safe Harbor identifiers (P), biometric identifiers including finger and voice prints, and (Q), full-face photographs and comparable images, 45 CFR 164.514(b)(2)(i).",
+                    "description": "The data includes biometric identifiers, full-face images, voice or similar content. Such files never leave INTAKE: they are not loaded into the normalized store or released. HIPAA Safe Harbor identifiers (P), biometric identifiers including finger and voice prints, and (Q), full-face photographs and comparable images, 45 CFR 164.514(b)(2)(i).",
                     "type": [
                         "boolean",
                         "null"
@@ -5588,7 +7167,7 @@
         },
         "SensorDataFile": {
             "additionalProperties": false,
-            "description": "Base class for data recorded by a wearable or other sensor device. A raw signal goes in a SensorSignalFile and measures derived from it in a SensorMeasureFile, since they need different processing. Sensor data already in FHIR form, such as device Observations, goes in a FHIR file instead.",
+            "description": "Base class for data recorded by a wearable or other sensor device. A raw signal goes in one of the SensorSignalFile classes and measures derived from it in a SensorMeasureFile, since they need different processing. Sensor data already in FHIR form, such as device Observations, goes in a FHIR file instead. Sensor data carries timestamps, which count as dates; it is not a biometric identifier under HIPAA Safe Harbor, and its formats have no field for an address.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -5763,7 +7342,7 @@
         },
         "SensorMeasureFile": {
             "additionalProperties": false,
-            "description": "Measures derived from sensor data, such as per-minute step counts, sleep stages or daily heart rate summaries. IEEE 1752.1 (Open mHealth) defines JSON schemas for sleep and physical activity measures.",
+            "description": "Measures derived from sensor data, such as per-minute step counts, sleep stages or daily heart rate summaries, as a table or JSON. IEEE 1752.1 (Open mHealth) defines JSON schemas for sleep and physical activity measures. Measures are structured values with timestamps, so a file contains no free text unless it says so.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -5955,7 +7534,7 @@
         },
         "SensorSignalFile": {
             "additionalProperties": false,
-            "description": "A raw sensor signal, such as 100 Hz accelerometry or an ECG waveform, before any aggregation. Common formats are EDF/EDF+, WFDB, DICOM waveform and device or vendor formats; EDF, WFDB and vendor formats have no registered media type, so they are application/octet-stream.",
+            "description": "Base class for a raw sensor signal, such as 100 Hz accelerometry or an ECG waveform, before any aggregation. The class names the format: EdfSignalFile, WfdbSignalFile, DicomWaveformFile or, for a device maker's own format, VendorSignalFile.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -6138,7 +7717,7 @@
         },
         "SequenceReadsFile": {
             "additionalProperties": false,
-            "description": "Sequencing reads, such as FASTQ or unaligned BAM.",
+            "description": "Base class for sequencing reads before alignment: a FastqFile or an UnalignedBamFile. Paired-end files reference each other through pairedWith.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -6189,14 +7768,6 @@
                     ]
                 },
                 "encodingFormat": {
-                    "anyOf": [
-                        {
-                            "const": "text/plain"
-                        },
-                        {
-                            "const": "application/octet-stream"
-                        }
-                    ],
                     "description": "Media type of the content (after decompression when compression is set).",
                     "pattern": "^[a-z]+/[A-Za-z0-9.+_-]+$",
                     "type": "string"
@@ -6266,13 +7837,13 @@
                 "sensitivity": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/FileSensitivity"
+                            "$ref": "#/$defs/FixedSensitivity"
                         },
                         {
                             "type": "null"
                         }
                     ],
-                    "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
+                    "description": "Notes only. The class fixes every sensitivity flag."
                 },
                 "sequencingPlatform": {
                     "$ref": "#/$defs/SequencingPlatformEnum",
@@ -6432,6 +8003,9 @@
                                 "$ref": "#/$defs/FhirBundleCollection"
                             },
                             {
+                                "$ref": "#/$defs/FhirResourceCollection"
+                            },
+                            {
                                 "$ref": "#/$defs/OmopCdmInstance"
                             },
                             {
@@ -6468,7 +8042,7 @@
                                 "$ref": "#/$defs/IndexFile"
                             },
                             {
-                                "$ref": "#/$defs/ImagingFile"
+                                "$ref": "#/$defs/FacialImagingFile"
                             },
                             {
                                 "$ref": "#/$defs/AudioFile"
@@ -6480,22 +8054,43 @@
                                 "$ref": "#/$defs/GenericFile"
                             },
                             {
-                                "$ref": "#/$defs/SensorSignalFile"
-                            },
-                            {
                                 "$ref": "#/$defs/SensorMeasureFile"
                             },
                             {
-                                "$ref": "#/$defs/FacialImagingFile"
+                                "$ref": "#/$defs/EdfSignalFile"
                             },
                             {
-                                "$ref": "#/$defs/SequenceReadsFile"
+                                "$ref": "#/$defs/WfdbSignalFile"
                             },
                             {
-                                "$ref": "#/$defs/AlignmentFile"
+                                "$ref": "#/$defs/DicomWaveformFile"
                             },
                             {
-                                "$ref": "#/$defs/VariantFile"
+                                "$ref": "#/$defs/VendorSignalFile"
+                            },
+                            {
+                                "$ref": "#/$defs/DicomImageFile"
+                            },
+                            {
+                                "$ref": "#/$defs/ImageFile"
+                            },
+                            {
+                                "$ref": "#/$defs/VcfFile"
+                            },
+                            {
+                                "$ref": "#/$defs/BcfFile"
+                            },
+                            {
+                                "$ref": "#/$defs/BamFile"
+                            },
+                            {
+                                "$ref": "#/$defs/CramFile"
+                            },
+                            {
+                                "$ref": "#/$defs/FastqFile"
+                            },
+                            {
+                                "$ref": "#/$defs/UnalignedBamFile"
                             },
                             {
                                 "$ref": "#/$defs/FhirBundleFile"
@@ -6659,7 +8254,7 @@
                     "description": "The agent that issued the descriptor."
                 },
                 "modalities": {
-                    "description": "Modalities the source is registered to deposit. A file's modality is the modality annotation of its class.",
+                    "description": "Modalities the source is registered to deposit. A file's modality is the modality annotation of its class; a file of a modality the source is not registered for is held for a curator.",
                     "items": {
                         "$ref": "#/$defs/ModalityEnum"
                     },
@@ -6805,7 +8400,7 @@
                     "type": "string"
                 },
                 "conformsTo": {
-                    "description": "Standards the collection follows, as versioned URLs. Pinned values: http://hl7.org/fhir/R4 (FHIR 4.0.1), http://hl7.org/fhir/us/core/STU6.1 (US Core 6.1.0), http://hl7.org/fhir/uv/phd/STU2 (HL7 Personal Health Device IG 2.0.0, for device data in FHIR), https://ohdsi.github.io/CommonDataModel/cdm54.html (OMOP CDM 5.4), http://hl7.org/cda/us/ccda/2.1 (C-CDA 2.1), https://standards.ieee.org/ieee/1752.1/6982/ (IEEE 1752.1-2021, for sleep and physical activity measures). The validator checks values against the pinned list.",
+                    "description": "Standards the collection follows, as versioned URLs. A data class with a fileSetClass annotation (FHIR, OMOP and C-CDA files) takes its standard and version from here. Pinned values: http://hl7.org/fhir/R4 (FHIR 4.0.1), http://hl7.org/fhir/us/core/STU6.1 (US Core 6.1.0), http://hl7.org/fhir/uv/phd/STU2 (HL7 Personal Health Device IG 2.0.0, for device data in FHIR), https://ohdsi.github.io/CommonDataModel/cdm54.html (OMOP CDM 5.4), http://hl7.org/cda/us/ccda/2.1 (C-CDA 2.1), https://standards.ieee.org/ieee/1752.1/6982/ (IEEE 1752.1-2021, for sleep and physical activity measures). The validator checks values against the pinned list.",
                     "items": {
                         "format": "uri",
                         "type": "string"
@@ -7112,6 +8707,193 @@
             "title": "TabularFile",
             "type": "object"
         },
+        "UnalignedBamFile": {
+            "additionalProperties": false,
+            "description": "Sequencing reads in an unaligned BAM (uBAM), such as the output of a PacBio or Oxford Nanopore basecaller.",
+            "properties": {
+                "@id": {
+                    "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
+                    "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                    "type": "string"
+                },
+                "@type": {
+                    "const": "cr:FileObject",
+                    "description": "The JSON-LD type. cr:FileObject or cr:FileSet for distribution items.",
+                    "type": "string"
+                },
+                "additionalProperty": {
+                    "description": "Namespaced extension key-value pairs.",
+                    "items": {
+                        "$ref": "#/$defs/Extension"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "additionalType": {
+                    "description": "The RDDC class of a distribution item, as a CURIE such as rddc:FhirNdjsonFile. Selects the required fields.",
+                    "enum": [
+                        "rddc:UnalignedBamFile"
+                    ],
+                    "type": "string"
+                },
+                "compression": {
+                    "$ref": "#/$defs/CompressionEnum",
+                    "description": "Compression applied to the file's bytes, if any."
+                },
+                "contentSize": {
+                    "description": "Size of the file in bytes.",
+                    "pattern": "^[0-9]+ B$",
+                    "type": "string"
+                },
+                "contentUrl": {
+                    "description": "Object key relative to the batch prefix; Croissant resolves it against the sidecar's location.",
+                    "pattern": "^(?!(.*/)?\\.\\.?(/|$))[^/\\\\]+(/[^/\\\\]+)*$",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Free-text description.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "encodingFormat": {
+                    "const": "application/octet-stream",
+                    "description": "Media type of the content (after decompression when compression is set).",
+                    "type": "string"
+                },
+                "identifier": {
+                    "description": "IDs assigned to the file by other systems.",
+                    "items": {
+                        "$ref": "#/$defs/ExternalIdentifier"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "md5": {
+                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "pattern": "^[0-9a-f]{32}$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "measurementTechnique": {
+                    "$ref": "#/$defs/GenomicsAssayEnum",
+                    "description": "The sequencing assay that produced the data, e.g. wgs or wes. Downstream analysis depends on it, so every genomics file states it."
+                },
+                "name": {
+                    "description": "File name, by convention the contentUrl.",
+                    "type": "string"
+                },
+                "pairedWith": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/NodeRef"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "The mate file of paired-end reads."
+                },
+                "platform": {
+                    "description": "The sequencing instrument model, e.g. \"Illumina NovaSeq X\".",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "processingHints": {
+                    "description": "Informational key-value pairs for downstream pipelines.",
+                    "items": {
+                        "$ref": "#/$defs/ProcessingHint"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "recordCount": {
+                    "description": "Number of rows, resources or documents, if known.",
+                    "minimum": 0,
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "sensitivity": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/FixedSensitivity"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Notes only. The class fixes every sensitivity flag."
+                },
+                "sequencingPlatform": {
+                    "$ref": "#/$defs/SequencingPlatformEnum",
+                    "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It distinguishes short and long reads, which require different processing."
+                },
+                "sha256": {
+                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "pattern": "^[0-9a-f]{64}$",
+                    "type": "string"
+                },
+                "subjectIds": {
+                    "description": "Subject IDs the file contains. Each must appear in the subject table.",
+                    "items": {
+                        "pattern": "^[A-Za-z0-9._:-]+$",
+                        "type": "string"
+                    },
+                    "minItems": 1,
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "valueOrigins": {
+                    "description": "How tools populated this node's values.",
+                    "items": {
+                        "$ref": "#/$defs/ValueOrigin"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "wasDerivedFrom": {
+                    "description": "References to input files in this sidecar, such as the alignment used to call variants.",
+                    "items": {
+                        "$ref": "#/$defs/NodeRef"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "measurementTechnique",
+                "sequencingPlatform",
+                "contentUrl",
+                "contentSize",
+                "sha256",
+                "@id",
+                "@type",
+                "additionalType",
+                "name",
+                "encodingFormat"
+            ],
+            "title": "UnalignedBamFile",
+            "type": "object"
+        },
         "ValueOrigin": {
             "additionalProperties": false,
             "description": "How a tool populated a file, file-set or sidecar value.",
@@ -7167,7 +8949,7 @@
         },
         "VariantFile": {
             "additionalProperties": false,
-            "description": "Variant calls, such as VCF or BCF.",
+            "description": "Base class for variant calls: a VcfFile or a BcfFile.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -7218,14 +9000,6 @@
                     ]
                 },
                 "encodingFormat": {
-                    "anyOf": [
-                        {
-                            "const": "text/plain"
-                        },
-                        {
-                            "const": "application/octet-stream"
-                        }
-                    ],
                     "description": "Media type of the content (after decompression when compression is set).",
                     "pattern": "^[a-z]+/[A-Za-z0-9.+_-]+$",
                     "type": "string"
@@ -7288,13 +9062,13 @@
                 "sensitivity": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/FileSensitivity"
+                            "$ref": "#/$defs/FixedSensitivity"
                         },
                         {
                             "type": "null"
                         }
                     ],
-                    "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
+                    "description": "Notes only. The class fixes every sensitivity flag."
                 },
                 "sequencingPlatform": {
                     "$ref": "#/$defs/SequencingPlatformEnum",
@@ -7354,9 +9128,382 @@
             "title": "VariantFile",
             "type": "object"
         },
+        "VcfFile": {
+            "additionalProperties": false,
+            "description": "Variant calls in VCF. A VCF with a tabix or CSI index (an IndexFile) is BGZF-compressed, so it sets compression to bgzf; a plain gzipped VCF sets gzip.",
+            "properties": {
+                "@id": {
+                    "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
+                    "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                    "type": "string"
+                },
+                "@type": {
+                    "const": "cr:FileObject",
+                    "description": "The JSON-LD type. cr:FileObject or cr:FileSet for distribution items.",
+                    "type": "string"
+                },
+                "additionalProperty": {
+                    "description": "Namespaced extension key-value pairs.",
+                    "items": {
+                        "$ref": "#/$defs/Extension"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "additionalType": {
+                    "description": "The RDDC class of a distribution item, as a CURIE such as rddc:FhirNdjsonFile. Selects the required fields.",
+                    "enum": [
+                        "rddc:VcfFile"
+                    ],
+                    "type": "string"
+                },
+                "compression": {
+                    "$ref": "#/$defs/CompressionEnum",
+                    "anyOf": [
+                        {
+                            "const": "gzip"
+                        },
+                        {
+                            "const": "bgzf"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Compression applied to the file's bytes, if any."
+                },
+                "contentSize": {
+                    "description": "Size of the file in bytes.",
+                    "pattern": "^[0-9]+ B$",
+                    "type": "string"
+                },
+                "contentUrl": {
+                    "description": "Object key relative to the batch prefix; Croissant resolves it against the sidecar's location.",
+                    "pattern": "^(?!(.*/)?\\.\\.?(/|$))[^/\\\\]+(/[^/\\\\]+)*$",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Free-text description.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "encodingFormat": {
+                    "const": "text/plain",
+                    "description": "Media type of the content (after decompression when compression is set).",
+                    "type": "string"
+                },
+                "identifier": {
+                    "description": "IDs assigned to the file by other systems.",
+                    "items": {
+                        "$ref": "#/$defs/ExternalIdentifier"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "md5": {
+                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "pattern": "^[0-9a-f]{32}$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "measurementTechnique": {
+                    "$ref": "#/$defs/GenomicsAssayEnum",
+                    "description": "The sequencing assay that produced the data, e.g. wgs or wes. Downstream analysis depends on it, so every genomics file states it."
+                },
+                "name": {
+                    "description": "File name, by convention the contentUrl.",
+                    "type": "string"
+                },
+                "platform": {
+                    "description": "The sequencing instrument model, e.g. \"Illumina NovaSeq X\".",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "processingHints": {
+                    "description": "Informational key-value pairs for downstream pipelines.",
+                    "items": {
+                        "$ref": "#/$defs/ProcessingHint"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "recordCount": {
+                    "description": "Number of rows, resources or documents, if known.",
+                    "minimum": 0,
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "referenceGenome": {
+                    "$ref": "#/$defs/ReferenceGenomeEnum",
+                    "description": "Reference assembly the coordinates refer to, e.g. GRCh38."
+                },
+                "sensitivity": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/FixedSensitivity"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Notes only. The class fixes every sensitivity flag."
+                },
+                "sequencingPlatform": {
+                    "$ref": "#/$defs/SequencingPlatformEnum",
+                    "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It distinguishes short and long reads, which require different processing."
+                },
+                "sha256": {
+                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "pattern": "^[0-9a-f]{64}$",
+                    "type": "string"
+                },
+                "subjectIds": {
+                    "description": "Subject IDs the file contains. Each must appear in the subject table.",
+                    "items": {
+                        "pattern": "^[A-Za-z0-9._:-]+$",
+                        "type": "string"
+                    },
+                    "minItems": 1,
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "valueOrigins": {
+                    "description": "How tools populated this node's values.",
+                    "items": {
+                        "$ref": "#/$defs/ValueOrigin"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "wasDerivedFrom": {
+                    "description": "References to input files in this sidecar, such as the alignment used to call variants.",
+                    "items": {
+                        "$ref": "#/$defs/NodeRef"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "referenceGenome",
+                "measurementTechnique",
+                "sequencingPlatform",
+                "contentUrl",
+                "contentSize",
+                "sha256",
+                "@id",
+                "@type",
+                "additionalType",
+                "name",
+                "encodingFormat"
+            ],
+            "title": "VcfFile",
+            "type": "object"
+        },
+        "VendorSignalFile": {
+            "additionalProperties": false,
+            "description": "A signal in a device maker's own format, such as ActiGraph .gt3x or Garmin FIT. platform, the device, is required, since it decides how the file is read. Such formats have no registered media type, so the file is application/octet-stream.",
+            "properties": {
+                "@id": {
+                    "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
+                    "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                    "type": "string"
+                },
+                "@type": {
+                    "const": "cr:FileObject",
+                    "description": "The JSON-LD type. cr:FileObject or cr:FileSet for distribution items.",
+                    "type": "string"
+                },
+                "additionalProperty": {
+                    "description": "Namespaced extension key-value pairs.",
+                    "items": {
+                        "$ref": "#/$defs/Extension"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "additionalType": {
+                    "description": "The RDDC class of a distribution item, as a CURIE such as rddc:FhirNdjsonFile. Selects the required fields.",
+                    "enum": [
+                        "rddc:VendorSignalFile"
+                    ],
+                    "type": "string"
+                },
+                "compression": {
+                    "$ref": "#/$defs/CompressionEnum",
+                    "description": "Compression applied to the file's bytes, if any."
+                },
+                "contentSize": {
+                    "description": "Size of the file in bytes.",
+                    "pattern": "^[0-9]+ B$",
+                    "type": "string"
+                },
+                "contentUrl": {
+                    "description": "Object key relative to the batch prefix; Croissant resolves it against the sidecar's location.",
+                    "pattern": "^(?!(.*/)?\\.\\.?(/|$))[^/\\\\]+(/[^/\\\\]+)*$",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Free-text description.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "encodingFormat": {
+                    "const": "application/octet-stream",
+                    "description": "Media type of the content (after decompression when compression is set).",
+                    "type": "string"
+                },
+                "identifier": {
+                    "description": "IDs assigned to the file by other systems.",
+                    "items": {
+                        "$ref": "#/$defs/ExternalIdentifier"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "md5": {
+                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "pattern": "^[0-9a-f]{32}$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "measurementTechnique": {
+                    "description": "The sensing techniques that produced the data, e.g. accelerometry or ecg. A list, since one recording or summary can combine several, such as a sleep study's EEG and ECG channels.",
+                    "items": {
+                        "$ref": "#/$defs/SensorAssayEnum"
+                    },
+                    "minItems": 1,
+                    "type": "array"
+                },
+                "name": {
+                    "description": "File name, by convention the contentUrl.",
+                    "type": "string"
+                },
+                "platform": {
+                    "description": "The device that recorded the data, e.g. \"ActiGraph GT9X\".",
+                    "type": "string"
+                },
+                "processingHints": {
+                    "description": "Informational key-value pairs for downstream pipelines.",
+                    "items": {
+                        "$ref": "#/$defs/ProcessingHint"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "recordCount": {
+                    "description": "Number of rows, resources or documents, if known.",
+                    "minimum": 0,
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "samplingRate": {
+                    "description": "Samples per second of the recorded signal, in hertz. When channels differ, the highest rate. Croissant's term, which Croissant sets on audio fields.",
+                    "minimum": 0,
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                },
+                "sensitivity": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/FileSensitivity"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
+                },
+                "sha256": {
+                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "pattern": "^[0-9a-f]{64}$",
+                    "type": "string"
+                },
+                "subjectIds": {
+                    "description": "Subject IDs the file contains. Each must appear in the subject table.",
+                    "items": {
+                        "pattern": "^[A-Za-z0-9._:-]+$",
+                        "type": "string"
+                    },
+                    "minItems": 1,
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "valueOrigins": {
+                    "description": "How tools populated this node's values.",
+                    "items": {
+                        "$ref": "#/$defs/ValueOrigin"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "wasDerivedFrom": {
+                    "description": "References to input files in this sidecar, such as the alignment used to call variants.",
+                    "items": {
+                        "$ref": "#/$defs/NodeRef"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "measurementTechnique",
+                "platform",
+                "contentUrl",
+                "contentSize",
+                "sha256",
+                "@id",
+                "@type",
+                "additionalType",
+                "name",
+                "encodingFormat"
+            ],
+            "title": "VendorSignalFile",
+            "type": "object"
+        },
         "VideoFile": {
             "additionalProperties": false,
-            "description": "A video recording. A recording containing a person's face or voice contains biometric identifiers, so set sensitivity.containsBiometricIdentifiers to true.",
+            "description": "A video recording. A recording containing a person's face or voice contains biometric identifiers, so set sensitivity.containsBiometricIdentifiers to true. Video formats have no field for an address, so a file contains no postal codes unless it says so; speech and on-screen text count as free text.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -7512,6 +9659,197 @@
             ],
             "title": "VideoFile",
             "type": "object"
+        },
+        "WfdbSignalFile": {
+            "additionalProperties": false,
+            "description": "One file of a WFDB (PhysioNet WaveForm DataBase) record: the header (.hea, text/plain) or a signal file (.dat, application/octet-stream). The files of one record are kept together in a file set, and the header names the signal files. Header comments can hold free text.",
+            "properties": {
+                "@id": {
+                    "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
+                    "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                    "type": "string"
+                },
+                "@type": {
+                    "const": "cr:FileObject",
+                    "description": "The JSON-LD type. cr:FileObject or cr:FileSet for distribution items.",
+                    "type": "string"
+                },
+                "additionalProperty": {
+                    "description": "Namespaced extension key-value pairs.",
+                    "items": {
+                        "$ref": "#/$defs/Extension"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "additionalType": {
+                    "description": "The RDDC class of a distribution item, as a CURIE such as rddc:FhirNdjsonFile. Selects the required fields.",
+                    "enum": [
+                        "rddc:WfdbSignalFile"
+                    ],
+                    "type": "string"
+                },
+                "compression": {
+                    "$ref": "#/$defs/CompressionEnum",
+                    "description": "Compression applied to the file's bytes, if any."
+                },
+                "contentSize": {
+                    "description": "Size of the file in bytes.",
+                    "pattern": "^[0-9]+ B$",
+                    "type": "string"
+                },
+                "contentUrl": {
+                    "description": "Object key relative to the batch prefix; Croissant resolves it against the sidecar's location.",
+                    "pattern": "^(?!(.*/)?\\.\\.?(/|$))[^/\\\\]+(/[^/\\\\]+)*$",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Free-text description.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "encodingFormat": {
+                    "anyOf": [
+                        {
+                            "const": "text/plain"
+                        },
+                        {
+                            "const": "application/octet-stream"
+                        }
+                    ],
+                    "description": "Media type of the content (after decompression when compression is set).",
+                    "pattern": "^[a-z]+/[A-Za-z0-9.+_-]+$",
+                    "type": "string"
+                },
+                "identifier": {
+                    "description": "IDs assigned to the file by other systems.",
+                    "items": {
+                        "$ref": "#/$defs/ExternalIdentifier"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "md5": {
+                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "pattern": "^[0-9a-f]{32}$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "measurementTechnique": {
+                    "description": "The sensing techniques that produced the data, e.g. accelerometry or ecg. A list, since one recording or summary can combine several, such as a sleep study's EEG and ECG channels.",
+                    "items": {
+                        "$ref": "#/$defs/SensorAssayEnum"
+                    },
+                    "minItems": 1,
+                    "type": "array"
+                },
+                "name": {
+                    "description": "File name, by convention the contentUrl.",
+                    "type": "string"
+                },
+                "platform": {
+                    "description": "The device that recorded the data, e.g. \"ActiGraph GT9X\".",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "processingHints": {
+                    "description": "Informational key-value pairs for downstream pipelines.",
+                    "items": {
+                        "$ref": "#/$defs/ProcessingHint"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "recordCount": {
+                    "description": "Number of rows, resources or documents, if known.",
+                    "minimum": 0,
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "samplingRate": {
+                    "description": "Samples per second of the recorded signal, in hertz. When channels differ, the highest rate. Croissant's term, which Croissant sets on audio fields.",
+                    "minimum": 0,
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                },
+                "sensitivity": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/FileSensitivity"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
+                },
+                "sha256": {
+                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "pattern": "^[0-9a-f]{64}$",
+                    "type": "string"
+                },
+                "subjectIds": {
+                    "description": "Subject IDs the file contains. Each must appear in the subject table.",
+                    "items": {
+                        "pattern": "^[A-Za-z0-9._:-]+$",
+                        "type": "string"
+                    },
+                    "minItems": 1,
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "valueOrigins": {
+                    "description": "How tools populated this node's values.",
+                    "items": {
+                        "$ref": "#/$defs/ValueOrigin"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "wasDerivedFrom": {
+                    "description": "References to input files in this sidecar, such as the alignment used to call variants.",
+                    "items": {
+                        "$ref": "#/$defs/NodeRef"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "measurementTechnique",
+                "contentUrl",
+                "contentSize",
+                "sha256",
+                "@id",
+                "@type",
+                "additionalType",
+                "name",
+                "encodingFormat"
+            ],
+            "title": "WfdbSignalFile",
+            "type": "object"
         }
     },
     "$id": "https://w3id.org/rddc/sidecar",
@@ -7602,6 +9940,9 @@
                         "$ref": "#/$defs/FhirBundleCollection"
                     },
                     {
+                        "$ref": "#/$defs/FhirResourceCollection"
+                    },
+                    {
                         "$ref": "#/$defs/OmopCdmInstance"
                     },
                     {
@@ -7638,7 +9979,7 @@
                         "$ref": "#/$defs/IndexFile"
                     },
                     {
-                        "$ref": "#/$defs/ImagingFile"
+                        "$ref": "#/$defs/FacialImagingFile"
                     },
                     {
                         "$ref": "#/$defs/AudioFile"
@@ -7650,22 +9991,43 @@
                         "$ref": "#/$defs/GenericFile"
                     },
                     {
-                        "$ref": "#/$defs/SensorSignalFile"
-                    },
-                    {
                         "$ref": "#/$defs/SensorMeasureFile"
                     },
                     {
-                        "$ref": "#/$defs/FacialImagingFile"
+                        "$ref": "#/$defs/EdfSignalFile"
                     },
                     {
-                        "$ref": "#/$defs/SequenceReadsFile"
+                        "$ref": "#/$defs/WfdbSignalFile"
                     },
                     {
-                        "$ref": "#/$defs/AlignmentFile"
+                        "$ref": "#/$defs/DicomWaveformFile"
                     },
                     {
-                        "$ref": "#/$defs/VariantFile"
+                        "$ref": "#/$defs/VendorSignalFile"
+                    },
+                    {
+                        "$ref": "#/$defs/DicomImageFile"
+                    },
+                    {
+                        "$ref": "#/$defs/ImageFile"
+                    },
+                    {
+                        "$ref": "#/$defs/VcfFile"
+                    },
+                    {
+                        "$ref": "#/$defs/BcfFile"
+                    },
+                    {
+                        "$ref": "#/$defs/BamFile"
+                    },
+                    {
+                        "$ref": "#/$defs/CramFile"
+                    },
+                    {
+                        "$ref": "#/$defs/FastqFile"
+                    },
+                    {
+                        "$ref": "#/$defs/UnalignedBamFile"
                     },
                     {
                         "$ref": "#/$defs/FhirBundleFile"
