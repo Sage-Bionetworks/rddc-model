@@ -80,7 +80,7 @@ enums:
       zstd:
 
   ValueOriginEnum:
-    description: Where an auto-filled value came from.
+    description: Source of an auto-filled value.
     permissible_values:
       declared:
         description: Supplied by the contributor or an operator.
@@ -157,7 +157,7 @@ classes:
         required: true
 
   ValueOrigin:
-    description: "How a tool filled in one value on a file, file set or sidecar."
+    description: "How a tool populated a file, file-set or sidecar value."
     slots:
     - fieldPath
     - origin
@@ -359,7 +359,7 @@ slots:
 
   # --- RDDC: value origins ---------------------------------------------------
   valueOrigins:
-    description: "How tools filled in values on this node."
+    description: "How tools populated this node's values."
     range: ValueOrigin
     multivalued: true
     inlined_as_list: true

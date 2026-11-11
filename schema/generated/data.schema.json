@@ -145,7 +145,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -307,7 +307,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -485,7 +485,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -688,7 +688,7 @@
                     "type": "array"
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -869,7 +869,7 @@
                     "type": "array"
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -1052,7 +1052,7 @@
                     "type": "array"
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -1231,7 +1231,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -1393,7 +1393,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -1571,7 +1571,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -1754,7 +1754,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -1953,7 +1953,7 @@
                     "type": "array"
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -2036,7 +2036,7 @@
                     "type": "string"
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -2250,7 +2250,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -2432,7 +2432,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -2702,7 +2702,7 @@
                     "type": "array"
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -2900,7 +2900,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -3062,7 +3062,7 @@
                     "type": "array"
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -3236,7 +3236,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -3399,7 +3399,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -3723,7 +3723,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -4040,7 +4040,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -4149,7 +4149,7 @@
                     "type": "string"
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -4393,7 +4393,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -4554,7 +4554,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -4748,7 +4748,7 @@
                     "type": "array"
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -4936,7 +4936,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -5138,7 +5138,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -5321,7 +5321,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -5501,7 +5501,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -5665,7 +5665,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -5850,7 +5850,7 @@
                     "type": "array"
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -6156,7 +6156,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -6389,7 +6389,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -6581,7 +6581,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -6764,7 +6764,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -6950,7 +6950,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -7167,7 +7167,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -7346,7 +7346,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -7531,7 +7531,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -7568,7 +7568,7 @@
         },
         "ValueOrigin": {
             "additionalProperties": false,
-            "description": "How a tool filled in one value on a file, file set or sidecar.",
+            "description": "How a tool populated a file, file-set or sidecar value.",
             "properties": {
                 "confidence": {
                     "description": "Confidence in a detected or inferred value, from 0 to 1.",
@@ -7610,7 +7610,7 @@
             "type": "object"
         },
         "ValueOriginEnum": {
-            "description": "Where an auto-filled value came from.",
+            "description": "Source of an auto-filled value.",
             "enum": [
                 "declared",
                 "detected",
@@ -7786,7 +7786,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -7968,7 +7968,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -8129,7 +8129,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -8319,7 +8319,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
