@@ -49,6 +49,93 @@ def quote(text):
     return json.dumps(" ".join(text.split()), ensure_ascii=False)
 
 
+# Approved wording edits to imported definitions; retain the remaining source text.
+DESCRIPTION_EDITS = {
+    'fhir-r4': {
+        'ActivityDefinition': (
+            'This resource allows for the definition of some activity to be performed',
+            'Defines an activity',
+        ),
+        'AuditEvent': (
+            'A record of an event made for purposes of maintaining a security log.',
+            'An event record for a security log.',
+        ),
+        'BodyStructure': (
+            'the necessary detail needed for the use case',
+            'the detail required for the use case',
+        ),
+        'CarePlan': (
+            'Describes the intention of how one or more practitioners intend to deliver care',
+            'Describes how one or more practitioners plan to deliver care',
+        ),
+        'Communication': (
+            'An occurrence of information being transmitted',
+            'An instance of information exchange',
+        ),
+        'Composition': (
+            'assembled together into a single logical package',
+            'assembled into one logical package',
+        ),
+        'Encounter': (
+            'for the purpose of providing healthcare service(s) or assessing the health status of a patient',
+            "to provide healthcare or assess the patient's health",
+        ),
+        'Measure': (
+            'The Measure resource provides the definition of a quality measure.',
+            'Defines a quality measure.',
+        ),
+        'Organization': (
+            'formed for the purpose of achieving some form of collective action',
+            'formed to act collectively',
+        ),
+        'Practitioner': (
+            'involved in the provisioning of healthcare',
+            'involved in providing healthcare',
+        ),
+        'TestReport': (
+            'A summary of information based on the results of executing a TestScript.',
+            'A summary of TestScript execution results.',
+        ),
+    },
+    'omop-cdm54': {
+        'visit_detail': (
+            'A good example of this would be',
+            'Examples include',
+        ),
+        'location': (
+            'represents a generic way to capture physical location or address information',
+            'stores physical location or address information',
+        ),
+        'drug_era': (
+            'is defined as a span of time when',
+            'is a period when',
+        ),
+        'dose_era': (
+            'is defined as a span of time when',
+            'is a period when',
+        ),
+        'condition_era': (
+            'is defined as a span of time when',
+            'is a period when',
+        ),
+        'metadata': (
+            'contains metadata information about a dataset',
+            'contains metadata about a dataset',
+        ),
+        'concept_synonym': (
+            ', providing users with a comprehensive view of how Concepts may be expressed or referenced',
+            '',
+        ),
+    },
+}
+
+
+def edited_description(family, name, text):
+    text = " ".join(text.split())
+    edit = DESCRIPTION_EDITS[family].get(name)
+    return text.replace(*edit) if edit else text
+
+
 # --- source parsers: raw text -> list of (value, YAML lines for its details) --------
 
 def fhir_r4(raw):
@@ -62,7 +149,7 @@ def fhir_r4(raw):
         concepts.append(concept)
         stack.extend(concept.get("concept", []))
     return [
-        (c["code"], [f"meaning: fhir:{c['code']}", f"description: {quote(c.get('definition', ''))}"])
+        (c["code"], [f"meaning: fhir:{c['code']}", f"description: {quote(edited_description('fhir-r4', c['code'], c.get('definition', '')))}"])
         for c in sorted(concepts, key=lambda c: c["code"])
         if c["code"] not in {"Resource", "DomainResource"}  # abstract: no instance has them
     ]
@@ -77,7 +164,7 @@ def omop_cdm54(raw):
         sys.exit(f"omop-cdm54: unknown schema values {sorted(unknown)}")
     # Keep the source's order: it groups tables the way the CDM documentation does.
     return [
-        (r["cdmTableName"], [f"description: {quote(r['tableDescription'])}",
+        (r["cdmTableName"], [f"description: {quote(edited_description('omop-cdm54', r['cdmTableName'], r['tableDescription']))}",
                              "annotations:", f"  cdm_schema: {r['schema']}"])
         for r in rows
     ]

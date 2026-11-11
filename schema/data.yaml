@@ -348,7 +348,7 @@ enums:
         description: "A financial tool for tracking value accrued for a particular purpose. In the healthcare field, used to track charges for a patient, cost centers, etc."
       ActivityDefinition:
         meaning: fhir:ActivityDefinition
-        description: "This resource allows for the definition of some activity to be performed, independent of a particular patient, practitioner, or other performance context."
+        description: "Defines an activity, independent of a particular patient, practitioner, or other performance context."
       AdverseEvent:
         meaning: fhir:AdverseEvent
         description: "Actual or potential/avoided event causing unintended physical injury resulting from or contributed to by medical care, a research study or other healthcare setting factors that requires additional monitoring, treatment, or hospitalization, or that results in death."
@@ -363,7 +363,7 @@ enums:
         description: "A reply to an appointment request for a patient and/or practitioner(s), such as a confirmation or rejection."
       AuditEvent:
         meaning: fhir:AuditEvent
-        description: "A record of an event made for purposes of maintaining a security log. Typical uses include detection of intrusion attempts and monitoring for inappropriate usage."
+        description: "An event record for a security log. Typical uses include detection of intrusion attempts and monitoring for inappropriate usage."
       Basic:
         meaning: fhir:Basic
         description: "Basic is used for handling concepts not yet defined in FHIR, narrative-only resources that don't map to an existing resource, and custom resources not appropriate for inclusion in the FHIR specification."
@@ -375,7 +375,7 @@ enums:
         description: "A material substance originating from a biological entity intended to be transplanted or infused into another (possibly the same) biological entity."
       BodyStructure:
         meaning: fhir:BodyStructure
-        description: "Record details about an anatomical structure. This resource may be used when a coded concept does not provide the necessary detail needed for the use case."
+        description: "Record details about an anatomical structure. This resource may be used when a coded concept does not provide the detail required for the use case."
       Bundle:
         meaning: fhir:Bundle
         description: "A container for a collection of resources."
@@ -384,7 +384,7 @@ enums:
         description: "A Capability Statement documents a set of capabilities (behaviors) of a FHIR Server for a particular version of FHIR that may be used as a statement of actual server functionality or a statement of required or desired server implementation."
       CarePlan:
         meaning: fhir:CarePlan
-        description: "Describes the intention of how one or more practitioners intend to deliver care for a particular patient, group or community for a period of time, possibly limited to care for a specific condition or set of conditions."
+        description: "Describes how one or more practitioners plan to deliver care for a particular patient, group or community for a period of time, possibly limited to care for a specific condition or set of conditions."
       CareTeam:
         meaning: fhir:CareTeam
         description: "The Care Team includes all the people and organizations who plan to participate in the coordination and delivery of care for a patient."
@@ -411,7 +411,7 @@ enums:
         description: "The CodeSystem resource is used to declare the existence of and describe a code system or code system supplement and its key properties, and optionally define a part or all of its content."
       Communication:
         meaning: fhir:Communication
-        description: "An occurrence of information being transmitted; e.g. an alert that was sent to a responsible provider, a public health agency that was notified about a reportable condition."
+        description: "An instance of information exchange; e.g. an alert that was sent to a responsible provider, a public health agency that was notified about a reportable condition."
       CommunicationRequest:
         meaning: fhir:CommunicationRequest
         description: "A request to convey information; e.g. the CDS system proposes that an alert be sent to a responsible provider, the CDS system proposes that the public health agency be notified about a reportable condition."
@@ -420,7 +420,7 @@ enums:
         description: "A compartment definition that defines how resources are accessed on a server."
       Composition:
         meaning: fhir:Composition
-        description: "A set of healthcare-related information that is assembled together into a single logical package that provides a single coherent statement of meaning, establishes its own context and that has clinical attestation with regard to who is making the statement. A Composition defines the structure and narrative content necessary for a document. However, a Composition alone does not constitute a document. Rather, the Composition must be the first entry in a Bundle where Bundle.type=document, and any other resources referenced from Composition must be included as subsequent entries in the Bundle (for example Patient, Practitioner, Encounter, etc.)."
+        description: "A set of healthcare-related information that is assembled into one logical package that provides a single coherent statement of meaning, establishes its own context and that has clinical attestation with regard to who is making the statement. A Composition defines the structure and narrative content necessary for a document. However, a Composition alone does not constitute a document. Rather, the Composition must be the first entry in a Bundle where Bundle.type=document, and any other resources referenced from Composition must be included as subsequent entries in the Bundle (for example Patient, Practitioner, Encounter, etc.)."
       ConceptMap:
         meaning: fhir:ConceptMap
         description: "A statement of relationships from one set of concepts to one or more other concepts - either concepts in code systems, or data element/data element concepts, or classes in class models."
@@ -474,7 +474,7 @@ enums:
         description: "The EffectEvidenceSynthesis resource describes the difference in an outcome between exposures states in a population where the effect estimate is derived from a combination of research studies."
       Encounter:
         meaning: fhir:Encounter
-        description: "An interaction between a patient and healthcare provider(s) for the purpose of providing healthcare service(s) or assessing the health status of a patient."
+        description: "An interaction between a patient and healthcare provider(s) to provide healthcare or assess the patient's health."
       Endpoint:
         meaning: fhir:Endpoint
         description: "The technical details of an endpoint that can be used for electronic services, such as for web services providing XDS.b or a REST endpoint for another FHIR server. This may include any security context information."
@@ -558,7 +558,7 @@ enums:
         description: "Details and position information for a physical place where services are provided and resources and participants may be stored, found, contained, or accommodated."
       Measure:
         meaning: fhir:Measure
-        description: "The Measure resource provides the definition of a quality measure."
+        description: "Defines a quality measure."
       MeasureReport:
         meaning: fhir:MeasureReport
         description: "The MeasureReport resource contains the results of the calculation of a measure; and optionally a reference to the resources involved in that calculation."
@@ -642,7 +642,7 @@ enums:
         description: "A collection of error, warning, or information messages that result from a system action."
       Organization:
         meaning: fhir:Organization
-        description: "A formally or informally recognized grouping of people or organizations formed for the purpose of achieving some form of collective action. Includes companies, institutions, corporations, departments, community groups, healthcare practice groups, payer/insurer, etc."
+        description: "A formally or informally recognized grouping of people or organizations formed to act collectively. Includes companies, institutions, corporations, departments, community groups, healthcare practice groups, payer/insurer, etc."
       OrganizationAffiliation:
         meaning: fhir:OrganizationAffiliation
         description: "Defines an affiliation/assotiation/relationship between 2 distinct oganizations, that is not a part-of relationship/sub-division relationship."
@@ -666,7 +666,7 @@ enums:
         description: "This resource allows for the definition of various types of plans as a sharable, consumable, and executable artifact. The resource is general enough to support the description of a broad range of clinical artifacts such as clinical decision support rules, order sets and protocols."
       Practitioner:
         meaning: fhir:Practitioner
-        description: "A person who is directly or indirectly involved in the provisioning of healthcare."
+        description: "A person who is directly or indirectly involved in providing healthcare."
       PractitionerRole:
         meaning: fhir:PractitionerRole
         description: "A specific set of Roles/Locations/specialties/services that a practitioner may perform at an organization for a period of time."
@@ -768,7 +768,7 @@ enums:
         description: "A TerminologyCapabilities resource documents a set of capabilities (behaviors) of a FHIR Terminology Server that may be used as a statement of actual server functionality or a statement of required or desired server implementation."
       TestReport:
         meaning: fhir:TestReport
-        description: "A summary of information based on the results of executing a TestScript."
+        description: "A summary of TestScript execution results."
       TestScript:
         meaning: fhir:TestScript
         description: "A structured set of tests against a FHIR server or client implementation to determine compliance against the FHIR specification."
@@ -1229,7 +1229,7 @@ enums:
         annotations:
           cdm_schema: CDM
       visit_detail:
-        description: "The VISIT_DETAIL table is an optional table used to represents details of each record in the parent VISIT_OCCURRENCE table. A good example of this would be the movement between units in a hospital during an inpatient stay or claim lines associated with a one insurance claim. For every record in the VISIT_OCCURRENCE table there may be 0 or more records in the VISIT_DETAIL table with a 1:n relationship where n may be 0. The VISIT_DETAIL table is structurally very similar to VISIT_OCCURRENCE table and belongs to the visit domain."
+        description: "The VISIT_DETAIL table is an optional table used to represents details of each record in the parent VISIT_OCCURRENCE table. Examples include the movement between units in a hospital during an inpatient stay or claim lines associated with a one insurance claim. For every record in the VISIT_OCCURRENCE table there may be 0 or more records in the VISIT_DETAIL table with a 1:n relationship where n may be 0. The VISIT_DETAIL table is structurally very similar to VISIT_OCCURRENCE table and belongs to the visit domain."
         annotations:
           cdm_schema: CDM
       condition_occurrence:
@@ -1277,7 +1277,7 @@ enums:
         annotations:
           cdm_schema: CDM
       location:
-        description: "The LOCATION table represents a generic way to capture physical location or address information of Persons and Care Sites."
+        description: "The LOCATION table stores physical location or address information of Persons and Care Sites."
         annotations:
           cdm_schema: CDM
       care_site:
@@ -1297,15 +1297,15 @@ enums:
         annotations:
           cdm_schema: CDM
       drug_era:
-        description: "A Drug Era is defined as a span of time when the Person is assumed to be exposed to a particular active ingredient. A Drug Era is not the same as a Drug Exposure: Exposures are individual records corresponding to the source when Drug was delivered to the Person, while successive periods of Drug Exposures are combined under certain rules to produce continuous Drug Eras. Every record in the DRUG_EXPOSURE table should be part of a drug era based on the dates of exposure."
+        description: "A Drug Era is a period when the Person is assumed to be exposed to a particular active ingredient. A Drug Era is not the same as a Drug Exposure: Exposures are individual records corresponding to the source when Drug was delivered to the Person, while successive periods of Drug Exposures are combined under certain rules to produce continuous Drug Eras. Every record in the DRUG_EXPOSURE table should be part of a drug era based on the dates of exposure."
         annotations:
           cdm_schema: CDM
       dose_era:
-        description: "A Dose Era is defined as a span of time when the Person is assumed to be exposed to a constant dose of a specific active ingredient."
+        description: "A Dose Era is a period when the Person is assumed to be exposed to a constant dose of a specific active ingredient."
         annotations:
           cdm_schema: CDM
       condition_era:
-        description: "A Condition Era is defined as a span of time when the Person is assumed to have a given condition. Similar to Drug Eras, Condition Eras are chronological periods of Condition Occurrence and every Condition Occurrence record should be part of a Condition Era. Combining individual Condition Occurrences into a single Condition Era serves two purposes: - It allows aggregation of chronic conditions that require frequent ongoing care, instead of treating each Condition Occurrence as an independent event. - It allows aggregation of multiple, closely timed doctor visits for the same Condition to avoid double-counting the Condition Occurrences. For example, consider a Person who visits her Primary Care Physician (PCP) and who is referred to a specialist. At a later time, the Person visits the specialist, who confirms the PCP's original diagnosis and provides the appropriate treatment to resolve the condition. These two independent doctor visits should be aggregated into one Condition Era."
+        description: "A Condition Era is a period when the Person is assumed to have a given condition. Similar to Drug Eras, Condition Eras are chronological periods of Condition Occurrence and every Condition Occurrence record should be part of a Condition Era. Combining individual Condition Occurrences into a single Condition Era serves two purposes: - It allows aggregation of chronic conditions that require frequent ongoing care, instead of treating each Condition Occurrence as an independent event. - It allows aggregation of multiple, closely timed doctor visits for the same Condition to avoid double-counting the Condition Occurrences. For example, consider a Person who visits her Primary Care Physician (PCP) and who is referred to a specialist. At a later time, the Person visits the specialist, who confirms the PCP's original diagnosis and provides the appropriate treatment to resolve the condition. These two independent doctor visits should be aggregated into one Condition Era."
         annotations:
           cdm_schema: CDM
       episode:
@@ -1317,7 +1317,7 @@ enums:
         annotations:
           cdm_schema: CDM
       metadata:
-        description: "The METADATA table contains metadata information about a dataset that has been transformed to the OMOP Common Data Model."
+        description: "The METADATA table contains metadata about a dataset that has been transformed to the OMOP Common Data Model."
         annotations:
           cdm_schema: CDM
       cdm_source:
@@ -1349,7 +1349,7 @@ enums:
         annotations:
           cdm_schema: VOCAB
       concept_synonym:
-        description: "The CONCEPT_SYNONYM table captures alternative terms, synonyms, and translations of Concept Name into various languages linked to specific concepts, providing users with a comprehensive view of how Concepts may be expressed or referenced."
+        description: "The CONCEPT_SYNONYM table captures alternative terms, synonyms, and translations of Concept Name into various languages linked to specific concepts."
         annotations:
           cdm_schema: VOCAB
       concept_ancestor:

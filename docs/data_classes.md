@@ -943,17 +943,17 @@ OMOP CDM 5.4 tables, from the OHDSI table list (CommonDataModel v5.4.3, inst/csv
 | `note_nlp` | The NOTE_NLP table encodes all output of NLP on clinical notes. | CDM |
 | `specimen` | The specimen domain contains the records identifying biological samples from a person. | CDM |
 | `fact_relationship` | The FACT_RELATIONSHIP table contains records about the relationships between facts stored as records in any table of the CDM. | CDM |
-| `location` | The LOCATION table represents a generic way to capture physical location or address information of Persons and Care Sites. | CDM |
+| `location` | The LOCATION table stores physical location or address information of Persons and Care Sites. | CDM |
 | `care_site` | The CARE_SITE table contains a list of uniquely identified institutional (physical or organizational) units where healthcare delivery is practiced (offices, wards, hospitals, clinics, etc.). | CDM |
 | `provider` | The PROVIDER table contains a list of uniquely identified healthcare providers; duplication is not allowed. | CDM |
 | `payer_plan_period` | The PAYER_PLAN_PERIOD table captures details of the period of time that a Person is continuously enrolled under a specific health Plan benefit structure from a given Payer. | CDM |
 | `cost` | The COST table captures records containing the cost of any medical event recorded in one of the OMOP clinical event tables such as DRUG_EXPOSURE, PROCEDURE_OCCURRENCE, VISIT_OCCURRENCE, VISIT_DETAIL, DEVICE_OCCURRENCE, OBSERVATION or MEASUREMENT. | CDM |
-| `drug_era` | A Drug Era is defined as a span of time when the Person is assumed to be exposed to a particular active ingredient. | CDM |
-| `dose_era` | A Dose Era is defined as a span of time when the Person is assumed to be exposed to a constant dose of a specific active ingredient. | CDM |
-| `condition_era` | A Condition Era is defined as a span of time when the Person is assumed to have a given condition. | CDM |
+| `drug_era` | A Drug Era is a period when the Person is assumed to be exposed to a particular active ingredient. | CDM |
+| `dose_era` | A Dose Era is a period when the Person is assumed to be exposed to a constant dose of a specific active ingredient. | CDM |
+| `condition_era` | A Condition Era is a period when the Person is assumed to have a given condition. | CDM |
 | `episode` | The EPISODE table aggregates lower-level clinical events (VISIT_OCCURRENCE, DRUG_EXPOSURE, PROCEDURE_OCCURRENCE, DEVICE_EXPOSURE) into a higher-level abstraction representing clinically and analytically relevant disease phases,outcomes and treatments. | CDM |
 | `episode_event` | The EPISODE_EVENT table connects qualifying clinical events (such as CONDITION_OCCURRENCE, DRUG_EXPOSURE, PROCEDURE_OCCURRENCE, MEASUREMENT) to the appropriate EPISODE entry. | CDM |
-| `metadata` | The METADATA table contains metadata information about a dataset that has been transformed to the OMOP Common Data Model. | CDM |
+| `metadata` | The METADATA table contains metadata about a dataset that has been transformed to the OMOP Common Data Model. | CDM |
 | `cdm_source` | The CDM_SOURCE table contains detail about the source database and the process used to transform the data into the OMOP Common Data Model. | CDM |
 | `concept` | The Standardized Vocabularies contains records, or Concepts, that uniquely identify each fundamental unit of meaning used to express clinical information in all domain tables of the CDM. | VOCAB |
 | `vocabulary` | The VOCABULARY table includes a list of the Vocabularies integrated from various sources or created de novo in OMOP CDM. | VOCAB |
@@ -961,7 +961,7 @@ OMOP CDM 5.4 tables, from the OHDSI table list (CommonDataModel v5.4.3, inst/csv
 | `concept_class` | The CONCEPT_CLASS table includes semantic categories that reference the source structure of each Vocabulary. | VOCAB |
 | `concept_relationship` | The CONCEPT_RELATIONSHIP table contains records that define relationships between any two Concepts and the nature or type of the relationship. | VOCAB |
 | `relationship` | The RELATIONSHIP table provides a reference list of all types of relationships that can be used to associate any two Concepts in the CONCEPT_RELATIONSHIP table, the respective reverse relationships, and their hierarchical characteristics. | VOCAB |
-| `concept_synonym` | The CONCEPT_SYNONYM table captures alternative terms, synonyms, and translations of Concept Name into various languages linked to specific concepts, providing users with a comprehensive view of how Concepts may be expressed or referenced. | VOCAB |
+| `concept_synonym` | The CONCEPT_SYNONYM table captures alternative terms, synonyms, and translations of Concept Name into various languages linked to specific concepts. | VOCAB |
 | `concept_ancestor` | The CONCEPT_ANCESTOR table is designed to simplify observational analysis by providing the complete hierarchical relationships between Concepts. | VOCAB |
 | `source_to_concept_map` | The source to concept map table is recommended for use in ETL processes to maintain local source codes which are not available as Concepts in the Standardized Vocabularies, and to establish mappings for each source code into a Standard Concept as target_concept_ids that can be used to populate the Common Data Model tables. | VOCAB |
 | `drug_strength` | The DRUG_STRENGTH table contains structured content about the amount or concentration and associated units of a specific ingredient contained within a particular drug product. | VOCAB |
