@@ -294,6 +294,7 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 | --- | --- | --- | --- |
 | `encodingFormat` | [`MediaType`](#mediatype) | yes | Media type of the content (after decompression when compression is set). One of: `text/plain`, `application/pdf`, `application/rtf`, `image/tiff`, `image/jpeg`, `image/png`. |
 | `subjectIds` | [`Identifier`](#identifier) (list) | yes | Subject IDs the file contains. Each must appear in the subject table. |
+| `documentType` | [`DocumentTypeEnum`](#documenttypeenum) | | The kind of document, e.g. progress_note or referral_note, when the source records it. Text processing and the OMOP note class depend on it. A file holds documents of one kind; documents of several kinds go in separate files, or leave documentType out. |
 
 ### DocumentationFile
 
@@ -716,6 +717,28 @@ Sensing techniques accepted for sensor data. Meanings are NCIT (26.02d) terms, O
 | `respiration` | [`NCIT:C176738`](http://purl.obolibrary.org/obo/NCIT_C176738) | Breathing measured by a chest band or similar sensor. |
 | `eda` | close: [`NCIT:C93039`](http://purl.obolibrary.org/obo/NCIT_C93039) | Changes in the skin's electrical conductance, also called galvanic skin response. |
 | `other` |  | A sensing technique not listed here. Name it in the file's description; a curator decides whether it needs its own value. |
+
+### DocumentTypeEnum
+
+Kinds of clinical document, the values of documentType. Meanings are LOINC Document Ontology codes, the codes OMOP uses for note_class_concept_id, checked against LOINC on tx.fhir.org. Codes are LOINC's, under the LOINC license.
+
+| Value | Term | Meaning |
+| --- | --- | --- |
+| `progress_note` | [`LOINC:11506-3`](https://loinc.org/11506-3) | A note on a visit or a day of care, such as an outpatient visit note. |
+| `history_and_physical` | [`LOINC:34117-2`](https://loinc.org/34117-2) | The history and examination at admission or a first visit. |
+| `consult_note` | [`LOINC:11488-4`](https://loinc.org/11488-4) | A specialist's findings and recommendations after a consultation. |
+| `referral_note` | [`LOINC:57133-1`](https://loinc.org/57133-1) | A note referring the patient to another clinician or service. |
+| `discharge_summary` | [`LOINC:18842-5`](https://loinc.org/18842-5) | A summary of a hospital stay, written at discharge. |
+| `emergency_department_note` | [`LOINC:34111-5`](https://loinc.org/34111-5) | A note on an emergency department visit. |
+| `procedure_note` | [`LOINC:28570-0`](https://loinc.org/28570-0) | A note on a procedure other than surgery. |
+| `operative_note` | [`LOINC:11504-8`](https://loinc.org/11504-8) | A note on a surgical operation. |
+| `telephone_encounter_note` | [`LOINC:34748-4`](https://loinc.org/34748-4) | A note on a telephone contact with the patient. |
+| `patient_note` | [`LOINC:51855-5`](https://loinc.org/51855-5) | A note written by the patient or a caregiver. |
+| `pathology_report` | [`LOINC:11526-1`](https://loinc.org/11526-1) | A pathology study report. |
+| `imaging_report` | [`LOINC:18748-4`](https://loinc.org/18748-4) | A radiologist's report of a diagnostic imaging study. The images go in an ImagingFile. |
+| `laboratory_report` | [`LOINC:11502-2`](https://loinc.org/11502-2) | A report of laboratory test results. |
+| `genetic_report` | [`LOINC:51969-4`](https://loinc.org/51969-4) | A genetic test report. Structured results go in a GeneticTestResultFile. |
+| `other` |  | A document of another kind. Name it in the file's description; a curator decides whether it needs its own value. The general LOINC term is Note (LOINC:34109-9). |
 
 ### DiagnosisCodeSystemEnum
 

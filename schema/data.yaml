@@ -68,6 +68,7 @@ prefixes:
   NCIT: http://purl.obolibrary.org/obo/NCIT_
   SNOMEDCT: http://identifiers.org/snomedct/
   rai: http://mlcommons.org/croissant/RAI/
+  LOINC: https://loinc.org/
 default_prefix: rddc
 default_range: string
 
@@ -1000,6 +1001,85 @@ enums:
           A sensing technique not listed here. Name it in the file's description; a
           curator decides whether it needs its own value.
 
+  DocumentTypeEnum:
+    description: >-
+      Kinds of clinical document, the values of documentType. Meanings are LOINC
+      Document Ontology codes, the codes OMOP uses for note_class_concept_id, checked
+      against LOINC on tx.fhir.org. Codes are LOINC's, under the LOINC license.
+    permissible_values:
+      progress_note:
+        title: Progress note
+        description: A note on a visit or a day of care, such as an outpatient visit note.
+        meaning: LOINC:11506-3
+        aliases:
+        - Visit note
+      history_and_physical:
+        title: History and physical note
+        description: The history and examination at admission or a first visit.
+        meaning: LOINC:34117-2
+        aliases:
+        - H&P
+      consult_note:
+        title: Consult note
+        description: A specialist's findings and recommendations after a consultation.
+        meaning: LOINC:11488-4
+        aliases:
+        - Specialist note
+      referral_note:
+        title: Referral note
+        description: A note referring the patient to another clinician or service.
+        meaning: LOINC:57133-1
+      discharge_summary:
+        title: Discharge summary
+        description: A summary of a hospital stay, written at discharge.
+        meaning: LOINC:18842-5
+      emergency_department_note:
+        title: Emergency department note
+        description: A note on an emergency department visit.
+        meaning: LOINC:34111-5
+        aliases:
+        - ED note
+      procedure_note:
+        title: Procedure note
+        description: A note on a procedure other than surgery.
+        meaning: LOINC:28570-0
+      operative_note:
+        title: Surgical operation note
+        description: A note on a surgical operation.
+        meaning: LOINC:11504-8
+      telephone_encounter_note:
+        title: Telephone encounter note
+        description: A note on a telephone contact with the patient.
+        meaning: LOINC:34748-4
+      patient_note:
+        title: Patient note
+        description: A note written by the patient or a caregiver.
+        meaning: LOINC:51855-5
+      pathology_report:
+        title: Pathology report
+        description: A pathology study report.
+        meaning: LOINC:11526-1
+      imaging_report:
+        title: Imaging report
+        description: A radiologist's report of a diagnostic imaging study. The images go in an ImagingFile.
+        meaning: LOINC:18748-4
+        aliases:
+        - Radiology report
+      laboratory_report:
+        title: Laboratory report
+        description: A report of laboratory test results.
+        meaning: LOINC:11502-2
+      genetic_report:
+        title: Genetic analysis report
+        description: A genetic test report. Structured results go in a GeneticTestResultFile.
+        meaning: LOINC:51969-4
+      other:
+        title: Other clinical document
+        description: >-
+          A document of another kind. Name it in the file's description; a curator
+          decides whether it needs its own value. The general LOINC term is Note
+          (LOINC:34109-9).
+
   DiagnosisCodeSystemEnum:
     description: >-
       Code systems that candidate diagnoses are coded in.
@@ -1610,6 +1690,8 @@ classes:
     annotations:
       structure: unstructured
       modality: clinical_text
+    slots:
+    - documentType
     slot_usage:
       encodingFormat:
         any_of:
@@ -2008,6 +2090,15 @@ slots:
     description: >-
       The version of the form the responses answer, as the form's owner numbers it.
       Answer codes can change between versions.
+
+  # --- clinical documents (ClinicalDocumentFile) ----------------------------
+  documentType:
+    range: DocumentTypeEnum
+    description: >-
+      The kind of document, e.g. progress_note or referral_note, when the source
+      records it. Text processing and the OMOP note class depend on it. A file holds
+      documents of one kind; documents of several kinds go in separate files, or leave
+      documentType out.
 
   # --- genetic test results (GeneticTestResultFile) --------------------------
   reportDocuments:

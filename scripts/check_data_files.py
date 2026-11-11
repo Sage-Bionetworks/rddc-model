@@ -100,6 +100,10 @@ VALID = {
         subjectIds=["S1"],
         processingHints=[{"@type": "sc:PropertyValue", "propertyID": "deid:ocrEngine", "value": "x"}],
     ),
+    "referral_note": item(
+        "ClinicalDocumentFile", 35, contentUrl="notes/referral.txt", encodingFormat="text/plain",
+        documentType="referral_note", subjectIds=["S1"],
+    ),
     "readme": item(
         "DocumentationFile", 21, contentUrl="README.md", encodingFormat="text/markdown",
     ),
@@ -258,6 +262,9 @@ INVALID = {
     "differential code systems as a string": put("differential", ["diagnosisCodeSystems"], "omim"),
     "unknown diagnosis code system": put("differential", ["diagnosisCodeSystems"], ["ORDO"]),
     "differential diagnoses as an image": put("differential", ["encodingFormat"], "image/png"),
+    "LOINC code instead of a document type": put("referral_note", ["documentType"], "57133-1"),
+    "several document types on one file": put("referral_note", ["documentType"], ["referral_note", "consult_note"]),
+    "document type on a tabular file": put("tabular", ["documentType"], "progress_note"),
     "face image from microscopy": put("face", ["measurementTechnique"], "microscopy"),
     "face scan with an invented PLY media type": put("face_scan", ["encodingFormat"], "model/ply"),
     "empty subject list": put("face", ["subjectIds"], []),
