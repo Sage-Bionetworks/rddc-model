@@ -5,7 +5,8 @@ Usage: python scripts/check_data_files.py [SCHEMA]
 SCHEMA defaults to schema/data.yaml. The script generates the closed JSON Schema
 in memory and checks single distribution items, one class at a time:
 
-1. Each object in VALID validates against the class its additionalType names.
+1. Each object in examples/data_files/valid.json (VALID) validates against the
+   class its additionalType names.
 2. Each mutation in INVALID makes its object fail against that same class.
 
 It validates with jsonschema rather than `linkml validate`, whose loader drops
@@ -23,197 +24,11 @@ from linkml.generators.jsonschemagen import JsonSchemaGenerator
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-SHA = "0" * 64
-
-
-def item(cls, n, **fields):
-    """A minimal file object of class cls, with fields added."""
-    return {
-        "@id": f"urn:uuid:00000000-0000-4000-8000-{n:012d}",
-        "@type": "cr:FileObject",
-        "additionalType": f"rddc:{cls}",
-        "name": fields.get("contentUrl", "file"),
-        "contentSize": "1024 B",
-        "sha256": SHA,
-        **fields,
-    }
-
-
-REF = {"@id": "urn:uuid:00000000-0000-4000-8000-000000000099"}
-
-VALID = {
-    "fhir_bundle": item(
-        "FhirBundleFile", 1, contentUrl="fhir/bundle.json", encodingFormat="application/fhir+json",
-        bundleType="collection", subjectIds=["S1"],
-    ),
-    "fhir_resource": item(
-        "FhirResourceFile", 2, contentUrl="fhir/patient.json", encodingFormat="application/fhir+json",
-        resourceType="Patient",
-    ),
-    "fhir_ndjson": item(
-        "FhirNdjsonFile", 3, contentUrl="fhir/Observation.ndjson.gz",
-        encodingFormat="application/fhir+ndjson", compression="gzip",
-        resourceType="Observation",
-    ),
-    "omop_table": item(
-        "OmopTableFile", 4, contentUrl="omop/person.csv", encodingFormat="text/csv",
-        cdmTable="person",
-    ),
-    "ccda": item(
-        "CcdaDocumentFile", 5, contentUrl="ccda/doc.xml", encodingFormat="application/xml",
-        subjectIds=["S1"],
-    ),
-    "tabular": item(
-        "TabularFile", 6, contentUrl="registry/visits.csv", encodingFormat="text/csv",
-    ),
-    "tabular_jsonlines": item(
-        "TabularFile", 7, contentUrl="registry/pro.jsonl", encodingFormat="application/jsonlines",
-    ),
-    "consent": item(
-        "ConsentFile", 8, contentUrl="consent/elements.csv", encodingFormat="text/csv",
-        subjectIds=["S1", "S2"],
-    ),
-    "intake_form": item(
-        "IntakeFormFile", 30, contentUrl="intake/responses.csv", encodingFormat="text/csv",
-        formDefinition=REF, formVersion="3", subjectIds=["S1", "S2"],
-    ),
-    "intake_form_published": item(
-        "IntakeFormFile", 31, contentUrl="intake/responses.jsonl", encodingFormat="application/jsonlines",
-        formDefinition={"@id": "https://example.org/fhir/Questionnaire/intake"}, subjectIds=["S1"],
-    ),
-    "genetic_test": item(
-        "GeneticTestResultFile", 32, contentUrl="genetics/results.json", encodingFormat="application/json",
-        referenceGenome="GRCh38", reportDocuments=[REF], subjectIds=["S1"],
-        sensitivity={"containsFreeText": True},
-    ),
-    "differential": item(
-        "DifferentialDiagnosisFile", 33, contentUrl="ddx/candidates.csv", encodingFormat="text/csv",
-        software="Face2Gene", softwareVersion="2026.1", diagnosisCodeSystems=["orphanet", "omim"],
-        wasDerivedFrom=[REF], subjectIds=["S1"],
-    ),
-    "differential_pdf": item(
-        "DifferentialDiagnosisFile", 34, contentUrl="ddx/S1.pdf", encodingFormat="application/pdf",
-        subjectIds=["S1"],
-    ),
-    "scanned_report": item(
-        "ClinicalDocumentFile", 9, contentUrl="notes/report.tif", encodingFormat="image/tiff",
-        subjectIds=["S1"],
-        processingHints=[{"@type": "sc:PropertyValue", "propertyID": "deid:ocrEngine", "value": "x"}],
-    ),
-    "referral_note": item(
-        "ClinicalDocumentFile", 35, contentUrl="notes/referral.txt", encodingFormat="text/plain",
-        documentType="referral_note", subjectIds=["S1"],
-    ),
-    "readme": item(
-        "DocumentationFile", 21, contentUrl="README.md", encodingFormat="text/markdown",
-    ),
-    "documentation": item(
-        "DocumentationFile", 10, contentUrl="docs/dictionary.csv", encodingFormat="text/csv",
-        about=[REF],
-    ),
-    "fastq": item(
-        "FastqFile", 11, contentUrl="genomics/S1_R1.fastq.gz", encodingFormat="text/plain",
-        compression="gzip", measurementTechnique="wgs", sequencingPlatform="illumina", pairedWith=REF,
-    ),
-    "ubam": item(
-        "UnalignedBamFile", 36, contentUrl="genomics/S1.unaligned.bam", encodingFormat="application/octet-stream",
-        measurementTechnique="wgs", sequencingPlatform="oxford_nanopore", platform="Oxford Nanopore PromethION 2",
-    ),
-    "bam": item(
-        "BamFile", 12, contentUrl="genomics/S1.bam", encodingFormat="application/octet-stream",
-        measurementTechnique="wgs", sequencingPlatform="pacbio_smrt", referenceGenome="GRCh38",
-    ),
-    "cram": item(
-        "CramFile", 37, contentUrl="genomics/S1.cram", encodingFormat="application/octet-stream",
-        measurementTechnique="wgs", sequencingPlatform="illumina", referenceGenome="GRCh38",
-    ),
-    "variants": item(
-        "GermlineVariantFile", 13, contentUrl="genomics/S1.vcf.gz", encodingFormat="text/plain",
-        compression="bgzf", measurementTechnique="wes", sequencingPlatform="illumina", referenceGenome="T2T-CHM13v2.0",
-    ),
-    "bcf": item(
-        "GermlineVariantFile", 38, contentUrl="genomics/S1.bcf", encodingFormat="application/octet-stream",
-        measurementTechnique="wes", sequencingPlatform="illumina", referenceGenome="GRCh38",
-    ),
-    "somatic_variants": item(
-        "SomaticVariantFile", 26, contentUrl="genomics/T1.maf", encodingFormat="text/tab-separated-values",
-        measurementTechnique="wes", sequencingPlatform="illumina", referenceGenome="GRCh38",
-    ),
-    "rna_reads": item(
-        "FastqFile", 27, contentUrl="genomics/S1_rna_R1.fastq.gz", encodingFormat="text/plain",
-        compression="gzip", measurementTechnique="rna_seq", sequencingPlatform="illumina",
-    ),
-    "expression": item(
-        "GeneExpressionFile", 28, contentUrl="genomics/counts.tsv", encodingFormat="text/tab-separated-values",
-        measurementTechnique="rna_seq", sequencingPlatform="illumina", subjectIds=["S1", "S2"],
-    ),
-    "expression_h5ad": item(
-        "GeneExpressionFile", 29, contentUrl="genomics/counts.h5ad", encodingFormat="application/octet-stream",
-        measurementTechnique="rna_seq", sequencingPlatform="illumina",
-    ),
-    "index": item(
-        "IndexFile", 14, contentUrl="genomics/S1.bam.bai", encodingFormat="application/octet-stream",
-        indexOf=REF,
-    ),
-    "dicom_image": item(
-        "DicomImageFile", 15, contentUrl="imaging/ct.dcm", encodingFormat="application/dicom", measurementTechnique="ct",
-    ),
-    "image": item(
-        "ImageFile", 39, contentUrl="imaging/slide_12.svs", encodingFormat="application/octet-stream",
-        measurementTechnique="microscopy", sensitivity={"containsFreeText": True, "notes": "Slide label burned in."},
-    ),
-    "face": item(
-        "FacialImagingFile", 16, contentUrl="imaging/face.jpg", encodingFormat="image/jpeg",
-        measurementTechnique="photography", subjectIds=["S1"], sensitivity={"containsDates": False},
-    ),
-    "face_scan": item(
-        "FacialImagingFile", 22, contentUrl="imaging/face_3d.obj", encodingFormat="model/obj",
-        measurementTechnique="surface_scan_3d", subjectIds=["S1"],
-    ),
-    "face_scan_ply": item(
-        "FacialImagingFile", 23, contentUrl="imaging/face_3d.ply", encodingFormat="application/octet-stream",
-        measurementTechnique="surface_scan_3d", subjectIds=["S1"],
-    ),
-    "face_scan_material": item(
-        "FacialImagingFile", 24, contentUrl="imaging/face_3d.mtl", encodingFormat="model/mtl",
-        measurementTechnique="surface_scan_3d", subjectIds=["S1"],
-    ),
-    "audio": item(
-        "AudioFile", 17, contentUrl="media/voice.wav", encodingFormat="audio/wav",
-        sensitivity={"containsBiometricIdentifiers": True},
-    ),
-    "video": item(
-        "VideoFile", 18, contentUrl="media/gait.mp4", encodingFormat="video/mp4",
-    ),
-    "edf": item(
-        "EdfSignalFile", 19, contentUrl="sensor/S1_psg.edf", encodingFormat="application/octet-stream",
-        measurementTechnique=["eeg", "ecg"], samplingRate=256, platform="Compumedics Grael", subjectIds=["S1"],
-    ),
-    "wfdb_header": item(
-        "WfdbSignalFile", 40, contentUrl="sensor/S1_ecg.hea", encodingFormat="text/plain",
-        measurementTechnique=["ecg"], samplingRate=500, subjectIds=["S1"],
-    ),
-    "wfdb_signal": item(
-        "WfdbSignalFile", 41, contentUrl="sensor/S1_ecg.dat", encodingFormat="application/octet-stream",
-        measurementTechnique=["ecg"], samplingRate=500, subjectIds=["S1"],
-    ),
-    "dicom_waveform": item(
-        "DicomWaveformFile", 42, contentUrl="sensor/S1_12lead.dcm", encodingFormat="application/dicom",
-        measurementTechnique=["ecg"], samplingRate=1000, subjectIds=["S1"],
-    ),
-    "vendor_signal": item(
-        "VendorSignalFile", 43, contentUrl="sensor/S1_wrist.gt3x", encodingFormat="application/octet-stream",
-        measurementTechnique=["accelerometry"], samplingRate=100, platform="ActiGraph GT9X", subjectIds=["S1"],
-    ),
-    "sensor_measure": item(
-        "SensorMeasureFile", 25, contentUrl="sensor/S1_steps.parquet",
-        encodingFormat="application/vnd.apache.parquet", measurementTechnique=["accelerometry"],
-        platform="ActiGraph GT9X", subjectIds=["S1"],
-    ),
-    "generic": item(
-        "GenericFile", 20, contentUrl="other/file.bin", encodingFormat="application/octet-stream",
-    ),
-}
+# One valid object per concrete class (some classes have several), shared with the
+# documentation site, which shows them on the data class pages.
+EXAMPLES = os.path.join(ROOT, "examples", "data_files", "valid.json")
+with open(EXAMPLES) as f:
+    VALID = json.load(f)
 
 
 def drop(key, path):
@@ -233,6 +48,8 @@ def put(key, path, value):
         doc[path[-1]] = value
     return key, mutate
 
+
+REF = {"@id": "urn:uuid:00000000-0000-4000-8000-000000000099"}
 
 INVALID = {
     "modality stated in the sidecar": put("omop_table", ["modality"], "clinical_omop"),
