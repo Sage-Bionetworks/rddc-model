@@ -267,7 +267,7 @@
 <main aria-label="RDDC and Croissant presentation">
   <section class="slide" id="why-standards" aria-labelledby="title-standards">
     <p class="eyebrow">01 / A shared foundation</p>
-    <h1 id="title-standards">Why build the sidecar on Croissant?</h1>
+    <h1 id="title-standards">Why Croissant?</h1>
     <p class="lede"><code>_sidecar.json</code> is one metadata file per deposit batch. It is used for receipt events and provides file metadata for routing, processing and validation.</p>
     <figure class="flow">
       <ol aria-label="Where the sidecar goes">
@@ -288,7 +288,7 @@
 
   <section class="slide" id="layers" aria-labelledby="title-layers">
     <p class="eyebrow">02 / Croissant at a glance</p>
-    <h1 id="title-layers">Four layers, not all needed</h1>
+    <h1 id="title-layers">Croissant layers</h1>
     <ol class="layers">
       <li><span class="number" aria-hidden="true">01</span><h2>Dataset metadata</h2><p>Name, description, location and standards.<small><code>sc:Dataset</code></small></p><span class="badge high">Always</span></li>
       <li><span class="number" aria-hidden="true">02</span><h2>Resources</h2><p>Files and file groups, with formats and checksums.<small><code>cr:FileObject</code> · <code>cr:FileSet</code></small></p><span class="badge high">Always</span></li>
@@ -299,17 +299,17 @@
 
   <section class="slide" id="rddc-needs" aria-labelledby="title-needs">
     <p class="eyebrow">03 / Clinical intake</p>
-    <h1 id="title-needs">What the Croissant core<br>does not cover</h1>
+    <h1 id="title-needs">RDDC additions</h1>
     <div class="needs">
       <div><h2>Subjects</h2><p>Coded IDs and links between people and files.</p></div>
-      <div><h2>Interactions <span class="tag annotation" hidden>awkward <span aria-hidden="true">🤨</span></span></h2><p>Data deposits, withdrawal, restriction and consent.</p></div>
+      <div><h2>Batch actions</h2><p>Data deposits, withdrawal, restriction and consent.</p></div>
       <div><h2>Clinical standards</h2><p>FHIR, OMOP and C-CDA versions and required fields.</p></div>
       <div><h2>Sensitivity</h2><p>Dates, ZIP codes, free text and biometric identifiers.</p></div>
     </div>
   </section>
 
   <section class="slide comparison" id="comparison" aria-labelledby="title-comparison">
-    <p class="eyebrow">04 / Side-by-side summary</p>
+    <p class="eyebrow">04 / Comparison summary</p>
     <h1 id="title-comparison">Croissant + RDDC</h1>
     <table>
       <caption>Croissant 1.1 and RDDC sidecar {{version}}</caption>
@@ -329,7 +329,7 @@
         <tr><th scope="row">License, creator, citation</th><td>Recommended</td><td>Omitted; use terms and access tiers live in the source register</td></tr>
         <tr><th scope="row">Unknown properties</th><td>Allowed</td><td>Rejected; project extensions use <code>additionalProperty</code></td></tr>
         <tr class="emph"><th scope="row">Subjects</th><td>Not in core</td><td>Subject table + per-file <code>subjectIds</code> (depending on data type)</td></tr>
-        <tr class="emph"><th scope="row">Payload intent</th><td>Not in core</td><td><code>add</code> · <code>withdraw</code> · <code>restrict</code> · <code>consent</code></td></tr>
+        <tr class="emph"><th scope="row">Batch action</th><td>Not in core</td><td><code>add</code> · <code>withdraw</code> · <code>restrict</code> · <code>consent</code></td></tr>
         <tr class="emph"><th scope="row">Sensitivity</th><td>Partly covered by the RAI extension</td><td>Batch flags; per-file overrides for <code>contains*</code></td></tr>
         <tr><th scope="row">Provenance</th><td>Recommended via W3C PROV-O, on any object</td><td>Required attribution to the writing tool; derivation only within the batch</td></tr>
       </tbody>
@@ -493,7 +493,7 @@
       <tbody>
         <tr><th scope="row">P1</th><td>One vocabulary from intake to release</td><td><span class="badge high">High</span></td><td>The common ML dataset format (NeurIPS, Hugging Face, Kaggle, OpenML); <strong>BENCHMARK</strong> datasets are expected to publish in it; release manifests can reuse it</td></tr>
         <tr><th scope="row">P2</th><td>Precedent for governed clinical data</td><td><span class="badge medium">Medium</span></td><td><a href="https://lcp.mit.edu/croissant-baker/">Croissant Baker</a> (MIT LCP) generates Croissant locally for data under DUAs: handlers for FHIR, DICOM and NIfTI, OMOP via its CSV handler; run on full MIMIC-IV</td></tr>
-        <tr><th scope="row">P3</th><td>Less to invent</td><td><span class="badge medium">Medium</span></td><td>File identity, checksums, media types, file sets and record sets come from a reviewed specification</td></tr>
+        <tr><th scope="row">P3</th><td>Reuse standard definitions</td><td><span class="badge medium">Medium</span></td><td>File identity, checksums, media types, file sets and record sets come from a reviewed specification</td></tr>
         <tr><th scope="row">P4</th><td>Graph-native format with IRIs</td><td><span class="badge medium">Medium</span></td><td>Sidecars can load as RDF into the knowledge graph or a catalog without a mapping step</td></tr>
         <tr><th scope="row">P5</th><td>Native to AI and ML tools</td><td><span class="badge medium">Medium</span></td><td>The format ML tooling already reads (<code>mlcroissant</code>, TensorFlow Datasets, Hugging Face); planned AI curation assistants can use sidecars directly</td></tr>
         <tr><th scope="row">P6</th><td>Generic tooling reads a sidecar</td><td><span class="badge low">Low</span></td><td><code>mlcroissant</code> sees files, file sets and checksums; limited at intake (C3)</td></tr>
@@ -547,9 +547,9 @@
       <thead><tr><th scope="col">#</th><th scope="col">Con</th><th scope="col">Weight</th><th scope="col">Mitigation</th></tr></thead>
       <tbody>
         <tr><th scope="row">C1</th><td>Contributor burden</td><td><span class="badge medium">Medium</span> <span class="arrow" aria-label="to">→</span> <span class="badge low">Low</span></td><td>Clinical teams know FHIR, OMOP and C-CDA, not JSON-LD. <code>rddc-sidecar</code> generates the sidecar and names any failing rule; contributors use the CLI, docs and tutorial</td></tr>
-        <tr><th scope="row">C2</th><td>The fix for C1 creates a tool dependency</td><td><span class="badge medium">Medium</span> <span class="arrow" aria-label="to">→</span> <span class="badge medium">Medium</span></td><td>Producers who can't run <code>rddc-sidecar</code> must reimplement the rules. The generated JSON Schema checks structure; other rules are enforced only by the validator</td></tr>
-        <tr><th scope="row">C3</th><td>Off-the-shelf tools do little at intake</td><td><span class="badge medium">Medium</span> <span class="arrow" aria-label="to">→</span> <span class="badge medium">Medium</span></td><td>Accepted, not mitigated. Tools like <code>mlcroissant</code> can list the files but can't fetch them, and they ignore subjects, sensitivity and other RDDC fields. The payoff is at BENCHMARK and release (P1)</td></tr>
-        <tr><th scope="row">C4</th><td>An external dependency</td><td><span class="badge medium">Medium</span> <span class="arrow" aria-label="to">→</span> <span class="badge low">Low</span></td><td>Pinned to Croissant 1.1; moving to a later version is a deliberate RDDC schema release</td></tr>
+        <tr><th scope="row">C2</th><td>Tool dependency</td><td><span class="badge medium">Medium</span> <span class="arrow" aria-label="to">→</span> <span class="badge medium">Medium</span></td><td>Producers who can't run <code>rddc-sidecar</code> must reimplement the rules. The generated JSON Schema checks structure; other rules are enforced only by the validator</td></tr>
+        <tr><th scope="row">C3</th><td>Limited tooling support at intake</td><td><span class="badge medium">Medium</span> <span class="arrow" aria-label="to">→</span> <span class="badge medium">Medium</span></td><td>Accepted, not mitigated. Tools like <code>mlcroissant</code> can list the files but can't fetch them, and they ignore subjects, sensitivity and other RDDC fields. The payoff is at BENCHMARK and release (P1)</td></tr>
+        <tr><th scope="row">C4</th><td>External dependency</td><td><span class="badge medium">Medium</span> <span class="arrow" aria-label="to">→</span> <span class="badge low">Low</span></td><td>Pinned to Croissant 1.1; moving to a later version is a deliberate RDDC schema release</td></tr>
         <tr><th scope="row">C5</th><td>More layers to validate and maintain</td><td><span class="badge medium">Medium</span> <span class="arrow" aria-label="to">→</span> <span class="badge low">Low</span></td><td>One LinkML source generates the JSON Schema and context; examples are checked with <code>mlcroissant</code></td></tr>
         <tr><th scope="row">C6</th><td>Metadata generation at scale</td><td><span class="badge medium">Medium</span> <span class="arrow" aria-label="to">→</span> <span class="badge low">Low</span></td><td>Every file needs its own entry and checksum. Tested on a 120,000-file C-CDA batch (generated in 2.4 s, validated in 1.5 s)</td></tr>
       </tbody>
@@ -584,10 +584,10 @@
 <footer class="controls" hidden>
   <nav aria-label="Slide navigation">
     <button type="button" id="previous" aria-label="Previous slide">←</button>
-    <a href="#why-standards" aria-label="Slide 1: Why build the sidecar on Croissant?">01</a>
+    <a href="#why-standards" aria-label="Slide 1: Why Croissant?">01</a>
     <a href="#layers" aria-label="Slide 2: Croissant layers">02</a>
     <a href="#rddc-needs" aria-label="Slide 3: RDDC needs">03</a>
-    <a href="#comparison" aria-label="Slide 4: Side-by-side summary">04</a>
+    <a href="#comparison" aria-label="Slide 4: Comparison summary">04</a>
     <a href="#example" aria-label="Slide 5: Example sidecar">05</a>
     <a href="#linkml" aria-label="Slide 6: LinkML schema">06</a>
     <a href="#pros" aria-label="Slide 7: Pros">07</a>

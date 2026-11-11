@@ -8,7 +8,7 @@
 <dt>Source</dt><dd>One of a contributor's data sets, with one set of use terms, registered with the RDDC before the first deposit. Identified by <code>sourceId</code>.</dd>
 <dt>Batch</dt><dd>One delivery of files for one source. One batch, one S3 prefix, one sidecar. Identified by <code>batchId</code>, which the contributor chooses and which is unique within the source.</dd>
 </dl>
-<rddc-code lang="text" title="How a contributor bucket is laid out">s3://rddc-deposit-ta2/                 bucket of contributor ta2-site-a
+<rddc-code lang="text" title="Contributor bucket structure">s3://rddc-deposit-ta2/                 bucket of contributor ta2-site-a
 └── src-ta2-01/                        source
     ├── 2026-10-b01/                   batch prefix  →  "url" in the sidecar
     │   ├── fhir/Patient.ndjson        data files    →  "contentUrl": "fhir/Patient.ndjson"
@@ -20,8 +20,8 @@
         └── _sidecar.json</rddc-code>
 <p>The sidecar's <code>url</code> is the batch prefix, ending with a slash. Every <code>contentUrl</code> is relative to it. The sidecar describes every data object under the prefix and nothing outside it; it does not list itself.</p>
 
-<h2>Anatomy of a sidecar</h2>
-<p>A sidecar has these parts, with required fields marked:</p>
+<h2 id="anatomy-of-a-sidecar">Sidecar structure</h2>
+<p>Sidecar sections; required fields are marked:</p>
 <div class="anatomy">
   <div class="row"><code>@context</code><span>The embedded JSON-LD context. Copied verbatim from <code>rddc_sidecar.context.jsonld</code>. <span class="req">required</span></span></div>
   <div class="row"><code>@id</code>, <code>@type</code>, <code>conformsTo</code></div>
@@ -43,7 +43,7 @@
 </div>
 
 <h2>Interactions</h2>
-<p><code>interaction</code> tells the platform what the batch asks for. It is required on every sidecar.</p>
+<p><code>interaction</code> specifies the batch action. It is required on every sidecar.</p>
 <div class="table-wrap"><table>
 <thead><tr><th>Value</th><th>Meaning</th><th>Data files</th><th>Subject table</th><th>Also requires</th></tr></thead>
 <tbody>
@@ -56,13 +56,13 @@
 <rddc-json src="examples/withdraw.json" keys="interaction,noticeRef,subjects,distribution" title="examples/withdraw.json (excerpt)"></rddc-json>
 
 <h2>Files</h2>
-<p>Every entry in <code>distribution</code> with <code>"@type": "cr:FileObject"</code> is one data file of the batch. How a file is described does not depend on the sidecar around it, so it has its own section:</p>
+<p>Every entry in <code>distribution</code> with <code>"@type": "cr:FileObject"</code> is one data file of the batch. File descriptions are covered separately:</p>
 <ul>
 <li><a href="data-overview.html">How data is classified</a>: the data class in <code>additionalType</code>, and the modality, structure and sensitivity facts it carries.</li>
-<li><a href="describing-files.html">Describing a data file</a>: file identity, media type and compression, <code>measurementTechnique</code> and the other class fields.</li>
+<li><a href="describing-files.html">Data file descriptions</a>: file identity, media type and compression, <code>measurementTechnique</code> and the other class fields.</li>
 <li>The family pages, from <a href="data-clinical.html">Clinical data</a> to <a href="data-other.html">Documentation and other files</a>, with a valid example of every class.</li>
 </ul>
-<p>The rest of this page covers what the sidecar adds around its files: file sets, the subject table, sensitivity defaults, provenance and references.</p>
+<p>The remaining sections cover sidecar-level information: file sets, the subject table, sensitivity defaults, provenance and references.</p>
 
 <h3>File identity</h3>
 <p>In a sidecar, every file also has <code>"@type": "cr:FileObject"</code> and an <code>@id</code>, a UUID URN such as <code>urn:uuid:0000000a-0000-4000-8000-00000000000a</code>. The <code>@id</code> identifies one file of the source, not one upload:</p>
@@ -73,7 +73,7 @@
 <li>It is unique within the sidecar and never reused for a different file.</li>
 </ul>
 <p>Use a lowercase UUID. The RDDC tool creates UUIDv5 values from the source, batch, path and checksum. It can reuse IDs from a previous sidecar for unchanged files. Other tools may generate IDs differently.</p>
-<p>The same file as YAML in part 1 and as JSON-LD in a sidecar differ only by these two keys:</p>
+<p>The sidecar's JSON-LD representation adds two keys to the YAML example in part 1:</p>
 <rddc-json src="examples/data_files/valid.json" pointer="/fhir_ndjson" title="The FHIR NDJSON file from How data is classified, as a sidecar entry"></rddc-json>
 
 <h2>File sets</h2>
@@ -99,8 +99,8 @@
 <rddc-json src="examples/deposit_fhir_omop.json" pointer="/distribution/1" title="An OMOP CDM instance, derived from the FHIR export in the same batch"></rddc-json>
 
 <h2>Subjects</h2>
-<p>The subject table lists every person in the batch, by the contributor's coded ID. It is how the RDDC checks a deposit against its participants table, and how a later withdrawal finds the right data.</p>
-<p>A subject's identity is the combination of three values, which must be unique within the table and mean the same person in every batch of the source:</p>
+<p>The subject table lists every person in the batch, by the contributor's coded ID. It supports participant validation and locates data for later withdrawals.</p>
+<p>Three values identify a subject. Their combination must be unique within the table and identify the same person in every batch of the source:</p>
 <ul>
 <li><code>subjectId</code>: the coded ID. Never a name, MRN or other direct identifier.</li>
 <li><code>idSystem</code>: where the ID comes from, such as <code>fhir_patient_id</code> (FHIR <code>Patient.id</code>) or <code>omop_person_source_value</code>.</li>
@@ -112,7 +112,7 @@
 <p>A file may list the subjects it contains in <code>subjectIds</code>; each must match a row of the subject table. The list is required for formats that hold one person per file: <code>FhirBundleFile</code>, <code>CcdaDocumentFile</code> and <code>ClinicalDocumentFile</code>. It is optional for multi-subject tables and NDJSON.</p>
 
 <h2>Sensitivity</h2>
-<p>The <code>sensitivity</code> block describes data that de-identification and routing need to check. Use terms, access tier and date policy come from the source register and cannot be set in a sidecar.</p>
+<p>The <code>sensitivity</code> block guides de-identification and routing checks. Use terms, access tier and date policy come from the source register and cannot be set in a sidecar.</p>
 <div class="table-wrap"><table>
 <thead><tr><th>Flag</th><th>Where</th><th>Per-file override</th><th>If not set</th></tr></thead>
 <tbody>
@@ -140,7 +140,7 @@
 <p>Use <code>wasDerivedFrom</code> to link a file to its input files in the same batch, or a file set to its input file sets. For example, an OMOP snapshot can point to the FHIR export it was built from. Synapse records the provenance of RDDC pipeline outputs.</p>
 
 <h3>Value origins</h3>
-<p><code>valueOrigins</code> records how a tool filled in a value: its JSON pointer, origin (<code>declared</code>, <code>detected</code> or <code>inferred</code>), method and confidence. A person must confirm inferred values with <code>"confirmed": true</code> before validation passes.</p>
+<p><code>valueOrigins</code> records how a tool populated a value: its JSON pointer, origin (<code>declared</code>, <code>detected</code> or <code>inferred</code>), method and confidence. A person must confirm inferred values with <code>"confirmed": true</code> before validation passes.</p>
 <rddc-json src="examples/deposit_fhir_omop.json" pointer="/distribution/8/valueOrigins" title="recordCount was detected by counting rows"></rddc-json>
 
 <h2>Record sets</h2>
@@ -148,7 +148,7 @@
 <rddc-json src="examples/deposit_fhir_omop.json" pointer="/recordSet/1" title="A join between two registry CSVs"></rddc-json>
 
 <h2 id="extensions-and-hints">Extensions and hints</h2>
-<p>The schema rejects unknown properties. Project details have two supported locations:</p>
+<p>The schema rejects unknown properties. Project-specific information belongs in extensions or processing hints:</p>
 <ul>
 <li><strong>Extensions</strong> (<code>additionalProperty</code>, on the sidecar or any file or file set) hold project-specific values. Keys have the form <code>ext:&lt;namespace&gt;:&lt;key&gt;</code>. Tools that rewrite sidecars preserve them.</li>
 <li><strong>Processing hints</strong> (<code>processingHints</code>, on data files) are informational notes for a pipeline, keyed <code>&lt;namespace&gt;:&lt;key&gt;</code>. Any value used for a pipeline decision must be a defined schema field.</li>
@@ -156,7 +156,7 @@
 <rddc-json src="site/recipes/registry_dictionary.json" pointer="/additionalProperty" title="An extension on the sidecar"></rddc-json>
 
 <h2>References between objects</h2>
-<p>Objects point to each other with <code>{"@id": "…"}</code>. Files are referenced by their <code>urn:uuid</code>; file sets, record sets and fields by their local IDs.</p>
+<p>Objects reference each other using <code>{"@id": "…"}</code>. Files are referenced by their <code>urn:uuid</code>; file sets, record sets and fields by their local IDs.</p>
 <div class="table-wrap"><table>
 <thead><tr><th>Property</th><th>On</th><th>Points to</th><th>Resolved</th></tr></thead>
 <tbody>

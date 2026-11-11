@@ -11,10 +11,10 @@
 <li>A batch ID not previously used for this source, such as <code>2026-11-reg01</code>.</li>
 </ul>
 
-<h2>Build it step by step</h2>
+<h2 id="build-it-step-by-step">Build the sidecar</h2>
 <ol class="steps">
 <li>
-<h3 id="step-lay-out">Lay out the batch directory</h3>
+<h3 id="step-lay-out">Arrange the batch files</h3>
 <p>Arrange the files as they will appear under the S3 batch prefix. Use paths relative to this directory in the sidecar.</p>
 <rddc-code lang="text" title="batch directory">2026-11-reg01/
 └── registry/
@@ -23,7 +23,7 @@
 </li>
 
 <li>
-<h3 id="step-identity">Start with the document identity</h3>
+<h3 id="step-identity">Set the document identity</h3>
 <p>Create <code>_sidecar.json</code> in the batch directory. Copy the <code>@context</code> object from the downloaded context file into the sidecar. Give the document a new UUID and list the two specifications it follows.</p>
 <rddc-code title="_sidecar.json (1 of 5)">{
   "@context": "__ELIDED_CONTEXT__",
@@ -52,7 +52,7 @@
 </li>
 
 <li>
-<h3 id="step-sensitivity">Declare sensitivity facts</h3>
+<h3 id="step-sensitivity">Set sensitivity flags</h3>
 <p>Set <code>directIdentifiersRemoved</code> to confirm that direct identifiers were removed before upload. Set <code>contains*</code> flags whose values are known; missing flags are treated as <code>true</code>.</p>
 <rddc-json src="site/recipes/minimal.json" keys="sensitivity" title="_sidecar.json (3 of 5)"></rddc-json>
 <p>This registry has visit dates, so <code>containsDates</code> is <code>true</code>. Dates are accepted and masked at release.</p>
@@ -60,7 +60,7 @@
 
 <li>
 <h3 id="step-subjects">List the subjects</h3>
-<p>Add one row per person in the batch. Each row uses a coded patient ID from the data. <code>idSystem</code> identifies the source of the ID; contributor-defined registry IDs use <code>contributor</code>.</p>
+<p>Add one row per person, using their coded patient ID from the data. <code>idSystem</code> identifies the source of the ID; contributor-defined registry IDs use <code>contributor</code>.</p>
 <rddc-json src="site/recipes/minimal.json" keys="subjects" title="_sidecar.json (4 of 5)"></rddc-json>
 </li>
 
@@ -81,16 +81,16 @@ md5sum registry/patients.csv            # optional</rddc-code>
 </li>
 
 <li>
-<h3 id="step-validate">Validate it</h3>
+<h3 id="step-validate">Validate the sidecar</h3>
 <p>Check the structure against the generated JSON Schema. Any JSON Schema validator works; for example:</p>
 <rddc-code lang="shell" title="structural check">pip install check-jsonschema
 check-jsonschema --schemafile rddc_sidecar.schema.json 2026-11-reg01/_sidecar.json</rddc-code>
-<p>JSON Schema checks types, required fields, allowed values and conditional rules. The RDDC validator also checks file contents against checksums, missing or unlisted files, duplicate IDs and broken references. See <a href="lifecycle.html#what-gets-checked">what gets checked</a>.</p>
+<p>JSON Schema checks types, required fields, allowed values and conditional rules. The RDDC validator also checks file contents against checksums, missing or unlisted files, duplicate IDs and broken references. See <a href="lifecycle.html#what-gets-checked">validation checks</a>.</p>
 </li>
 
 <li>
 <h3 id="step-upload">Upload, sidecar last</h3>
-<p>Upload the data files first, then the sidecar. The sidecar's arrival tells the RDDC the batch is complete and starts receipt.</p>
+<p>Upload the data files first, then the sidecar. Uploading the sidecar signals batch completion and starts receipt.</p>
 <rddc-code lang="shell" title="upload">PREFIX=s3://rddc-deposit-ta2/src-ta2-01/2026-11-reg01/
 aws s3 sync 2026-11-reg01/ "$PREFIX" --exclude _sidecar.json
 aws s3 cp 2026-11-reg01/_sidecar.json "$PREFIX"</rddc-code>
@@ -98,12 +98,12 @@ aws s3 cp 2026-11-reg01/_sidecar.json "$PREFIX"</rddc-code>
 </li>
 </ol>
 
-<h2>The finished sidecar</h2>
+<h2 id="the-finished-sidecar">Complete sidecar</h2>
 <rddc-json src="site/recipes/minimal.json" title="2026-11-reg01/_sidecar.json"></rddc-json>
 
-<h2>Where to go next</h2>
+<h2 id="where-to-go-next">Next steps</h2>
 <ul>
 <li>Group files into a collection and describe a data dictionary: <a href="recipes.html#registry-with-a-data-dictionary">registry recipe</a>.</li>
 <li>Send FHIR, OMOP or C-CDA data: <a href="examples.html">example sidecars</a> and <a href="recipes.html">recipes</a>.</li>
-<li>See what goes wrong most often: <a href="mistakes.html">common mistakes</a>.</li>
+<li><a href="mistakes.html">Review common mistakes</a>.</li>
 </ul>

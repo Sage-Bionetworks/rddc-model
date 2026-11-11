@@ -118,7 +118,7 @@ NAV = [
     ]),
     ("Data classes", [
         ("data-overview.html", "How data is classified"),
-        ("describing-files.html", "Describing a data file"),
+        ("describing-files.html", "Data file descriptions"),
         ("data-clinical.html", "Clinical data"),
         ("data-genomics.html", "Genomics"),
         ("data-imaging.html", "Imaging, audio and video"),
@@ -129,7 +129,7 @@ NAV = [
         ("data-vocabularies.html", "Data class vocabularies"),
     ]),
     ("Metadata sidecar", [
-        ("sidecar-overview.html", "What the sidecar is for"),
+        ("sidecar-overview.html", "Sidecar overview"),
         ("foundations.html", "Foundations"),
         ("croissant.html", "RDDC and Croissant"),
         ("concepts.html", "Core concepts"),
@@ -463,9 +463,9 @@ def expand_directives(text):
 # Schema reference
 # ---------------------------------------------------------------------------
 CLASS_GROUPS = [
-    ("The sidecar document", "The dataset and its main sections.",
+    ("Sidecar document", "The dataset and its main sections.",
      ["Sidecar", "Agent", "SensitivityDeclaration", "SubjectEntry"]),
-    ("Distribution: the common base", "Shared by every file and file set. The data file classes "
+    ("Shared distribution fields", "Shared by every file and file set. The data file classes "
      "built on FileObject have their own page, <a href='data-classes.html'>Data class reference</a>.",
      ["DistributionItem", "FileObject", "FileSensitivity", "BiometricFileSensitivity"]),
     ("File set classes", "Name one of these in a file set's additionalType. @type stays cr:FileSet.",
@@ -473,7 +473,7 @@ CLASS_GROUPS = [
       "CcdaDocumentSet", "TabularDataset", "DocumentSet", "FileCollection"]),
     ("Record sets", "Croissant's table structure, used for data dictionaries and joins.",
      ["RecordSet", "RecordSetField", "FieldSource", "Extract", "FieldReference"]),
-    ("Provenance and annotations", "Supporting objects used in several places.",
+    ("Provenance and annotations", "Shared supporting objects.",
      ["NodeRef", "ValueOrigin", "ExternalIdentifier", "Extension", "ProcessingHint"]),
     ("Source descriptor", "A separate plain-JSON document; not part of the sidecar.",
      ["SourceDescriptor"]),
@@ -564,6 +564,15 @@ def rule_text(rule):
     pre = condition_text(rule.preconditions) if rule.preconditions else ""
     post = condition_text(rule.postconditions) if rule.postconditions else ""
     post = post.replace(" is present", " is required")
+    choices = re.fullmatch(
+        r"(either|exactly one of) (<code>[^<]+</code>) is required or "
+        r"(<code>[^<]+</code>) is required", post)
+    if choices:
+        kind, first, second = choices.groups()
+        if kind == "exactly one of":
+            post = f"exactly one of {first} or {second} is required"
+        else:
+            post = f"{first} or {second} is required, or both"
     sentence = f"When {pre}, {post}." if pre else f"{post}."
     if rule.description:
         return f"<strong>{html.escape(rule.description)}</strong> <span class='muted'>{sentence}</span>"
@@ -632,9 +641,9 @@ def class_section(name, view=None):
     if cls.annotations.get("biometric"):
         meta.append("<span>Biometric: always counts as containing biometric identifiers, and so as identifying</span>")
     if cls.annotations.get("identifying"):
-        meta.append("<span>Identifying: can identify a person on its own, so it never counts as de-identified</span>")
+        meta.append("<span>Identifying: automatically treated as identifying by the model, even after direct identifiers are removed</span>")
     if name in DISPATCHED and name in DATA_CLASSES:
-        meta.append(f'<span>Name it as <code>additionalType: rddc:{name}</code></span>')
+        meta.append(f'<span><code>additionalType: rddc:{name}</code></span>')
     elif name in DISPATCHED:
         typ = "cr:FileSet" if "FileSet" in view.class_ancestors(name) else "cr:FileObject"
         meta.append(f'<span>Use as <code>"@type": "{typ}", "additionalType": "rddc:{name}"</code></span>')
@@ -700,25 +709,30 @@ def dispatch_table(root, structure=False):
 
 
 def reference_page():
+    # Keep published section URLs stable when their labels change.
+    group_ids = {
+        "Sidecar document": "the-sidecar-document",
+        "Shared distribution fields": "distribution-the-common-base",
+    }
     toc = "".join(
-        f"<li><a href='#{slug(g)}'>{g}</a></li>" for g, _, _ in CLASS_GROUPS
+        f"<li><a href='#{group_ids.get(g, slug(g))}'>{g}</a></li>" for g, _, _ in CLASS_GROUPS
     )
     body = [
         "<h1>Sidecar schema reference</h1>",
         f"<p class='lede'>Every class in schema version <strong>{VERSION}</strong>, generated from "
         "<code>schema/rddc_sidecar.yaml</code>. Property keys are coloured by vocabulary, and their full IRI "
-        "appears on hover. Inherited properties are included, so each class lists everything "
-        "it accepts. Unlisted properties are rejected.</p>",
+        "appears on hover. Each class lists all accepted properties, including inherited ones. "
+        "Unlisted properties are rejected.</p>",
         "<h2 id='file-classes'>File classes</h2>",
         "<p>The data file classes (<code>DataFile</code> and its subclasses) are on their own page, "
         "<a href='data-classes.html'>Data class reference</a>, generated from <code>schema/data.yaml</code>. "
         "<a href='data-overview.html'>How data is classified</a> explains them.</p>",
-        "<h2 id='file-set-classes-at-a-glance'>File set classes at a glance</h2>",
+        "<h2 id='file-set-classes-at-a-glance'>File set summary</h2>",
         "<p>Every file set needs <code>@id</code>, <code>name</code>, and <code>hasPart</code> or <code>includes</code> (or both).</p>",
         dispatch_table("FileSet"),
     ]
     for group, blurb, classes in CLASS_GROUPS:
-        body.append(f"<h2 id='{slug(group)}'>{group}</h2><p>{blurb}</p>")
+        body.append(f"<h2 id='{group_ids.get(group, slug(group))}'>{group}</h2><p>{blurb}</p>")
         body.extend(class_section(c) for c in classes)
     body.append(VALIDATOR_RULES)
     return "\n".join(body)
@@ -762,7 +776,7 @@ def data_classes_page():
         "<h1>Data class reference</h1>",
         f"<p class='lede'>Every class a data file can name in its <code>additionalType</code>, generated from "
         f"<code>schema/data.yaml</code> (module <code>{esc(schema.name)}</code>, version {esc(schema.version)}). "
-        "Inherited properties are included, so each class lists everything it accepts.</p>",
+        "Each class lists all accepted properties, including inherited ones.</p>",
         description_html(schema.description),
         "<h2 id='hierarchy'>Hierarchy</h2>",
         f"<p>Data files extend {base}. Badges mark abstract classes and each class's structure and modality.</p>",
@@ -972,7 +986,7 @@ def gen_example(attrs):
         raise SystemExit(f"{_current_page[0]}: no example {key!r} in {DATA_EXAMPLES_SRC}")
     cls = DATA_EXAMPLES[key]["additionalType"]
     EXAMPLED_CLASSES.add(cls.split(":", 1)[1])
-    title = attrs.get("title") or f"A valid {cls.split(':', 1)[1]}"
+    title = attrs.get("title") or f"{cls.split(':', 1)[1]} example"
     return code_block(highlight_plain_yaml(example_yaml(DATA_EXAMPLES[key])), html.escape(title), lang="yaml")
 
 
@@ -989,12 +1003,12 @@ def gen_classification(attrs):
             f"<tr><td><a href='{class_href(c)}'><code>{c}</code></a></td>"
             f"<td>{cell(annotation(c, 'modality'))}</td><td>{esc(annotation(c, 'structure'))}</td>"
             f"<td>{esc(annotation(c, 'rai:dataCollectionType')) or '<span class=muted>not fixed</span>'}</td>"
-            f"<td>{sensitivity_badges(c) or '<span class=muted>no</span>'}</td></tr>"
+            f"<td>{sensitivity_badges(c) or 'Depends on content'}</td></tr>"
             for c in CONCRETE_DATA if FAMILY_CLASSES.get(c) == page
         )
     return (
         "<div class='table-wrap'><table><thead><tr><th>Class</th><th>Modality</th><th>Structure</th>"
-        "<th>Collection type</th><th>Identifies a person</th></tr></thead><tbody>"
+        "<th>Collection type</th><th>Identifying classification</th></tr></thead><tbody>"
         + "".join(rows) + "</tbody></table></div>"
     )
 

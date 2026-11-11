@@ -3,11 +3,11 @@
 
 <rddc-family names="FhirBundleFile,FhirResourceFile,FhirNdjsonFile,OmopTableFile,CcdaDocumentFile,TabularFile,ConsentFile,ClinicalDocumentFile"></rddc-family>
 
-<h2>Data in a clinical standard</h2>
+<h2 id="data-in-a-clinical-standard">Clinical data standards</h2>
 <p>FHIR, OMOP CDM and C-CDA files are delivered together as a collection: a FHIR export or set of Bundles, an OMOP CDM instance, or a set of C-CDA documents. The collection declares the standard and its version, such as FHIR R4 with US Core 6.1, so the files do not repeat it. OMOP tables are the exception: each names its CDM version, since the table names depend on it.</p>
 
 <h3>FHIR</h3>
-<p>A FHIR file is one of three shapes. A Bulk Data export is NDJSON with one resource type per file, a <code>FhirNdjsonFile</code>. A Bundle, such as one patient's record from Synthea, is a <code>FhirBundleFile</code>; it lists its subjects, since a Bundle usually holds one person. A single resource that is not a Bundle is a <code>FhirResourceFile</code>. The resource type must exist in the FHIR version of the collection.</p>
+<p>FHIR files have three forms. A Bulk Data export is NDJSON with one resource type per file, a <code>FhirNdjsonFile</code>. A Bundle, such as one patient's record from Synthea, is a <code>FhirBundleFile</code>; it lists its subjects, since a Bundle usually holds one person. A single resource that is not a Bundle is a <code>FhirResourceFile</code>. The resource type must exist in the FHIR version of the collection.</p>
 <div class="tabs">
   <div role="tablist" aria-label="FHIR file examples">
     <button role="tab" id="t-f-1" aria-controls="p-f-1" aria-selected="true">NDJSON</button>
@@ -21,7 +21,7 @@
 <p>Device data already in FHIR form, such as Observations from a wearable, stays a FHIR file. Its collection declares the HL7 Personal Health Device IG alongside FHIR.</p>
 
 <h3>OMOP CDM</h3>
-<p>Each OMOP table is its own <code>OmopTableFile</code>, naming the table in <code>cdmTable</code> and the CDM version in <code>omopCdmVersion</code>. The table must exist in that version. OMOP foreign keys are defined by the CDM, so they are not described again.</p>
+<p>Each OMOP table uses an <code>OmopTableFile</code> with <code>cdmTable</code> and <code>omopCdmVersion</code>. The table must exist in that version. The CDM already defines OMOP foreign keys.</p>
 <rddc-example key="omop_table"></rddc-example>
 
 <h3>C-CDA</h3>
@@ -33,7 +33,7 @@
 <rddc-example key="tabular_jsonlines" title="A patient-reported outcome table in JSON Lines"></rddc-example>
 
 <h2>Consent</h2>
-<p>A <code>ConsentFile</code> holds consent elements: which uses each listed subject agreed to. The platform applies them to access decisions rather than processing them as clinical data.</p>
+<p>A <code>ConsentFile</code> records permitted data uses for each listed subject. The platform applies them to access decisions rather than processing them as clinical data.</p>
 <rddc-example key="consent"></rddc-example>
 
 <h2>Clinical documents</h2>
@@ -41,10 +41,11 @@
 <rddc-example key="scanned_report"></rddc-example>
 
 <h2>Sensitivity</h2>
+<p>Clinical classes, including FHIR, are not automatically classified as identifying. Their files may still contain identifying information and require de-identification checks.</p>
 <ul>
 <li>Clinical data usually contains dates more precise than a year and may contain postal codes. Both are accepted at deposit and masked at release. Declare them with <code>containsDates</code> and <code>containsZipCodes</code>, or set them to <code>false</code> when the data has none.</li>
 <li>Free text, in notes or in free-text fields of a structured table, needs a de-identification scan. Declare it with <code>containsFreeText</code> on the files that have it.</li>
 <li>Direct identifiers such as names and medical record numbers must be removed before upload.</li>
 </ul>
-<p>See <a href="data-standards.html#sensitivity-flags">the sensitivity flags</a> for what each covers.</p>
+<p>See <a href="data-standards.html#sensitivity-flags">the sensitivity flag definitions</a>.</p>
 
