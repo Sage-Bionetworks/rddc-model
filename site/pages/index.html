@@ -1,7 +1,7 @@
 <div class="hero">
   <div>
     <h1>The RDDC data model<span>The kinds of data the Rare Disease Data Commons accepts, how each is described, and the metadata sidecar that lists a deposit.</span></h1>
-    <p class="lede">Every file sent to the Rare Disease Data Commons (RDDC) belongs to a <strong>data class</strong>, such as a FHIR export, an OMOP table, a sequencing read file or a facial photograph. The class says what the file holds, which fields describe it, and what that means for processing and de-identification.</p>
+    <p class="lede">Every file sent to the Rare Disease Data Commons (RDDC) belongs to a <strong>data class</strong>, such as a FHIR export, an OMOP table, a sequencing read file or a facial photograph. The class defines the file's content, metadata fields, and processing and de-identification requirements.</p>
     <p>Each delivery of files comes with a <strong>sidecar</strong>, <code>_sidecar.json</code>, which lists every file with its class, checksum and subjects. The sidecar is a <a href="foundations.html#croissant">Croissant</a> dataset with extra fields for clinical data.</p>
     <div class="actions">
       <a class="button primary" href="data-overview.html">What data can I deposit?</a>
@@ -10,8 +10,8 @@
     </div>
   </div>
   <div class="hero-code">
-    <rddc-example key="alignment" title="A data file of class AlignmentFile: a whole-genome alignment"></rddc-example>
-    <p class="hint">Every file names its data class in <code>additionalType</code>. The class decides which other fields it needs: here the assay, the sequencing platform and the reference genome.</p>
+    <rddc-example key="alignment" title="Whole-genome alignment: AlignmentFile"></rddc-example>
+    <p class="hint"><code>additionalType</code> specifies the file's data class. The class decides which other fields it needs: here the assay, the sequencing platform and the reference genome.</p>
   </div>
 </div>
 

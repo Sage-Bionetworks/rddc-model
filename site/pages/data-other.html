@@ -1,17 +1,17 @@
 <h1>Documentation and other files</h1>
-<p class="lede">Files that describe other files, such as data dictionaries and READMEs, and the catch-all class for data no other class fits.</p>
+<p class="lede">Data dictionaries, READMEs and other documentation, plus guidance on GenericFile.</p>
 
 <rddc-family names="DocumentationFile,GenericFile"></rddc-family>
 
 <h2>Documentation</h2>
-<p>A <code>DocumentationFile</code> documents other files: a data dictionary, an acquisition table for images, a codebook or a README. Its modality is <code>metadata</code>, so it is kept with the data rather than processed as data. Its content may be structured (a dictionary in CSV) or not (a README), so its structure is <code>mixed</code>.</p>
-<p>When it documents particular files, <code>about</code> points to them. A README for a whole delivery leaves <code>about</code> out.</p>
+<p>A <code>DocumentationFile</code> documents other files: a data dictionary, an acquisition table for images, a codebook or a README. Its modality is <code>metadata</code>, so it is kept with the data rather than processed as data. Its <code>mixed</code> structure permits structured content, such as CSV dictionaries, and unstructured content, such as READMEs.</p>
+<p>Use <code>about</code> to reference the documented files. Omit <code>about</code> for a README covering the whole delivery.</p>
 <div class="pair">
   <div><rddc-example key="documentation" title="A data dictionary for one table"></rddc-example></div>
   <div><rddc-example key="readme" title="A README for a whole delivery"></rddc-example></div>
 </div>
 
 <h2>Other data</h2>
-<p>A <code>GenericFile</code> is any data file no other class fits. Its modality is <code>other</code>: a curator decides how it is processed. A kind of data the RDDC receives regularly gets its own class in a later schema version, so if you use <code>GenericFile</code> often for the same kind of file, ask for a class.</p>
+<p><code>GenericFile</code> is strongly discouraged. A dedicated data class is required; using <code>GenericFile</code> triggers lengthy manual review. Its modality is <code>other</code>.</p>
 <rddc-example key="generic"></rddc-example>
 <p>A generic file is still checked like any other: its sensitivity flags apply, and unknown content is assumed to contain dates, postal codes, free text and biometric identifiers unless declared otherwise.</p>

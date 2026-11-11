@@ -1,14 +1,14 @@
-<h1>Describing a data file</h1>
-<p class="lede">The fields every data file carries, how to give its media type and compression, and the class-specific fields such as the assay that produced it.</p>
+<h1>Data file descriptions</h1>
+<p class="lede">Shared and class-specific fields, including media type, compression and assay.</p>
 
-<h2>Fields every data file has</h2>
-<p>Every data file needs <code>additionalType</code> (its class), <code>name</code>, <code>contentUrl</code>, <code>contentSize</code>, <code>encodingFormat</code> and <code>sha256</code>. The class adds its own required fields, listed on each family page. These are the fields every class shares:</p>
+<h2 id="fields-every-data-file-has">Data file fields</h2>
+<p>Every data file needs <code>additionalType</code> (its class), <code>name</code>, <code>contentUrl</code>, <code>contentSize</code>, <code>encodingFormat</code> and <code>sha256</code>. Each family page lists its class-specific required fields. Shared fields:</p>
 <rddc-props class="DataFile" skip="id,type,valueOrigins,additionalProperty"></rddc-props>
-<rddc-example key="tabular" title="The smallest data file: a registry table, which adds no required fields"></rddc-example>
-<p><code>contentUrl</code> is the file's path within the upload, with no leading slash, no empty segments and no <code>..</code>. <code>name</code> is, by convention, the same path. <code>sha256</code> is the file's checksum, so the platform can check it arrived intact.</p>
+<rddc-example key="tabular" title="Minimal registry table description"></rddc-example>
+<p><code>contentUrl</code> is the file's path within the upload, with no leading slash, no empty segments and no <code>..</code>. <code>name</code> is, by convention, the same path. <code>sha256</code> verifies file integrity after upload.</p>
 
 <h2>Media type and compression</h2>
-<p><code>encodingFormat</code> is the IANA media type of the content <em>after</em> decompression. If the bytes are compressed, say so in <code>compression</code>. A gzipped NDJSON file is <code>encodingFormat: application/fhir+ndjson</code> with <code>compression: gzip</code>, never <code>application/gzip</code>.</p>
+<p><code>encodingFormat</code> is the IANA media type of the content <em>after</em> decompression. Specify file compression in <code>compression</code>. A gzipped NDJSON file is <code>encodingFormat: application/fhir+ndjson</code> with <code>compression: gzip</code>, never <code>application/gzip</code>.</p>
 <p>Each class lists the media types it accepts. Some formats have no registered media type. For those the schema uses a fixed convention rather than an invented <code>x-</code> type, and the class says which format the file is:</p>
 <ul>
 <li><strong>Genomics formats</strong> (FASTQ, SAM, VCF, BAM, CRAM, BCF) use <code>text/plain</code> for text and <code>application/octet-stream</code> for binary. BAM, CRAM and BCF compress internally, so they leave <code>compression</code> unset; a <code>.fastq.gz</code> or <code>.vcf.gz</code> sets it to <code>gzip</code>. Indexes are always binary.</li>
@@ -17,17 +17,17 @@
 </ul>
 <rddc-example key="variants" title="A gzipped VCF: text/plain content, gzip compression"></rddc-example>
 
-<h2>How the data was produced: <code>measurementTechnique</code></h2>
-<p>Genomics, imaging and sensor files state the assay or technique that produced them in <code>measurementTechnique</code>, schema.org's term. Analysis depends on it, so it is required. Each family has its own list of values, and each value maps to a term in an ontology such as OBI, NCIT or SNOMED CT (see <a href="data-standards.html">Standards and mappings</a>). Sensor files give a list, since one recording can combine several techniques.</p>
+<h2 id="how-the-data-was-produced-measurementtechnique">Measurement technique</h2>
+<p>Genomics, imaging and sensor files require schema.org's <code>measurementTechnique</code> to identify the assay or technique used for analysis. Each family has its own list of values, and each value maps to a term in an ontology such as OBI, NCIT or SNOMED CT (see <a href="data-standards.html">Standards and mappings</a>). Sensor files give a list, since one recording can combine several techniques.</p>
 <rddc-technique></rddc-technique>
 
 <h2>Class-specific fields</h2>
-<p>These fields are defined for data files only. Each class uses some of them; the family pages show which are required.</p>
+<p>These fields apply only to data files. Each family page lists the applicable and required fields.</p>
 <rddc-data-slots></rddc-data-slots>
 
 <h2>Subjects, sensitivity and provenance</h2>
 <ul>
 <li><code>subjectIds</code> lists the people whose data the file contains, by the contributor's coded IDs, never names or record numbers. It is required for classes that hold one person per file, such as FHIR Bundles, C-CDA documents, clinical documents and facial images, and optional for tables of many people.</li>
-<li><code>sensitivity</code> declares what de-identification has to look for in the file: dates, postal codes, free text and biometric identifiers. A flag left unset is assumed <code>true</code>, unless the deposit gives a default (part 2). A file of a biometric class cannot set <code>containsBiometricIdentifiers</code>. See <a href="data-standards.html#sensitivity-flags">the sensitivity flags</a>.</li>
-<li><code>wasDerivedFrom</code> points to the files a file was made from, such as the alignment used to call variants.</li>
+<li><code>sensitivity</code> identifies content requiring de-identification checks: dates, postal codes, free text and biometric identifiers. A flag left unset is assumed <code>true</code>, unless the deposit gives a default (part 2). A file of a biometric class cannot set <code>containsBiometricIdentifiers</code>. See <a href="data-standards.html#sensitivity-flags">the sensitivity flags</a>.</li>
+<li><code>wasDerivedFrom</code> references the file's inputs, such as the alignment used to call variants.</li>
 </ul>
