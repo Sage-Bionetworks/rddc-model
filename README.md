@@ -33,26 +33,5 @@ the import script only to reproduce the original conversion.
   such as `IntakeFormFile`) that carry a category. It is filled only where the
   category and the class match one to one.
 - Prefix names and URIs (`SNOMEDCT`, `LOINC`, `ORPHA`, `CHEMBL.COMPOUND`, `sc`, `dct`, ...)
-  match `header.yaml` and the other modules, so a CURIE expands to the same URI
-  everywhere. Keep them in step when you change either file.
+  match `header.yaml` and the other modules.
 
-### Conventions
-
-These follow the other RDDC modules and are enforced by `.linkml-lint.yaml`:
-
-- Field names are lowerCamelCase, such as `bioregistryPrefix` and `alignedCategories`.
-- Record IDs and enum values are UPPER_SNAKE_CASE keys, such as `SNOMEDCT` and `PATIENT_HISTORY`.
-- The license is CC0 and the default prefix is `rddc` (`https://w3id.org/rddc/vocab/`).
-
-### Check
-
-```bash
-pip install "linkml==1.11.1"
-linkml validate schema/ontology.yaml                       # schema against the LinkML metamodel
-linkml-lint --config .linkml-lint.yaml schema/ontology.yaml
-python scripts/merge_data.py src/data > /tmp/catalog.yaml
-linkml validate -s schema/ontology.yaml -C OntologyCatalog /tmp/catalog.yaml   # the data
-```
-
-CI runs the first two checks on every push and pull request. It does not yet
-validate the data files.
