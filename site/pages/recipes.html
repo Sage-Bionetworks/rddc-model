@@ -1,5 +1,5 @@
 <h1>Recipes by data type</h1>
-<p class="lede">These examples cover each supported data type. Their IDs, paths, sizes and checksums are placeholders for actual batch values. The site build validates every download against JSON Schema. Completed sidecars also need validation against the batch files before upload.</p>
+<p class="lede">Complete sidecars for each supported data type. The <a href="data-overview.html">data class pages</a> explain each class and show a valid file object; these recipes show the files in a whole sidecar, with their file sets, subjects and sensitivity. Their IDs, paths, sizes and checksums are placeholders for actual batch values. The site build validates every download against JSON Schema. Completed sidecars also need validation against the batch files before upload.</p>
 
 <div class="note"><strong>Complete downloads</strong>
 <p>To keep the page readable, most snippets show only the parts that differ between recipes. The downloads are complete sidecars, including the embedded context and the standard header from <a href="tutorial.html">Sidecar tutorial</a>.</p></div>
@@ -7,15 +7,15 @@
 <div class="table-wrap"><table>
 <thead><tr><th>Data</th><th>File class</th><th>File set class</th><th>Recipe</th></tr></thead>
 <tbody>
-<tr><td>FHIR Bulk Data (NDJSON)</td><td><code>FhirNdjsonFile</code></td><td><code>FhirBulkExport</code></td><td><a href="examples.html#the-fhir-bulk-export">Example sidecar</a></td></tr>
-<tr><td>FHIR Bundles</td><td><code>FhirBundleFile</code></td><td><code>FhirBundleCollection</code></td><td><a href="#fhir-bundles-from-synthetic-data">Below</a></td></tr>
-<tr><td>OMOP CDM tables</td><td><code>OmopTableFile</code></td><td><code>OmopCdmInstance</code></td><td><a href="examples.html#the-omop-snapshot">Example sidecar</a></td></tr>
-<tr><td>C-CDA documents</td><td><code>CcdaDocumentFile</code></td><td><code>CcdaDocumentSet</code></td><td><a href="examples.html#c-cda-document-set">Example sidecar</a></td></tr>
-<tr><td>Registry, PRO, claims tables</td><td><code>TabularFile</code>, <code>DocumentationFile</code></td><td><code>TabularDataset</code></td><td><a href="#registry-with-a-data-dictionary">Below</a></td></tr>
-<tr><td>Clinical notes and reports</td><td><code>ClinicalDocumentFile</code></td><td><code>DocumentSet</code></td><td><a href="#clinical-notes">Below</a></td></tr>
-<tr><td>Sequencing, alignments, variants</td><td><code>SequenceReadsFile</code>, <code>AlignmentFile</code>, <code>IndexFile</code>, <code>VariantFile</code></td><td><code>FileCollection</code></td><td><a href="#genomics">Below</a></td></tr>
-<tr><td>Images, video, audio</td><td><code>ImagingFile</code>, <code>FacialImagingFile</code>, <code>VideoFile</code>, <code>AudioFile</code></td><td><code>FileCollection</code></td><td><a href="#images-and-video">Below</a></td></tr>
-<tr><td>Consent</td><td><code>ConsentFile</code></td><td><span class="muted">optional</span></td><td><a href="#consent">Below</a></td></tr>
+<tr><td><a href="data-clinical.html#fhir">FHIR Bulk Data (NDJSON)</a></td><td><code>FhirNdjsonFile</code></td><td><code>FhirBulkExport</code></td><td><a href="examples.html#the-fhir-bulk-export">Example sidecar</a></td></tr>
+<tr><td><a href="data-clinical.html#fhir">FHIR Bundles</a></td><td><code>FhirBundleFile</code></td><td><code>FhirBundleCollection</code></td><td><a href="#fhir-bundles-from-synthetic-data">Below</a></td></tr>
+<tr><td><a href="data-clinical.html#omop-cdm">OMOP CDM tables</a></td><td><code>OmopTableFile</code></td><td><code>OmopCdmInstance</code></td><td><a href="examples.html#the-omop-snapshot">Example sidecar</a></td></tr>
+<tr><td><a href="data-clinical.html#c-cda">C-CDA documents</a></td><td><code>CcdaDocumentFile</code></td><td><code>CcdaDocumentSet</code></td><td><a href="examples.html#c-cda-document-set">Example sidecar</a></td></tr>
+<tr><td><a href="data-clinical.html#other-clinical-tables">Registry, PRO, claims tables</a></td><td><code>TabularFile</code>, <code>DocumentationFile</code></td><td><code>TabularDataset</code></td><td><a href="#registry-with-a-data-dictionary">Below</a></td></tr>
+<tr><td><a href="data-clinical.html#clinical-documents">Clinical notes and reports</a></td><td><code>ClinicalDocumentFile</code></td><td><code>DocumentSet</code></td><td><a href="#clinical-notes">Below</a></td></tr>
+<tr><td><a href="data-genomics.html">Sequencing, alignments, variants</a></td><td><code>SequenceReadsFile</code>, <code>AlignmentFile</code>, <code>IndexFile</code>, <code>VariantFile</code></td><td><code>FileCollection</code></td><td><a href="#genomics">Below</a></td></tr>
+<tr><td><a href="data-imaging.html">Images, video, audio</a></td><td><code>ImagingFile</code>, <code>FacialImagingFile</code>, <code>VideoFile</code>, <code>AudioFile</code></td><td><code>FileCollection</code></td><td><a href="#images-and-video">Below</a></td></tr>
+<tr><td><a href="data-clinical.html#consent">Consent</a></td><td><code>ConsentFile</code></td><td><span class="muted">optional</span></td><td><a href="#consent">Below</a></td></tr>
 <tr><td>Restriction or withdrawal</td><td><span class="muted">no files</span></td><td><span class="muted">none</span></td><td><a href="#restriction">Below</a></td></tr>
 </tbody></table></div>
 
@@ -48,20 +48,18 @@
 </div>
 
 <h2>Clinical notes</h2>
-<p>Each clinical note goes through text de-identification before lane 4. A <code>ClinicalDocumentFile</code> must list its subject. This batch sets <code>containsFreeText: true</code> to request the scan. The scanned PDF also has an informational processing hint; any value used for pipeline decisions must be a defined schema field.</p>
+<p>Each clinical note goes through text de-identification before further processing. A <code>ClinicalDocumentFile</code> must list its subject. This batch sets <code>containsFreeText: true</code> to request the scan. The scanned PDF also has an informational processing hint; any value used for pipeline decisions must be a defined schema field.</p>
 <rddc-json src="site/recipes/clinical_notes.json" keys="sensitivity,distribution" title="clinical_notes.json (excerpt)"></rddc-json>
 
 <h2>Genomics</h2>
 <p>Whole-genome sequencing for one proband: paired FASTQ reads, a CRAM alignment with its index, and a VCF.</p>
 <ul>
-<li>Every genomics file states its assay in <code>measurementTechnique</code>, here <code>wgs</code>, from a <a href="vocabularies.html#GenomicsAssayEnum">fixed list</a> mapped to OBI assay terms. Alignments and variants also require <code>referenceGenome</code>.</li>
-<li>Every genomics file also states its sequencing technology in <code>sequencingPlatform</code>, here <code>illumina</code>, from a <a href="vocabularies.html#SequencingPlatformEnum">fixed list</a> based on the INSDC platform types. It tells short reads from long reads (<code>pacbio_smrt</code>, <code>oxford_nanopore</code>), which need different processing. The instrument model is optional and goes in <code>platform</code>, here <code>Illumina NovaSeq X</code>.</li>
-<li>Read pairs point to each other with <code>pairedWith</code>; the index points to its alignment with <code>indexOf</code>.</li>
-<li>Gzipped FASTQ and VCF set <code>compression: gzip</code>.</li>
+<li>Every genomics file states its <a href="data-genomics.html#assay-and-platform">assay and sequencing platform</a>, here <code>wgs</code> on <code>illumina</code>, and the instrument model in <code>platform</code>. Alignments and variants also give <code>referenceGenome</code>.</li>
+<li>Read pairs point to each other with <code>pairedWith</code>; the index points to its alignment with <code>indexOf</code>. Both must resolve to files in the same sidecar.</li>
+<li>The files are grouped in a <code>FileCollection</code> file set, and every file lists the proband in <code>subjectIds</code>.</li>
 </ul>
 <rddc-json src="site/recipes/genomics.json" keys="distribution" title="genomics.json (distribution)"></rddc-json>
-<div class="note"><strong>Media types for genomics files</strong>
-<p>FASTQ, BAM, CRAM, VCF and their indexes have no registered IANA media types. Genomics files use <code>text/plain</code> for the text formats and <code>application/octet-stream</code> for the binary ones, and the class says which format it is. BAM, CRAM and BCF compress internally, so they leave <code>compression</code> unset.</p></div>
+<p>The <a href="data-genomics.html#media-types">genomics media types</a> are <code>text/plain</code> and <code>application/octet-stream</code>, since these formats have none registered.</p>
 
 <h2>Images and video</h2>
 <p>Facial photographs and gait videos contain biometric identifiers. Here, the acquisition table has none, so the batch sets <code>containsBiometricIdentifiers: false</code>. The video overrides it to <code>true</code>. Files with biometric identifiers stay in the trusted research environment.</p>

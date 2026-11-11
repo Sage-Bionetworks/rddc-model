@@ -1,0 +1,26 @@
+<h1>Standards and mappings</h1>
+<p class="lede">The data classes, their values and the sensitivity flags point to terms in published vocabularies and regulations, so that other systems can read RDDC data without an RDDC-specific mapping.</p>
+
+<h2>Why map at all</h2>
+<p>An RDDC class name such as <code>rddc:SequenceReadsFile</code>, or a value such as <code>wgs</code>, means something only to RDDC tools. Each mapping links it to a term that a repository, a catalogue or an analysis tool already knows. Mappings are documentation and metadata for consumers: a sidecar never contains them, and validation does not depend on them.</p>
+<p>The model distinguishes how close a mapping is. A value's <strong>meaning</strong> is a term that means exactly the same thing. Where no term matches exactly, a <strong>close</strong> mapping is a term that means nearly the same thing, and a <strong>broader</strong> mapping is a term that covers more. A value with neither has no suitable term, such as targeted gene panel sequencing, which OBI does not define.</p>
+
+<h2>The vocabularies</h2>
+<dl class="glossary">
+<dt>EDAM</dt><dd>An ontology of data types and formats in bioinformatics (EDAM 1.25). Data classes map to EDAM <code>data_</code> terms, such as sequence reads, sequence alignment and variant calls, as close or broader mappings. Classes with no fitting EDAM data term have none.</dd>
+<dt>OBI</dt><dd>The Ontology for Biomedical Investigations (release 2026-07-27). Its assay terms are the meanings of the genomics assays, and of the imaging and sensing techniques OBI defines.</dd>
+<dt>NCIT</dt><dd>The NCI Thesaurus (26.02d). Used for imaging and sensing techniques OBI has no term for, such as X-ray radiography, ultrasound and accelerometry.</dd>
+<dt>SNOMED CT</dt><dd>The clinical terminology. Used where neither OBI nor NCIT has a term, such as clinical photography and continuous glucose monitoring.</dd>
+<dt>W3C DPV</dt><dd>The Data Privacy Vocabulary's personal data extension (<code>pd:</code>, DPV 2.3). The sensitivity flags map to its categories of personal data, such as <code>pd:PostalCode</code> and <code>pd:Biometric</code>, and genomic data is <code>pd:Genetic</code>.</dd>
+<dt>Croissant RAI</dt><dd>Croissant's Responsible AI extension. Its <code>rai:dataCollectionType</code> is the collection type annotation on data classes, so a release can copy it into the dataset's Croissant metadata.</dd>
+<dt>schema.org and Croissant</dt><dd>Data file fields reuse their terms where one exists: <code>measurementTechnique</code> is schema.org's, and <code>samplingRate</code> is Croissant's. Their colour in code samples shows which vocabulary a key comes from.</dd>
+</dl>
+
+<h2>Terms used</h2>
+<p>Every external term the model maps to, generated from the schema. Select a term to open its definition.</p>
+<rddc-terms></rddc-terms>
+
+<h2 id="sensitivity-flags">Sensitivity flags and HIPAA Safe Harbor</h2>
+<p>The sensitivity flags follow the HIPAA Safe Harbor method of de-identification (45 CFR 164.514(b)(2)). Safe Harbor lists 18 kinds of identifier, (A) to (R). A batch confirms with <code>directIdentifiersRemoved</code> that the ones the flags do not cover were removed before upload. The flags declare the rest, which the RDDC accepts at deposit and handles itself: dates, postal codes and biometric identifiers. Free text is not an identifier itself, but can contain any of them.</p>
+<rddc-flags></rddc-flags>
+<p>How the batch and file values combine is described under <a href="concepts.html#sensitivity">Sensitivity</a> in the sidecar concepts. Two kinds of data are identifying whatever the flags say: see <a href="data-overview.html#files-that-identify-a-person">Files that identify a person</a>.</p>

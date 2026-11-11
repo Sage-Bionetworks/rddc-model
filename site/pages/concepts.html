@@ -56,50 +56,13 @@
 <rddc-json src="examples/withdraw.json" keys="interaction,noticeRef,subjects,distribution" title="examples/withdraw.json (excerpt)"></rddc-json>
 
 <h2>Files</h2>
-<h3>File identity</h3>
-<p>Every file's <code>@id</code> is a UUID URN such as <code>urn:uuid:0000000a-0000-4000-8000-00000000000a</code>. It identifies one file of the source, not one upload:</p>
+<p>Every entry in <code>distribution</code> with <code>"@type": "cr:FileObject"</code> is one data file of the batch. How a file is described does not depend on the sidecar around it, so it has its own section:</p>
 <ul>
-<li>It stays the same when the platform moves or re-registers the object.</li>
-<li>Changed content is a new file with a new <code>@id</code>.</li>
-<li>Identical content under two paths is two files with two <code>@id</code>s.</li>
-<li>It is unique within the sidecar and never reused for a different file.</li>
+<li><a href="data-overview.html">How data is classified</a>: the data class in <code>additionalType</code>, and the modality, structure and sensitivity facts it carries.</li>
+<li><a href="describing-files.html">Describing a data file</a>: file identity, media type and compression, <code>measurementTechnique</code> and the other class fields.</li>
+<li>The family pages, from <a href="data-clinical.html">Clinical data</a> to <a href="data-other.html">Documentation and other files</a>, with a valid example of every class.</li>
 </ul>
-<p>Use a lowercase UUID. The RDDC tool creates UUIDv5 values from the source, batch, path and checksum. It can reuse IDs from a previous sidecar for unchanged files. Other tools may generate IDs differently.</p>
-
-<h3>The file class: <code>additionalType</code></h3>
-<p>Every file has <code>"@type": "cr:FileObject"</code>. Its <code>additionalType</code> names one RDDC class, which fixes the allowed <code>encodingFormat</code> and adds required fields. The classes for clinical data:</p>
-<div class="table-wrap"><table>
-<thead><tr><th>File type</th><th><code>additionalType</code></th><th>Adds</th></tr></thead>
-<tbody>
-<tr><td>FHIR Bulk Data NDJSON, one resource type per file</td><td><code>rddc:FhirNdjsonFile</code></td><td><code>resourceType</code></td></tr>
-<tr><td>A FHIR Bundle (one patient, or a collection)</td><td><code>rddc:FhirBundleFile</code></td><td><code>bundleType</code>, <code>subjectIds</code></td></tr>
-<tr><td>One FHIR resource that is not a Bundle</td><td><code>rddc:FhirResourceFile</code></td><td><code>resourceType</code></td></tr>
-<tr><td>One OMOP CDM table</td><td><code>rddc:OmopTableFile</code></td><td><code>cdmTable</code></td></tr>
-<tr><td>A C-CDA XML document</td><td><code>rddc:CcdaDocumentFile</code></td><td><code>subjectIds</code></td></tr>
-<tr><td>Registry, PRO, claims or mortality table</td><td><code>rddc:TabularFile</code></td><td><span class="muted">none</span></td></tr>
-<tr><td>Consent table</td><td><code>rddc:ConsentFile</code></td><td><code>subjectIds</code></td></tr>
-<tr><td>A clinical note or scanned report</td><td><code>rddc:ClinicalDocumentFile</code></td><td><code>subjectIds</code></td></tr>
-<tr><td>A data dictionary or README</td><td><code>rddc:DocumentationFile</code></td><td><code>about</code></td></tr>
-</tbody></table></div>
-<p>Genomics, imaging, media and catch-all classes are covered on the <a href="data-classes.html#at-a-glance">Data file classes</a> page.</p>
-
-<h3>Modality</h3>
-<p>A file's modality is the kind of data it carries, from a <a href="vocabularies.html#ModalityEnum">fixed list</a>. It is not written in the sidecar: each data file class has exactly one, so the class decides it. A consent table is a <code>ConsentFile</code>, not a <code>TabularFile</code>. Together with the file set's <code>conformsTo</code>, the modality decides which processing lane handles the file. A new kind of data gets a new class. The <a href="data-classes.html#at-a-glance">Data file classes</a> page lists each class's modality.</p>
-<div class="table-wrap"><table>
-<thead><tr><th>Modality</th><th>Lane</th></tr></thead>
-<tbody>
-<tr><td><code>clinical_omop</code></td><td>Lane 1: OMOP load</td></tr>
-<tr><td><code>clinical_fhir</code></td><td>Lane 2: FHIR</td></tr>
-<tr><td><code>clinical_ccda</code></td><td>Lane 3: C-CDA</td></tr>
-<tr><td><code>clinical_tabular</code></td><td>Lane 4: registry, PRO, claims and mortality tables</td></tr>
-<tr><td><code>clinical_text</code></td><td>De-identified first, then lane 4</td></tr>
-<tr><td><code>consent</code></td><td>GOVERN</td></tr>
-<tr><td><code>genomics</code>, <code>imaging</code>, <code>video</code>, <code>audio</code>, <code>wearable</code></td><td>Omics and imaging workflows</td></tr>
-<tr><td><code>metadata</code>, <code>other</code></td><td>Kept with the data; <code>other</code> is routed by a curator</td></tr>
-</tbody></table></div>
-
-<h3>Format and compression</h3>
-<p><code>encodingFormat</code> is the IANA media type of the content <em>after</em> decompression. If the bytes are compressed, say so in <code>compression</code>. A gzipped NDJSON file is <code>"encodingFormat": "application/fhir+ndjson"</code> with <code>"compression": "gzip"</code>, never <code>application/gzip</code>.</p>
+<p>The rest of this page covers what the sidecar adds around its files: file sets, the subject table, sensitivity defaults, provenance and references.</p>
 
 <h2>File sets</h2>
 <p>Files that form one collection, such as an OMOP instance or a FHIR bulk export, are grouped in a file set with <code>"@type": "cr:FileSet"</code> and an RDDC class in <code>additionalType</code>. A file set:</p>
