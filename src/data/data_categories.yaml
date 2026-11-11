@@ -1,0 +1,168 @@
+notes:
+- 'Open item from the Incoming Data sheet (comment on the Source? column): Add in TA1 v TA2'
+dataCategories:
+- id: PATIENT_PROFILE
+  name: Patient Profile
+  sourceLabel: Patient Profle
+  details: Name, Contacts, Address,...
+- id: PATIENT_HISTORY
+  name: Patient History
+  sourceLabel: Anamnesis/Patient History
+  details: 'Previous diagnosis, Phenotypes, Measurements, Prior testing, Family History, Non-genetic risk
+    factors, Development Delay Assessment, FHC questionnaire (Note: Not comprehensive; We just support
+    part of the Patient History (example: we don''t support medication history, allergies history)'
+  proposedStandards:
+  - HPO
+  - SNOMEDCT
+  - DOID
+  - LOINC
+  proposedStandardsText: Human Phenotypic Ontology (HPO), SNOMED CT, DOID, LOINC
+- id: ASSESSMENTS
+  name: Assessments
+  sourceLabel: Assessments
+  details: Developmental, Behavioral, Physical, Genetic Patient assessment. Physician can perform clinical
+    assessments on the patient.
+  proposedStandards:
+  - SNOMEDCT
+  - MAXO
+  proposedStandardsText: SONMED CT / Medical Action Ontology (MAxO)
+- id: EHR_DATA
+  name: EHR Data
+  sourceLabel: EHR Structured Data and Unstructured Data
+  details: Patient, Provider, Observations, Conditions, DocumentReferences, Media, Related_Person, DiagnosticReport,Organization
+  proposedStandards:
+  - FHIR
+  - OMOP
+  proposedStandardsText: (Fast Healthcare Interoperability Resources) HL7 FHIR, OMOP
+- id: ALLERGIES
+  name: Allergies
+  sourceLabel: Allergies
+  proposedStandards:
+  - SNOMEDCT
+  - HPO
+  - RXNORM
+  proposedStandardsText: SNOMED CT, HPO, RxNorm
+- id: SOCIAL_HABITS_RISK_FACTORS
+  name: Social Habits / Risk Factors
+  sourceLabel: Social habits / Risk Factors
+  details: Social habits and risk factors reported on FHC assessment, Risk-factors reported by the physician
+    on F2G
+  proposedStandards:
+  - PJO
+  proposedStandardsText: Patient Jorney Ontology (PJO)
+- id: FAMILY_HISTORY
+  name: Family History
+  sourceLabel: Family History
+  details: Diagnosis
+  proposedStandards:
+  - DOID
+  - IDO
+  - MONDO
+  proposedStandardsText: DOID, Disease Ontology (DO), Infectious Disease Ontology (IDO), MONDO
+  comments:
+  - It wil be politically beneficial to use MONDO. :)
+- id: GENETIC_TESTING
+  name: Genetic Testing
+  sourceLabel: Genetic Testing/Molecular Pathology
+  details: Genetic Test Results (name, when conducted, result status, report attachments)
+  dataClasses:
+  - GeneticTestResultFile
+- id: ICD_SNOMED_CODES
+  name: ICD / SNOMED Codes
+  sourceLabel: ID ICD-codes/ SNOMED
+  details: ICD10 codes selected
+  proposedStandards:
+  - SNOMEDCT
+  proposedStandardsText: Medicine Clinical Terms (SNOMED CT)
+- id: INTAKE_FORMS
+  name: Intake Forms
+  sourceLabel: Intake Forms
+  proposedStandards:
+  - PJO
+  proposedStandardsText: Patient Jorney Ontology (PJO)
+  dataClasses:
+  - IntakeFormFile
+- id: MEDICATIONS
+  name: Medications
+  sourceLabel: List of medications
+  categorical: true
+  proposedStandards:
+  - RXNORM
+  - DRUGBANK
+  - CHEMBL
+  proposedStandardsText: RxNorm / DrugBank / ChEMBL
+- id: PATIENT_REPORTED_OUTCOMES
+  name: Patient Reported Outcomes
+  sourceLabel: Patient Reported Outcomes
+  details: FHC Assessment
+- id: STRUCTURED_PATIENT_REPORTS
+  name: Structured Patient Reports
+  sourceLabel: Patient-reported data. Structured
+  details: FHC Assessment
+- id: PHENOTYPIC_DATA
+  name: Phenotypic Data
+  sourceLabel: Phenotypic Data (adhering to GA4GH Ontologies)
+  details: We do have phenotypic data but not according to GA4GH ontology. We will need to convert using
+    GA4GH tools.
+  proposedStandards:
+  - PHENOPACKETS
+  proposedStandardsText: GA4GH
+- id: REFERRAL_NOTES
+  name: Referral Notes
+  sourceLabel: Referral Notes
+  categorical: false
+- id: SPECIALIST_FINDINGS
+  name: Specialist Findings
+  sourceLabel: Specialist Findings
+  details: There is the option for the physician to include these findings and prior evaluations and testing.
+    However it is a partial capture of information.
+- id: SYMPTOMS
+  name: Symptoms
+  sourceLabel: Symptoms
+  details: HPOs derived from FHC Assessment
+  proposedStandards:
+  - HPO
+  proposedStandardsUncertain:
+  - PHENOPACKETS
+  proposedStandardsText: Human Phenotype Ontology (HPO) / GA4GH?
+- id: VISIT_NOTES
+  name: Visit Notes
+  sourceLabel: Visit Notes
+  categorical: false
+- id: VITALS_MEASUREMENTS
+  name: Vitals / Measurements
+  sourceLabel: Vitals and other measurements
+  categorical: true
+  proposedStandards:
+  - LOINC
+  proposedStandardsText: LOINC
+- id: FACIAL_IMAGES
+  name: Facial Images
+  sourceLabel: Facial Images
+  categorical: false
+  dataClasses:
+  - FacialImagingFile
+- id: DIFFERENTIAL_DIAGNOSIS_REPORT
+  name: Differential Diagnosis Report
+  sourceLabel: Preliminary Differential Diagnosis Support Report
+  details: Top 10 Results per flagged candidate
+  proposedStandards:
+  - SNOMEDCT
+  - ICD10CM
+  - ORDO
+  proposedStandardsText: Medicine Clinical Terms (SNOMED CT) / International Classification of disease
+    (ICD) / Orphanet Rare Disease Ontology (ORDO)
+  dataClasses:
+  - DifferentialDiagnosisFile
+- id: DATA_USE_RESTRICTIONS
+  name: Data Use Restrictions
+  sourceLabel: Data Use Restrictions
+  proposedStandards:
+  - DUO
+  - ODRL
+  - DPV
+  proposedStandardsText: DUO, ODRL, DPV
+  seeAlso:
+  - https://zenodo.org/records/10382093
+  notes:
+  - Not a column of the alignment matrix.

@@ -1,0 +1,314 @@
+id: https://w3id.org/rddc/ontologies
+name: rddc-ontologies
+title: RDDC Ontologies
+version: 0.1.0
+description: >-
+  Catalog of the ontologies, terminologies and exchange standards considered for
+  incoming Rare Disease Data Commons (RDDC) clinical data: where each standard
+  comes from, how it is licensed and released, and which data categories and
+  coverage domains it can represent. Converted from the "RAPID Ontology
+  Exploration" workbook. Coverage is indicative, not a verified application
+  implementation.
+
+
+  Field names are lowerCamelCase and prefixes follow the other RDDC modules
+  (core.yaml, data.yaml, rddc_sidecar.yaml), so CURIEs such as SNOMEDCT:169283005
+  expand to the same URIs here as there. StandardEntry.conformsToUrls and
+  DataCategory.dataClasses link this catalog to the sidecar's conformsTo values
+  and to the data file classes in data.yaml.
+license: https://creativecommons.org/publicdomain/zero/1.0/
+
+prefixes:
+  rddc: https://w3id.org/rddc/vocab/
+  linkml: https://w3id.org/linkml/
+  sc: https://schema.org/
+  dct: http://purl.org/dc/terms/
+  rdfs: http://www.w3.org/2000/01/rdf-schema#
+  skos: http://www.w3.org/2004/02/skos/core#
+  dcat: http://www.w3.org/ns/dcat#
+  foaf: http://xmlns.com/foaf/0.1/
+  owl: http://www.w3.org/2002/07/owl#
+  # MOD (Metadata for Ontology Description), FAIR-IMPACT version 3.x.
+  mod: https://w3id.org/mod#
+  bioregistry: https://bioregistry.io/registry/
+  # Namespaces of the standards themselves, so data can use CURIEs such as
+  # HP:0001250. Names and expansions match header.yaml and data.yaml (the
+  # LinkML linter's canonical prefix map); keep them in step with those files.
+  # Clinical terminologies
+  SNOMEDCT: http://identifiers.org/snomedct/
+  LOINC: https://loinc.org/
+  ICD10CM: https://icd.codes/icd10cm/
+  UCUM: https://units-of-measurement.org/
+  # Phenotype, disease, medical action and data use ontologies
+  HP: http://purl.obolibrary.org/obo/HP_
+  MONDO: http://purl.obolibrary.org/obo/MONDO_
+  DOID: http://purl.obolibrary.org/obo/DOID_
+  IDO: http://purl.obolibrary.org/obo/IDO_
+  ORPHA: http://www.orpha.net/ORDO/Orphanet_
+  MAXO: http://purl.obolibrary.org/obo/MAXO_
+  DUO: http://purl.obolibrary.org/obo/DUO_
+  # Medications
+  RXNORM: http://purl.bioontology.org/ontology/RXNORM/
+  DRUGBANK: http://identifiers.org/drugbank/
+  CHEMBL.COMPOUND: http://identifiers.org/chembl.compound/
+  # Genomic variation
+  SO: http://purl.obolibrary.org/obo/SO_
+
+default_prefix: rddc
+default_range: string
+
+imports:
+  - linkml:types
+
+# ---------------------------------------------------------------------------
+classes:
+
+  OntologyCatalog:
+    tree_root: true
+    description: >-
+      Container for every collection. Each data file under src/data fills in
+      one or more of these lists; scripts/merge_data.py combines them into one
+      document that validates against this class.
+    slots:
+      - notes
+    attributes:
+      standards:
+        description: Catalog entries for the standards (src/data/standards.yaml).
+        range: StandardEntry
+        multivalued: true
+        inlined_as_list: true
+      dataCategories:
+        description: Categories of incoming data (src/data/data_categories.yaml).
+        range: DataCategory
+        multivalued: true
+        inlined_as_list: true
+      coverageDomains:
+        description: Coverage domains (src/data/coverage_domains.yaml).
+        range: CoverageDomain
+        multivalued: true
+        inlined_as_list: true
+
+  NamedThing:
+    abstract: true
+    description: Base class for every catalog item, giving its key, label and notes.
+    slots:
+      - id
+      - name
+      - description
+      - notes
+      - comments
+
+  # --- Standards ("Ontology Sources", "Ontology Allignments", "Ontology Coverage")
+  StandardEntry:
+    is_a: NamedThing
+    description: >-
+      Catalog entry for an ontology, terminology, database, nomenclature or
+      exchange standard. Not the same as the processing rules' Standard
+      (processing.yaml), which is a conformsTo target; conformsToUrls links the two.
+    slot_usage:
+      name:
+        description: Full name of the standard.
+    attributes:
+      abbreviation:
+        required: true
+        slot_uri: mod:acronym
+        description: Abbreviation as written in the workbook.
+      bioregistryPrefix:
+        description: >-
+          Canonical prefix of this standard in the Bioregistry
+          (https://bioregistry.io/<prefix>), which holds its identifier
+          patterns, URI formats, contacts and cross-registry mappings. Empty
+          where the Bioregistry has no entry.
+        pattern: "^[a-z0-9_.]+$"
+        see_also:
+          - https://bioregistry.io
+      standardType:
+        range: StandardTypeEnum
+        slot_uri: dct:type
+        description: From the "Standard type" column of the Ontology Coverage sheet.
+      scopeToVerify:
+        range: boolean
+        description: True where the workbook marks the scope as still to be verified.
+      homepage:
+        range: uri
+        slot_uri: foaf:homepage
+        description: "Ontology Sources: Source."
+      accessMethods:
+        multivalued: true
+        description: "Ontology Sources: Access Method."
+      accessUrls:
+        range: uri
+        multivalued: true
+        slot_uri: dcat:accessURL
+        description: Download or API links attached to the Access Method cell.
+      dataFormats:
+        multivalued: true
+        slot_uri: mod:hasSyntax
+        description: "Ontology Sources: Data Formats."
+      accessRequirements:
+        slot_uri: dct:accessRights
+        description: "Ontology Sources: Access Requirements, as written."
+      license:
+        description: >-
+          SPDX license identifier, filled only where the linked license page
+          states it unambiguously.
+      licenseUrl:
+        range: uri
+        slot_uri: dct:license
+        description: License link attached to the Access Requirements cell.
+      version:
+        slot_uri: owl:versionInfo
+        description: "Ontology Sources: Last Version Verified (version label)."
+      versionDate:
+        range: date
+        slot_uri: dct:issued
+        description: Release date of the verified version, where given.
+      updateFrequency:
+        slot_uri: dct:accrualPeriodicity
+        description: >-
+          "Ontology Sources: Update Frequency", as free text. In RDF,
+          dct:accrualPeriodicity expects a frequency term (e.g. from the
+          Dublin Core collection frequency vocabulary); map these values to
+          such terms if you export to RDF.
+      conformsToUrls:
+        range: uri
+        multivalued: true
+        description: >-
+          Versioned URLs a sidecar file set's conformsTo uses for this
+          standard (e.g. http://hl7.org/fhir/R4), matching the url of the
+          processing rules' Standard. Empty for standards that are only used
+          to code values, not to structure files.
+      alignedCategories:
+        range: DataCategory
+        multivalued: true
+        description: >-
+          Data categories this standard can represent or annotate
+          (Ontology Allignments sheet; one tick per column).
+      coveredDomains:
+        range: CoverageDomain
+        multivalued: true
+        description: >-
+          Fine-grained coverage domains this standard covers (Ontology Coverage
+          sheet). Domain groups follow from each CoverageDomain's group.
+
+  # --- "Incoming Data" sheet + the 21 alignment columns
+  DataCategory:
+    is_a: NamedThing
+    description: A category of incoming RDDC data.
+    slot_usage:
+      name:
+        description: Short name used as the column header in the alignment matrix.
+    attributes:
+      sourceLabel:
+        description: Row label as written on the Incoming Data sheet.
+      details:
+        description: "Incoming Data: Details."
+      categorical:
+        range: boolean
+        description: "Incoming Data: Categorical? (Y/N)."
+      source:
+        description: "Incoming Data: Source? (column present, not yet filled in)."
+      structure:
+        description: "Incoming Data: Structure? (column present, not yet filled in)."
+      dataClasses:
+        multivalued: true
+        pattern: "^[A-Z][A-Za-z0-9]*File$"
+        description: >-
+          Data file classes in data.yaml (DataFile subclasses, by class name)
+          whose files carry this category, e.g. IntakeFormFile. Filled only
+          where the class and category correspond one to one.
+      proposedStandards:
+        range: StandardEntry
+        multivalued: true
+        description: >-
+          Standards the team proposed for this category (Incoming Data:
+          Ontologies). Differs from StandardEntry.alignedCategories, which
+          records what each standard could cover.
+      proposedStandardsText:
+        description: The Ontologies cell exactly as written.
+      proposedStandardsUncertain:
+        range: StandardEntry
+        multivalued: true
+        description: Proposed standards written with a question mark.
+      seeAlso:
+        description: Links attached to the Ontologies cell.
+        range: uri
+        multivalued: true
+        slot_uri: rdfs:seeAlso
+
+  CoverageDomain:
+    is_a: NamedThing
+    description: A fine-grained coverage domain (column of the Ontology Coverage sheet).
+    attributes:
+      group:
+        description: The domain group this domain belongs to.
+        range: DomainGroupEnum
+        required: true
+
+# ---------------------------------------------------------------------------
+slots:
+  id:
+    identifier: true
+    description: Stable upper-case key.
+  name:
+    slot_uri: rdfs:label
+    description: Human-readable name.
+  description:
+    slot_uri: dct:description
+    description: Free-text description.
+  notes:
+    multivalued: true
+    slot_uri: skos:note
+    description: Notes recorded in the workbook itself.
+  comments:
+    multivalued: true
+    description: Reviewer comments attached to cells in the workbook.
+
+# ---------------------------------------------------------------------------
+enums:
+
+  StandardTypeEnum:
+    description: Kinds of standard, from the Ontology Coverage sheet.
+    permissible_values:
+      ONTOLOGY:
+        title: Ontology
+      CLINICAL_TERMINOLOGY:
+        title: Clinical terminology
+      OBSERVATION_TERMINOLOGY:
+        title: Observation terminology
+      DRUG_TERMINOLOGY:
+        title: Drug terminology
+      CLASSIFICATION:
+        title: Classification
+      NOMENCLATURE:
+        title: Nomenclature
+      UNIT_STANDARD:
+        title: Unit standard
+      DATABASE:
+        title: Database
+      DATA_EXCHANGE_STANDARD:
+        title: Data exchange standard
+      CASE_EXCHANGE_STANDARD:
+        title: Case exchange standard
+      COMMON_DATA_MODEL:
+        title: Common data model
+      VOCABULARY:
+        title: Vocabulary
+
+  DomainGroupEnum:
+    description: The seven groups the coverage domains fall into.
+    permissible_values:
+      PATIENT_AND_CONTEXT:
+        title: Patient & context
+      PHENOTYPE_AND_DISEASE:
+        title: Phenotype & disease
+      CLINICAL_ACTIVITIES:
+        title: Clinical activities
+      OBSERVATIONS_AND_SPECIMENS:
+        title: Observations & specimens
+      GENOMIC_AND_MOLECULAR:
+        title: Genomic & molecular
+      DRUGS_AND_THERAPEUTICS:
+        title: Drugs & therapeutics
+      INFORMATION_AND_INTEROPERABILITY:
+        title: Information & interoperability

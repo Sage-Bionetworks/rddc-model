@@ -1,0 +1,16 @@
+extends: recommended
+rules:
+  standard_naming:
+    # Slot names are the JSON keys of the sidecar document, so they follow
+    # Croissant and schema.org lowerCamelCase rather than LinkML snake_case.
+    slot_pattern: "^[a-z][a-zA-Z0-9]*$"
+    # Enum values are written exactly as they appear in data: JSON-LD @type CURIEs
+    # (sc:Person), FHIR codes (Patient) and versions (4.0.1). The rule has no
+    # pattern option for them, so their naming is not checked.
+    exclude_type:
+      - permissible_value
+  canonical_prefixes:
+    # The sidecar uses Croissant's prefixes (sc: https://schema.org/,
+    # dct: purl.org/dc/terms/), which differ from LinkML's canonical map.
+    # The context builder relies on these names matching Croissant's context.
+    level: disabled

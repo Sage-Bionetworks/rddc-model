@@ -1,0 +1,638 @@
+standards:
+- id: FHIR
+  abbreviation: HL7 FHIR
+  name: Health Level Seven Fast Healthcare Interoperability Resources
+  standardType: DATA_EXCHANGE_STANDARD
+  alignedCategories:
+  - PATIENT_PROFILE
+  - PATIENT_HISTORY
+  - ASSESSMENTS
+  - EHR_DATA
+  - ALLERGIES
+  - SOCIAL_HABITS_RISK_FACTORS
+  - FAMILY_HISTORY
+  - GENETIC_TESTING
+  - ICD_SNOMED_CODES
+  - INTAKE_FORMS
+  - MEDICATIONS
+  - PATIENT_REPORTED_OUTCOMES
+  - STRUCTURED_PATIENT_REPORTS
+  - PHENOTYPIC_DATA
+  - REFERRAL_NOTES
+  - SPECIALIST_FINDINGS
+  - SYMPTOMS
+  - VISIT_NOTES
+  - VITALS_MEASUREMENTS
+  - FACIAL_IMAGES
+  - DIFFERENTIAL_DIAGNOSIS_REPORT
+  coveredDomains:
+  - PATIENT_IDENTITY_AND_IDENTIFIERS
+  - DEMOGRAPHICS_AND_AGE
+  - FAMILY_RELATIONSHIPS_AND_PEDIGREE
+  - MEDICAL_HISTORY_AND_ENCOUNTERS
+  - SOCIAL_DETERMINANTS_AND_LIFESTYLE
+  - RISK_FACTORS_AND_EXPOSURES
+  - PATIENT_REPORTED_OUTCOMES
+  - CARE_PATHWAYS_AND_REFERRALS
+  - SIGNS_AND_SYMPTOMS
+  - ABNORMAL_PHENOTYPIC_FEATURES
+  - PHENOTYPE_ONSET_AND_SEVERITY
+  - CONGENITAL_AND_DEVELOPMENTAL_ANOMALIES
+  - DISEASE_DIAGNOSES
+  - RARE_AND_GENETIC_DISEASES
+  - INFECTIOUS_DISEASES
+  - CANCER_AND_NEOPLASMS
+  - DIFFERENTIAL_DIAGNOSIS_CANDIDATES
+  - PHYSICAL_EXAMINATION_FINDINGS
+  - CLINICAL_ASSESSMENTS_AND_SCREENING
+  - CLINICAL_PROCEDURES_AND_INTERVENTIONS
+  - TREATMENT_ACTIONS_AND_MANAGEMENT
+  - CLINICAL_DOCUMENTS_AND_NOTES
+  - ALLERGIES_AND_ADVERSE_REACTIONS
+  - VITAL_SIGNS
+  - LABORATORY_TEST_IDENTITIES
+  - LABORATORY_RESULTS_AND_VALUES
+  - UNITS_OF_MEASUREMENT
+  - DIAGNOSTIC_IMAGING_OBSERVATIONS
+  - IMAGING_FILES_MEDIA_REFERENCES
+  - HISTOPATHOLOGY_AND_TISSUE_FINDINGS
+  - BIOSAMPLES_AND_SPECIMEN_METADATA
+  - GENETIC_TEST_IDENTITY_RESULTS
+  - SEQUENCE_VARIANTS_AND_VARIANT_NOTATION
+  - GENOMIC_INTERPRETATION
+  - DRUG_AND_MEDICINAL_PRODUCT_NAMES
+  - DRUG_INGREDIENTS_AND_FORMULATIONS
+  - DOSES_ROUTES_AND_SCHEDULES
+  - PROVIDER_AND_ORGANIZATION_IDENTITY
+  - RECORD_LINKAGE_AND_PROVENANCE
+  - STRUCTURED_RESOURCE_EXCHANGE
+  - CLINICAL_CODING_BILLING
+  notes:
+  - Marked ** in the workbook; the footnote it refers to is not in the file.
+  - No Bioregistry entry for HL7 FHIR itself (only related entries such as hl7.v2codesystem, hl7.v3codesystem
+    and fhir.implementation).
+  conformsToUrls:
+  - http://hl7.org/fhir/R4
+- id: SNOMEDCT
+  abbreviation: SNOMED CT
+  name: Systematized Nomenclature of Medicine – Clinical Terms
+  bioregistryPrefix: snomedct
+  standardType: CLINICAL_TERMINOLOGY
+  homepage: https://www.nlm.nih.gov/healthit/snomedct/index.html
+  accessMethods:
+  - Direct RF2 downloads
+  - Automated downloads through UMLS Release and Download API
+  - Terminology lookup through UMLS REST API
+  accessUrls:
+  - https://documentation.uts.nlm.nih.gov/automating-downloads.html
+  dataFormats:
+  - RF2 (tab-delimited text, UTF-8)
+  accessRequirements: UMLS license required for US access and download.
+  version: US Edition 20260901
+  versionDate: '2026-09-01'
+  updateFrequency: Biannual March & September
+  alignedCategories:
+  - PATIENT_HISTORY
+  - ASSESSMENTS
+  - EHR_DATA
+  - ALLERGIES
+  - SOCIAL_HABITS_RISK_FACTORS
+  - FAMILY_HISTORY
+  - ICD_SNOMED_CODES
+  - INTAKE_FORMS
+  - MEDICATIONS
+  - PATIENT_REPORTED_OUTCOMES
+  - STRUCTURED_PATIENT_REPORTS
+  - REFERRAL_NOTES
+  - SPECIALIST_FINDINGS
+  - VISIT_NOTES
+  - DIFFERENTIAL_DIAGNOSIS_REPORT
+  coveredDomains:
+  - MEDICAL_HISTORY_AND_ENCOUNTERS
+  - SOCIAL_DETERMINANTS_AND_LIFESTYLE
+  - RISK_FACTORS_AND_EXPOSURES
+  - SIGNS_AND_SYMPTOMS
+  - ABNORMAL_PHENOTYPIC_FEATURES
+  - CONGENITAL_AND_DEVELOPMENTAL_ANOMALIES
+  - DISEASE_DIAGNOSES
+  - INFECTIOUS_DISEASES
+  - CANCER_AND_NEOPLASMS
+  - PHYSICAL_EXAMINATION_FINDINGS
+  - CLINICAL_ASSESSMENTS_AND_SCREENING
+  - CLINICAL_PROCEDURES_AND_INTERVENTIONS
+  - TREATMENT_ACTIONS_AND_MANAGEMENT
+  - ALLERGIES_AND_ADVERSE_REACTIONS
+  - VITAL_SIGNS
+  - LABORATORY_TEST_IDENTITIES
+  - DIAGNOSTIC_IMAGING_OBSERVATIONS
+  - HISTOPATHOLOGY_AND_TISSUE_FINDINGS
+  - BIOSAMPLES_AND_SPECIMEN_METADATA
+  - DRUG_AND_MEDICINAL_PRODUCT_NAMES
+  - DRUG_INGREDIENTS_AND_FORMULATIONS
+  - DOSES_ROUTES_AND_SCHEDULES
+  - CLINICAL_CODING_BILLING
+  notes:
+  - Named "Systematized Nomenclature of Medicine Clinical Terms" on the Ontology Sources sheet.
+- id: HPO
+  abbreviation: HPO
+  name: Human Phenotype Ontology
+  bioregistryPrefix: hp
+  standardType: ONTOLOGY
+  homepage: https://hpo.jax.org/
+  accessMethods:
+  - Direct OBO/OWL/JSON downloads
+  - Term lookup through RESTful API
+  accessUrls:
+  - https://github.com/obophenotype/human-phenotype-ontology/releases
+  dataFormats:
+  - OBO
+  - OWL
+  - JSON
+  - TSV annotations
+  - TXT
+  accessRequirements: Public Access, Open License
+  version: v2026-09-01
+  versionDate: '2026-09-01'
+  updateFrequency: Irregular (~1/mo)
+  alignedCategories:
+  - PATIENT_HISTORY
+  - ASSESSMENTS
+  - EHR_DATA
+  - ALLERGIES
+  - FAMILY_HISTORY
+  - INTAKE_FORMS
+  - PATIENT_REPORTED_OUTCOMES
+  - STRUCTURED_PATIENT_REPORTS
+  - PHENOTYPIC_DATA
+  - REFERRAL_NOTES
+  - SPECIALIST_FINDINGS
+  - SYMPTOMS
+  - VISIT_NOTES
+  - FACIAL_IMAGES
+  coveredDomains:
+  - SIGNS_AND_SYMPTOMS
+  - ABNORMAL_PHENOTYPIC_FEATURES
+  - PHENOTYPE_ONSET_AND_SEVERITY
+  - CONGENITAL_AND_DEVELOPMENTAL_ANOMALIES
+  - PHYSICAL_EXAMINATION_FINDINGS
+  - DIAGNOSTIC_IMAGING_OBSERVATIONS
+  - HISTOPATHOLOGY_AND_TISSUE_FINDINGS
+- id: LOINC
+  abbreviation: LOINC
+  name: Logical Observation Identifiers Names and Codes
+  bioregistryPrefix: loinc
+  standardType: OBSERVATION_TERMINOLOGY
+  homepage: https://loinc.org/
+  accessMethods:
+  - Direct Download
+  - Search & Browsing
+  - Download API
+  - Search API
+  accessUrls:
+  - https://loinc.org/downloads
+  dataFormats:
+  - CSV
+  accessRequirements: LOINC License
+  licenseUrl: https://loinc.org/license
+  version: '2.83'
+  versionDate: '2026-08-29'
+  updateFrequency: Biannual, working to switch to monthly
+  alignedCategories:
+  - PATIENT_HISTORY
+  - ASSESSMENTS
+  - EHR_DATA
+  - SOCIAL_HABITS_RISK_FACTORS
+  - GENETIC_TESTING
+  - INTAKE_FORMS
+  - PATIENT_REPORTED_OUTCOMES
+  - STRUCTURED_PATIENT_REPORTS
+  - SPECIALIST_FINDINGS
+  - VITALS_MEASUREMENTS
+  coveredDomains:
+  - PATIENT_REPORTED_OUTCOMES
+  - CLINICAL_ASSESSMENTS_AND_SCREENING
+  - VITAL_SIGNS
+  - LABORATORY_TEST_IDENTITIES
+  - DIAGNOSTIC_IMAGING_OBSERVATIONS
+  - GENETIC_TEST_IDENTITY_RESULTS
+- id: PHENOPACKETS
+  abbreviation: GA4GH Phenopackets
+  name: Global Alliance for Genomics and Health Phenopacket Schema
+  standardType: CASE_EXCHANGE_STANDARD
+  homepage: https://github.com/ga4gh/phenopacket-schema
+  accessMethods:
+  - Schema definitions and source files through GitHub repository
+  accessUrls:
+  - https://github.com/ga4gh/phenopacket-schema
+  dataFormats:
+  - Protobuf
+  - JSON
+  accessRequirements: BSD 3-Clause License
+  license: BSD-3-Clause
+  licenseUrl: https://github.com/ga4gh/phenopacket-schema/blob/master/LICENSE
+  alignedCategories:
+  - PATIENT_HISTORY
+  - FAMILY_HISTORY
+  - GENETIC_TESTING
+  - PHENOTYPIC_DATA
+  - SYMPTOMS
+  - VITALS_MEASUREMENTS
+  coveredDomains:
+  - PATIENT_IDENTITY_AND_IDENTIFIERS
+  - DEMOGRAPHICS_AND_AGE
+  - FAMILY_RELATIONSHIPS_AND_PEDIGREE
+  - MEDICAL_HISTORY_AND_ENCOUNTERS
+  - SIGNS_AND_SYMPTOMS
+  - ABNORMAL_PHENOTYPIC_FEATURES
+  - PHENOTYPE_ONSET_AND_SEVERITY
+  - CONGENITAL_AND_DEVELOPMENTAL_ANOMALIES
+  - DISEASE_DIAGNOSES
+  - RARE_AND_GENETIC_DISEASES
+  - CANCER_AND_NEOPLASMS
+  - CLINICAL_PROCEDURES_AND_INTERVENTIONS
+  - TREATMENT_ACTIONS_AND_MANAGEMENT
+  - VITAL_SIGNS
+  - LABORATORY_TEST_IDENTITIES
+  - LABORATORY_RESULTS_AND_VALUES
+  - UNITS_OF_MEASUREMENT
+  - DIAGNOSTIC_IMAGING_OBSERVATIONS
+  - HISTOPATHOLOGY_AND_TISSUE_FINDINGS
+  - BIOSAMPLES_AND_SPECIMEN_METADATA
+  - GENETIC_TEST_IDENTITY_RESULTS
+  - SEQUENCE_VARIANTS_AND_VARIANT_NOTATION
+  - GENOMIC_INTERPRETATION
+  - DRUG_AND_MEDICINAL_PRODUCT_NAMES
+  - DOSES_ROUTES_AND_SCHEDULES
+  - RECORD_LINKAGE_AND_PROVENANCE
+  - PHENOTYPE_CASE_EXCHANGE
+  notes:
+  - No Bioregistry entry for the GA4GH Phenopacket Schema.
+- id: ICD10CM
+  abbreviation: ICD-10-CM
+  name: International Classification of Diseases, Tenth Revision, Clinical Modification
+  bioregistryPrefix: icd10cm
+  standardType: CLASSIFICATION
+  homepage: https://www.cdc.gov/nchs/icd/icd-10-cm/
+  accessMethods:
+  - Direct Download
+  accessUrls:
+  - https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Publications/ICD10CM/
+  dataFormats:
+  - PDF
+  - XML
+  version: ICD-10-CM FY27
+  versionDate: '2026-10-01'
+  updateFrequency: ~Annual
+  alignedCategories:
+  - PATIENT_HISTORY
+  - EHR_DATA
+  - FAMILY_HISTORY
+  - ICD_SNOMED_CODES
+  - DIFFERENTIAL_DIAGNOSIS_REPORT
+  coveredDomains:
+  - DISEASE_DIAGNOSES
+  - RARE_AND_GENETIC_DISEASES
+  - INFECTIOUS_DISEASES
+  - CANCER_AND_NEOPLASMS
+  - DIFFERENTIAL_DIAGNOSIS_CANDIDATES
+  - CLINICAL_CODING_BILLING
+  notes:
+  - Version and update frequency were entered on the GA4GH Phenopackets row in the workbook and moved
+    here during conversion.
+- id: DOID
+  abbreviation: DOID / DO
+  name: Human Disease Ontology
+  bioregistryPrefix: doid
+  standardType: ONTOLOGY
+  homepage: https://disease-ontology.org/
+  accessMethods:
+  - Direct Download
+  - Download RESTful API
+  accessUrls:
+  - https://github.com/DiseaseOntology/HumanDiseaseOntology/releases
+  dataFormats:
+  - OWL
+  - OBO
+  - JSON
+  accessRequirements: Public Domain
+  licenseUrl: https://github.com/DiseaseOntology/HumanDiseaseOntology/blob/main/LICENSE
+  version: v2026-09-30
+  versionDate: '2026-09-30'
+  updateFrequency: ~Monthly
+  alignedCategories:
+  - PATIENT_HISTORY
+  - FAMILY_HISTORY
+  - PHENOTYPIC_DATA
+  - DIFFERENTIAL_DIAGNOSIS_REPORT
+  coveredDomains:
+  - DISEASE_DIAGNOSES
+  - RARE_AND_GENETIC_DISEASES
+  - INFECTIOUS_DISEASES
+  - CANCER_AND_NEOPLASMS
+  - DIFFERENTIAL_DIAGNOSIS_CANDIDATES
+- id: MONDO
+  abbreviation: MONDO
+  name: Mondo Disease Ontology
+  bioregistryPrefix: mondo
+  standardType: ONTOLOGY
+  homepage: https://mondo.monarchinitiative.org/
+  accessMethods:
+  - Direct Download
+  - Term Lookup
+  - API
+  accessUrls:
+  - https://github.com/monarch-initiative/mondo/tags
+  dataFormats:
+  - OWL
+  - OBO
+  - JSON
+  accessRequirements: Public Domain
+  license: CC-BY-4.0
+  licenseUrl: https://creativecommons.org/licenses/by/4.0/
+  version: v2026-10-06
+  versionDate: '2026-10-06'
+  updateFrequency: ~Monthly
+  alignedCategories:
+  - PATIENT_HISTORY
+  - FAMILY_HISTORY
+  - PHENOTYPIC_DATA
+  - DIFFERENTIAL_DIAGNOSIS_REPORT
+  coveredDomains:
+  - DISEASE_DIAGNOSES
+  - RARE_AND_GENETIC_DISEASES
+  - INFECTIOUS_DISEASES
+  - CANCER_AND_NEOPLASMS
+  - DIFFERENTIAL_DIAGNOSIS_CANDIDATES
+  notes:
+  - Workbook says "Public Domain" but the linked license is CC-BY-4.0.
+- id: IDO
+  abbreviation: IDO
+  name: Infectious Disease Ontology
+  bioregistryPrefix: ido
+  standardType: ONTOLOGY
+  homepage: https://obofoundry.org/ontology/ido.html
+  accessMethods:
+  - Direct Download
+  accessUrls:
+  - https://github.com/infectious-disease-ontology/infectious-disease-ontology
+  dataFormats:
+  - OWL
+  accessRequirements: Public Domain
+  license: CC-BY-3.0
+  licenseUrl: https://creativecommons.org/licenses/by/3.0/
+  alignedCategories:
+  - PATIENT_HISTORY
+  - FAMILY_HISTORY
+  - DIFFERENTIAL_DIAGNOSIS_REPORT
+  coveredDomains:
+  - DISEASE_DIAGNOSES
+  - INFECTIOUS_DISEASES
+  notes:
+  - Last Version Verified was recorded as "OOD" (meaning unclear, possibly "out of date").
+  - Workbook says "Public Domain" but the linked license is CC-BY-3.0.
+- id: MAXO
+  abbreviation: MAxO
+  name: Medical Action Ontology
+  bioregistryPrefix: maxo
+  standardType: ONTOLOGY
+  homepage: https://github.com/monarch-initiative/MAxO
+  accessMethods:
+  - Direct Download
+  dataFormats:
+  - OBO OWL
+  - JSON
+  - YAML
+  accessRequirements: Public Domain
+  licenseUrl: https://github.com/monarch-initiative/MAxO/blob/master/LICENSE
+  alignedCategories:
+  - ASSESSMENTS
+  - SPECIALIST_FINDINGS
+  - VISIT_NOTES
+  coveredDomains:
+  - CLINICAL_PROCEDURES_AND_INTERVENTIONS
+  - TREATMENT_ACTIONS_AND_MANAGEMENT
+- id: ORDO
+  abbreviation: ORDO
+  name: Orphanet Rare Disease Ontology
+  bioregistryPrefix: orphanet.ordo
+  standardType: ONTOLOGY
+  homepage: https://sciences.orphadata.com/ordo/
+  accessMethods:
+  - Direct Download
+  - REST API
+  accessUrls:
+  - https://sciences.orphadata.com/ordo/
+  dataFormats:
+  - OWL
+  - RDF
+  - OBO
+  accessRequirements: Public Domain
+  license: CC-BY-4.0
+  licenseUrl: https://creativecommons.org/licenses/by/4.0
+  version: '4.9'
+  versionDate: '2026-07-01'
+  updateFrequency: Biannual July/December
+  alignedCategories:
+  - PATIENT_HISTORY
+  - FAMILY_HISTORY
+  - DIFFERENTIAL_DIAGNOSIS_REPORT
+  coveredDomains:
+  - DISEASE_DIAGNOSES
+  - RARE_AND_GENETIC_DISEASES
+  - DIFFERENTIAL_DIAGNOSIS_CANDIDATES
+  notes:
+  - Multilingual
+  - Workbook says "Public Domain" but the linked license is CC-BY-4.0.
+- id: PJO
+  abbreviation: PJO
+  name: Patient Journey Ontology
+  standardType: ONTOLOGY
+  scopeToVerify: true
+  alignedCategories:
+  - SOCIAL_HABITS_RISK_FACTORS
+  - INTAKE_FORMS
+  coveredDomains:
+  - SOCIAL_DETERMINANTS_AND_LIFESTYLE
+  - RISK_FACTORS_AND_EXPOSURES
+  - CARE_PATHWAYS_AND_REFERRALS
+  notes:
+  - No Bioregistry entry. PJO is described in arXiv:2506.18772 (2025).
+- id: RXNORM
+  abbreviation: RxNorm
+  name: RxNorm normalized drug nomenclature
+  bioregistryPrefix: rxnorm
+  standardType: DRUG_TERMINOLOGY
+  homepage: https://www.nlm.nih.gov/research/umls/rxnorm/index.html
+  accessMethods:
+  - Direct Download
+  - Download API
+  - Search API
+  accessUrls:
+  - https://www.nlm.nih.gov/research/umls/rxnorm/docs/rxnormfiles.html
+  dataFormats:
+  - RRF (UTF-8)
+  accessRequirements: UMLS License
+  updateFrequency: Weekly/Monthly
+  alignedCategories:
+  - ALLERGIES
+  - MEDICATIONS
+  coveredDomains:
+  - DRUG_AND_MEDICINAL_PRODUCT_NAMES
+  - DRUG_INGREDIENTS_AND_FORMULATIONS
+  notes:
+  - Named "RxNorm Medication Terminology" on the Ontology Sources sheet.
+- id: DRUGBANK
+  abbreviation: DrugBank
+  name: DrugBank drug knowledgebase
+  bioregistryPrefix: drugbank
+  standardType: DATABASE
+  homepage: https://go.drugbank.com/
+  accessMethods:
+  - Direct Download
+  accessUrls:
+  - https://go.drugbank.com/releases/
+  dataFormats:
+  - XML
+  - CSV
+  accessRequirements: Public Domain
+  license: CC-BY-NC-4.0
+  licenseUrl: http://creativecommons.org/licenses/by-nc/4.0/legalcode
+  version: 5.1.22
+  versionDate: '2026-06-27'
+  updateFrequency: Irregular
+  alignedCategories:
+  - MEDICATIONS
+  coveredDomains:
+  - GENES_AND_MOLECULAR_TARGETS
+  - DRUG_AND_MEDICINAL_PRODUCT_NAMES
+  - DRUG_INGREDIENTS_AND_FORMULATIONS
+  - DRUG_INDICATIONS_AND_INTERACTIONS
+  notes:
+  - Named "DrugBank Drug Vocabulary / Database" on the Ontology Sources sheet.
+  - Workbook says "Public Domain" but the linked license is CC-BY-NC-4.0.
+- id: CHEMBL
+  abbreviation: ChEMBL
+  name: ChEMBL bioactivity database
+  bioregistryPrefix: chembl
+  standardType: DATABASE
+  homepage: https://www.ebi.ac.uk/chembl/
+  accessMethods:
+  - Direct Download
+  - API
+  accessUrls:
+  - https://ftp.ebi.ac.uk/pub/databases/chembl/ChEMBLdb/latest/
+  dataFormats:
+  - SQLite
+  - PostgreSQL
+  - MySQL
+  - JSON
+  - XML
+  - YAML
+  accessRequirements: Public Domain
+  licenseUrl: https://ftp.ebi.ac.uk/pub/databases/chembl/ChEMBLdb/latest/LICENSE
+  version: ChEMBL 36
+  updateFrequency: Irregular
+  alignedCategories:
+  - MEDICATIONS
+  coveredDomains:
+  - GENES_AND_MOLECULAR_TARGETS
+  - DRUG_AND_MEDICINAL_PRODUCT_NAMES
+  - DRUG_INGREDIENTS_AND_FORMULATIONS
+  - DRUG_TARGET_BIOACTIVITY
+  notes:
+  - Named "ChEMBL Bioactivity Database" on the Ontology Sources sheet.
+  - Verified release dated 2025-07 (no day given).
+  - Bioregistry prefix chembl is the database as a whole; compound identifiers (CHEMBL25 etc.) use chembl.compound.
+  comments:
+  - I think for small molecules a better choice would be CHEBI (an ontology) instead of ChEMBL (primarily
+    a data store for assay data) - BG
+- id: SO
+  abbreviation: SO
+  name: Sequence Ontology
+  bioregistryPrefix: so
+  standardType: ONTOLOGY
+  homepage: https://github.com/The-Sequence-Ontology/SO-Ontologies
+  accessMethods:
+  - Direct Download
+  accessUrls:
+  - https://github.com/The-Sequence-Ontology/SO-Ontologies/tree/master/Ontology_Files
+  dataFormats:
+  - OBO
+  - OWL
+  - RDF
+  accessRequirements: Public Domain
+  licenseUrl: https://github.com/The-Sequence-Ontology/SO-Ontologies/blob/master/LICENSE
+  updateFrequency: Irregular
+  alignedCategories:
+  - GENETIC_TESTING
+  coveredDomains:
+  - SEQUENCE_VARIANTS_AND_VARIANT_NOTATION
+  - SEQUENCE_FEATURE_TYPES
+- id: HGVS
+  abbreviation: HGVS
+  name: Human Genome Variation Society variant nomenclature
+  bioregistryPrefix: hgvs
+  standardType: NOMENCLATURE
+  homepage: https://hgvs-nomenclature.org/stable/
+  accessMethods:
+  - Direct Download
+  accessUrls:
+  - https://github.com/HGVSnomenclature/hgvs-nomenclature
+  accessRequirements: Public Domain
+  licenseUrl: https://github.com/HGVSnomenclature/hgvs-nomenclature/blob/main/LICENSE.txt
+  version: 21.1.4
+  versionDate: '2026-05-11'
+  updateFrequency: Irregular
+  alignedCategories:
+  - GENETIC_TESTING
+  coveredDomains:
+  - SEQUENCE_VARIANTS_AND_VARIANT_NOTATION
+  notes:
+  - Named "Human Genome Variation Society Nomenclature" on the Ontology Sources sheet.
+- id: UCUM
+  abbreviation: UCUM
+  name: Unified Code for Units of Measure
+  bioregistryPrefix: ucum
+  standardType: UNIT_STANDARD
+  homepage: https://ucum.org/
+  dataFormats:
+  - XML
+  licenseUrl: https://ucum.org/license
+  alignedCategories:
+  - VITALS_MEASUREMENTS
+  coveredDomains:
+  - UNITS_OF_MEASUREMENT
+  notes:
+  - Access Requirements recorded as "???" in the workbook.
+- id: OMOP
+  abbreviation: OMOP
+  name: Observational Medical Outcomes Partnership Common Data Model
+  bioregistryPrefix: omop
+  standardType: COMMON_DATA_MODEL
+  notes:
+  - Named only on the Incoming Data sheet; not yet assessed on the coverage or sources sheets.
+  conformsToUrls:
+  - https://ohdsi.github.io/CommonDataModel/cdm54.html
+- id: DUO
+  abbreviation: DUO
+  name: Data Use Ontology
+  bioregistryPrefix: duo
+  standardType: ONTOLOGY
+  notes:
+  - Named only on the Incoming Data sheet; not yet assessed on the coverage or sources sheets.
+- id: ODRL
+  abbreviation: ODRL
+  name: Open Digital Rights Language
+  bioregistryPrefix: odrl
+  standardType: VOCABULARY
+  notes:
+  - Named only on the Incoming Data sheet; not yet assessed on the coverage or sources sheets.
+- id: DPV
+  abbreviation: DPV
+  name: Data Privacy Vocabulary
+  bioregistryPrefix: dpvocab
+  standardType: VOCABULARY
+  notes:
+  - Named only on the Incoming Data sheet; not yet assessed on the coverage or sources sheets.
+  - Bioregistry prefix is dpvocab; the prefix dpv belongs to an unrelated resource (Description of Plant
+    Viruses).
