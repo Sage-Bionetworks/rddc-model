@@ -1,9 +1,12 @@
 <h1>Genomics</h1>
-<p class="lede">Sequencing reads, alignments, variant calls and their indexes. Every genomics file states how it was sequenced, and genomic data always identifies a person.</p>
+<p class="lede">Sequencing reads, alignments, variant calls and their indexes. The format is the class, every genomics file states how it was sequenced, and genomic data always identifies a person.</p>
 
-<rddc-family names="SequenceReadsFile,AlignmentFile,VariantFile,IndexFile"></rddc-family>
+<rddc-family names="FastqFile,UnalignedBamFile,BamFile,CramFile,VcfFile,BcfFile,IndexFile"></rddc-family>
 
-<h2>Assay and platform</h2>
+<h2>One class per format</h2>
+<p>FASTQ, BAM, CRAM, VCF and BCF have no registered IANA media type, so <code>encodingFormat</code> cannot tell them apart: it is <code>text/plain</code> for the text formats and <code>application/octet-stream</code> for the binary ones. The pipelines that read them differ by format, so each format has its own class, and the class maps to its <a href="data-standards.html">EDAM</a> format term. Three abstract classes group them: <code>SequenceReadsFile</code> (FASTQ, unaligned BAM), <code>AlignmentFile</code> (BAM, CRAM) and <code>VariantFile</code> (VCF, BCF). A file always names a concrete class.</p>
+
+<h2 id="assay-and-platform">Assay and platform</h2>
 <p>Analysis requires two fields on every reads, alignment and variant file:</p>
 <ul>
 <li><code>measurementTechnique</code>: the sequencing assay, such as whole genome or exome sequencing. Values map to OBI assay terms.</li>
@@ -16,29 +19,40 @@
 <rddc-enum name="SequencingPlatformEnum"></rddc-enum>
 
 <h2>Reads</h2>
-<p>A <code>SequenceReadsFile</code> holds reads, such as FASTQ or an unaligned BAM. Paired-end files reference each other through <code>pairedWith</code>.</p>
-<rddc-example key="reads"></rddc-example>
+<p>Reads before alignment are a <code>FastqFile</code> or, for basecaller output such as PacBio or Nanopore reads, an <code>UnalignedBamFile</code>. Paired-end files reference each other through <code>pairedWith</code>.</p>
+<div class="tabs">
+  <div role="tablist" aria-label="Reads examples">
+    <button role="tab" id="t-r-1" aria-controls="p-r-1" aria-selected="true">FASTQ</button>
+    <button role="tab" id="t-r-2" aria-controls="p-r-2" aria-selected="false" tabindex="-1">Unaligned BAM</button>
+  </div>
+  <div role="tabpanel" id="p-r-1" aria-labelledby="t-r-1"><rddc-example key="fastq"></rddc-example></div>
+  <div role="tabpanel" id="p-r-2" aria-labelledby="t-r-2" hidden><rddc-example key="ubam"></rddc-example></div>
+</div>
 
 <h2>Alignments and variant calls</h2>
-<p>Alignments (BAM, CRAM) and variant calls (VCF, BCF) specify their coordinate assembly in <code>referenceGenome</code>. UCSC build names map to the matching GRC assembly: hg19 is <code>GRCh37</code> and hg38 is <code>GRCh38</code>.</p>
+<p>Alignments (<code>BamFile</code>, <code>CramFile</code>) and variant calls (<code>VcfFile</code>, <code>BcfFile</code>) specify their coordinate assembly in <code>referenceGenome</code>. UCSC build names map to the matching GRC assembly: hg19 is <code>GRCh37</code> and hg38 is <code>GRCh38</code>. SAM, the text form of an alignment, is not accepted; convert it to BAM.</p>
 <rddc-enum name="ReferenceGenomeEnum"></rddc-enum>
 <div class="tabs">
   <div role="tablist" aria-label="Alignment and variant examples">
-    <button role="tab" id="t-g-1" aria-controls="p-g-1" aria-selected="true">Alignment</button>
-    <button role="tab" id="t-g-2" aria-controls="p-g-2" aria-selected="false" tabindex="-1">Variants</button>
+    <button role="tab" id="t-g-1" aria-controls="p-g-1" aria-selected="true">BAM</button>
+    <button role="tab" id="t-g-2" aria-controls="p-g-2" aria-selected="false" tabindex="-1">CRAM</button>
+    <button role="tab" id="t-g-3" aria-controls="p-g-3" aria-selected="false" tabindex="-1">VCF</button>
+    <button role="tab" id="t-g-4" aria-controls="p-g-4" aria-selected="false" tabindex="-1">BCF</button>
   </div>
-  <div role="tabpanel" id="p-g-1" aria-labelledby="t-g-1"><rddc-example key="alignment"></rddc-example></div>
-  <div role="tabpanel" id="p-g-2" aria-labelledby="t-g-2" hidden><rddc-example key="variants"></rddc-example></div>
+  <div role="tabpanel" id="p-g-1" aria-labelledby="t-g-1"><rddc-example key="bam"></rddc-example></div>
+  <div role="tabpanel" id="p-g-2" aria-labelledby="t-g-2" hidden><rddc-example key="cram"></rddc-example></div>
+  <div role="tabpanel" id="p-g-3" aria-labelledby="t-g-3" hidden><rddc-example key="vcf"></rddc-example></div>
+  <div role="tabpanel" id="p-g-4" aria-labelledby="t-g-4" hidden><rddc-example key="bcf"></rddc-example></div>
 </div>
 <p>A variant file can reference its source alignment through <code>wasDerivedFrom</code>.</p>
 
 <h2>Indexes</h2>
-<p>An <code>IndexFile</code>, such as <code>.bai</code>, <code>.crai</code> or <code>.tbi</code>, points to the file it indexes with <code>indexOf</code>. Indexes are binary.</p>
+<p>An <code>IndexFile</code> points to the file it indexes with <code>indexOf</code>. Its format follows the indexed file's class: <code>.bai</code> for a BAM, <code>.crai</code> for a CRAM, <code>.tbi</code> or <code>.csi</code> for a VCF and <code>.csi</code> for a BCF. Indexes are binary.</p>
 <rddc-example key="index"></rddc-example>
 
-<h2>Media types</h2>
-<p>FASTQ, BAM, CRAM, VCF and their indexes have no registered IANA media types. Genomics files use <code>text/plain</code> for the text formats and <code>application/octet-stream</code> for the binary ones, and the class says which format it is. BAM, CRAM and BCF compress internally, so they leave <code>compression</code> unset; gzipped or BGZF-compressed FASTQ and VCF set <code>compression: gzip</code>.</p>
+<h2 id="media-types">Media types and compression</h2>
+<p>Genomics files use <code>text/plain</code> for the text formats and <code>application/octet-stream</code> for the binary ones; the class says which format the file is. BAM, CRAM and BCF compress internally, so they leave <code>compression</code> unset. A compressed FASTQ or VCF declares how it was compressed: <code>bgzf</code> for a file written by <code>bgzip</code>, which a tabix or CSI index requires, and <code>gzip</code> for a plain gzipped file. A VCF delivered with its index is therefore <code>bgzf</code>.</p>
 
 <h2>Sensitivity</h2>
 <p>Genome sequences, alignments and variant calls are <a href="data-overview.html#files-that-identify-a-person">identifying</a>: they can identify a person on their own, and W3C DPV classes them as genetic data (<code>pd:Genetic</code>). Removing direct identifiers does not make them de-identified, regardless of sensitivity flags. Index files hold no sequence and are not identifying.</p>
-
+<p>The formats hold sequence data and run metadata, not dates, postal codes, free text or biometric identifiers about the subject, so none of the <a href="data-overview.html#sensitivity-flags-by-class">sensitivity flags</a> applies to a genomics or index file. They are false whatever the batch says, and a file cannot set them; its <code>sensitivity</code> may hold notes only.</p>

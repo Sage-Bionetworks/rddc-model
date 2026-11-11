@@ -81,7 +81,7 @@
 <ul>
 <li>has a short local <code>@id</code> such as <code>omop</code>, not a UUID;</li>
 <li>lists its members in <code>hasPart</code>, selects them with <code>includes</code> globs, or both. Every member must also appear in <code>distribution</code>. A glob is still needed alongside <code>hasPart</code> for generic Croissant loaders, which only read <code>includes</code>;</li>
-<li>declares the standard it follows in <code>conformsTo</code>, which is required for FHIR, OMOP and C-CDA sets;</li>
+<li>declares the standard it follows in <code>conformsTo</code>, which is required for FHIR, OMOP and C-CDA sets. Every FHIR, OMOP and C-CDA file belongs to a set of its class's file set class, which is where its version comes from;</li>
 <li>may give the period its data covers in <code>temporalCoverage</code>, schema.org's ISO 8601 interval such as <code>2019/2024</code>. The sidecar document can give one for the whole batch. Use year or month precision unless the batch declares <code>containsDates</code>.</li>
 </ul>
 <h3>Pinned standards</h3>
@@ -118,12 +118,12 @@
 <tbody>
 <tr><td><code>directIdentifiersRemoved</code></td><td>Batch only, required</td><td>Not allowed</td><td><span class="muted">must be set explicitly</span></td></tr>
 <tr><td><code>synthetic</code></td><td>Batch only</td><td>Not allowed</td><td><code>false</code></td></tr>
-<tr><td><code>containsDates</code></td><td>Batch or file</td><td>Either direction</td><td><code>true</code></td></tr>
-<tr><td><code>containsZipCodes</code></td><td>Batch or file</td><td>Either direction</td><td><code>true</code></td></tr>
-<tr><td><code>containsFreeText</code></td><td>Batch or file</td><td>Either direction</td><td><code>true</code></td></tr>
-<tr><td><code>containsBiometricIdentifiers</code></td><td>Batch or file</td><td>Either direction</td><td><code>true</code></td></tr>
+<tr><td><code>containsDates</code></td><td>Batch or file</td><td>Either direction, unless the class fixes it</td><td>Class default, else <code>true</code></td></tr>
+<tr><td><code>containsZipCodes</code></td><td>Batch or file</td><td>Either direction, unless the class fixes it</td><td>Class default, else <code>true</code></td></tr>
+<tr><td><code>containsFreeText</code></td><td>Batch or file</td><td>Either direction, unless the class fixes it</td><td>Class default, else <code>true</code></td></tr>
+<tr><td><code>containsBiometricIdentifiers</code></td><td>Batch or file</td><td>Either direction, unless the class fixes it</td><td>Class default, else <code>true</code></td></tr>
 </tbody></table></div>
-<p>An unset <code>contains*</code> flag means "unknown" and is treated as <code>true</code>. Known values can be set explicitly. <code>directIdentifiersRemoved</code> records the contributor's confirmation that the required direct identifiers were removed before upload. It must be <code>true</code> unless the data is synthetic.</p>
+<p>A <code>contains*</code> flag that neither the file nor the batch sets takes the <a href="data-overview.html#sensitivity-flags-by-class">class default</a> if there is one; otherwise it is unknown and treated as <code>true</code>. A flag the class fixes holds whatever the batch says, and the file cannot set it. <code>directIdentifiersRemoved</code> records the contributor's confirmation that the required direct identifiers were removed before upload. It must be <code>true</code> unless the data is synthetic.</p>
 <div class="pair">
   <div>
     <p class="label rddc">Batch level</p>

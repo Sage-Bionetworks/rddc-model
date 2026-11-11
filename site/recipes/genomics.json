@@ -63,7 +63,7 @@
     {
       "@id": "urn:uuid:0000a503-0000-4000-8000-00000000a503",
       "@type": "cr:FileObject",
-      "additionalType": "rddc:AlignmentFile",
+      "additionalType": "rddc:CramFile",
       "name": "wgs/P0001.cram",
       "contentUrl": "wgs/P0001.cram",
       "contentSize": "17500000000 B",
@@ -98,7 +98,7 @@
     {
       "@id": "urn:uuid:0000a505-0000-4000-8000-00000000a505",
       "@type": "cr:FileObject",
-      "additionalType": "rddc:VariantFile",
+      "additionalType": "rddc:VcfFile",
       "name": "wgs/P0001.vcf.gz",
       "contentUrl": "wgs/P0001.vcf.gz",
       "contentSize": "160000000 B",
@@ -106,7 +106,7 @@
       "sha256": "23f58c124ae15753d8cbf706d2854ab6f3da1f6e2bc4eac66a36cb7accd2b374",
       "md5": "3dab0a6455df73e2e88f7b6dd9bf4a53",
       "measurementTechnique": "wgs",
-      "compression": "gzip",
+      "compression": "bgzf",
       "referenceGenome": "GRCh38",
       "sequencingPlatform": "illumina",
       "platform": "Illumina NovaSeq X",
@@ -117,7 +117,7 @@
     {
       "@id": "urn:uuid:0000a501-0000-4000-8000-00000000a501",
       "@type": "cr:FileObject",
-      "additionalType": "rddc:SequenceReadsFile",
+      "additionalType": "rddc:FastqFile",
       "name": "wgs/P0001_R1.fastq.gz",
       "contentUrl": "wgs/P0001_R1.fastq.gz",
       "contentSize": "48000000000 B",
@@ -138,7 +138,7 @@
     {
       "@id": "urn:uuid:0000a502-0000-4000-8000-00000000a502",
       "@type": "cr:FileObject",
-      "additionalType": "rddc:SequenceReadsFile",
+      "additionalType": "rddc:FastqFile",
       "name": "wgs/P0001_R2.fastq.gz",
       "contentUrl": "wgs/P0001_R2.fastq.gz",
       "contentSize": "48200000000 B",

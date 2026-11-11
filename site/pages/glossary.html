@@ -10,7 +10,7 @@
 <dt>Contributor</dt><dd>An organization that sends data to the RDDC. It has one bucket and one or more sources.</dd>
 <dt>Croissant</dt><dd>An MLCommons metadata format for datasets, built on schema.org. The sidecar is a Croissant 1.1 dataset. See <a href="foundations.html#croissant">Foundations</a>.</dd>
 <dt>CURIE</dt><dd>A compact IRI such as <code>cr:FileObject</code>, where the prefix <code>cr</code> stands for <code>http://mlcommons.org/croissant/</code>.</dd>
-<dt>Data class</dt><dd>The RDDC class of a data file, named in its <code>additionalType</code>, such as <code>rddc:SequenceReadsFile</code>. It fixes the accepted media types, the required fields and the modality. See <a href="data-overview.html">How data is classified</a>.</dd>
+<dt>Data class</dt><dd>The RDDC class of a data file, named in its <code>additionalType</code>, such as <code>rddc:FastqFile</code>. It fixes the format and accepted media types, the required fields, the modality and the sensitivity flags the format decides. See <a href="data-overview.html">How data is classified</a>.</dd>
 <dt>Deposit sidecar</dt><dd>A contributor-authored sidecar for a delivered batch.</dd>
 <dt>Distribution</dt><dd>The list of every file and file set in a sidecar (schema.org <code>distribution</code>).</dd>
 <dt>FHIR</dt><dd>Fast Healthcare Interoperability Resources, the HL7 standard for exchanging clinical data. The sidecar pins FHIR R4 (4.0.1) and US Core 6.1.0.</dd>
@@ -21,7 +21,7 @@
 <dt>JSON-LD</dt><dd>JSON for Linked Data. JSON plus <code>@context</code>, <code>@id</code> and <code>@type</code>, which tie keys and objects to IRIs.</dd>
 <dt>Lane</dt><dd>A NORMALIZE processing path for one input format, such as OMOP, FHIR, C-CDA or other clinical tables.</dd>
 <dt>LinkML</dt><dd>The modelling language the schema is written in. JSON Schema and the JSON-LD context are generated from it.</dd>
-<dt>Modality</dt><dd>The kind of data a file carries, such as <code>clinical_fhir</code> or <code>genomics</code>. Each data file class has one, so the sidecar does not state it. See <a href="data-overview.html">How data is classified</a>.</dd>
+<dt>Modality</dt><dd>The kind of data a source registers to deposit, such as <code>clinical_fhir</code> or <code>genomics</code>. Each data file class has one, so the sidecar does not state it; the platform checks it against the source register. See <a href="data-overview.html">How data is classified</a>.</dd>
 <dt>NORMALIZE</dt><dd>The RDDC stage that converts accepted data into common models, by lane.</dd>
 <dt>OMOP CDM</dt><dd>The OHDSI Observational Medical Outcomes Partnership Common Data Model. The sidecar pins version 5.4.</dd>
 <dt>PROV</dt><dd>The W3C vocabulary for provenance. The sidecar uses it to name its author and link files or file sets to their inputs in the same batch.</dd>

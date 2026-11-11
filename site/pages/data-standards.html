@@ -2,12 +2,12 @@
 <p class="lede">The data classes, their values and the sensitivity flags point to terms in published vocabularies and regulations, so that other systems can read RDDC data without an RDDC-specific mapping.</p>
 
 <h2 id="why-map-at-all">Purpose of mappings</h2>
-<p>An RDDC class name such as <code>rddc:SequenceReadsFile</code>, or a value such as <code>wgs</code>, means something only to RDDC tools. Each mapping links it to a term recognised by other systems. Mappings document relationships for other systems. Files omit them, and validation does not use them.</p>
+<p>An RDDC class name such as <code>rddc:FastqFile</code>, or a value such as <code>wgs</code>, means something only to RDDC tools. Each mapping links it to a term recognised by other systems. Mappings document relationships for other systems. Files omit them, and validation does not use them.</p>
 <p>Mappings indicate how closely terms match. A value's <strong>meaning</strong> identifies an exact matching term. Without an exact match, a <strong>close</strong> mapping has a similar meaning; a <strong>broader</strong> mapping covers a wider concept. A value with neither has no suitable term, such as targeted gene panel sequencing, which OBI does not define.</p>
 
 <h2 id="the-vocabularies">Vocabularies</h2>
 <dl class="glossary">
-<dt>EDAM</dt><dd>An ontology of data types and formats in bioinformatics (EDAM 1.25). Data classes map to EDAM <code>data_</code> terms, such as sequence reads, sequence alignment and variant calls, as close or broader mappings. Classes without a suitable EDAM data term have no EDAM mapping.</dd>
+<dt>EDAM</dt><dd>An ontology of data types and formats in bioinformatics (EDAM 1.25). Data classes map to EDAM <code>data_</code> terms, such as sequence reads, sequence alignment and variant calls, as close or broader mappings, and the classes that stand for one format (FASTQ, BAM, CRAM, VCF, BCF, DICOM, TIFF and the other image formats) map to its <code>format_</code> term. Classes without a suitable EDAM term have no EDAM mapping.</dd>
 <dt>OBI</dt><dd>The Ontology for Biomedical Investigations (release 2026-07-27). Its assay terms are the meanings of the genomics assays, and of the imaging and sensing techniques OBI defines.</dd>
 <dt>NCIT</dt><dd>The NCI Thesaurus (26.02d). Used for imaging and sensing techniques OBI has no term for, such as X-ray radiography, ultrasound and accelerometry.</dd>
 <dt>SNOMED CT</dt><dd>The clinical terminology. Used where neither OBI nor NCIT has a term, such as clinical photography and continuous glucose monitoring.</dd>

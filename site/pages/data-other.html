@@ -5,7 +5,7 @@
 
 <h2>Documentation</h2>
 <p>A <code>DocumentationFile</code> documents other files: a data dictionary, an acquisition table for images, a codebook or a README. Its modality is <code>metadata</code>, so it is kept with the data rather than processed as data. Its <code>mixed</code> structure permits structured content, such as CSV dictionaries, and unstructured content, such as READMEs.</p>
-<p>Use <code>about</code> to reference the documented files. Omit <code>about</code> for a README covering the whole delivery.</p>
+<p>Use <code>about</code> to reference the documented files. Omit <code>about</code> for a README covering the whole delivery. Documentation describes the data and holds no subject-level content, so every sensitivity flag is <code>false</code> unless the file or the batch says otherwise.</p>
 <div class="pair">
   <div><rddc-example key="documentation" title="A data dictionary for one table"></rddc-example></div>
   <div><rddc-example key="readme" title="A README for a whole delivery"></rddc-example></div>
