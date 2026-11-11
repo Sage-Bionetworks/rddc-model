@@ -56,7 +56,7 @@
 <p>The RDDC version keeps the Croissant glob in <code>includes</code>, so generic loaders still find the files, and adds:</p>
 <ul>
 <li><code>hasPart</code>, listing members explicitly by <code>@id</code>;</li>
-<li><code>conformsTo</code>, pinning the standard and version (FHIR R4 with US Core 6.1), which picks the processing lane;</li>
+<li><code>conformsTo</code>, pinning the standard and version (FHIR R4 with US Core 6.1), which decides how the files are processed;</li>
 <li>class-specific facts such as <code>exportTime</code> and <code>subjectCount</code>.</li>
 </ul>
 
@@ -84,32 +84,15 @@
 </tbody></table></div>
 
 <h2>Term by term</h2>
-<p>Which vocabulary each sidecar key comes from. The colours match the code samples throughout the site.</p>
+<p>Which vocabulary each key in the schema comes from: the sidecar, its data files, and the separate <a href="source-descriptor.html">source descriptor</a>. The colours match the code samples throughout the site.</p>
 <h3>Kept from schema.org and Croissant</h3>
-<p>
-<span class="chip o-sc">name</span> <span class="chip o-sc">description</span> <span class="chip o-sc">url</span> <span class="chip o-sc">dateCreated</span>
-<span class="chip o-sc">distribution</span> <span class="chip o-sc">contentUrl</span> <span class="chip o-sc">contentSize</span> <span class="chip o-sc">encodingFormat</span>
-<span class="chip o-sc">sha256</span> <span class="chip o-sc">hasPart</span> <span class="chip o-sc">additionalType</span> <span class="chip o-sc">identifier</span>
-<span class="chip o-sc">additionalProperty</span> <span class="chip o-sc">about</span> <span class="chip o-sc">softwareVersion</span>
-<span class="chip o-cr">conformsTo</span> <span class="chip o-cr">md5</span> <span class="chip o-cr">includes</span> <span class="chip o-cr">excludes</span>
-<span class="chip o-cr">recordSet</span> <span class="chip o-cr">field</span> <span class="chip o-cr">key</span> <span class="chip o-cr">dataType</span>
-<span class="chip o-cr">source</span> <span class="chip o-cr">fileObject</span> <span class="chip o-cr">fileSet</span> <span class="chip o-cr">extract</span>
-<span class="chip o-cr">column</span> <span class="chip o-cr">references</span>
-</p>
+<rddc-term-chips origins="sc,cr"></rddc-term-chips>
 <p class="muted"><code>conformsTo</code> is Dublin Core's <code>dct:conformsTo</code>, which Croissant adopts; it is grouped with Croissant here.</p>
 <h3>Added by the RDDC</h3>
-<p>
-<span class="chip o-rddc">contributorId</span> <span class="chip o-rddc">sourceId</span> <span class="chip o-rddc">batchId</span>
-<span class="chip o-rddc">interaction</span> <span class="chip o-rddc">noticeRef</span> <span class="chip o-rddc">registerVersion</span>
-<span class="chip o-rddc">sensitivity</span> <span class="chip o-rddc">subjects</span> <span class="chip o-rddc">subjectIds</span>
-<span class="chip o-rddc">compression</span> <span class="chip o-rddc">recordCount</span> <span class="chip o-rddc">processingHints</span> <span class="chip o-rddc">valueOrigins</span>
-<span class="chip o-rddc">resourceType</span> <span class="chip o-rddc">bundleType</span> <span class="chip o-rddc">cdmTable</span>
-<span class="chip o-rddc">referenceGenome</span> <span class="chip o-rddc">exportTime</span> <span class="chip o-rddc">vocabularyVersion</span>
-<span class="chip o-rddc">cdmSource</span> <span class="chip o-rddc">subjectCount</span> <span class="chip o-rddc">…</span>
-</p>
+<rddc-term-chips origins="rddc"></rddc-term-chips>
 <h3>Borrowed from W3C PROV</h3>
-<p><span class="chip o-prov">wasAttributedTo</span> <span class="chip o-prov">wasDerivedFrom</span></p>
-<p>The <a href="reference.html">schema reference</a> lists every property with its full IRI.</p>
+<rddc-term-chips origins="prov"></rddc-term-chips>
+<p>These lists are generated from the schema. The <a href="reference.html">sidecar schema reference</a> and the <a href="data-classes.html">data class reference</a> list every property with its full IRI.</p>
 
 <h2>How generic Croissant tools see a sidecar</h2>
 <p>A Croissant tool reads the standard files, file sets, checksums and media types. It ignores RDDC terms such as <code>subjects</code> and <code>sensitivity</code>. Run <code>make check</code> with <code>mlcroissant</code> installed to check that every example loads.</p>
