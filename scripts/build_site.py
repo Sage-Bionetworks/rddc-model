@@ -3,8 +3,8 @@
 Usage: python scripts/build_site.py [OUT]   (default: site/dist)
 
 Pages are HTML fragments in site/pages; the reference and vocabulary pages are
-generated from schema/rddc_sidecar.yaml, so they always describe the schema in
-this checkout. Fragments may use two directives:
+generated from the schema (schema/rddc_sidecar.yaml and the modules it imports), so
+they always describe the schema in this checkout. Fragments may use these directives:
 
   <rddc-json src="examples/x.json" pointer="/distribution/0" keys="a,b"
              title="..."></rddc-json>
@@ -14,12 +14,30 @@ this checkout. Fragments may use two directives:
   <rddc-code title="..." [lang="json|text|shell"]>RAW</rddc-code>
       Literal code. JSON is highlighted the same way.
 
+and these, which render tables generated from the schema, so hand-written pages
+never copy class or enum details:
+
+  <rddc-family names="A,B"></rddc-family>     the data classes of one family page
+  <rddc-example key="reads"></rddc-example>    a valid data file object from
+                                               examples/data_files/valid.json
+  <rddc-classification></rddc-classification> every data class's annotations
+  <rddc-props class="DataFile"></rddc-props>   a class's properties
+  <rddc-data-slots></rddc-data-slots>          the slots only data classes use
+  <rddc-technique></rddc-technique>            measurementTechnique by class
+  <rddc-enum name="GenomicsAssayEnum"></rddc-enum>  an enum's values
+  <rddc-flags></rddc-flags>                    the sensitivity flags
+  <rddc-terms></rddc-terms>                    external vocabularies the model maps to
+
+Every concrete data class must be named by exactly one rddc-family directive and
+shown by at least one rddc-example; the build stops otherwise.
+
 JSON keys are tagged with the vocabulary they come from (schema.org,
 Croissant, RDDC, PROV), read from the generated JSON-LD context.
 
 Every site/recipes/*.json is validated against the sidecar JSON Schema (with
-the generated @context added), and every site/recipes/mistakes/*.json must
-fail it; the build stops otherwise.
+the generated @context added), every site/recipes/mistakes/*.json must fail it,
+and every object in examples/data_files/valid.json must validate against the
+class its additionalType names; the build stops otherwise.
 """
 
 import glob
@@ -58,36 +76,71 @@ def _walk(view, name):
 DATA_CLASSES = list(_walk(data_sv, "DataFile"))
 # Types defined in the RDDC modules (core.yaml and the sidecar), not LinkML's built-ins.
 RDDC_TYPES = {n: t for n, t in sv.all_types().items() if not (t.from_schema or "").startswith("https://w3id.org/linkml/")}
+CONCRETE_DATA = [c for c in DATA_CLASSES if not data_sv.get_class(c).abstract]
+# One valid object per concrete data class, shared with scripts/check_data_files.py.
+DATA_EXAMPLES_SRC = "examples/data_files/valid.json"
+DATA_EXAMPLES = json.load(open(os.path.join(ROOT, DATA_EXAMPLES_SRC)))
+
+
+def _direct_ranges(view, classes):
+    return {s.range for c in classes for s in view.class_induced_slots(c)}
+
+
+# Enums and types used by data classes, or defined in the data module, are listed on
+# the data class vocabularies page; the rest on the sidecar vocabularies page.
+_data_ranges = _direct_ranges(data_sv, DATA_CLASSES)
+DATA_ENUMS = [e for e in sv.all_enums() if e in _data_ranges or e in (data_sv.schema.enums or {})]
+DATA_TYPES = [t for t in RDDC_TYPES if t in _data_ranges]
 
 
 def class_page(name):
     return "data-classes.html" if name in DATA_CLASSES else "reference.html"
 
 
+def enum_href(name):
+    return ("data-vocabularies.html" if name in DATA_ENUMS else "vocabularies.html") + f"#{name}"
+
+
+def type_href(name):
+    return ("data-vocabularies.html" if name in DATA_TYPES else "vocabularies.html") + f"#type-{name}"
+
+
 def class_href(name):
     return f"{class_page(name)}#{name}"
 
-# Navigation: (group, [(file, title)]). The order is the reading order.
+# Navigation: (group, [(file, title)]). The order is the reading order: the data
+# classes first, then the sidecar that lists files of those classes.
 NAV = [
     ("Start here", [
         ("index.html", "Overview"),
+    ]),
+    ("Data classes", [
+        ("data-overview.html", "How data is classified"),
+        ("describing-files.html", "Describing a data file"),
+        ("data-clinical.html", "Clinical data"),
+        ("data-genomics.html", "Genomics"),
+        ("data-imaging.html", "Imaging, audio and video"),
+        ("data-sensor.html", "Sensor data"),
+        ("data-other.html", "Documentation and other files"),
+        ("data-standards.html", "Standards and mappings"),
+        ("data-classes.html", "Data class reference"),
+        ("data-vocabularies.html", "Data class vocabularies"),
+    ]),
+    ("The sidecar", [
         ("foundations.html", "Foundations"),
         ("croissant.html", "RDDC and Croissant"),
-    ]),
-    ("Learn", [
         ("concepts.html", "Core concepts"),
         ("tutorial.html", "Sidecar tutorial"),
         ("lifecycle.html", "Lifecycle and validation"),
     ]),
-    ("Examples", [
+    ("Sidecar examples", [
         ("examples.html", "Example sidecars"),
         ("recipes.html", "Recipes by data type"),
         ("mistakes.html", "Common mistakes"),
     ]),
     ("Reference", [
-        ("reference.html", "Schema reference"),
-        ("data-classes.html", "Data file classes"),
-        ("vocabularies.html", "Controlled vocabularies"),
+        ("reference.html", "Sidecar schema reference"),
+        ("vocabularies.html", "Sidecar vocabularies"),
         ("source-descriptor.html", "Source descriptor"),
         ("glossary.html", "Glossary and FAQ"),
         ("downloads.html", "Downloads"),
@@ -345,7 +398,7 @@ def render_json_directive(m):
         node = {**node, "@context": ELIDED}
     download = None
     if src.startswith("examples/") or (src.startswith("site/recipes/") and "/mistakes/" not in src):
-        download = "downloads/" + ("examples/" if src.startswith("examples/") else "recipes/") + os.path.basename(src)
+        download = "downloads/" + (src if src.startswith("examples/") else "recipes/" + os.path.basename(src))
     title = attrs.get("title") or os.path.basename(src) + (attrs.get("pointer") or "")
     return code_block(highlight_json(dumps(node)), html.escape(title), download=download)
 
@@ -371,7 +424,7 @@ CLASS_GROUPS = [
     ("The sidecar document", "The dataset and its main sections.",
      ["Sidecar", "Agent", "SensitivityDeclaration", "SubjectEntry"]),
     ("Distribution: the common base", "Shared by every file and file set. The data file classes "
-     "built on FileObject have their own page, <a href='data-classes.html'>Data file classes</a>.",
+     "built on FileObject have their own page, <a href='data-classes.html'>Data class reference</a>.",
      ["DistributionItem", "FileObject", "FileSensitivity", "BiometricFileSensitivity"]),
     ("File set classes", "Name one of these in a file set's additionalType. @type stays cr:FileSet.",
      ["FileSet", "FhirBulkExport", "FhirBundleCollection", "OmopCdmInstance", "CdmSource",
@@ -393,9 +446,9 @@ def range_link(rng):
     if rng in sv.all_classes() and rng != "AnyValue":
         return f'<a href="{class_href(rng)}"><code>{rng}</code></a>'
     if rng in sv.all_enums():
-        return f'<a href="vocabularies.html#{rng}"><code>{rng}</code></a>'
+        return f'<a href="{enum_href(rng)}"><code>{rng}</code></a>'
     if rng in RDDC_TYPES:
-        return f'<a href="vocabularies.html#type-{rng}"><code>{rng}</code></a>'
+        return f'<a href="{type_href(rng)}"><code>{rng}</code></a>'
     if rng == "AnyValue":
         return "<code>object</code>"
     return f"<code>{rng}</code>"
@@ -475,6 +528,36 @@ def rule_text(rule):
     return sentence
 
 
+def key_code(slot):
+    """A slot's JSON key, coloured by its vocabulary."""
+    origin, iri = slot_origin(slot)
+    return (f"<code class='k o-{origin}' title='{html.escape(ORIGIN_LABEL[origin])}: {html.escape(iri)}'>"
+            f"{html.escape(slot.alias or slot.name)}</code>")
+
+
+def props_table(name, view=None, skip=()):
+    """A class's properties, inherited ones included; empty when it has none."""
+    view = view or sv
+    rows = []
+    for slot in sorted(view.class_induced_slots(name), key=lambda s: (not s.required, s.alias or s.name)):
+        if slot.name in skip:
+            continue
+        card = " <span class=muted>list</span>" if slot.multivalued else ""
+        req = '<span class="req">required</span>' if slot.required else '<span class="opt">optional</span>'
+        cons = slot_constraints(slot) + slot_mappings(slot)
+        rows.append(
+            f"<tr><td>{key_code(slot)}</td><td>{range_link(slot.range or 'string')}{card}</td>"
+            f"<td>{req}</td><td>{esc(slot.description)} {cons}</td></tr>"
+        )
+    if not rows:
+        return ""
+    return (
+        "<div class='table-wrap'><table class='props'><thead><tr><th>Property</th><th>Type</th>"
+        "<th>Required?</th><th>Meaning and constraints</th></tr></thead><tbody>"
+        + "".join(rows) + "</tbody></table></div>"
+    )
+
+
 def class_section(name, view=None):
     view = view or sv
     cls = view.get_class(name)
@@ -512,30 +595,11 @@ def class_section(name, view=None):
         typ = "cr:FileSet" if "FileSet" in view.class_ancestors(name) else "cr:FileObject"
         meta.append(f'<span>Use as <code>"@type": "{typ}", "additionalType": "rddc:{name}"</code></span>')
 
-    rows = []
-    for slot in sorted(view.class_induced_slots(name), key=lambda s: (not s.required, s.alias or s.name)):
-        key = slot.alias or slot.name
-        origin, iri = slot_origin(slot)
-        card = "list" if slot.multivalued else ""
-        req = '<span class="req">required</span>' if slot.required else '<span class="opt">optional</span>'
-        desc = esc(slot.description)
-        cons = slot_constraints(slot) + slot_mappings(slot)
-        rows.append(
-            f"<tr><td><code class='k o-{origin}' title='{html.escape(ORIGIN_LABEL[origin])}: {html.escape(iri)}'>{html.escape(key)}</code></td>"
-            f"<td>{range_link(slot.range or 'string')}{' <span class=muted>list</span>' if card else ''}</td>"
-            f"<td>{req}</td><td>{desc} {cons}</td></tr>"
-        )
     rules = [rule_text(r) for c in [name] + ancestors for r in (view.get_class(c).rules or [])]
     rules_html = ""
     if rules:
         rules_html = "<div class='rules'><h4>Conditional rules</h4><ul>" + "".join(f"<li>{r}</li>" for r in rules) + "</ul></div>"
-    table = ""
-    if rows:
-        table = (
-            "<div class='table-wrap'><table class='props'><thead><tr><th>Property</th><th>Type</th>"
-            "<th>Required?</th><th>Meaning and constraints</th></tr></thead><tbody>"
-            + "".join(rows) + "</tbody></table></div>"
-        )
+    table = props_table(name, view)
     return (
         f"<section class='class' id='{name}'><h3>{name} {''.join(badges)}</h3>"
         f"<p>{esc(cls.description)}</p><p class='meta'>{''.join(meta)}</p>{table}{rules_html}</section>"
@@ -549,6 +613,22 @@ def concrete_descendants(root):
 DISPATCHED = set(concrete_descendants("FileObject")) | set(concrete_descendants("FileSet"))
 
 
+def formats_html(name):
+    """The media types a class accepts in encodingFormat."""
+    enc = next(s for s in sv.class_induced_slots(name) if s.name == "encodingFormat")
+    fmts = [enc.equals_string] if enc.equals_string else [a.equals_string for a in (enc.any_of or [])]
+    top = re.match(r"\^([a-z]+)/", enc.pattern or "")
+    fmts = fmts or ([f"{top.group(1)}/*"] if top else [])
+    return "<br>".join(f"<code>{html.escape(x)}</code>" for x in fmts) or "<span class=muted>any media type</span>"
+
+
+def extra_required(name, base=None):
+    """Required fields a class adds to those every data file has."""
+    if base is None:
+        base = {s.name for s in sv.class_induced_slots("DataFile") if s.required}
+    return [s.alias or s.name for s in sv.class_induced_slots(name) if s.required and s.name not in base]
+
+
 def dispatch_table(root, structure=False):
     """One row per concrete class under root. structure=True adds the data file
     classes' modality and structure annotations."""
@@ -556,14 +636,9 @@ def dispatch_table(root, structure=False):
     order = DATA_CLASSES if root == "FileObject" else [c for _, _, cs in CLASS_GROUPS for c in cs]
     rows = []
     for name in [c for c in order if c in concrete_descendants(root)]:
-        slots = sv.class_induced_slots(name)
         ann = sv.get_class(name).annotations
-        enc = next(s for s in slots if s.name == "encodingFormat")
-        fmts = [enc.equals_string] if enc.equals_string else [a.equals_string for a in (enc.any_of or [])]
-        top = re.match(r"\^([a-z]+)/", enc.pattern or "")
-        fmts = fmts or ([f"{top.group(1)}/*"] if top else [])
-        fmt = "<br>".join(f"<code>{html.escape(x)}</code>" for x in fmts) or "<span class=muted>any media type</span>"
-        extra = [s.alias or s.name for s in slots if s.required and s.name not in base]
+        fmt = formats_html(name)
+        extra = extra_required(name, base)
         rows.append(
             f"<tr><td><a href='{class_href(name)}'><code>rddc:{name}</code></a></td>"
             + (f"<td><code>{html.escape(ann['modality'].value)}</code></td>"
@@ -585,14 +660,15 @@ def reference_page():
         f"<li><a href='#{slug(g)}'>{g}</a></li>" for g, _, _ in CLASS_GROUPS
     )
     body = [
-        "<h1>Schema reference</h1>",
+        "<h1>Sidecar schema reference</h1>",
         f"<p class='lede'>Every class in schema version <strong>{VERSION}</strong>, generated from "
         "<code>schema/rddc_sidecar.yaml</code>. Property keys are coloured by vocabulary, and their full IRI "
         "appears on hover. Inherited properties are included, so each class lists everything "
         "it accepts. Unlisted properties are rejected.</p>",
         "<h2 id='file-classes'>File classes</h2>",
         "<p>The data file classes (<code>DataFile</code> and its subclasses) are on their own page, "
-        "<a href='data-classes.html'>Data file classes</a>, generated from <code>schema/data.yaml</code>.</p>",
+        "<a href='data-classes.html'>Data class reference</a>, generated from <code>schema/data.yaml</code>. "
+        "<a href='data-overview.html'>How data is classified</a> explains them.</p>",
         "<h2 id='file-set-classes-at-a-glance'>File set classes at a glance</h2>",
         "<p>Every file set needs <code>@id</code>, <code>name</code>, and <code>hasPart</code> or <code>includes</code> (or both).</p>",
         dispatch_table("FileSet"),
@@ -639,8 +715,8 @@ def data_classes_page():
     schema = data_sv.schema
     base = " → ".join(f"<a href='{class_href(a)}'><code>{a}</code></a>" for a in reversed(data_sv.class_ancestors("DataFile")[1:]))
     body = [
-        "<h1>Data file classes</h1>",
-        f"<p class='lede'>The classes a data file names in its <code>additionalType</code>, generated from "
+        "<h1>Data class reference</h1>",
+        f"<p class='lede'>Every class a data file can name in its <code>additionalType</code>, generated from "
         f"<code>schema/data.yaml</code> (module <code>{esc(schema.name)}</code>, version {esc(schema.version)}). "
         "Inherited properties are included, so each class lists everything it accepts.</p>",
         description_html(schema.description),
@@ -696,13 +772,8 @@ def value_terms(pv):
     return "; ".join(parts)
 
 
-def vocab_page():
-    body = [
-        "<h1>Controlled vocabularies</h1>",
-        f"<p class='lede'>Allowed values and formats for schema version <strong>{VERSION}</strong>. "
-        "Validation uses the values defined by the version in <code>conformsTo</code>.</p>",
-        "<h2 id='enumerations'>Enumerations</h2>",
-    ]
+def enum_users():
+    """Enum name -> the JSON keys whose range it is, on any class."""
     users = {}
     for sname, slot in sv.all_slots().items():
         if slot.range in sv.all_enums():
@@ -711,30 +782,298 @@ def vocab_page():
         for sname, usage in (cls.slot_usage or {}).items():
             if usage.range in sv.all_enums():
                 users.setdefault(usage.range, set()).add(sv.get_slot(sname).alias or sname)
-    for name, enum in sv.all_enums().items():
-        values = enum.permissible_values
-        with_terms = any(pv.meaning or pv.close_mappings or pv.broad_mappings for pv in values.values())
-        rows = "".join(
-            f"<tr><td><code>{html.escape(v)}</code></td>"
-            + (f"<td>{value_terms(pv)}</td>" if with_terms else "")
-            + f"<td>{html.escape(pv.description or '')}</td></tr>"
-            for v, pv in values.items()
-        )
+    return users
+
+
+def enum_table(name):
+    """An enum's values, with their ontology terms when any value has one."""
+    values = sv.get_enum(name).permissible_values
+    with_terms = any(pv.meaning or pv.close_mappings or pv.broad_mappings for pv in values.values())
+    with_titles = any(pv.title for pv in values.values())
+    rows = "".join(
+        f"<tr><td><code>{html.escape(v)}</code></td>"
+        + (f"<td>{esc(pv.title)}</td>" if with_titles else "")
+        + (f"<td>{value_terms(pv)}</td>" if with_terms else "")
+        + f"<td>{esc(pv.description)}</td></tr>"
+        for v, pv in values.items()
+    )
+    return (
+        f"<div class='table-wrap'><table><thead><tr><th>Value</th>{'<th>Name</th>' if with_titles else ''}"
+        f"{'<th>Term</th>' if with_terms else ''}<th>Meaning</th></tr></thead><tbody>{rows}</tbody></table></div>"
+    )
+
+
+def vocab_body(enums, types):
+    users = enum_users()
+    body = ["<h2 id='enumerations'>Enumerations</h2>"]
+    for name in enums:
+        enum = sv.get_enum(name)
         used = ", ".join(f"<code>{u}</code>" for u in sorted(users.get(name, [])))
         meta = f"<p class='meta'><span>Used by {used}</span></p>" if used else ""
         body.append(
-            f"<section class='class' id='{name}'><h3>{name}</h3><p>{html.escape(enum.description or '')}</p>{meta}"
-            f"<div class='table-wrap'><table><thead><tr><th>Value</th>{'<th>Term</th>' if with_terms else ''}"
-            f"<th>Meaning</th></tr></thead><tbody>{rows}</tbody></table></div></section>"
+            f"<section class='class' id='{name}'><h3>{name}</h3><p>{esc(enum.description)}</p>{meta}"
+            f"{enum_table(name)}</section>"
         )
-    body.append("<h2 id='value-types'>Value types</h2><p>Text formats checked with regular expressions.</p>")
-    rows = "".join(
-        f"<tr id='type-{n}'><td><code>{n}</code></td><td>{html.escape(t.description or '')}</td>"
-        f"<td><code class='pattern'>{html.escape(t.pattern or '')}</code></td></tr>"
-        for n, t in RDDC_TYPES.items()
+    if types:
+        body.append("<h2 id='value-types'>Value types</h2><p>Text formats checked with regular expressions.</p>")
+        rows = "".join(
+            f"<tr id='type-{n}'><td><code>{n}</code></td><td>{esc(RDDC_TYPES[n].description)}</td>"
+            f"<td><code class='pattern'>{html.escape(RDDC_TYPES[n].pattern or '')}</code></td></tr>"
+            for n in types
+        )
+        body.append(f"<div class='table-wrap'><table><thead><tr><th>Type</th><th>Meaning</th><th>Pattern</th></tr></thead><tbody>{rows}</tbody></table></div>")
+    return body
+
+
+def vocab_page():
+    enums = [e for e in sv.all_enums() if e not in DATA_ENUMS]
+    types = [t for t in RDDC_TYPES if t not in DATA_TYPES]
+    return "\n".join([
+        "<h1>Sidecar vocabularies</h1>",
+        f"<p class='lede'>Allowed values and formats for the sidecar document, schema version <strong>{VERSION}</strong>. "
+        "The values that describe data files, such as assays, modalities and FHIR resource types, are on "
+        "<a href='data-vocabularies.html'>Data class vocabularies</a>.</p>",
+    ] + vocab_body(enums, types))
+
+
+def data_vocab_page():
+    return "\n".join([
+        "<h1>Data class vocabularies</h1>",
+        f"<p class='lede'>Allowed values and formats for data file properties, schema version <strong>{VERSION}</strong>, "
+        "generated from <code>schema/data.yaml</code> and <code>schema/core.yaml</code>. Where a value has an "
+        "ontology term, the Term column links to it. Validation uses the values defined by the version in the "
+        "file set's <code>conformsTo</code>.</p>",
+    ] + vocab_body(DATA_ENUMS, DATA_TYPES))
+
+
+# ---------------------------------------------------------------------------
+# Generated blocks for the hand-written data class pages
+# ---------------------------------------------------------------------------
+FAMILY_CLASSES = {}   # class -> page that names it in an rddc-family directive
+EXAMPLED_CLASSES = set()
+_current_page = [None]
+
+
+def annotation(name, key):
+    ann = data_sv.get_class(name).annotations.get(key)
+    return ann.value if ann else None
+
+
+def sensitivity_badges(name):
+    if annotation(name, "biometric"):
+        return "<span class='badge'>biometric</span> <span class='badge'>identifying</span>"
+    if annotation(name, "identifying"):
+        return "<span class='badge'>identifying</span>"
+    return ""
+
+
+def gen_family(attrs):
+    names = [n.strip() for n in attrs["names"].split(",")]
+    rows = []
+    for name in names:
+        if name not in CONCRETE_DATA:
+            raise SystemExit(f"{_current_page[0]}: rddc-family names {name}, which is not a concrete data class")
+        if name in FAMILY_CLASSES:
+            raise SystemExit(f"{_current_page[0]}: {name} is already on {FAMILY_CLASSES[name]}")
+        FAMILY_CLASSES[name] = _current_page[0]
+        extra = extra_required(name)
+        rows.append(
+            f"<tr><td><a href='{class_href(name)}'><code>rddc:{name}</code></a> {sensitivity_badges(name)}</td>"
+            f"<td>{esc(data_sv.get_class(name).description)}</td><td>{formats_html(name)}</td>"
+            f"<td>{', '.join(f'<code>{e}</code>' for e in extra) or '<span class=muted>none</span>'}</td></tr>"
+        )
+    return (
+        "<div class='table-wrap'><table><thead><tr><th>additionalType</th><th>Use for</th>"
+        "<th>encodingFormat</th><th>Extra required fields</th></tr></thead><tbody>"
+        + "".join(rows) + "</tbody></table></div>"
     )
-    body.append(f"<div class='table-wrap'><table><thead><tr><th>Type</th><th>Meaning</th><th>Pattern</th></tr></thead><tbody>{rows}</tbody></table></div>")
-    return "\n".join(body)
+
+
+def gen_example(attrs):
+    key = attrs["key"]
+    if key not in DATA_EXAMPLES:
+        raise SystemExit(f"{_current_page[0]}: no example {key!r} in {DATA_EXAMPLES_SRC}")
+    cls = DATA_EXAMPLES[key]["additionalType"]
+    EXAMPLED_CLASSES.add(cls.split(":", 1)[1])
+    title = attrs.get("title") or f"A valid {cls}"
+    return f'<rddc-json src="{DATA_EXAMPLES_SRC}" pointer="/{key}" title="{html.escape(title)}"></rddc-json>'
+
+
+def gen_classification(attrs):
+    """Every concrete data class's annotations, grouped by the family page that covers it."""
+    def cell(value):
+        return f"<code>{esc(value)}</code>" if value else "<span class=muted>none</span>"
+    titles = dict(t for _, items in NAV for t in items)
+    rows = []
+    for page in [f for f, _ in PAGES if f in FAMILY_CLASSES.values()]:
+        rows.append(f"<tr><th colspan='5'><a href='{page}'>{titles[page]}</a></th></tr>")
+        rows.extend(
+            f"<tr><td><a href='{class_href(c)}'><code>{c}</code></a></td>"
+            f"<td>{cell(annotation(c, 'modality'))}</td><td>{esc(annotation(c, 'structure'))}</td>"
+            f"<td>{esc(annotation(c, 'rai:dataCollectionType')) or '<span class=muted>not fixed</span>'}</td>"
+            f"<td>{sensitivity_badges(c) or '<span class=muted>no</span>'}</td></tr>"
+            for c in CONCRETE_DATA if FAMILY_CLASSES.get(c) == page
+        )
+    return (
+        "<div class='table-wrap'><table><thead><tr><th>Class</th><th>Modality</th><th>Structure</th>"
+        "<th>Collection type</th><th>Identifies a person</th></tr></thead><tbody>"
+        + "".join(rows) + "</tbody></table></div>"
+    )
+
+
+def gen_props(attrs):
+    skip = [x.strip() for x in attrs.get("skip", "").split(",") if x.strip()]
+    return props_table(attrs["class"], skip=skip)
+
+
+def gen_data_slots(attrs):
+    """The slots defined in the data module, with the classes that use them."""
+    rows = []
+    for name in data_sv.schema.slots:
+        users = [c for c in CONCRETE_DATA if any(s.name == name for s in data_sv.class_induced_slots(c))]
+        req = [c for c in users if next(s for s in data_sv.class_induced_slots(c) if s.name == name).required]
+        slot = sv.get_slot(name)
+        # Classes may narrow the range (measurementTechnique takes its enum from the class).
+        ranges = list(dict.fromkeys(next(s for s in data_sv.class_induced_slots(c) if s.name == name).range or "string"
+                                    for c in users)) or [slot.range or "string"]
+        used = ", ".join(f"<a href='{class_href(c)}'><code>{c}</code></a>" + (" <span class='req'>required</span>" if c in req else "")
+                         for c in users)
+        if len(users) == len(CONCRETE_DATA):
+            used = "every data file"
+        rows.append(
+            f"<tr><td>{key_code(slot)}</td><td>{'<br>'.join(range_link(r) for r in ranges)}</td>"
+            f"<td>{esc(slot.description)}{slot_mappings(slot)}</td><td>{used}</td></tr>"
+        )
+    return (
+        "<div class='table-wrap'><table class='props'><thead><tr><th>Property</th><th>Type</th>"
+        "<th>Meaning</th><th>Used by</th></tr></thead><tbody>" + "".join(rows) + "</tbody></table></div>"
+    )
+
+
+def gen_technique(attrs):
+    rows = []
+    for c in CONCRETE_DATA:
+        slot = next((s for s in data_sv.class_induced_slots(c) if s.name == "measurementTechnique"), None)
+        if not slot:
+            continue
+        limit = [a.equals_string for a in (slot.any_of or []) if a.equals_string]
+        values = range_link(slot.range) + (" limited to " + ", ".join(f"<code>{v}</code>" for v in limit) if limit else "")
+        rows.append(
+            f"<tr><td><a href='{class_href(c)}'><code>{c}</code></a></td><td>{values}</td>"
+            f"<td>{'a list of values' if slot.multivalued else 'one value'}</td>"
+            f"<td>{'<span class=req>required</span>' if slot.required else '<span class=opt>optional</span>'}</td></tr>"
+        )
+    return (
+        "<div class='table-wrap'><table><thead><tr><th>Class</th><th>Values</th><th>Form</th><th>Required?</th>"
+        "</tr></thead><tbody>" + "".join(rows) + "</tbody></table></div>"
+    )
+
+
+def gen_enum(attrs):
+    name = attrs["name"]
+    return (f"<p class='meta'><span>{range_link(name)}: {esc(sv.get_enum(name).description)}</span></p>"
+            + enum_table(name))
+
+
+def gen_flags(attrs):
+    """The batch and file sensitivity flags, with their regulatory citations and mappings."""
+    file_flags = {s.name for s in sv.class_induced_slots("FileSensitivity")}
+    rows = []
+    for slot in sv.class_induced_slots("SensitivityDeclaration"):
+        if slot.name == "notes":
+            continue
+        where = "batch or file" if slot.name in file_flags else "batch only"
+        rows.append(f"<tr><td>{key_code(slot)}</td><td>{where}</td><td>{esc(slot.description)}{slot_mappings(slot)}</td></tr>")
+    return (
+        "<div class='table-wrap'><table class='props'><thead><tr><th>Flag</th><th>Set on</th><th>Meaning, "
+        "citation and mappings</th></tr></thead><tbody>" + "".join(rows) + "</tbody></table></div>"
+    )
+
+
+MAPPING_KINDS = ("exact_mappings", "close_mappings", "broad_mappings", "narrow_mappings", "related_mappings")
+
+
+def gen_terms(attrs):
+    """Each external vocabulary the model maps to: the terms used and where."""
+    uses = {}  # prefix -> {term: set of places}
+
+    def add(curie, place):
+        prefix = curie.split(":", 1)[0]
+        uses.setdefault(prefix, {}).setdefault(curie, set()).add(place)
+
+    for name in CONCRETE_DATA + [c for c in DATA_CLASSES if c not in CONCRETE_DATA]:
+        cls = data_sv.get_class(name)
+        for kind in MAPPING_KINDS:
+            for t in getattr(cls, kind) or []:
+                add(t, f"<a href='{class_href(name)}'><code>{name}</code></a>")
+        for key in cls.annotations or {}:
+            if ":" in key:
+                add(key, "class annotation")
+    for name, enum in sv.all_enums().items():
+        for pv in enum.permissible_values.values():
+            for t in [pv.meaning] + [t for k in MAPPING_KINDS for t in (getattr(pv, k) or [])]:
+                if t:
+                    add(t, range_link(name))
+    for name, slot in sv.all_slots().items():
+        for kind in MAPPING_KINDS:
+            for t in getattr(slot, kind) or []:
+                add(t, f"<code>{slot.alias or name}</code>")
+    rows = []
+    for prefix in sorted(uses, key=str.lower):
+        terms = uses[prefix]
+        places = sorted({p for ps in terms.values() for p in ps}, key=lambda x: re.sub("<[^>]+>", "", x))
+        base = sv.expand_curie(f"{prefix}:")
+        base = "" if base == f"{prefix}:" else base
+        listed = ", ".join(term_link(t) for t in sorted(terms))
+        if len(terms) > 30:  # e.g. one FHIR term per resource type
+            listed = f"{len(terms)} terms"
+        rows.append(
+            f"<tr><td><code>{prefix}</code><br><span class='muted'>{esc(base)}</span></td>"
+            f"<td>{listed}</td><td>{', '.join(places)}</td></tr>"
+        )
+    return (
+        "<div class='table-wrap'><table><thead><tr><th>Vocabulary</th><th>Terms used</th><th>Where</th>"
+        "</tr></thead><tbody>" + "".join(rows) + "</tbody></table></div>"
+    )
+
+
+GENERATORS = {
+    "family": gen_family,
+    "example": gen_example,
+    "classification": gen_classification,
+    "props": gen_props,
+    "data-slots": gen_data_slots,
+    "technique": gen_technique,
+    "enum": gen_enum,
+    "flags": gen_flags,
+    "terms": gen_terms,
+}
+
+
+def expand_generators(text, page):
+    _current_page[0] = page
+
+    def run(m):
+        tag, attrs = m.group(1), dict(re.findall(r'([\w-]+)="([^"]*)"', m.group(2)))
+        if tag not in GENERATORS:
+            raise SystemExit(f"{page}: unknown directive <rddc-{tag}>")
+        return GENERATORS[tag](attrs)
+
+    return re.sub(r"<rddc-([a-z][a-z-]*)([^>]*)></rddc-\1>",
+                  lambda m: m.group(0) if m.group(1) in ("json", "code") else run(m), text)
+
+
+def check_data_coverage():
+    problems = []
+    for c in CONCRETE_DATA:
+        if c not in FAMILY_CLASSES:
+            problems.append(f"{c} is on no data class page (add it to an rddc-family directive)")
+        if c not in EXAMPLED_CLASSES:
+            problems.append(f"{c} has no example shown (add an rddc-example directive)")
+        if not any(d["additionalType"] == f"rddc:{c}" for d in DATA_EXAMPLES.values()):
+            problems.append(f"{c} has no object in {DATA_EXAMPLES_SRC}")
+    if problems:
+        raise SystemExit("data class coverage check failed:\n  " + "\n  ".join(problems))
 
 
 # ---------------------------------------------------------------------------
@@ -848,6 +1187,13 @@ def check_recipes():
         doc = {"@context": CONTEXT, **json.load(open(path))}
         if v.is_valid(doc):
             problems.append(f"mistakes/{os.path.basename(path)} should be invalid but passes")
+    # Data file objects, each against the class its additionalType names.
+    for key, doc in DATA_EXAMPLES.items():
+        cls = doc["additionalType"].split(":", 1)[1]
+        sub = {k: v for k, v in schema.items() if k not in ("type", "additionalProperties", "properties", "required")}
+        errors = list(jsonschema.validators.validator_for(schema)({**sub, "$ref": f"#/$defs/{cls}"}).iter_errors(doc))
+        if errors:
+            problems.append(f"{DATA_EXAMPLES_SRC} {key} should be a valid {cls}: {errors[0].json_path}: {errors[0].message[:200]}")
     if problems:
         raise SystemExit("recipe check failed:\n  " + "\n  ".join(problems))
 
@@ -861,8 +1207,10 @@ def main():
     dl = os.path.join(out, "downloads")
     os.makedirs(os.path.join(dl, "examples"))
     os.makedirs(os.path.join(dl, "recipes"))
-    for f in glob.glob(os.path.join(ROOT, "examples", "*.json")):
-        shutil.copy(f, os.path.join(dl, "examples"))
+    for f in glob.glob(os.path.join(ROOT, "examples", "**", "*.json"), recursive=True):
+        target = os.path.join(dl, os.path.relpath(f, ROOT))
+        os.makedirs(os.path.dirname(target), exist_ok=True)
+        shutil.copy(f, target)
     for f in glob.glob(os.path.join(SITE, "recipes", "*.json")):
         doc = json.load(open(f))
         if "@id" in doc:  # a sidecar: embed the context so the download is a complete document
@@ -876,15 +1224,22 @@ def main():
 
     template = open(os.path.join(SITE, "template.html")).read()
     index = []
+    generated = {"reference.html": reference_page, "vocabularies.html": vocab_page,
+                 "data-classes.html": data_classes_page, "data-vocabularies.html": data_vocab_page}
+    # Expand the generator directives of every page first: the classification
+    # table links each class to the page that covers it.
+    bodies = {}
+    for fname, _ in PAGES:
+        if fname not in generated:
+            bodies[fname] = open(os.path.join(SITE, "pages", fname)).read()
+    for fname in list(bodies):
+        if "<rddc-classification>" not in bodies[fname]:
+            bodies[fname] = expand_generators(bodies[fname], fname)
+    for fname in list(bodies):
+        bodies[fname] = expand_generators(bodies[fname], fname)
+    check_data_coverage()
     for fname, title in PAGES:
-        if fname == "reference.html":
-            body = reference_page()
-        elif fname == "vocabularies.html":
-            body = vocab_page()
-        elif fname == "data-classes.html":
-            body = data_classes_page()
-        else:
-            body = open(os.path.join(SITE, "pages", fname)).read()
+        body = generated[fname]() if fname in generated else bodies[fname]
         body = body.replace("{{version}}", VERSION)
         page, rendered = render(fname, title, body, template, home=fname == "index.html")
         open(os.path.join(out, fname), "w").write(page)

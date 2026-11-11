@@ -1,0 +1,46 @@
+<h1>Genomics</h1>
+<p class="lede">Sequencing reads, alignments, variant calls and their indexes. Every genomics file states how it was sequenced, and genomic data always identifies a person.</p>
+
+<rddc-family names="SequenceReadsFile,AlignmentFile,VariantFile,IndexFile"></rddc-family>
+
+<h2>Assay and platform</h2>
+<p>Downstream analysis depends on how the data was produced, so every reads, alignment and variant file states two things:</p>
+<ul>
+<li><code>measurementTechnique</code>: the sequencing assay, such as whole genome or exome sequencing. Values map to OBI assay terms.</li>
+<li><code>sequencingPlatform</code>: the sequencing technology, based on the INSDC platform types. It tells short reads from long reads, which need different processing.</li>
+</ul>
+<p>The instrument model, such as <code>Illumina NovaSeq X</code>, is optional and goes in <code>platform</code>.</p>
+<h3>Assays</h3>
+<rddc-enum name="GenomicsAssayEnum"></rddc-enum>
+<h3>Sequencing platforms</h3>
+<rddc-enum name="SequencingPlatformEnum"></rddc-enum>
+
+<h2>Reads</h2>
+<p>A <code>SequenceReadsFile</code> holds reads, such as FASTQ or an unaligned BAM. The two files of a paired-end run point to each other with <code>pairedWith</code>.</p>
+<rddc-example key="reads"></rddc-example>
+
+<h2>Alignments and variant calls</h2>
+<p>Alignments (BAM, CRAM) and variant calls (VCF, BCF) give the reference assembly their coordinates refer to in <code>referenceGenome</code>. UCSC build names map to the matching GRC assembly: hg19 is <code>GRCh37</code> and hg38 is <code>GRCh38</code>.</p>
+<rddc-enum name="ReferenceGenomeEnum"></rddc-enum>
+<div class="tabs">
+  <div role="tablist" aria-label="Alignment and variant examples">
+    <button role="tab" id="t-g-1" aria-controls="p-g-1" aria-selected="true">Alignment</button>
+    <button role="tab" id="t-g-2" aria-controls="p-g-2" aria-selected="false" tabindex="-1">Variants</button>
+  </div>
+  <div role="tabpanel" id="p-g-1" aria-labelledby="t-g-1"><rddc-example key="alignment"></rddc-example></div>
+  <div role="tabpanel" id="p-g-2" aria-labelledby="t-g-2" hidden><rddc-example key="variants"></rddc-example></div>
+</div>
+<p>A variant file can point to the alignment it was called from with <code>wasDerivedFrom</code>.</p>
+
+<h2>Indexes</h2>
+<p>An <code>IndexFile</code>, such as <code>.bai</code>, <code>.crai</code> or <code>.tbi</code>, points to the file it indexes with <code>indexOf</code>. Indexes are binary.</p>
+<rddc-example key="index"></rddc-example>
+
+<h2>Media types</h2>
+<p>FASTQ, BAM, CRAM, VCF and their indexes have no registered IANA media types. Genomics files use <code>text/plain</code> for the text formats and <code>application/octet-stream</code> for the binary ones, and the class says which format it is. BAM, CRAM and BCF compress internally, so they leave <code>compression</code> unset; gzipped or BGZF-compressed FASTQ and VCF set <code>compression: gzip</code>.</p>
+
+<h2>Sensitivity</h2>
+<p>Genome sequences, alignments and variant calls are <a href="data-overview.html#files-that-identify-a-person">identifying</a>: they can identify a person on their own, and W3C DPV classes them as genetic data (<code>pd:Genetic</code>). Removing direct identifiers does not make them de-identified, whatever the sensitivity flags say. Index files hold no sequence and are not identifying.</p>
+
+<h2>In a sidecar</h2>
+<p>Genomics files are grouped in a <code>FileCollection</code> file set. The <a href="recipes.html#genomics">genomics recipe</a> is a complete whole-genome deposit: paired FASTQ reads, a CRAM alignment with its index, and a VCF.</p>

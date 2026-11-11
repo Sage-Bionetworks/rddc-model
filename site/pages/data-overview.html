@@ -1,0 +1,55 @@
+<h1>How data is classified</h1>
+<p class="lede">Every data file the RDDC accepts belongs to one data class. The class says what kind of data the file holds, how to describe it, and what that means for processing and de-identification.</p>
+
+<h2>One class per file</h2>
+<p>A data file is a Croissant <code>cr:FileObject</code>. Its <code>additionalType</code> names one RDDC data class, such as <code>rddc:FhirNdjsonFile</code> or <code>rddc:SequenceReadsFile</code>. The class decides:</p>
+<ul>
+<li>which media types the file may have in <code>encodingFormat</code>;</li>
+<li>which fields it must or may carry, such as a FHIR resource type, a sequencing assay or a reference genome;</li>
+<li>a set of facts about the data that every file of the class shares, described below.</li>
+</ul>
+<rddc-example key="fhir_ndjson" title="A FHIR NDJSON file: the class makes resourceType required and fixes the media type"></rddc-example>
+<p>The classes form a hierarchy under <code>DataFile</code>, which is shown in full on the <a href="data-classes.html#hierarchy">Data class reference</a>. Abstract classes such as <code>GenomicsFile</code> group shared fields; a file always names a concrete class.</p>
+
+<h2>What the class says about the data</h2>
+<p>Some facts follow from the kind of data, so they belong to the class rather than to each file. They are annotations on the class in the schema. A sidecar never states them: the platform reads them from the class.</p>
+<dl class="glossary">
+<dt>Modality</dt><dd>The kind of data, such as <code>clinical_fhir</code>, <code>genomics</code> or <code>imaging</code>. The platform uses it, together with the standard a file set declares in <code>conformsTo</code>, to decide how to process the file. Each class has exactly one modality, so a new kind of data gets a new class rather than a new modality on an existing one.</dd>
+<dt>Structure</dt><dd><code>structured</code> data has defined fields that software can read without text or image analysis: FHIR, OMOP and other tables, C-CDA, VCF, FASTQ. <code>unstructured</code> data, such as notes, scans, images and recordings, needs NLP, OCR or image analysis. <code>mixed</code> classes admit either, so the file decides.</dd>
+<dt>Collection type</dt><dd>How the data was collected, using the Croissant Responsible AI (RAI) term <code>rai:dataCollectionType</code>. Classes whose data always comes from an instrument (genomics, imaging and sensor data) are <code>Direct measurement</code>. Other classes leave it open, since a table or a document can come from many sources.</dd>
+<dt>Biometric and identifying</dt><dd>Whether the content can identify a person on its own. See <a href="#files-that-identify-a-person">below</a>.</dd>
+</dl>
+<rddc-classification></rddc-classification>
+
+<h2>The modalities</h2>
+<rddc-enum name="ModalityEnum"></rddc-enum>
+
+<h2 id="files-that-identify-a-person">Files that identify a person</h2>
+<p>Removing names, record numbers and other direct identifiers is not enough to de-identify some kinds of data. Two class annotations mark them:</p>
+<dl class="glossary">
+<dt>Identifying</dt><dd>The content can identify a person on its own. Genome sequences, alignments and variant calls are identifying: W3C DPV classes them as genetic data (<code>pd:Genetic</code>). A file of an identifying class never counts as de-identified, whatever the sensitivity flags say.</dd>
+<dt>Biometric</dt><dd>The content is a biometric identifier under HIPAA Safe Harbor, such as a full-face image. Every file of a biometric class counts as containing biometric identifiers and stays in the trusted research environment (TRE). Biometric implies identifying. Since the class already says so, a facial image file cannot set <code>containsBiometricIdentifiers</code> itself; the schema rejects it.</dd>
+</dl>
+<p>Other files can contain biometric identifiers too, depending on their content. A voice recording, or a video that shows a face, sets <code>sensitivity.containsBiometricIdentifiers</code> to <code>true</code> on the file. The <a href="data-standards.html#sensitivity-flags">sensitivity flags</a> list what each flag covers and the HIPAA Safe Harbor identifiers it corresponds to.</p>
+
+<h2>What a sidecar does not repeat</h2>
+<p>A sidecar states only what differs from file to file. Anything the class, the file set or the file itself already says is left out, so it cannot contradict them. The schema rejects these on a data file:</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Not stated on the file</th><th>Where it comes from</th></tr></thead>
+<tbody>
+<tr><td>Modality, structure, collection type, biometric or identifying</td><td>The file's class</td></tr>
+<tr><td>FHIR version and implementation guides (such as US Core)</td><td>The <code>conformsTo</code> of the FHIR file set the file belongs to</td></tr>
+<tr><td>C-CDA release and template IDs</td><td>The file set's <code>conformsTo</code>, and the document header</td></tr>
+<tr><td>A table name for a registry table</td><td>The file's <code>name</code> and <code>contentUrl</code>; record sets describe its columns</td></tr>
+</tbody></table></div>
+
+<h2>Choosing a class</h2>
+<p>Pick the most specific class that fits. In particular:</p>
+<ul>
+<li>Data in a clinical standard (FHIR, OMOP CDM, C-CDA) uses that standard's class, even when it holds device data or patient-reported outcomes.</li>
+<li>Consent tables are <code>ConsentFile</code>s and data dictionaries are <code>DocumentationFile</code>s, not <code>TabularFile</code>s: the platform handles them differently.</li>
+<li>A photograph or 3D scan of a person's face is a <code>FacialImagingFile</code>, not an <code>ImagingFile</code>.</li>
+<li>Raw sensor signals and measures derived from them are different classes, <code>SensorSignalFile</code> and <code>SensorMeasureFile</code>.</li>
+<li>When nothing fits, use <code>GenericFile</code>. A curator decides how it is processed, and a kind of data the RDDC receives regularly gets its own class in a later schema version.</li>
+</ul>
+<p>The family pages describe each class, with a valid example: <a href="data-clinical.html">Clinical data</a>, <a href="data-genomics.html">Genomics</a>, <a href="data-imaging.html">Imaging, audio and video</a>, <a href="data-sensor.html">Sensor data</a>, and <a href="data-other.html">Documentation and other files</a>.</p>

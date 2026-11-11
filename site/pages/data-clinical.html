@@ -1,0 +1,52 @@
+<h1>Clinical data</h1>
+<p class="lede">Electronic health record extracts in FHIR, OMOP CDM and C-CDA, other clinical tables such as registries and patient-reported outcomes, consent tables, and clinical documents.</p>
+
+<rddc-family names="FhirBundleFile,FhirResourceFile,FhirNdjsonFile,OmopTableFile,CcdaDocumentFile,TabularFile,ConsentFile,ClinicalDocumentFile"></rddc-family>
+
+<h2>Data in a clinical standard</h2>
+<p>FHIR, OMOP CDM and C-CDA files always belong to a file set of their standard: <code>FhirBulkExport</code> or <code>FhirBundleCollection</code>, <code>OmopCdmInstance</code>, or <code>CcdaDocumentSet</code>. The file set's <code>conformsTo</code> gives the standard and its version, such as FHIR R4 with US Core 6.1 or OMOP CDM 5.4, from the <a href="concepts.html#pinned-standards">pinned list</a>. The files themselves do not repeat it.</p>
+
+<h3>FHIR</h3>
+<p>A FHIR file is one of three shapes. A Bulk Data export is NDJSON with one resource type per file, a <code>FhirNdjsonFile</code>. A Bundle, such as one patient's record from Synthea, is a <code>FhirBundleFile</code>; it lists its subjects, since a Bundle usually holds one person. A single resource that is not a Bundle is a <code>FhirResourceFile</code>. The resource type must be a resource type of the FHIR version the file set declares.</p>
+<div class="tabs">
+  <div role="tablist" aria-label="FHIR file examples">
+    <button role="tab" id="t-f-1" aria-controls="p-f-1" aria-selected="true">NDJSON</button>
+    <button role="tab" id="t-f-2" aria-controls="p-f-2" aria-selected="false" tabindex="-1">Bundle</button>
+    <button role="tab" id="t-f-3" aria-controls="p-f-3" aria-selected="false" tabindex="-1">Resource</button>
+  </div>
+  <div role="tabpanel" id="p-f-1" aria-labelledby="t-f-1"><rddc-example key="fhir_ndjson"></rddc-example></div>
+  <div role="tabpanel" id="p-f-2" aria-labelledby="t-f-2" hidden><rddc-example key="fhir_bundle"></rddc-example></div>
+  <div role="tabpanel" id="p-f-3" aria-labelledby="t-f-3" hidden><rddc-example key="fhir_resource"></rddc-example></div>
+</div>
+<p>Device data already in FHIR form, such as Observations from a wearable, stays a FHIR file. Its file set declares the HL7 Personal Health Device IG alongside FHIR.</p>
+
+<h3>OMOP CDM</h3>
+<p>Each OMOP table is its own <code>OmopTableFile</code>, naming the table in <code>cdmTable</code> and the CDM version in <code>omopCdmVersion</code>. The table must exist in that version. OMOP foreign keys are defined by the CDM, so the sidecar does not describe them.</p>
+<rddc-example key="omop_table"></rddc-example>
+
+<h3>C-CDA</h3>
+<p>Each C-CDA document is a <code>CcdaDocumentFile</code> listing its subject. The document header carries its template IDs, and the file set gives the C-CDA release.</p>
+<rddc-example key="ccda"></rddc-example>
+
+<h2>Other clinical tables</h2>
+<p>Registry, patient-reported outcome, claims and mortality tables that are not in a clinical standard are <code>TabularFile</code>s. The file's name and path identify the table. To describe its columns, or a join to another table, add a <a href="concepts.html#record-sets">record set</a> to the sidecar, and a data dictionary as a <a href="data-other.html">DocumentationFile</a>.</p>
+<rddc-example key="tabular_jsonlines" title="A patient-reported outcome table in JSON Lines"></rddc-example>
+
+<h2>Consent</h2>
+<p>A <code>ConsentFile</code> holds consent elements: which uses each listed subject agreed to. The platform applies them to access decisions rather than processing them as clinical data. A consent batch (<code>interaction: consent</code>) may include consent files; see the <a href="recipes.html#consent">consent recipe</a>.</p>
+<rddc-example key="consent"></rddc-example>
+
+<h2>Clinical documents</h2>
+<p>Notes, reports and scanned documents are <code>ClinicalDocumentFile</code>s. They are unstructured, so they are de-identified with a text scan, or OCR for scans, before use. Each lists its subject. Set <code>containsFreeText</code> (it is assumed <code>true</code> when unset). A scanned report can carry a processing hint for the OCR step; hints are informational only.</p>
+<rddc-example key="scanned_report"></rddc-example>
+
+<h2>Sensitivity</h2>
+<ul>
+<li>Clinical data usually contains dates more precise than a year and may contain postal codes. Both are accepted at deposit and masked at release. Declare them with <code>containsDates</code> and <code>containsZipCodes</code>, or set them to <code>false</code> when the data has none.</li>
+<li>Free text, in notes or in free-text fields of a structured table, needs a de-identification scan. Declare it with <code>containsFreeText</code>, on the batch or on the files that have it.</li>
+<li>Direct identifiers such as names and medical record numbers must be removed before upload, which the batch confirms with <code>directIdentifiersRemoved</code>.</li>
+</ul>
+<p>See <a href="data-standards.html#sensitivity-flags">the sensitivity flags</a> for what each covers.</p>
+
+<h2>In a sidecar</h2>
+<p>Complete examples: the <a href="examples.html">FHIR and OMOP deposit and the C-CDA document set</a>, and the recipes for <a href="recipes.html#fhir-bundles-from-synthetic-data">FHIR Bundles</a>, <a href="recipes.html#registry-with-a-data-dictionary">a registry with a data dictionary</a>, <a href="recipes.html#clinical-notes">clinical notes</a> and <a href="recipes.html#consent">consent</a>.</p>

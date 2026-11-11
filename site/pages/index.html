@@ -1,11 +1,11 @@
 <div class="hero">
   <div>
-    <h1>The RDDC metadata sidecar<span>A description of the files and subjects in a data deposit, with the metadata needed for RDDC processing.</span></h1>
-    <p class="lede">Every batch sent to the Rare Disease Data Commons (RDDC) includes <code>_sidecar.json</code>. This file lists the data files, their types and checksums, the subjects they describe, and the information needed for de-identification.</p>
-    <p>The sidecar uses <a href="foundations.html#croissant">Croissant</a>, a standard for describing datasets, with extra fields for clinical data. These docs explain the format from the beginning.</p>
+    <h1>The RDDC data model<span>The kinds of data the Rare Disease Data Commons accepts, how each is described, and the sidecar that lists a deposit.</span></h1>
+    <p class="lede">Every file sent to the Rare Disease Data Commons (RDDC) belongs to a <strong>data class</strong>, such as a FHIR export, an OMOP table, a sequencing read file or a facial photograph. The class says what the file holds, which fields describe it, and what that means for processing and de-identification.</p>
+    <p>Each delivery of files comes with a <strong>sidecar</strong>, <code>_sidecar.json</code>, which lists every file with its class, checksum and subjects. The sidecar is a <a href="foundations.html#croissant">Croissant</a> dataset with extra fields for clinical data.</p>
     <div class="actions">
-      <a class="button primary" href="tutorial.html">Sidecar tutorial</a>
-      <a class="button" href="foundations.html">Format foundations</a>
+      <a class="button primary" href="data-overview.html">What data can I deposit?</a>
+      <a class="button" href="tutorial.html">How do I write a sidecar?</a>
       <a class="button" href="slides.html">Overview slides</a>
     </div>
   </div>
@@ -17,16 +17,21 @@
       <li><button class="chip o-prov" data-origin="prov" aria-pressed="false">W3C PROV</button></li>
     </ul>
     <p class="hint">Each key is coloured by the vocabulary that defines it. Select a vocabulary to pick out its keys, or hover over a key for its full IRI.</p>
-    <rddc-json src="site/recipes/minimal.json" title="A complete, valid sidecar for a one-file registry deposit"></rddc-json>
-
+    <rddc-example key="alignment" title="One file in a sidecar: a whole-genome alignment"></rddc-example>
   </div>
 </div>
 
 <div class="paths">
-  <a href="foundations.html"><b>JSON-LD and Croissant basics</b><span>The JSON-LD, schema.org and Croissant terms used in a sidecar.</span></a>
-  <a href="croissant.html"><b>RDDC extensions to Croissant</b><span>What RDDC keeps, what it adds, and the few places it is stricter than Croissant.</span></a>
-  <a href="recipes.html"><b>Examples by data type</b><span>Example sidecars for FHIR, OMOP, C-CDA, registries, notes, genomics, imaging and consent.</span></a>
+  <a href="data-overview.html"><b>Data classes</b><span>What kinds of data the RDDC accepts, how each is classified, and which files identify a person.</span></a>
+  <a href="describing-files.html"><b>Describing a file</b><span>Media types, compression, assays and the other fields a data file carries.</span></a>
+  <a href="concepts.html"><b>The sidecar</b><span>Batches, subjects, file sets and sensitivity: how a deposit lists its files.</span></a>
 </div>
+
+<h2>Two parts</h2>
+<dl class="glossary">
+  <dt>Data classes</dt><dd>One class per kind of file. A file names its class in <code>additionalType</code>, and the class fixes the accepted media types, the required fields and the file's modality. The data classes are documented first, by family: <a href="data-clinical.html">clinical</a>, <a href="data-genomics.html">genomics</a>, <a href="data-imaging.html">imaging, audio and video</a>, <a href="data-sensor.html">sensor</a> and <a href="data-other.html">documentation and other files</a>.</dd>
+  <dt>The sidecar</dt><dd>One document per batch that lists every file, the subjects in the batch, and sensitivity facts for de-identification. It builds on the data classes: each entry in its <code>distribution</code> is a file of one class, or a set of such files.</dd>
+</dl>
 
 <h2>What the sidecar is for</h2>
 <p>Contributors upload each batch to one S3 prefix, with the sidecar last. Its arrival starts automated receipt. The sidecar gives the platform the information it needs to check and route the files.</p>
@@ -35,21 +40,22 @@
 <tbody>
 <tr><td>Has the upload finished?</td><td>The sidecar is uploaded last. Its arrival starts receipt.</td></tr>
 <tr><td>Did every file arrive intact?</td><td>Each file is listed with its path, size and SHA-256 checksum.</td></tr>
-<tr><td>Which pipeline should process each file?</td><td>Each file has a class such as <code>rddc:FhirNdjsonFile</code>, which sets its modality; collections declare the standard they follow.</td></tr>
+<tr><td>How should each file be processed?</td><td>Each file has a <a href="data-overview.html">data class</a> such as <code>rddc:FhirNdjsonFile</code>, which sets its modality. Genomics, imaging and sensor files also state the assay that produced them in <code>measurementTechnique</code>. Collections declare the standard they follow.</td></tr>
 <tr><td>Whose data is this?</td><td>A subject table lists every coded subject ID in the batch.</td></tr>
-<tr><td>What does de-identification have to look for?</td><td>Sensitivity flags: dates, ZIP codes, free text, biometric identifiers.</td></tr>
+<tr><td>What does de-identification have to look for?</td><td>Sensitivity flags: dates, ZIP codes, free text, biometric identifiers. Some classes identify a person whatever the flags say: genomic data, and facial images. See <a href="data-overview.html#files-that-identify-a-person">Files that identify a person</a>.</td></tr>
 <tr><td>Is this a data, withdrawal, restriction or consent batch?</td><td>The <code>interaction</code> field.</td></tr>
 </tbody></table></div>
 
-<h2>At a glance</h2>
+<h2>The sidecar at a glance</h2>
 <dl class="glossary">
   <dt>File name and location</dt><dd><code>_sidecar.json</code> at the root of the batch prefix, uploaded after every data file.</dd>
   <dt>Format</dt><dd>UTF-8 JSON-LD. A valid Croissant 1.1 dataset, so generic Croissant tools can read it.</dd>
   <dt>Scope</dt><dd>One sidecar per batch. One batch is one delivery of files for one source.</dd>
-  <dt>Schema</dt><dd>Defined in LinkML (<code>schema/rddc_sidecar.yaml</code>, version {{version}}). JSON Schema and the JSON-LD context are generated from it.</dd>
+  <dt>Schema</dt><dd>Defined in LinkML (<code>schema/rddc_sidecar.yaml</code>, version {{version}}, with the data classes in <code>schema/data.yaml</code>). JSON Schema and the JSON-LD context are generated from it.</dd>
   <dt>Strictness</dt><dd>The schema is closed: unknown properties fail validation. Project-specific values go in namespaced <a href="concepts.html#extensions-and-hints">extensions</a>.</dd>
   <dt>Contents</dt><dd>No direct identifiers or protected health information (PHI). Use coded subject IDs, never names or medical record numbers (MRNs).</dd>
 </dl>
+<rddc-json src="site/recipes/minimal.json" title="A complete, valid sidecar for a one-file registry deposit"></rddc-json>
 
 <div class="note warn"><strong>Draft</strong>
 <p>Schema {{version}} is unreleased and may change before 1.0. This site is built from the schema in the repository, so the reference pages always match it.</p></div>
