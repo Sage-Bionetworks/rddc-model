@@ -56,7 +56,7 @@ types:
 # ---------------------------------------------------------------------------
 enums:
   InteractionEnum:
-    description: "What the batch asks the RDDC to do (plan sections 3.2 and 7.5)."
+    description: "Requested batch action (plan sections 3.2 and 7.5)."
     permissible_values:
       add:
         description: >-
@@ -74,7 +74,7 @@ enums:
         description: "Provide consent information. Each subject row needs a consentRef. The batch may include ConsentFiles."
 
   IdSystemEnum:
-    description: Where a subject ID comes from. Part of the subject's identity.
+    description: Subject ID system. Part of the subject's identity.
     permissible_values:
       contributor:
         description: The contributor's own subject identifier scheme.
@@ -430,7 +430,7 @@ classes:
         required: true
 
   FieldSource:
-    description: Where a field's values come from.
+    description: Source of a field's values.
     slots:
     - fileObject
     - fileSet
@@ -462,7 +462,7 @@ classes:
         required: true
 
   FieldReference:
-    description: The field that this field's values reference (a foreign key).
+    description: Target field of a foreign-key reference.
     slots:
     - field
     slot_usage:
@@ -613,10 +613,10 @@ slots:
     range: Extract
     inlined: true
   column:
-    description: "Name of the source column to read values from."
+    description: "Source column name."
     slot_uri: cr:column
   references:
-    description: "The field this field references, as a foreign key."
+    description: "Referenced field for this foreign key."
     slot_uri: cr:references
     range: FieldReference
     inlined: true
@@ -639,7 +639,7 @@ slots:
     description: Contributor-assigned batch ID, unique within the source.
     range: Identifier
   interaction:
-    description: "What the batch asks the RDDC to do."
+    description: "Requested batch action."
     range: InteractionEnum
   noticeRef:
     description: "Reference to a GOVERN withdrawal or restriction notice. The notice holds the terms and legal details."

@@ -146,7 +146,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Rows, resources or documents in the file, when counted.",
+                    "description": "Number of rows, resources or documents, if known.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -170,7 +170,7 @@
                 },
                 "sequencingPlatform": {
                     "$ref": "#/$defs/SequencingPlatformEnum",
-                    "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
+                    "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It distinguishes short and long reads, which require different processing."
                 },
                 "sha256": {
                     "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
@@ -190,7 +190,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -328,7 +328,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Rows, resources or documents in the file, when counted.",
+                    "description": "Number of rows, resources or documents, if known.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -364,7 +364,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -531,7 +531,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Rows, resources or documents in the file, when counted.",
+                    "description": "Number of rows, resources or documents, if known.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -564,7 +564,7 @@
                     "type": "array"
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -711,7 +711,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -934,7 +934,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Rows, resources or documents in the file, when counted.",
+                    "description": "Number of rows, resources or documents, if known.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -967,7 +967,7 @@
                     "type": "array"
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -1014,7 +1014,7 @@
         },
         "ConsentFile": {
             "additionalProperties": false,
-            "description": "Consent elements for the subjects it lists: which uses each subject agreed to. The platform applies them to access decisions rather than processing them as clinical data.",
+            "description": "Permitted data uses for each listed subject. The platform applies them to access decisions rather than processing them as clinical data.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -1116,7 +1116,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Rows, resources or documents in the file, when counted.",
+                    "description": "Number of rows, resources or documents, if known.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -1149,7 +1149,7 @@
                     "type": "array"
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -1273,7 +1273,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Rows, resources or documents in the file, when counted.",
+                    "description": "Number of rows, resources or documents, if known.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -1309,7 +1309,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -1391,7 +1391,7 @@
                     "type": "string"
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -1526,7 +1526,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -1682,7 +1682,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Rows, resources or documents in the file, when counted.",
+                    "description": "Number of rows, resources or documents, if known.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -1718,7 +1718,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -1813,7 +1813,7 @@
             "description": "How to extract a field's values from the source.",
             "properties": {
                 "column": {
-                    "description": "Name of the source column to read values from.",
+                    "description": "Source column name.",
                     "type": "string"
                 }
             },
@@ -1969,7 +1969,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Rows, resources or documents in the file, when counted.",
+                    "description": "Number of rows, resources or documents, if known.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -2002,7 +2002,7 @@
                     "type": "array"
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -2155,7 +2155,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -2325,7 +2325,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -2414,7 +2414,7 @@
                 },
                 "bundleType": {
                     "$ref": "#/$defs/FhirBundleTypeEnum",
-                    "description": "The FHIR Bundle.type of the bundle in the file."
+                    "description": "The bundle's FHIR Bundle.type."
                 },
                 "compression": {
                     "$ref": "#/$defs/CompressionEnum",
@@ -2475,7 +2475,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Rows, resources or documents in the file, when counted.",
+                    "description": "Number of rows, resources or documents, if known.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -2508,7 +2508,7 @@
                     "type": "array"
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -2646,7 +2646,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Rows, resources or documents in the file, when counted.",
+                    "description": "Number of rows, resources or documents, if known.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -2682,7 +2682,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -2805,7 +2805,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Rows, resources or documents in the file, when counted.",
+                    "description": "Number of rows, resources or documents, if known.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -2814,7 +2814,7 @@
                 },
                 "resourceType": {
                     "$ref": "#/$defs/FhirResourceTypeEnum",
-                    "description": "FHIR resource type of the resources in the file, e.g. Patient."
+                    "description": "FHIR resource type in the file, e.g. Patient."
                 },
                 "sensitivity": {
                     "anyOf": [
@@ -2845,7 +2845,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -2880,7 +2880,7 @@
             "type": "object"
         },
         "FhirR4ResourceTypeEnum": {
-            "description": "FHIR R4 (4.0.1) resource types, from the resource-types code system (http://hl7.org/fhir/R4/codesystem-resource-types.html). The abstract types Resource and DomainResource are left out because no instance has them. Each value means the FHIR RDF type of the same name.",
+            "description": "FHIR R4 (4.0.1) resource types, from the resource-types code system (http://hl7.org/fhir/R4/codesystem-resource-types.html). Abstract types Resource and DomainResource are excluded because they cannot be instantiated. Each value means the FHIR RDF type of the same name.",
             "enum": [
                 "Account",
                 "ActivityDefinition",
@@ -3122,7 +3122,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Rows, resources or documents in the file, when counted.",
+                    "description": "Number of rows, resources or documents, if known.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -3169,7 +3169,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -3204,7 +3204,7 @@
             "type": "object"
         },
         "FhirResourceTypeEnum": {
-            "description": "FHIR resource types of every accepted FHIR version, the range of resourceType. A file's FHIR version is declared by its file set, so the RDDC validator, not this schema, checks resourceType against that version's types. The descriptions are in the per-version enums, such as FhirR4ResourceTypeEnum.",
+            "description": "Allowed resourceType values across supported FHIR versions. A file's FHIR version is declared by its file set, so the RDDC validator, not this schema, checks resourceType against that version's types. The descriptions are in the per-version enums, such as FhirR4ResourceTypeEnum.",
             "enum": [
                 "Account",
                 "ActivityDefinition",
@@ -3446,7 +3446,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Rows, resources or documents in the file, when counted.",
+                    "description": "Number of rows, resources or documents, if known.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -3455,7 +3455,7 @@
                 },
                 "resourceType": {
                     "$ref": "#/$defs/FhirResourceTypeEnum",
-                    "description": "FHIR resource type of the resources in the file, e.g. Patient."
+                    "description": "FHIR resource type in the file, e.g. Patient."
                 },
                 "sensitivity": {
                     "anyOf": [
@@ -3486,7 +3486,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -3522,7 +3522,7 @@
         },
         "FieldReference": {
             "additionalProperties": false,
-            "description": "The field that this field's values reference (a foreign key).",
+            "description": "Target field of a foreign-key reference.",
             "properties": {
                 "field": {
                     "$ref": "#/$defs/NodeRef",
@@ -3537,7 +3537,7 @@
         },
         "FieldSource": {
             "additionalProperties": false,
-            "description": "Where a field's values come from.",
+            "description": "Source of a field's values.",
             "if": {
                 "properties": {
                     "extract": {}
@@ -3716,7 +3716,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -3846,7 +3846,7 @@
                     "type": "string"
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -4028,7 +4028,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -4085,7 +4085,7 @@
         },
         "GenericFile": {
             "additionalProperties": false,
-            "description": "Any other data file. A curator decides how to process it.",
+            "description": "Any other data file. GenericFile is strongly discouraged. A dedicated data class is required; using GenericFile triggers lengthy manual review.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -4173,7 +4173,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Rows, resources or documents in the file, when counted.",
+                    "description": "Number of rows, resources or documents, if known.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -4209,7 +4209,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -4243,7 +4243,7 @@
             "type": "object"
         },
         "GenomicsAssayEnum": {
-            "description": "Sequencing assays accepted for genomics files. Meanings are OBI assay terms (OBI release 2026-07-27). OBI has no term for targeted gene panels, so that value has no meaning. The sequencing platform (short-read, long-read) goes in sequencingPlatform, not here.",
+            "description": "Sequencing assays accepted for genomics files. Meanings are OBI assay terms (OBI release 2026-07-27). Targeted gene panels have no matching OBI term. The sequencing platform (short-read, long-read) goes in sequencingPlatform, not here.",
             "enum": [
                 "wgs",
                 "wes",
@@ -4364,7 +4364,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Rows, resources or documents in the file, when counted.",
+                    "description": "Number of rows, resources or documents, if known.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -4384,7 +4384,7 @@
                 },
                 "sequencingPlatform": {
                     "$ref": "#/$defs/SequencingPlatformEnum",
-                    "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
+                    "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It distinguishes short and long reads, which require different processing."
                 },
                 "sha256": {
                     "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
@@ -4404,7 +4404,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -4440,7 +4440,7 @@
             "type": "object"
         },
         "IdSystemEnum": {
-            "description": "Where a subject ID comes from. Part of the subject's identity.",
+            "description": "Subject ID system. Part of the subject's identity.",
             "enum": [
                 "contributor",
                 "fhir_patient_id",
@@ -4562,7 +4562,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Rows, resources or documents in the file, when counted.",
+                    "description": "Number of rows, resources or documents, if known.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -4598,7 +4598,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -4726,7 +4726,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Rows, resources or documents in the file, when counted.",
+                    "description": "Number of rows, resources or documents, if known.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -4762,7 +4762,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -4797,7 +4797,7 @@
             "type": "object"
         },
         "InteractionEnum": {
-            "description": "What the batch asks the RDDC to do (plan sections 3.2 and 7.5).",
+            "description": "Requested batch action (plan sections 3.2 and 7.5).",
             "enum": [
                 "add",
                 "withdraw",
@@ -4808,7 +4808,7 @@
             "type": "string"
         },
         "ModalityEnum": {
-            "description": "The kind of data in a file: the values of the \"modality\" class annotation. Each concrete data file class has exactly one, so a sidecar does not state it; the platform reads it from the file's class to decide how to process the file. A new kind of data gets a new class.",
+            "description": "Data categories used for processing. Each file class defines one modality.",
             "enum": [
                 "clinical_fhir",
                 "clinical_omop",
@@ -5005,7 +5005,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -5068,7 +5068,7 @@
             "type": "object"
         },
         "OmopCdmTableEnum": {
-            "description": "OMOP CDM tables of every accepted CDM version, the range of cdmTable. A rule on OmopTableFile narrows the values to the file's omopCdmVersion. The descriptions and groups are in the per-version enums, such as OmopCdm54TableEnum. All tables, including vocabulary and results tables, may be deposited.",
+            "description": "Allowed cdmTable values across supported OMOP CDM versions. A rule on OmopTableFile narrows the values to the file's omopCdmVersion. The descriptions and groups are in the per-version enums, such as OmopCdm54TableEnum. All tables, including vocabulary and results tables, may be deposited.",
             "enum": [
                 "person",
                 "observation_period",
@@ -5240,7 +5240,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Rows, resources or documents in the file, when counted.",
+                    "description": "Number of rows, resources or documents, if known.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -5276,7 +5276,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -5483,7 +5483,7 @@
                             "type": "null"
                         }
                     ],
-                    "description": "The field this field references, as a foreign key."
+                    "description": "Referenced field for this foreign key."
                 },
                 "source": {
                     "$ref": "#/$defs/FieldSource",
@@ -5691,7 +5691,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Rows, resources or documents in the file, when counted.",
+                    "description": "Number of rows, resources or documents, if known.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -5727,7 +5727,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -5883,7 +5883,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Rows, resources or documents in the file, when counted.",
+                    "description": "Number of rows, resources or documents, if known.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -5919,7 +5919,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -6058,7 +6058,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Rows, resources or documents in the file, when counted.",
+                    "description": "Number of rows, resources or documents, if known.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -6102,7 +6102,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -6256,7 +6256,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Rows, resources or documents in the file, when counted.",
+                    "description": "Number of rows, resources or documents, if known.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -6276,7 +6276,7 @@
                 },
                 "sequencingPlatform": {
                     "$ref": "#/$defs/SequencingPlatformEnum",
-                    "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
+                    "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It distinguishes short and long reads, which require different processing."
                 },
                 "sha256": {
                     "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
@@ -6296,7 +6296,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -6512,7 +6512,7 @@
                 },
                 "interaction": {
                     "$ref": "#/$defs/InteractionEnum",
-                    "description": "What the batch asks the RDDC to do."
+                    "description": "Requested batch action."
                 },
                 "name": {
                     "description": "Human-readable batch name, by convention \"<sourceId>/<batchId>\".",
@@ -6572,7 +6572,7 @@
                     "type": "string"
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -6881,7 +6881,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -7043,7 +7043,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Rows, resources or documents in the file, when counted.",
+                    "description": "Number of rows, resources or documents, if known.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -7079,7 +7079,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -7114,7 +7114,7 @@
         },
         "ValueOrigin": {
             "additionalProperties": false,
-            "description": "How a tool filled in one value on a file, file set or sidecar.",
+            "description": "How a tool populated a file, file-set or sidecar value.",
             "properties": {
                 "confidence": {
                     "description": "Confidence in a detected or inferred value, from 0 to 1.",
@@ -7156,7 +7156,7 @@
             "type": "object"
         },
         "ValueOriginEnum": {
-            "description": "Where an auto-filled value came from.",
+            "description": "Source of an auto-filled value.",
             "enum": [
                 "declared",
                 "detected",
@@ -7274,7 +7274,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Rows, resources or documents in the file, when counted.",
+                    "description": "Number of rows, resources or documents, if known.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -7298,7 +7298,7 @@
                 },
                 "sequencingPlatform": {
                     "$ref": "#/$defs/SequencingPlatformEnum",
-                    "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
+                    "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It distinguishes short and long reads, which require different processing."
                 },
                 "sha256": {
                     "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
@@ -7318,7 +7318,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -7356,7 +7356,7 @@
         },
         "VideoFile": {
             "additionalProperties": false,
-            "description": "A video recording. A recording that shows a person's face or voice contains biometric identifiers, so set sensitivity.containsBiometricIdentifiers to true.",
+            "description": "A video recording. A recording containing a person's face or voice contains biometric identifiers, so set sensitivity.containsBiometricIdentifiers to true.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -7444,7 +7444,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Rows, resources or documents in the file, when counted.",
+                    "description": "Number of rows, resources or documents, if known.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -7480,7 +7480,7 @@
                     ]
                 },
                 "valueOrigins": {
-                    "description": "How tools filled in values on this node.",
+                    "description": "How tools populated this node's values.",
                     "items": {
                         "$ref": "#/$defs/ValueOrigin"
                     },
@@ -7682,7 +7682,7 @@
         },
         "interaction": {
             "$ref": "#/$defs/InteractionEnum",
-            "description": "What the batch asks the RDDC to do."
+            "description": "Requested batch action."
         },
         "name": {
             "description": "Human-readable batch name, by convention \"<sourceId>/<batchId>\".",
@@ -7742,7 +7742,7 @@
             "type": "string"
         },
         "valueOrigins": {
-            "description": "How tools filled in values on this node.",
+            "description": "How tools populated this node's values.",
             "items": {
                 "$ref": "#/$defs/ValueOrigin"
             },
