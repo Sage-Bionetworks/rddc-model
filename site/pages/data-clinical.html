@@ -1,7 +1,7 @@
 <h1>Clinical data</h1>
 <p class="lede">Electronic health record extracts in FHIR, OMOP CDM and C-CDA, other clinical tables such as registries and patient-reported outcomes, consent tables, and clinical documents.</p>
 
-<rddc-family names="FhirBundleFile,FhirResourceFile,FhirNdjsonFile,OmopTableFile,CcdaDocumentFile,TabularFile,ConsentFile,ClinicalDocumentFile"></rddc-family>
+<rddc-family names="FhirBundleFile,FhirResourceFile,FhirNdjsonFile,OmopTableFile,CcdaDocumentFile,TabularFile,ConsentFile,IntakeFormFile,GeneticTestResultFile,DifferentialDiagnosisFile,ClinicalDocumentFile"></rddc-family>
 
 <h2 id="data-in-a-clinical-standard">Clinical data standards</h2>
 <p>FHIR, OMOP CDM and C-CDA files are always delivered as a collection of their class's file set class: a FHIR export, Bundle collection or resource collection, an OMOP CDM instance, or a set of C-CDA documents. The collection declares the standard and its version, such as FHIR R4 with US Core 6.1 or OMOP CDM 5.4, so the files do not repeat it. The validator checks that every such file belongs to a collection of the right class.</p>
@@ -18,7 +18,7 @@
   <div role="tabpanel" id="p-f-2" aria-labelledby="t-f-2" hidden><rddc-example key="fhir_bundle"></rddc-example></div>
   <div role="tabpanel" id="p-f-3" aria-labelledby="t-f-3" hidden><rddc-example key="fhir_resource"></rddc-example></div>
 </div>
-<p>Device data already in FHIR form, such as Observations from a wearable, stays a FHIR file. Its collection declares the HL7 Personal Health Device IG alongside FHIR.</p>
+<p>Device data already in FHIR form, such as Observations from a wearable, stays a FHIR file. Its collection declares the HL7 Personal Health Device IG alongside FHIR. FHIR files can embed documents and images, in DocumentReference, Media and Binary resources, whose content the class and the sensitivity flags do not describe; the same holds for C-CDA documents.</p>
 
 <h3>OMOP CDM</h3>
 <p>Each OMOP table uses an <code>OmopTableFile</code> with <code>cdmTable</code>, in an <code>OmopCdmInstance</code> whose <code>conformsTo</code> gives the CDM version. The table must exist in that version. The CDM already defines OMOP foreign keys, and CDM tables have no column for an image or recording, so a table contains no biometric identifiers unless it says so.</p>
@@ -36,9 +36,24 @@
 <p>A <code>ConsentFile</code> records permitted data uses for each listed subject. The platform applies them to access decisions rather than processing them as clinical data. A consent elements table holds coded uses and dates, so postal codes, free text and biometric identifiers are <code>false</code> unless the file or batch says otherwise.</p>
 <rddc-example key="consent"></rddc-example>
 
+<h2>Intake forms</h2>
+<p>Responses to a patient intake form, exported as a table from REDCap or a clinic portal, are an <code>IntakeFormFile</code>. Its columns are the form's questions and its values coded answers, so it is read with the form's definition, named in <code>formDefinition</code>: a <code>DocumentationFile</code> in the same deposit, such as a REDCap data dictionary, or the URL of a published definition. Free-text answers make the file contain free text.</p>
+<rddc-example key="intake_form"></rddc-example>
+
+<h2>Genetic test results</h2>
+<p>Structured results of clinical genetic tests or molecular pathology, one record per test with its findings, are a <code>GeneticTestResultFile</code>. The laboratory's interpretation makes the file contain free text. Its signed report documents are <code>ClinicalDocumentFile</code>s that <code>reportDocuments</code> points to; sequencing data and variant calls go in the <a href="data-genomics.html">genomics classes</a>. A report lists few variants, not a genome, so the class is not identifying.</p>
+<rddc-example key="genetic_test"></rddc-example>
+
+<h2>Differential diagnoses</h2>
+<p>Candidate diagnoses ranked by a diagnosis support tool, such as a facial phenotyping or phenotype-matching tool, are a <code>DifferentialDiagnosisFile</code>: for each subject the top candidates with their rank, score and code. They are suggestions, kept apart from confirmed conditions. <code>software</code> and <code>softwareVersion</code> name the tool, <code>diagnosisCodeSystems</code> the code systems used, and <code>wasDerivedFrom</code> the files the tool analysed. A tool's export is structured; a PDF report is unstructured.</p>
+<rddc-example key="differential"></rddc-example>
+
 <h2>Clinical documents</h2>
-<p>Notes, reports and scanned documents are <code>ClinicalDocumentFile</code>s. They are unstructured, so they are de-identified with a text scan, or OCR for scans, before use. Each lists its subject. The whole document is free text, so every file counts as containing free text and cannot set <code>containsFreeText</code>; the other flags can still be set per file. A scanned report can carry a processing hint for the OCR step; hints are informational only.</p>
-<rddc-example key="scanned_report"></rddc-example>
+<p>Notes, reports and scanned documents are <code>ClinicalDocumentFile</code>s. They are unstructured, so they are de-identified with a text scan, or OCR for scans, before use. Each lists its subject. The whole document is free text, so every file counts as containing free text and cannot set <code>containsFreeText</code>; the other flags can still be set per file. A scanned report can carry a processing hint for the OCR step; hints are informational only. When the source records the kind of document, <code>documentType</code> names it with a LOINC Document Ontology value, such as <code>referral_note</code>; text processing and the OMOP note class depend on it.</p>
+<div class="pair">
+  <div><rddc-example key="scanned_report"></rddc-example></div>
+  <div><rddc-example key="referral_note"></rddc-example></div>
+</div>
 
 <h2>Sensitivity</h2>
 <p>Clinical classes, including FHIR, are not automatically classified as identifying. Their files may still contain identifying information and require de-identification checks.</p>

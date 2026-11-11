@@ -13,8 +13,8 @@
 <p>The classes form a hierarchy under <code>DataFile</code>, shown in full on the <a href="data-classes.html#hierarchy">Data class reference</a>. Abstract classes such as <code>GenomicsFile</code> group shared fields; a file always names a concrete class.</p>
 
 <h2 id="one-class-per-pipeline">Class and format</h2>
-<p>A concrete class is what one processing pipeline consumes. Where a media type tells formats apart, as with FHIR JSON and NDJSON or CSV and Parquet, one class covers them and <code>encodingFormat</code> says which. Where it does not, each format is a class: FASTQ, BAM, CRAM, VCF, BCF, EDF, DICOM and other formats without a registered media type all share <code>text/plain</code> or <code>application/octet-stream</code>, and the pipelines that read them differ. Such a class maps to its EDAM format term.</p>
-<p>Processing rules match a class together with all its subclasses, so a subclass must be processable as its parent. The concrete classes under an abstract class share its identifying and biometric status, which the schema checks. A facial image is therefore not a subclass of the image classes.</p>
+<p>A concrete class is what one processing pipeline consumes. Where the pipeline depends on the format and a media type cannot tell the formats apart (BAM and CRAM, EDF and other sensor formats), or the pipelines differ by format (FASTQ and unaligned BAM, DICOM and other image formats), the format is the class, and the class maps to its EDAM format term. Elsewhere one class covers the formats and <code>encodingFormat</code> and <code>compression</code> say which: FHIR JSON and NDJSON, CSV and Parquet, and the variant call formats VCF, BCF and MAF, whose classes are decided by what they contain, germline or somatic variants.</p>
+<p>Processing rules match a class together with all its subclasses, so a subclass must be processable as its parent; what differs between siblings, such as whether they identify a person, is in their annotations, which the rules read per concrete class. A facial image is not a subclass of the image classes, since the header de-identification and analysis of medical images do not apply to it.</p>
 
 <h2 id="what-the-class-says-about-the-data">Class annotations</h2>
 <p>Class annotations define shared characteristics. These class characteristics are defined by our model and are not fields to be filled in.</p>
@@ -69,7 +69,8 @@
 <ul>
 <li>Data in a clinical standard (FHIR, OMOP CDM, C-CDA) uses that standard's class, even when it holds device data or patient-reported outcomes.</li>
 <li>Consent tables are <code>ConsentFile</code>s and data dictionaries are <code>DocumentationFile</code>s, not <code>TabularFile</code>s: the platform handles them differently.</li>
-<li>Genomics files, raw sensor signals and images name their format: <code>CramFile</code>, not a generic alignment class; <code>EdfSignalFile</code>; <code>DicomImageFile</code> or <code>ImageFile</code>.</li>
+<li>Reads, alignments, raw sensor signals and images name their format: <code>CramFile</code>, not a generic alignment class; <code>EdfSignalFile</code>; <code>DicomImageFile</code> or <code>ImageFile</code>. Variant calls name their content, <code>GermlineVariantFile</code> or <code>SomaticVariantFile</code>.</li>
+<li>Intake form responses are <code>IntakeFormFile</code>s read with the form's definition, structured genetic test results are <code>GeneticTestResultFile</code>s, and a diagnosis support tool's ranked candidates are a <code>DifferentialDiagnosisFile</code>, not <code>TabularFile</code>s.</li>
 <li>A photograph or 3D scan of a person's face is a <code>FacialImagingFile</code>, not an image class.</li>
 <li>Raw sensor signals and measures derived from them are different classes: one of the signal classes, or <code>SensorMeasureFile</code>.</li>
 <li><code>GenericFile</code> is strongly discouraged. A dedicated data class is required; using <code>GenericFile</code> triggers lengthy manual review.</li>
