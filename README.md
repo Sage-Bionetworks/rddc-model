@@ -1,9 +1,9 @@
 # RDDC data model
 
 This repository defines the Rare Disease Data Commons (RDDC) data model in
-LinkML. It also holds the requirements, examples and documentation. The schema
-defines the fields and validation rules; the requirements explain why they
-exist. Tools live in separate repositories and use tagged releases of this model.
+LinkML, with examples and the documentation site. The schema defines the fields
+and validation rules. Tools live in separate repositories and use tagged releases
+of this model.
 
 A sidecar describes one data deposit. It is a JSON-LD document and a valid
 [Croissant 1.1](https://docs.mlcommons.org/croissant/docs/croissant-spec-1.1.html)
@@ -15,7 +15,6 @@ RDDC fields use camelCase in the `rddc:` namespace.
 
 | Path | What |
 | --- | --- |
-| `docs/sidecar_requirements.md` | Metadata sidecar requirements, v0.2 (draft for TA1–TA3 review) |
 | `schema/rddc_sidecar.yaml` | LinkML module for the sidecar and the per-source descriptor (schema version 0.1.0) |
 | `schema/data.yaml` | LinkML module with the file classes: `FileObject`, with the fields every file has (`contentUrl`, `contentSize`, `encodingFormat`, `md5`), and the data file classes (`DataFile` and subclasses) with their class annotations: `modality`, `structure`, `fileSetClass`, `biometric`, `identifying` and the sensitivity flags the class fixes |
 | `schema/core.yaml` | LinkML module with the shared identifier types, small supporting classes (references, external identifiers, extensions, sensitivity flags, value origins) and their slots, imported by the other two |
