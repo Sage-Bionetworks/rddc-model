@@ -138,7 +138,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Number of rows, resources or documents, if known.",
+                    "description": "Rows, resources or documents in the file, when counted.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -162,7 +162,7 @@
                 },
                 "sequencingPlatform": {
                     "$ref": "#/$defs/SequencingPlatformEnum",
-                    "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It distinguishes short and long reads, which require different processing."
+                    "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
                 },
                 "sha256": {
                     "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
@@ -320,7 +320,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Number of rows, resources or documents, if known.",
+                    "description": "Rows, resources or documents in the file, when counted.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -490,7 +490,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Number of rows, resources or documents, if known.",
+                    "description": "Rows, resources or documents in the file, when counted.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -514,7 +514,7 @@
                 },
                 "sequencingPlatform": {
                     "$ref": "#/$defs/SequencingPlatformEnum",
-                    "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It distinguishes short and long reads, which require different processing."
+                    "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
                 },
                 "sha256": {
                     "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
@@ -568,187 +568,6 @@
                 "encodingFormat"
             ],
             "title": "BamFile",
-            "type": "object"
-        },
-        "BcfFile": {
-            "additionalProperties": false,
-            "description": "Variant calls in BCF, the binary form of VCF. Its index (.csi) is an IndexFile.",
-            "properties": {
-                "@id": {
-                    "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
-                    "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
-                    "type": "string"
-                },
-                "@type": {
-                    "const": "cr:FileObject",
-                    "description": "The JSON-LD type. cr:FileObject or cr:FileSet for distribution items.",
-                    "type": "string"
-                },
-                "additionalProperty": {
-                    "description": "Namespaced extension key-value pairs.",
-                    "items": {
-                        "$ref": "#/$defs/Extension"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "additionalType": {
-                    "description": "The RDDC class of a distribution item, as a CURIE such as rddc:FhirNdjsonFile. Selects the required fields.",
-                    "enum": [
-                        "rddc:BcfFile"
-                    ],
-                    "type": "string"
-                },
-                "compression": {
-                    "$ref": "#/$defs/CompressionEnum",
-                    "description": "Compression applied to the file's bytes, if any."
-                },
-                "contentSize": {
-                    "description": "Size of the file in bytes.",
-                    "pattern": "^[0-9]+ B$",
-                    "type": "string"
-                },
-                "contentUrl": {
-                    "description": "Object key relative to the batch prefix; Croissant resolves it against the sidecar's location.",
-                    "pattern": "^(?!(.*/)?\\.\\.?(/|$))[^/\\\\]+(/[^/\\\\]+)*$",
-                    "type": "string"
-                },
-                "description": {
-                    "description": "Free-text description.",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "encodingFormat": {
-                    "const": "application/octet-stream",
-                    "description": "Media type of the content (after decompression when compression is set).",
-                    "type": "string"
-                },
-                "identifier": {
-                    "description": "IDs assigned to the file by other systems.",
-                    "items": {
-                        "$ref": "#/$defs/ExternalIdentifier"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
-                    "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "measurementTechnique": {
-                    "$ref": "#/$defs/GenomicsAssayEnum",
-                    "description": "The sequencing assay that produced the data, e.g. wgs or wes. Downstream analysis depends on it, so every genomics file states it."
-                },
-                "name": {
-                    "description": "File name, by convention the contentUrl.",
-                    "type": "string"
-                },
-                "platform": {
-                    "description": "The sequencing instrument model, e.g. \"Illumina NovaSeq X\".",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "processingHints": {
-                    "description": "Informational key-value pairs for downstream pipelines.",
-                    "items": {
-                        "$ref": "#/$defs/ProcessingHint"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "recordCount": {
-                    "description": "Number of rows, resources or documents, if known.",
-                    "minimum": 0,
-                    "type": [
-                        "integer",
-                        "null"
-                    ]
-                },
-                "referenceGenome": {
-                    "$ref": "#/$defs/ReferenceGenomeEnum",
-                    "description": "Reference assembly the coordinates refer to, e.g. GRCh38."
-                },
-                "sensitivity": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/FixedSensitivity"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "description": "Notes only. The class fixes every sensitivity flag."
-                },
-                "sequencingPlatform": {
-                    "$ref": "#/$defs/SequencingPlatformEnum",
-                    "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It distinguishes short and long reads, which require different processing."
-                },
-                "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
-                    "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
-                },
-                "subjectIds": {
-                    "description": "Subject IDs the file contains. Each must appear in the subject table.",
-                    "items": {
-                        "pattern": "^[A-Za-z0-9._:-]+$",
-                        "type": "string"
-                    },
-                    "minItems": 1,
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "valueOrigins": {
-                    "description": "How tools populated this node's values.",
-                    "items": {
-                        "$ref": "#/$defs/ValueOrigin"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "wasDerivedFrom": {
-                    "description": "References to input files in this sidecar, such as the alignment used to call variants.",
-                    "items": {
-                        "$ref": "#/$defs/NodeRef"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                }
-            },
-            "required": [
-                "referenceGenome",
-                "measurementTechnique",
-                "sequencingPlatform",
-                "contentUrl",
-                "contentSize",
-                "sha256",
-                "@id",
-                "@type",
-                "additionalType",
-                "name",
-                "encodingFormat"
-            ],
-            "title": "BcfFile",
             "type": "object"
         },
         "BiometricFileSensitivity": {
@@ -885,7 +704,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Number of rows, resources or documents, if known.",
+                    "description": "Rows, resources or documents in the file, when counted.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -1175,7 +994,7 @@
         },
         "ClinicalDocumentFile": {
             "additionalProperties": false,
-            "description": "An unstructured clinical document, such as a note or a scanned report. A scan is a PDF or an image (TIFF, JPEG or PNG). The whole document is free text, so every file counts as containing free text and cannot set containsFreeText.",
+            "description": "An unstructured clinical document, such as a note, a scanned report or a genetic test report. A scan is a PDF or an image (TIFF, JPEG or PNG). The whole document is free text, so every file counts as containing free text and cannot set containsFreeText.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -1224,6 +1043,10 @@
                         "string",
                         "null"
                     ]
+                },
+                "documentType": {
+                    "$ref": "#/$defs/DocumentTypeEnum",
+                    "description": "The kind of document, e.g. progress_note or referral_note, when the source records it. Text processing and the OMOP note class depend on it. A file holds documents of one kind; documents of several kinds go in separate files, or leave documentType out."
                 },
                 "encodingFormat": {
                     "anyOf": [
@@ -1283,7 +1106,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Number of rows, resources or documents, if known.",
+                    "description": "Rows, resources or documents in the file, when counted.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -1466,7 +1289,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Number of rows, resources or documents, if known.",
+                    "description": "Rows, resources or documents in the file, when counted.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -1634,7 +1457,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Number of rows, resources or documents, if known.",
+                    "description": "Rows, resources or documents in the file, when counted.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -1658,7 +1481,7 @@
                 },
                 "sequencingPlatform": {
                     "$ref": "#/$defs/SequencingPlatformEnum",
-                    "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It distinguishes short and long reads, which require different processing."
+                    "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
                 },
                 "sha256": {
                     "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
@@ -1804,7 +1627,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Number of rows, resources or documents, if known.",
+                    "description": "Rows, resources or documents in the file, when counted.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -1872,6 +1695,21 @@
             ],
             "title": "DataFile",
             "type": "object"
+        },
+        "DiagnosisCodeSystemEnum": {
+            "description": "Code systems that candidate diagnoses are coded in.",
+            "enum": [
+                "snomed_ct",
+                "icd10",
+                "icd10_cm",
+                "icd11",
+                "orphanet",
+                "omim",
+                "mondo",
+                "other"
+            ],
+            "title": "DiagnosisCodeSystemEnum",
+            "type": "string"
         },
         "DicomImageFile": {
             "additionalProperties": false,
@@ -1967,7 +1805,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Number of rows, resources or documents, if known.",
+                    "description": "Rows, resources or documents in the file, when counted.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -2142,7 +1980,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Number of rows, resources or documents, if known.",
+                    "description": "Rows, resources or documents in the file, when counted.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -2218,6 +2056,205 @@
                 "encodingFormat"
             ],
             "title": "DicomWaveformFile",
+            "type": "object"
+        },
+        "DifferentialDiagnosisFile": {
+            "additionalProperties": false,
+            "description": "Candidate diagnoses ranked by a diagnosis support tool, such as a facial phenotyping or phenotype-matching tool, or by another method: for each subject, the top candidates with their rank, score and code. The candidates are suggestions, not diagnoses, so they are kept apart from confirmed conditions; in FHIR they are Conditions with verificationStatus \"differential\". A tool's export is structured; a report in PDF is unstructured and needs text extraction. wasDerivedFrom points to the files in the sidecar the tool analysed, such as facial images. Candidates hold no address or image, so postal codes and biometric identifiers are absent unless the file says otherwise.",
+            "properties": {
+                "@id": {
+                    "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
+                    "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                    "type": "string"
+                },
+                "@type": {
+                    "const": "cr:FileObject",
+                    "description": "The JSON-LD type. cr:FileObject or cr:FileSet for distribution items.",
+                    "type": "string"
+                },
+                "additionalProperty": {
+                    "description": "Namespaced extension key-value pairs.",
+                    "items": {
+                        "$ref": "#/$defs/Extension"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "additionalType": {
+                    "description": "The RDDC class of a distribution item, as a CURIE such as rddc:FhirNdjsonFile. Selects the required fields.",
+                    "enum": [
+                        "rddc:DifferentialDiagnosisFile"
+                    ],
+                    "type": "string"
+                },
+                "compression": {
+                    "$ref": "#/$defs/CompressionEnum",
+                    "description": "Compression applied to the file's bytes, if any."
+                },
+                "contentSize": {
+                    "description": "Size of the file in bytes.",
+                    "pattern": "^[0-9]+ B$",
+                    "type": "string"
+                },
+                "contentUrl": {
+                    "description": "Object key relative to the batch prefix; Croissant resolves it against the sidecar's location.",
+                    "pattern": "^(?!(.*/)?\\.\\.?(/|$))[^/\\\\]+(/[^/\\\\]+)*$",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Free-text description.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "diagnosisCodeSystems": {
+                    "description": "The code systems the candidate diagnoses are coded in, e.g. orphanet and omim, when they are coded. A list, since tools often give several codes per candidate.",
+                    "items": {
+                        "$ref": "#/$defs/DiagnosisCodeSystemEnum"
+                    },
+                    "minItems": 1,
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "encodingFormat": {
+                    "anyOf": [
+                        {
+                            "const": "text/csv"
+                        },
+                        {
+                            "const": "text/tab-separated-values"
+                        },
+                        {
+                            "const": "application/json"
+                        },
+                        {
+                            "const": "application/jsonlines"
+                        },
+                        {
+                            "const": "application/pdf"
+                        }
+                    ],
+                    "description": "Media type of the content (after decompression when compression is set).",
+                    "pattern": "^[a-z]+/[A-Za-z0-9.+_-]+$",
+                    "type": "string"
+                },
+                "identifier": {
+                    "description": "IDs assigned to the file by other systems.",
+                    "items": {
+                        "$ref": "#/$defs/ExternalIdentifier"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "md5": {
+                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "pattern": "^[0-9a-f]{32}$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "description": "File name, by convention the contentUrl.",
+                    "type": "string"
+                },
+                "processingHints": {
+                    "description": "Informational key-value pairs for downstream pipelines.",
+                    "items": {
+                        "$ref": "#/$defs/ProcessingHint"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "recordCount": {
+                    "description": "Rows, resources or documents in the file, when counted.",
+                    "minimum": 0,
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "sensitivity": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/FileSensitivity"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
+                },
+                "sha256": {
+                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "pattern": "^[0-9a-f]{64}$",
+                    "type": "string"
+                },
+                "software": {
+                    "description": "The tool that produced the candidates, e.g. \"Face2Gene\" or \"Exomiser\", when they come from a known tool. The ranking depends on the tool.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "softwareVersion": {
+                    "description": "Version of the software that wrote the document.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "subjectIds": {
+                    "description": "Subject IDs the file contains. Each must appear in the subject table.",
+                    "items": {
+                        "pattern": "^[A-Za-z0-9._:-]+$",
+                        "type": "string"
+                    },
+                    "minItems": 1,
+                    "type": "array"
+                },
+                "valueOrigins": {
+                    "description": "How tools populated this node's values.",
+                    "items": {
+                        "$ref": "#/$defs/ValueOrigin"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "wasDerivedFrom": {
+                    "description": "References to input files in this sidecar, such as the alignment used to call variants.",
+                    "items": {
+                        "$ref": "#/$defs/NodeRef"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "subjectIds",
+                "contentUrl",
+                "contentSize",
+                "sha256",
+                "@id",
+                "@type",
+                "additionalType",
+                "name",
+                "encodingFormat"
+            ],
+            "title": "DifferentialDiagnosisFile",
             "type": "object"
         },
         "DistributionItem": {
@@ -2495,9 +2532,31 @@
             "title": "DocumentSet",
             "type": "object"
         },
+        "DocumentTypeEnum": {
+            "description": "Kinds of clinical document, the values of documentType. Meanings are LOINC Document Ontology codes, the codes OMOP uses for note_class_concept_id, checked against LOINC on tx.fhir.org. Codes are LOINC's, under the LOINC license.",
+            "enum": [
+                "progress_note",
+                "history_and_physical",
+                "consult_note",
+                "referral_note",
+                "discharge_summary",
+                "emergency_department_note",
+                "procedure_note",
+                "operative_note",
+                "telephone_encounter_note",
+                "patient_note",
+                "pathology_report",
+                "imaging_report",
+                "laboratory_report",
+                "genetic_report",
+                "other"
+            ],
+            "title": "DocumentTypeEnum",
+            "type": "string"
+        },
         "DocumentationFile": {
             "additionalProperties": false,
-            "description": "A file that documents other files, such as a data dictionary or a README. When it documents particular files or record sets, about points to them; a README for the whole batch leaves about out. Documentation describes the data and holds no subject-level content, so every flag is false unless the file says otherwise.",
+            "description": "A file that documents other files, such as a data dictionary, the codebook of an intake form, or a README. When it documents particular files or record sets, about points to them; a README for the whole batch leaves about out. Documentation describes the data and holds no subject-level content, so every flag is false unless the file says otherwise.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -2596,7 +2655,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Number of rows, resources or documents, if known.",
+                    "description": "Rows, resources or documents in the file, when counted.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -2770,7 +2829,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Number of rows, resources or documents, if known.",
+                    "description": "Rows, resources or documents in the file, when counted.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -3066,7 +3125,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Number of rows, resources or documents, if known.",
+                    "description": "Rows, resources or documents in the file, when counted.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -3257,7 +3316,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Number of rows, resources or documents, if known.",
+                    "description": "Rows, resources or documents in the file, when counted.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -3277,7 +3336,7 @@
                 },
                 "sequencingPlatform": {
                     "$ref": "#/$defs/SequencingPlatformEnum",
-                    "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It distinguishes short and long reads, which require different processing."
+                    "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
                 },
                 "sha256": {
                     "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
@@ -3709,7 +3768,7 @@
                 },
                 "bundleType": {
                     "$ref": "#/$defs/FhirBundleTypeEnum",
-                    "description": "The bundle's FHIR Bundle.type."
+                    "description": "The FHIR Bundle.type of the bundle in the file."
                 },
                 "compression": {
                     "$ref": "#/$defs/CompressionEnum",
@@ -3770,7 +3829,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Number of rows, resources or documents, if known.",
+                    "description": "Rows, resources or documents in the file, when counted.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -3941,7 +4000,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Number of rows, resources or documents, if known.",
+                    "description": "Rows, resources or documents in the file, when counted.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -4100,7 +4159,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Number of rows, resources or documents, if known.",
+                    "description": "Rows, resources or documents in the file, when counted.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -4109,7 +4168,7 @@
                 },
                 "resourceType": {
                     "$ref": "#/$defs/FhirResourceTypeEnum",
-                    "description": "FHIR resource type in the file, e.g. Patient."
+                    "description": "FHIR resource type of the resources in the file, e.g. Patient."
                 },
                 "sensitivity": {
                     "anyOf": [
@@ -4175,7 +4234,7 @@
             "type": "object"
         },
         "FhirR4ResourceTypeEnum": {
-            "description": "FHIR R4 (4.0.1) resource types, from the resource-types code system (http://hl7.org/fhir/R4/codesystem-resource-types.html). Abstract types Resource and DomainResource are excluded because they cannot be instantiated. Each value means the FHIR RDF type of the same name.",
+            "description": "FHIR R4 (4.0.1) resource types, from the resource-types code system (http://hl7.org/fhir/R4/codesystem-resource-types.html). The abstract types Resource and DomainResource are left out because no instance has them. Each value means the FHIR RDF type of the same name.",
             "enum": [
                 "Account",
                 "ActivityDefinition",
@@ -4586,7 +4645,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Number of rows, resources or documents, if known.",
+                    "description": "Rows, resources or documents in the file, when counted.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -4668,7 +4727,7 @@
             "type": "object"
         },
         "FhirResourceTypeEnum": {
-            "description": "Allowed resourceType values across supported FHIR versions. A file's FHIR version is declared by its file set, so the RDDC validator, not this schema, checks resourceType against that version's types. The descriptions are in the per-version enums, such as FhirR4ResourceTypeEnum.",
+            "description": "FHIR resource types of every accepted FHIR version, the range of resourceType. A file's FHIR version is declared by its file set, so the RDDC validator, not this schema, checks resourceType against that version's types. The descriptions are in the per-version enums, such as FhirR4ResourceTypeEnum.",
             "enum": [
                 "Account",
                 "ActivityDefinition",
@@ -4910,7 +4969,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Number of rows, resources or documents, if known.",
+                    "description": "Rows, resources or documents in the file, when counted.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -4919,7 +4978,7 @@
                 },
                 "resourceType": {
                     "$ref": "#/$defs/FhirResourceTypeEnum",
-                    "description": "FHIR resource type in the file, e.g. Patient."
+                    "description": "FHIR resource type of the resources in the file, e.g. Patient."
                 },
                 "sensitivity": {
                     "anyOf": [
@@ -5562,6 +5621,204 @@
             "title": "FixedSensitivity",
             "type": "object"
         },
+        "GeneExpressionFile": {
+            "additionalProperties": false,
+            "description": "Gene or transcript expression quantified from RNA-seq, such as a matrix of counts or TPM per gene and sample. It holds no sequence, so it is not identifying the way the reads and alignments it came from are. Expression values can still be linked to a person's genotype through expression quantitative trait loci (eQTLs), so the file is still personal data.",
+            "properties": {
+                "@id": {
+                    "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
+                    "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                    "type": "string"
+                },
+                "@type": {
+                    "const": "cr:FileObject",
+                    "description": "The JSON-LD type. cr:FileObject or cr:FileSet for distribution items.",
+                    "type": "string"
+                },
+                "additionalProperty": {
+                    "description": "Namespaced extension key-value pairs.",
+                    "items": {
+                        "$ref": "#/$defs/Extension"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "additionalType": {
+                    "description": "The RDDC class of a distribution item, as a CURIE such as rddc:FhirNdjsonFile. Selects the required fields.",
+                    "enum": [
+                        "rddc:GeneExpressionFile"
+                    ],
+                    "type": "string"
+                },
+                "compression": {
+                    "$ref": "#/$defs/CompressionEnum",
+                    "description": "Compression applied to the file's bytes, if any."
+                },
+                "contentSize": {
+                    "description": "Size of the file in bytes.",
+                    "pattern": "^[0-9]+ B$",
+                    "type": "string"
+                },
+                "contentUrl": {
+                    "description": "Object key relative to the batch prefix; Croissant resolves it against the sidecar's location.",
+                    "pattern": "^(?!(.*/)?\\.\\.?(/|$))[^/\\\\]+(/[^/\\\\]+)*$",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Free-text description.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "encodingFormat": {
+                    "anyOf": [
+                        {
+                            "const": "text/csv"
+                        },
+                        {
+                            "const": "text/tab-separated-values"
+                        },
+                        {
+                            "const": "application/vnd.apache.parquet"
+                        },
+                        {
+                            "const": "application/octet-stream"
+                        }
+                    ],
+                    "description": "Media type of the matrix. Formats with no registered media type, such as AnnData (.h5ad), are application/octet-stream.",
+                    "pattern": "^[a-z]+/[A-Za-z0-9.+_-]+$",
+                    "type": "string"
+                },
+                "identifier": {
+                    "description": "IDs assigned to the file by other systems.",
+                    "items": {
+                        "$ref": "#/$defs/ExternalIdentifier"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "md5": {
+                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "pattern": "^[0-9a-f]{32}$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "measurementTechnique": {
+                    "$ref": "#/$defs/GenomicsAssayEnum",
+                    "anyOf": [
+                        {
+                            "const": "rna_seq"
+                        },
+                        {
+                            "const": "other"
+                        }
+                    ],
+                    "description": "The assay the expression was quantified from, rna_seq or other."
+                },
+                "name": {
+                    "description": "File name, by convention the contentUrl.",
+                    "type": "string"
+                },
+                "platform": {
+                    "description": "The sequencing instrument model, e.g. \"Illumina NovaSeq X\".",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "processingHints": {
+                    "description": "Informational key-value pairs for downstream pipelines.",
+                    "items": {
+                        "$ref": "#/$defs/ProcessingHint"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "recordCount": {
+                    "description": "Rows, resources or documents in the file, when counted.",
+                    "minimum": 0,
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "sensitivity": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/FixedSensitivity"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Notes only. The class fixes every sensitivity flag."
+                },
+                "sequencingPlatform": {
+                    "$ref": "#/$defs/SequencingPlatformEnum",
+                    "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
+                },
+                "sha256": {
+                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "pattern": "^[0-9a-f]{64}$",
+                    "type": "string"
+                },
+                "subjectIds": {
+                    "description": "Subject IDs the file contains. Each must appear in the subject table.",
+                    "items": {
+                        "pattern": "^[A-Za-z0-9._:-]+$",
+                        "type": "string"
+                    },
+                    "minItems": 1,
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "valueOrigins": {
+                    "description": "How tools populated this node's values.",
+                    "items": {
+                        "$ref": "#/$defs/ValueOrigin"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "wasDerivedFrom": {
+                    "description": "References to input files in this sidecar, such as the alignment used to call variants.",
+                    "items": {
+                        "$ref": "#/$defs/NodeRef"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "measurementTechnique",
+                "sequencingPlatform",
+                "contentUrl",
+                "contentSize",
+                "sha256",
+                "@id",
+                "@type",
+                "additionalType",
+                "name",
+                "encodingFormat"
+            ],
+            "title": "GeneExpressionFile",
+            "type": "object"
+        },
         "GenericFile": {
             "additionalProperties": false,
             "description": "Any other data file. GenericFile is strongly discouraged. A dedicated data class is required; using GenericFile triggers lengthy manual review.",
@@ -5652,7 +5909,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Number of rows, resources or documents, if known.",
+                    "description": "Rows, resources or documents in the file, when counted.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -5721,8 +5978,203 @@
             "title": "GenericFile",
             "type": "object"
         },
+        "GeneticTestResultFile": {
+            "additionalProperties": false,
+            "description": "Results of clinical genetic tests or molecular pathology, exported as records: for each test, its name, method, date and status, and its findings, such as genes, variants in HGVS notation, zygosity and classification (for example ACMG/AMP), with the laboratory's interpretation as text. The interpretation makes the file contain free text (containsFreeText). Report documents (PDFs) go in ClinicalDocumentFiles that reportDocuments points to; sequencing data and variant calls go in the genomics classes. A report lists few variants, not a genome, so the class is not identifying, although a rare variant can single a person out within a small cohort. Results records hold no address or image, so postal codes and biometric identifiers are absent unless the file says otherwise.",
+            "properties": {
+                "@id": {
+                    "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
+                    "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                    "type": "string"
+                },
+                "@type": {
+                    "const": "cr:FileObject",
+                    "description": "The JSON-LD type. cr:FileObject or cr:FileSet for distribution items.",
+                    "type": "string"
+                },
+                "additionalProperty": {
+                    "description": "Namespaced extension key-value pairs.",
+                    "items": {
+                        "$ref": "#/$defs/Extension"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "additionalType": {
+                    "description": "The RDDC class of a distribution item, as a CURIE such as rddc:FhirNdjsonFile. Selects the required fields.",
+                    "enum": [
+                        "rddc:GeneticTestResultFile"
+                    ],
+                    "type": "string"
+                },
+                "compression": {
+                    "$ref": "#/$defs/CompressionEnum",
+                    "description": "Compression applied to the file's bytes, if any."
+                },
+                "contentSize": {
+                    "description": "Size of the file in bytes.",
+                    "pattern": "^[0-9]+ B$",
+                    "type": "string"
+                },
+                "contentUrl": {
+                    "description": "Object key relative to the batch prefix; Croissant resolves it against the sidecar's location.",
+                    "pattern": "^(?!(.*/)?\\.\\.?(/|$))[^/\\\\]+(/[^/\\\\]+)*$",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Free-text description.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "encodingFormat": {
+                    "anyOf": [
+                        {
+                            "const": "text/csv"
+                        },
+                        {
+                            "const": "text/tab-separated-values"
+                        },
+                        {
+                            "const": "application/vnd.apache.parquet"
+                        },
+                        {
+                            "const": "application/json"
+                        },
+                        {
+                            "const": "application/jsonlines"
+                        },
+                        {
+                            "const": "application/xml"
+                        },
+                        {
+                            "const": "text/xml"
+                        }
+                    ],
+                    "description": "Media type of the content (after decompression when compression is set).",
+                    "pattern": "^[a-z]+/[A-Za-z0-9.+_-]+$",
+                    "type": "string"
+                },
+                "identifier": {
+                    "description": "IDs assigned to the file by other systems.",
+                    "items": {
+                        "$ref": "#/$defs/ExternalIdentifier"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "md5": {
+                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "pattern": "^[0-9a-f]{32}$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "description": "File name, by convention the contentUrl.",
+                    "type": "string"
+                },
+                "processingHints": {
+                    "description": "Informational key-value pairs for downstream pipelines.",
+                    "items": {
+                        "$ref": "#/$defs/ProcessingHint"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "recordCount": {
+                    "description": "Rows, resources or documents in the file, when counted.",
+                    "minimum": 0,
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "referenceGenome": {
+                    "$ref": "#/$defs/ReferenceGenomeEnum",
+                    "description": "Reference assembly of the genomic coordinates in the results, when they have any. Variants given only in transcript HGVS notation need none."
+                },
+                "reportDocuments": {
+                    "description": "The report documents of the results, ClinicalDocumentFiles in this sidecar, such as the laboratory's signed PDF reports.",
+                    "items": {
+                        "$ref": "#/$defs/NodeRef"
+                    },
+                    "minItems": 1,
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "sensitivity": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/FileSensitivity"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
+                },
+                "sha256": {
+                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "pattern": "^[0-9a-f]{64}$",
+                    "type": "string"
+                },
+                "subjectIds": {
+                    "description": "Subject IDs the file contains. Each must appear in the subject table.",
+                    "items": {
+                        "pattern": "^[A-Za-z0-9._:-]+$",
+                        "type": "string"
+                    },
+                    "minItems": 1,
+                    "type": "array"
+                },
+                "valueOrigins": {
+                    "description": "How tools populated this node's values.",
+                    "items": {
+                        "$ref": "#/$defs/ValueOrigin"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "wasDerivedFrom": {
+                    "description": "References to input files in this sidecar, such as the alignment used to call variants.",
+                    "items": {
+                        "$ref": "#/$defs/NodeRef"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "subjectIds",
+                "contentUrl",
+                "contentSize",
+                "sha256",
+                "@id",
+                "@type",
+                "additionalType",
+                "name",
+                "encodingFormat"
+            ],
+            "title": "GeneticTestResultFile",
+            "type": "object"
+        },
         "GenomicsAssayEnum": {
-            "description": "Sequencing assays accepted for genomics files. Meanings are OBI assay terms (OBI release 2026-07-27). Targeted gene panels have no matching OBI term. The sequencing platform (short-read, long-read) goes in sequencingPlatform, not here.",
+            "description": "Sequencing assays accepted for genomics files. Meanings are OBI assay terms (OBI release 2026-07-27). OBI has no term for targeted gene panels, so that value has no meaning. The sequencing platform (short-read, long-read) goes in sequencingPlatform, not here.",
             "enum": [
                 "wgs",
                 "wes",
@@ -5736,7 +6188,7 @@
         },
         "GenomicsFile": {
             "additionalProperties": false,
-            "description": "Base class for genomic sequencing data. The class names the format, and maps to its EDAM format term; encodingFormat names only the container, text/plain for text formats (FASTQ, VCF) and application/octet-stream for binary ones (BAM, CRAM, BCF). A gzip or BGZF-compressed text file (.fastq.gz, .vcf.gz) says so in compression. BAM, CRAM and BCF compress internally as part of the format, so they leave compression unset. The formats hold sequence data and run metadata, not subject-level dates, addresses, narrative or biometric identifiers, so the sensitivity flags do not apply: what identifies the person is the sequence itself (the identifying annotation).",
+            "description": "Base class for genomic sequencing data. For reads and alignments the class names the format and maps to its EDAM format term; for variant calls the media type and compression do. encodingFormat names only the container for formats with no registered media type: text/plain for text formats (FASTQ, VCF) and application/octet-stream for binary ones (BAM, CRAM, BCF). A gzip or BGZF-compressed text file (.fastq.gz, .vcf.gz) says so in compression. BAM, CRAM and BCF compress internally as part of the format, so they leave compression unset. The formats hold sequence data, run metadata and expression values, not subject-level dates, addresses, narrative or biometric identifiers, so the sensitivity flags do not apply: what identifies the person, where the class says so, is the sequence itself (the identifying annotation).",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -5835,7 +6287,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Number of rows, resources or documents, if known.",
+                    "description": "Rows, resources or documents in the file, when counted.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -5855,7 +6307,7 @@
                 },
                 "sequencingPlatform": {
                     "$ref": "#/$defs/SequencingPlatformEnum",
-                    "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It distinguishes short and long reads, which require different processing."
+                    "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
                 },
                 "sha256": {
                     "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
@@ -5908,6 +6360,209 @@
                 "encodingFormat"
             ],
             "title": "GenomicsFile",
+            "type": "object"
+        },
+        "GermlineVariantFile": {
+            "additionalProperties": false,
+            "description": "Variant calls that contain or may contain germline variants: germline calls, joint genotypes, and somatic calls that still include germline variants, such as unfiltered tumor-only calls. Germline variants identify a person.",
+            "properties": {
+                "@id": {
+                    "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
+                    "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                    "type": "string"
+                },
+                "@type": {
+                    "const": "cr:FileObject",
+                    "description": "The JSON-LD type. cr:FileObject or cr:FileSet for distribution items.",
+                    "type": "string"
+                },
+                "additionalProperty": {
+                    "description": "Namespaced extension key-value pairs.",
+                    "items": {
+                        "$ref": "#/$defs/Extension"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "additionalType": {
+                    "description": "The RDDC class of a distribution item, as a CURIE such as rddc:FhirNdjsonFile. Selects the required fields.",
+                    "enum": [
+                        "rddc:GermlineVariantFile"
+                    ],
+                    "type": "string"
+                },
+                "compression": {
+                    "$ref": "#/$defs/CompressionEnum",
+                    "anyOf": [
+                        {
+                            "const": "gzip"
+                        },
+                        {
+                            "const": "bgzf"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Compression applied to the file's bytes, if any."
+                },
+                "contentSize": {
+                    "description": "Size of the file in bytes.",
+                    "pattern": "^[0-9]+ B$",
+                    "type": "string"
+                },
+                "contentUrl": {
+                    "description": "Object key relative to the batch prefix; Croissant resolves it against the sidecar's location.",
+                    "pattern": "^(?!(.*/)?\\.\\.?(/|$))[^/\\\\]+(/[^/\\\\]+)*$",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Free-text description.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "encodingFormat": {
+                    "anyOf": [
+                        {
+                            "const": "text/plain"
+                        },
+                        {
+                            "const": "application/octet-stream"
+                        },
+                        {
+                            "const": "text/tab-separated-values"
+                        }
+                    ],
+                    "description": "text/plain for VCF, application/octet-stream for BCF, text/tab-separated-values for MAF.",
+                    "pattern": "^[a-z]+/[A-Za-z0-9.+_-]+$",
+                    "type": "string"
+                },
+                "identifier": {
+                    "description": "IDs assigned to the file by other systems.",
+                    "items": {
+                        "$ref": "#/$defs/ExternalIdentifier"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "md5": {
+                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "pattern": "^[0-9a-f]{32}$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "measurementTechnique": {
+                    "$ref": "#/$defs/GenomicsAssayEnum",
+                    "description": "The sequencing assay that produced the data, e.g. wgs or wes. Downstream analysis depends on it, so every genomics file states it."
+                },
+                "name": {
+                    "description": "File name, by convention the contentUrl.",
+                    "type": "string"
+                },
+                "platform": {
+                    "description": "The sequencing instrument model, e.g. \"Illumina NovaSeq X\".",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "processingHints": {
+                    "description": "Informational key-value pairs for downstream pipelines.",
+                    "items": {
+                        "$ref": "#/$defs/ProcessingHint"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "recordCount": {
+                    "description": "Rows, resources or documents in the file, when counted.",
+                    "minimum": 0,
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "referenceGenome": {
+                    "$ref": "#/$defs/ReferenceGenomeEnum",
+                    "description": "Reference assembly the coordinates refer to, e.g. GRCh38."
+                },
+                "sensitivity": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/FixedSensitivity"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Notes only. The class fixes every sensitivity flag."
+                },
+                "sequencingPlatform": {
+                    "$ref": "#/$defs/SequencingPlatformEnum",
+                    "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
+                },
+                "sha256": {
+                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "pattern": "^[0-9a-f]{64}$",
+                    "type": "string"
+                },
+                "subjectIds": {
+                    "description": "Subject IDs the file contains. Each must appear in the subject table.",
+                    "items": {
+                        "pattern": "^[A-Za-z0-9._:-]+$",
+                        "type": "string"
+                    },
+                    "minItems": 1,
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "valueOrigins": {
+                    "description": "How tools populated this node's values.",
+                    "items": {
+                        "$ref": "#/$defs/ValueOrigin"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "wasDerivedFrom": {
+                    "description": "References to input files in this sidecar, such as the alignment used to call variants.",
+                    "items": {
+                        "$ref": "#/$defs/NodeRef"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "referenceGenome",
+                "measurementTechnique",
+                "sequencingPlatform",
+                "contentUrl",
+                "contentSize",
+                "sha256",
+                "@id",
+                "@type",
+                "additionalType",
+                "name",
+                "encodingFormat"
+            ],
+            "title": "GermlineVariantFile",
             "type": "object"
         },
         "IdSystemEnum": {
@@ -6034,7 +6689,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Number of rows, resources or documents, if known.",
+                    "description": "Rows, resources or documents in the file, when counted.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -6214,7 +6869,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Number of rows, resources or documents, if known.",
+                    "description": "Rows, resources or documents in the file, when counted.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -6286,7 +6941,7 @@
         },
         "IndexFile": {
             "additionalProperties": false,
-            "description": "An index of another file in the sidecar. The index format follows the indexed file's class: .bai for a BamFile, .crai for a CramFile, .tbi or .csi for a VcfFile and .csi for a BcfFile. Indexes are binary, so encodingFormat is application/octet-stream, and they hold offsets, not content, so the sensitivity flags do not apply.",
+            "description": "An index of another file in the sidecar. The index format follows the indexed file: .bai for a BamFile, .crai for a CramFile, .tbi or .csi for a VCF and .csi for a BCF (a variant file). Indexes are binary, so encodingFormat is application/octet-stream, and they hold offsets, not content, so the sensitivity flags do not apply.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -6378,7 +7033,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Number of rows, resources or documents, if known.",
+                    "description": "Rows, resources or documents in the file, when counted.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -6448,6 +7103,192 @@
             "title": "IndexFile",
             "type": "object"
         },
+        "IntakeFormFile": {
+            "additionalProperties": false,
+            "description": "Responses to a patient intake form, exported as a table, such as from REDCap or a clinic portal: one row per completed form, or one per answer. Its columns are the form's questions and its values are coded answers, so it is read with the form's definition, named in formDefinition, rather than as a generic table. Intake forms in FHIR form, QuestionnaireResponse resources, go in a FHIR file, and scanned paper forms in a ClinicalDocumentFile. Free-text answers make the file contain free text (containsFreeText). A table of coded answers holds no biometric identifiers unless the file says so.",
+            "properties": {
+                "@id": {
+                    "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
+                    "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                    "type": "string"
+                },
+                "@type": {
+                    "const": "cr:FileObject",
+                    "description": "The JSON-LD type. cr:FileObject or cr:FileSet for distribution items.",
+                    "type": "string"
+                },
+                "additionalProperty": {
+                    "description": "Namespaced extension key-value pairs.",
+                    "items": {
+                        "$ref": "#/$defs/Extension"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "additionalType": {
+                    "description": "The RDDC class of a distribution item, as a CURIE such as rddc:FhirNdjsonFile. Selects the required fields.",
+                    "enum": [
+                        "rddc:IntakeFormFile"
+                    ],
+                    "type": "string"
+                },
+                "compression": {
+                    "$ref": "#/$defs/CompressionEnum",
+                    "description": "Compression applied to the file's bytes, if any."
+                },
+                "contentSize": {
+                    "description": "Size of the file in bytes.",
+                    "pattern": "^[0-9]+ B$",
+                    "type": "string"
+                },
+                "contentUrl": {
+                    "description": "Object key relative to the batch prefix; Croissant resolves it against the sidecar's location.",
+                    "pattern": "^(?!(.*/)?\\.\\.?(/|$))[^/\\\\]+(/[^/\\\\]+)*$",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Free-text description.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "encodingFormat": {
+                    "anyOf": [
+                        {
+                            "const": "text/csv"
+                        },
+                        {
+                            "const": "text/tab-separated-values"
+                        },
+                        {
+                            "const": "application/vnd.apache.parquet"
+                        },
+                        {
+                            "const": "application/json"
+                        },
+                        {
+                            "const": "application/jsonlines"
+                        }
+                    ],
+                    "description": "Media type of the content (after decompression when compression is set).",
+                    "pattern": "^[a-z]+/[A-Za-z0-9.+_-]+$",
+                    "type": "string"
+                },
+                "formDefinition": {
+                    "$ref": "#/$defs/NodeRef",
+                    "description": "The definition of the form the responses answer: its questions, answer codes and skip logic. Either the @id of a DocumentationFile in this sidecar that holds it, such as a REDCap data dictionary, or the canonical URL or CURIE of a published definition, such as a FHIR Questionnaire or a LOINC panel."
+                },
+                "formVersion": {
+                    "description": "The version of the form the responses answer, as the form's owner numbers it. Answer codes can change between versions.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "identifier": {
+                    "description": "IDs assigned to the file by other systems.",
+                    "items": {
+                        "$ref": "#/$defs/ExternalIdentifier"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "md5": {
+                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "pattern": "^[0-9a-f]{32}$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "description": "File name, by convention the contentUrl.",
+                    "type": "string"
+                },
+                "processingHints": {
+                    "description": "Informational key-value pairs for downstream pipelines.",
+                    "items": {
+                        "$ref": "#/$defs/ProcessingHint"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "recordCount": {
+                    "description": "Rows, resources or documents in the file, when counted.",
+                    "minimum": 0,
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "sensitivity": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/FileSensitivity"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
+                },
+                "sha256": {
+                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "pattern": "^[0-9a-f]{64}$",
+                    "type": "string"
+                },
+                "subjectIds": {
+                    "description": "Subject IDs the file contains. Each must appear in the subject table.",
+                    "items": {
+                        "pattern": "^[A-Za-z0-9._:-]+$",
+                        "type": "string"
+                    },
+                    "minItems": 1,
+                    "type": "array"
+                },
+                "valueOrigins": {
+                    "description": "How tools populated this node's values.",
+                    "items": {
+                        "$ref": "#/$defs/ValueOrigin"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "wasDerivedFrom": {
+                    "description": "References to input files in this sidecar, such as the alignment used to call variants.",
+                    "items": {
+                        "$ref": "#/$defs/NodeRef"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "formDefinition",
+                "subjectIds",
+                "contentUrl",
+                "contentSize",
+                "sha256",
+                "@id",
+                "@type",
+                "additionalType",
+                "name",
+                "encodingFormat"
+            ],
+            "title": "IntakeFormFile",
+            "type": "object"
+        },
         "InteractionEnum": {
             "description": "Requested batch action (plan sections 3.2 and 7.5).",
             "enum": [
@@ -6468,6 +7309,9 @@
                 "clinical_tabular",
                 "clinical_text",
                 "consent",
+                "intake_form",
+                "genetic_testing",
+                "diagnosis_support",
                 "genomics",
                 "imaging",
                 "video",
@@ -6870,7 +7714,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Number of rows, resources or documents, if known.",
+                    "description": "Rows, resources or documents in the file, when counted.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -7270,7 +8114,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Number of rows, resources or documents, if known.",
+                    "description": "Rows, resources or documents in the file, when counted.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -7462,7 +8306,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Number of rows, resources or documents, if known.",
+                    "description": "Rows, resources or documents in the file, when counted.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -7637,7 +8481,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Number of rows, resources or documents, if known.",
+                    "description": "Rows, resources or documents in the file, when counted.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -7827,7 +8671,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Number of rows, resources or documents, if known.",
+                    "description": "Rows, resources or documents in the file, when counted.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -7847,7 +8691,7 @@
                 },
                 "sequencingPlatform": {
                     "$ref": "#/$defs/SequencingPlatformEnum",
-                    "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It distinguishes short and long reads, which require different processing."
+                    "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
                 },
                 "sha256": {
                     "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
@@ -8033,6 +8877,15 @@
                                 "$ref": "#/$defs/ConsentFile"
                             },
                             {
+                                "$ref": "#/$defs/IntakeFormFile"
+                            },
+                            {
+                                "$ref": "#/$defs/GeneticTestResultFile"
+                            },
+                            {
+                                "$ref": "#/$defs/DifferentialDiagnosisFile"
+                            },
+                            {
                                 "$ref": "#/$defs/ClinicalDocumentFile"
                             },
                             {
@@ -8075,10 +8928,13 @@
                                 "$ref": "#/$defs/ImageFile"
                             },
                             {
-                                "$ref": "#/$defs/VcfFile"
+                                "$ref": "#/$defs/GeneExpressionFile"
                             },
                             {
-                                "$ref": "#/$defs/BcfFile"
+                                "$ref": "#/$defs/GermlineVariantFile"
+                            },
+                            {
+                                "$ref": "#/$defs/SomaticVariantFile"
                             },
                             {
                                 "$ref": "#/$defs/BamFile"
@@ -8207,6 +9063,209 @@
                 ]
             },
             "title": "Sidecar",
+            "type": "object"
+        },
+        "SomaticVariantFile": {
+            "additionalProperties": false,
+            "description": "Somatic variant calls from tumor or other somatic tissue with germline variants removed, typically by calling against a matched normal sample and filtering against population variant databases, as in the GDC's masked somatic mutation files. Calls that may still include germline variants go in a GermlineVariantFile.",
+            "properties": {
+                "@id": {
+                    "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
+                    "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                    "type": "string"
+                },
+                "@type": {
+                    "const": "cr:FileObject",
+                    "description": "The JSON-LD type. cr:FileObject or cr:FileSet for distribution items.",
+                    "type": "string"
+                },
+                "additionalProperty": {
+                    "description": "Namespaced extension key-value pairs.",
+                    "items": {
+                        "$ref": "#/$defs/Extension"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "additionalType": {
+                    "description": "The RDDC class of a distribution item, as a CURIE such as rddc:FhirNdjsonFile. Selects the required fields.",
+                    "enum": [
+                        "rddc:SomaticVariantFile"
+                    ],
+                    "type": "string"
+                },
+                "compression": {
+                    "$ref": "#/$defs/CompressionEnum",
+                    "anyOf": [
+                        {
+                            "const": "gzip"
+                        },
+                        {
+                            "const": "bgzf"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Compression applied to the file's bytes, if any."
+                },
+                "contentSize": {
+                    "description": "Size of the file in bytes.",
+                    "pattern": "^[0-9]+ B$",
+                    "type": "string"
+                },
+                "contentUrl": {
+                    "description": "Object key relative to the batch prefix; Croissant resolves it against the sidecar's location.",
+                    "pattern": "^(?!(.*/)?\\.\\.?(/|$))[^/\\\\]+(/[^/\\\\]+)*$",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Free-text description.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "encodingFormat": {
+                    "anyOf": [
+                        {
+                            "const": "text/plain"
+                        },
+                        {
+                            "const": "application/octet-stream"
+                        },
+                        {
+                            "const": "text/tab-separated-values"
+                        }
+                    ],
+                    "description": "text/plain for VCF, application/octet-stream for BCF, text/tab-separated-values for MAF.",
+                    "pattern": "^[a-z]+/[A-Za-z0-9.+_-]+$",
+                    "type": "string"
+                },
+                "identifier": {
+                    "description": "IDs assigned to the file by other systems.",
+                    "items": {
+                        "$ref": "#/$defs/ExternalIdentifier"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "md5": {
+                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "pattern": "^[0-9a-f]{32}$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "measurementTechnique": {
+                    "$ref": "#/$defs/GenomicsAssayEnum",
+                    "description": "The sequencing assay that produced the data, e.g. wgs or wes. Downstream analysis depends on it, so every genomics file states it."
+                },
+                "name": {
+                    "description": "File name, by convention the contentUrl.",
+                    "type": "string"
+                },
+                "platform": {
+                    "description": "The sequencing instrument model, e.g. \"Illumina NovaSeq X\".",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "processingHints": {
+                    "description": "Informational key-value pairs for downstream pipelines.",
+                    "items": {
+                        "$ref": "#/$defs/ProcessingHint"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "recordCount": {
+                    "description": "Rows, resources or documents in the file, when counted.",
+                    "minimum": 0,
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "referenceGenome": {
+                    "$ref": "#/$defs/ReferenceGenomeEnum",
+                    "description": "Reference assembly the coordinates refer to, e.g. GRCh38."
+                },
+                "sensitivity": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/FixedSensitivity"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "description": "Notes only. The class fixes every sensitivity flag."
+                },
+                "sequencingPlatform": {
+                    "$ref": "#/$defs/SequencingPlatformEnum",
+                    "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
+                },
+                "sha256": {
+                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "pattern": "^[0-9a-f]{64}$",
+                    "type": "string"
+                },
+                "subjectIds": {
+                    "description": "Subject IDs the file contains. Each must appear in the subject table.",
+                    "items": {
+                        "pattern": "^[A-Za-z0-9._:-]+$",
+                        "type": "string"
+                    },
+                    "minItems": 1,
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "valueOrigins": {
+                    "description": "How tools populated this node's values.",
+                    "items": {
+                        "$ref": "#/$defs/ValueOrigin"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "wasDerivedFrom": {
+                    "description": "References to input files in this sidecar, such as the alignment used to call variants.",
+                    "items": {
+                        "$ref": "#/$defs/NodeRef"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "referenceGenome",
+                "measurementTechnique",
+                "sequencingPlatform",
+                "contentUrl",
+                "contentSize",
+                "sha256",
+                "@id",
+                "@type",
+                "additionalType",
+                "name",
+                "encodingFormat"
+            ],
+            "title": "SomaticVariantFile",
             "type": "object"
         },
         "SourceDescriptor": {
@@ -8533,7 +9592,7 @@
         },
         "TabularFile": {
             "additionalProperties": false,
-            "description": "A clinical table that is not OMOP or FHIR, such as registry, patient-reported outcome, claims or mortality data. Consent tables go in a ConsentFile, sensor data in a SensorMeasureFile, and tables that describe other files in a DocumentationFile. Its name and contentUrl identify the table; record sets describe its columns and joins to other tables.",
+            "description": "A clinical table that is not OMOP or FHIR, such as registry, patient-reported outcome, claims or mortality data. Consent tables go in a ConsentFile, intake form responses in an IntakeFormFile, sensor data in a SensorMeasureFile, and tables that describe other files in a DocumentationFile. Its name and contentUrl identify the table; record sets describe its columns and joins to other tables.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -8638,7 +9697,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Number of rows, resources or documents, if known.",
+                    "description": "Rows, resources or documents in the file, when counted.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -8819,7 +9878,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Number of rows, resources or documents, if known.",
+                    "description": "Rows, resources or documents in the file, when counted.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -8839,7 +9898,7 @@
                 },
                 "sequencingPlatform": {
                     "$ref": "#/$defs/SequencingPlatformEnum",
-                    "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It distinguishes short and long reads, which require different processing."
+                    "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
                 },
                 "sha256": {
                     "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
@@ -8949,7 +10008,7 @@
         },
         "VariantFile": {
             "additionalProperties": false,
-            "description": "Base class for variant calls: a VcfFile or a BcfFile.",
+            "description": "Base class for variant calls. Germline variants identify a person and somatic variants alone do not, so a file goes in GermlineVariantFile or SomaticVariantFile depending on which it can contain. The format is told by the media type and compression, not the class: a VCF is text/plain and, when it has a tabix or CSI index (an IndexFile), BGZF-compressed (compression bgzf; a plain gzipped VCF sets gzip); a BCF is application/octet-stream; a MAF, a tab-separated table, is text/tab-separated-values.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -8980,6 +10039,17 @@
                 },
                 "compression": {
                     "$ref": "#/$defs/CompressionEnum",
+                    "anyOf": [
+                        {
+                            "const": "gzip"
+                        },
+                        {
+                            "const": "bgzf"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
                     "description": "Compression applied to the file's bytes, if any."
                 },
                 "contentSize": {
@@ -9000,7 +10070,18 @@
                     ]
                 },
                 "encodingFormat": {
-                    "description": "Media type of the content (after decompression when compression is set).",
+                    "anyOf": [
+                        {
+                            "const": "text/plain"
+                        },
+                        {
+                            "const": "application/octet-stream"
+                        },
+                        {
+                            "const": "text/tab-separated-values"
+                        }
+                    ],
+                    "description": "text/plain for VCF, application/octet-stream for BCF, text/tab-separated-values for MAF.",
                     "pattern": "^[a-z]+/[A-Za-z0-9.+_-]+$",
                     "type": "string"
                 },
@@ -9048,7 +10129,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Number of rows, resources or documents, if known.",
+                    "description": "Rows, resources or documents in the file, when counted.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -9072,7 +10153,7 @@
                 },
                 "sequencingPlatform": {
                     "$ref": "#/$defs/SequencingPlatformEnum",
-                    "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It distinguishes short and long reads, which require different processing."
+                    "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
                 },
                 "sha256": {
                     "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
@@ -9126,198 +10207,6 @@
                 "encodingFormat"
             ],
             "title": "VariantFile",
-            "type": "object"
-        },
-        "VcfFile": {
-            "additionalProperties": false,
-            "description": "Variant calls in VCF. A VCF with a tabix or CSI index (an IndexFile) is BGZF-compressed, so it sets compression to bgzf; a plain gzipped VCF sets gzip.",
-            "properties": {
-                "@id": {
-                    "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
-                    "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
-                    "type": "string"
-                },
-                "@type": {
-                    "const": "cr:FileObject",
-                    "description": "The JSON-LD type. cr:FileObject or cr:FileSet for distribution items.",
-                    "type": "string"
-                },
-                "additionalProperty": {
-                    "description": "Namespaced extension key-value pairs.",
-                    "items": {
-                        "$ref": "#/$defs/Extension"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "additionalType": {
-                    "description": "The RDDC class of a distribution item, as a CURIE such as rddc:FhirNdjsonFile. Selects the required fields.",
-                    "enum": [
-                        "rddc:VcfFile"
-                    ],
-                    "type": "string"
-                },
-                "compression": {
-                    "$ref": "#/$defs/CompressionEnum",
-                    "anyOf": [
-                        {
-                            "const": "gzip"
-                        },
-                        {
-                            "const": "bgzf"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "description": "Compression applied to the file's bytes, if any."
-                },
-                "contentSize": {
-                    "description": "Size of the file in bytes.",
-                    "pattern": "^[0-9]+ B$",
-                    "type": "string"
-                },
-                "contentUrl": {
-                    "description": "Object key relative to the batch prefix; Croissant resolves it against the sidecar's location.",
-                    "pattern": "^(?!(.*/)?\\.\\.?(/|$))[^/\\\\]+(/[^/\\\\]+)*$",
-                    "type": "string"
-                },
-                "description": {
-                    "description": "Free-text description.",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "encodingFormat": {
-                    "const": "text/plain",
-                    "description": "Media type of the content (after decompression when compression is set).",
-                    "type": "string"
-                },
-                "identifier": {
-                    "description": "IDs assigned to the file by other systems.",
-                    "items": {
-                        "$ref": "#/$defs/ExternalIdentifier"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
-                    "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "measurementTechnique": {
-                    "$ref": "#/$defs/GenomicsAssayEnum",
-                    "description": "The sequencing assay that produced the data, e.g. wgs or wes. Downstream analysis depends on it, so every genomics file states it."
-                },
-                "name": {
-                    "description": "File name, by convention the contentUrl.",
-                    "type": "string"
-                },
-                "platform": {
-                    "description": "The sequencing instrument model, e.g. \"Illumina NovaSeq X\".",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
-                },
-                "processingHints": {
-                    "description": "Informational key-value pairs for downstream pipelines.",
-                    "items": {
-                        "$ref": "#/$defs/ProcessingHint"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "recordCount": {
-                    "description": "Number of rows, resources or documents, if known.",
-                    "minimum": 0,
-                    "type": [
-                        "integer",
-                        "null"
-                    ]
-                },
-                "referenceGenome": {
-                    "$ref": "#/$defs/ReferenceGenomeEnum",
-                    "description": "Reference assembly the coordinates refer to, e.g. GRCh38."
-                },
-                "sensitivity": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/FixedSensitivity"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "description": "Notes only. The class fixes every sensitivity flag."
-                },
-                "sequencingPlatform": {
-                    "$ref": "#/$defs/SequencingPlatformEnum",
-                    "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It distinguishes short and long reads, which require different processing."
-                },
-                "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
-                    "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
-                },
-                "subjectIds": {
-                    "description": "Subject IDs the file contains. Each must appear in the subject table.",
-                    "items": {
-                        "pattern": "^[A-Za-z0-9._:-]+$",
-                        "type": "string"
-                    },
-                    "minItems": 1,
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "valueOrigins": {
-                    "description": "How tools populated this node's values.",
-                    "items": {
-                        "$ref": "#/$defs/ValueOrigin"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
-                "wasDerivedFrom": {
-                    "description": "References to input files in this sidecar, such as the alignment used to call variants.",
-                    "items": {
-                        "$ref": "#/$defs/NodeRef"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                }
-            },
-            "required": [
-                "referenceGenome",
-                "measurementTechnique",
-                "sequencingPlatform",
-                "contentUrl",
-                "contentSize",
-                "sha256",
-                "@id",
-                "@type",
-                "additionalType",
-                "name",
-                "encodingFormat"
-            ],
-            "title": "VcfFile",
             "type": "object"
         },
         "VendorSignalFile": {
@@ -9422,7 +10311,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Number of rows, resources or documents, if known.",
+                    "description": "Rows, resources or documents in the file, when counted.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -9591,7 +10480,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Number of rows, resources or documents, if known.",
+                    "description": "Rows, resources or documents in the file, when counted.",
                     "minimum": 0,
                     "type": [
                         "integer",
@@ -9773,7 +10662,7 @@
                     ]
                 },
                 "recordCount": {
-                    "description": "Number of rows, resources or documents, if known.",
+                    "description": "Rows, resources or documents in the file, when counted.",
                     "minimum": 0,
                     "type": [
                         "integer",
