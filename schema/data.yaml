@@ -44,9 +44,13 @@ description: >-
 
   A class whose content can identify a person on its own, though it is not a
   biometric identifier under HIPAA Safe Harbor, carries an "identifying" annotation set
-  to "true": genome sequences, alignments and variant calls (the genomics classes),
-  which DPV classes as genetic data (pd:Genetic). Removing direct identifiers does not
-  make such files de-identified, whatever the sensitivity flags say. "biometric"
+  to "true": sequencing reads and alignments of any assay, DNA or RNA, and germline
+  variant calls, which DPV classes as genetic data (pd:Genetic). RNA-seq and
+  methylation reads carry the germline variants of the sequenced regions, so they
+  identify a person as DNA reads do. Germline-filtered somatic variant calls and gene
+  expression quantifications are not identifying on their own, so their classes leave
+  the annotation out. Removing direct identifiers does not make files of an
+  identifying class de-identified, whatever the sensitivity flags say. "biometric"
   implies "identifying", so a biometric class does not carry both: consumers treat a
   biometric class as identifying and, in addition, keep its files in the TRE.
 license: https://creativecommons.org/publicdomain/zero/1.0/
@@ -96,7 +100,9 @@ enums:
       consent:
         description: Consent elements for subjects (ConsentFile).
       genomics:
-        description: Sequencing reads, alignments, variant calls and related indexes.
+        description: >-
+          Sequencing reads, alignments, variant calls, gene expression quantifications
+          and related indexes.
       imaging:
         description: Medical images such as DICOM.
       video:
@@ -1559,19 +1565,74 @@ classes:
 
   VariantFile:
     is_a: GenomicsFile
+    abstract: true
     close_mappings:
     - EDAM:data_3498
-    description: Variant calls, such as VCF or BCF.
-    annotations:
-      structure: structured
-      modality: genomics
-      rai:dataCollectionType: Direct measurement
-      identifying: "true"
+    description: >-
+      Base class for variant calls, such as VCF, BCF or MAF. Germline variants identify a
+      person and somatic variants alone do not, so a file goes in GermlineVariantFile
+      or SomaticVariantFile depending on which it can contain.
     slots:
     - referenceGenome
     slot_usage:
       referenceGenome:
         required: true
+
+  GermlineVariantFile:
+    is_a: VariantFile
+    description: >-
+      Variant calls that contain or may contain germline variants: germline calls, joint
+      genotypes, and somatic calls that still include germline variants, such as
+      unfiltered tumor-only calls. Germline variants identify a person.
+    annotations:
+      structure: structured
+      modality: genomics
+      rai:dataCollectionType: Direct measurement
+      identifying: "true"
+
+  SomaticVariantFile:
+    is_a: VariantFile
+    description: >-
+      Somatic variant calls from tumor or other somatic tissue with germline variants
+      removed, typically by calling against a matched normal sample and filtering
+      against population variant databases, as in the GDC's masked somatic mutation
+      files. Calls that may still include germline variants go in a GermlineVariantFile.
+    annotations:
+      structure: structured
+      modality: genomics
+      rai:dataCollectionType: Direct measurement
+
+  GeneExpressionFile:
+    is_a: GenomicsFile
+    broad_mappings:
+    - EDAM:data_2603
+    close_mappings:
+    - EDAM:data_3917
+    description: >-
+      Gene or transcript expression quantified from RNA-seq, such as a matrix of counts
+      or TPM per gene and sample. It holds no sequence, so it is not identifying the way
+      the reads and alignments it came from are. Expression values can still be linked
+      to a person's genotype through expression quantitative trait loci (eQTLs), so
+      the file is still personal data.
+    annotations:
+      structure: structured
+      modality: genomics
+      rai:dataCollectionType: Direct measurement
+    slot_usage:
+      measurementTechnique:
+        any_of:
+        - equals_string: rna_seq
+        - equals_string: other
+        description: The assay the expression was quantified from, rna_seq or other.
+      encodingFormat:
+        any_of:
+        - equals_string: text/csv
+        - equals_string: text/tab-separated-values
+        - equals_string: application/vnd.apache.parquet
+        - equals_string: application/octet-stream
+        description: >-
+          Media type of the matrix. Formats with no registered media type, such as
+          AnnData (.h5ad), are application/octet-stream.
 
   IndexFile:
     is_a: DataFile

@@ -19,7 +19,7 @@ A class whose data is always collected the same way carries an "rai:dataCollecti
 
 A class whose content always identifies a person carries a "biometric" annotation set to "true" (FacialImagingFile). Its files count as containing biometric identifiers and stay in the trusted research environment, whatever the sensitivity flags say.
 
-A class whose content can identify a person on its own, though it is not a biometric identifier under HIPAA Safe Harbor, carries an "identifying" annotation set to "true": genome sequences, alignments and variant calls (the genomics classes), which DPV classes as genetic data (pd:Genetic). Removing direct identifiers does not make such files de-identified, whatever the sensitivity flags say. "biometric" implies "identifying", so a biometric class does not carry both: consumers treat a biometric class as identifying and, in addition, keep its files in the TRE.
+A class whose content can identify a person on its own, though it is not a biometric identifier under HIPAA Safe Harbor, carries an "identifying" annotation set to "true": sequencing reads and alignments of any assay, DNA or RNA, and germline variant calls, which DPV classes as genetic data (pd:Genetic). RNA-seq and methylation reads carry the germline variants of the sequenced regions, so they identify a person as DNA reads do. Germline-filtered somatic variant calls and gene expression quantifications are not identifying on their own, so their classes leave the annotation out. Removing direct identifiers does not make files of an identifying class de-identified, whatever the sensitivity flags say. "biometric" implies "identifying", so a biometric class does not carry both: consumers treat a biometric class as identifying and, in addition, keep its files in the TRE.
 
 ## Hierarchy
 
@@ -41,7 +41,10 @@ DistributionItem
       GenomicsFile  (abstract)
         SequenceReadsFile  (structured, genomics, identifying)
         AlignmentFile  (structured, genomics, identifying)
-        VariantFile  (structured, genomics, identifying)
+        VariantFile  (abstract)
+          GermlineVariantFile  (structured, genomics, identifying)
+          SomaticVariantFile  (structured, genomics)
+        GeneExpressionFile  (structured, genomics)
       IndexFile  (structured, genomics)
       ImagingFile  (unstructured, imaging)
         FacialImagingFile  (unstructured, imaging, biometric)
@@ -70,7 +73,9 @@ Every concrete class also requires the fields shared by all data files: `@id`, `
 | [`DocumentationFile`](#documentationfile) | `metadata` | mixed | any |  |
 | [`SequenceReadsFile`](#sequencereadsfile) | `genomics` | structured | `text/plain`, `application/octet-stream` | `measurementTechnique`, `sequencingPlatform` |
 | [`AlignmentFile`](#alignmentfile) | `genomics` | structured | `text/plain`, `application/octet-stream` | `referenceGenome`, `measurementTechnique`, `sequencingPlatform` |
-| [`VariantFile`](#variantfile) | `genomics` | structured | `text/plain`, `application/octet-stream` | `referenceGenome`, `measurementTechnique`, `sequencingPlatform` |
+| [`GermlineVariantFile`](#germlinevariantfile) | `genomics` | structured | `text/plain`, `application/octet-stream` | `referenceGenome`, `measurementTechnique`, `sequencingPlatform` |
+| [`SomaticVariantFile`](#somaticvariantfile) | `genomics` | structured | `text/plain`, `application/octet-stream` | `referenceGenome`, `measurementTechnique`, `sequencingPlatform` |
+| [`GeneExpressionFile`](#geneexpressionfile) | `genomics` | structured | `text/csv`, `text/tab-separated-values`, `application/vnd.apache.parquet`, `application/octet-stream` | `measurementTechnique`, `sequencingPlatform` |
 | [`IndexFile`](#indexfile) | `genomics` | structured | `application/octet-stream` | `indexOf` |
 | [`ImagingFile`](#imagingfile) | `imaging` | unstructured | any | `measurementTechnique` |
 | [`FacialImagingFile`](#facialimagingfile) | `imaging` | unstructured | `image/jpeg`, `image/png`, `image/tiff`, `image/heic`, `application/dicom`, `model/obj`, `model/stl`, `model/gltf-binary`, `model/gltf+json`, `model/mtl`, `application/octet-stream` | `measurementTechnique`, `subjectIds` |
@@ -254,7 +259,7 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 Base class for genomic sequencing data. These formats have no registered media type, so encodingFormat names the container: text/plain for text formats (FASTQ, SAM, VCF) and application/octet-stream for binary ones (BAM, CRAM, BCF). The class says which format it is. A gzip or BGZF-compressed text file (.fastq.gz, .vcf.gz) sets compression to gzip. BAM, CRAM and BCF compress internally as part of the format, so they leave compression unset.
 
-Abstract: not used directly. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Subclasses: [`SequenceReadsFile`](#sequencereadsfile), [`AlignmentFile`](#alignmentfile), [`VariantFile`](#variantfile).
+Abstract: not used directly. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Subclasses: [`SequenceReadsFile`](#sequencereadsfile), [`AlignmentFile`](#alignmentfile), [`VariantFile`](#variantfile), [`GeneExpressionFile`](#geneexpressionfile).
 
 Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
@@ -291,15 +296,44 @@ Fields it adds or changes; it also has all fields of [`GenomicsFile`](#genomicsf
 
 ### VariantFile
 
-Variant calls, such as VCF or BCF.
+Base class for variant calls, such as VCF, BCF or MAF. Germline variants identify a person and somatic variants alone do not, so a file goes in GermlineVariantFile or SomaticVariantFile depending on which it can contain.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:VariantFile"`. Inherits from [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`. Data collection (`rai:dataCollectionType`): Direct measurement. Close to [`EDAM:data_3498`](http://edamontology.org/data_3498). Identifying: can identify a person on its own, so it never counts as de-identified.
+Abstract: not used directly. Inherits from [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Subclasses: [`GermlineVariantFile`](#germlinevariantfile), [`SomaticVariantFile`](#somaticvariantfile). Close to [`EDAM:data_3498`](http://edamontology.org/data_3498).
 
 Fields it adds or changes; it also has all fields of [`GenomicsFile`](#genomicsfile):
 
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
 | `referenceGenome` | [`ReferenceGenomeEnum`](#referencegenomeenum) | yes | Reference assembly the coordinates refer to, e.g. GRCh38. |
+
+### GermlineVariantFile
+
+Variant calls that contain or may contain germline variants: germline calls, joint genotypes, and somatic calls that still include germline variants, such as unfiltered tumor-only calls. Germline variants identify a person.
+
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:GermlineVariantFile"`. Inherits from [`VariantFile`](#variantfile) → [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`. Data collection (`rai:dataCollectionType`): Direct measurement. Identifying: can identify a person on its own, so it never counts as de-identified.
+
+No fields beyond those of [`VariantFile`](#variantfile).
+
+### SomaticVariantFile
+
+Somatic variant calls from tumor or other somatic tissue with germline variants removed, typically by calling against a matched normal sample and filtering against population variant databases, as in the GDC's masked somatic mutation files. Calls that may still include germline variants go in a GermlineVariantFile.
+
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:SomaticVariantFile"`. Inherits from [`VariantFile`](#variantfile) → [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`. Data collection (`rai:dataCollectionType`): Direct measurement.
+
+No fields beyond those of [`VariantFile`](#variantfile).
+
+### GeneExpressionFile
+
+Gene or transcript expression quantified from RNA-seq, such as a matrix of counts or TPM per gene and sample. It holds no sequence, so it is not identifying the way the reads and alignments it came from are. Expression values can still be linked to a person's genotype through expression quantitative trait loci (eQTLs), so the file is still personal data.
+
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:GeneExpressionFile"`. Inherits from [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`. Data collection (`rai:dataCollectionType`): Direct measurement. Close to [`EDAM:data_3917`](http://edamontology.org/data_3917). A kind of [`EDAM:data_2603`](http://edamontology.org/data_2603).
+
+Fields it adds or changes; it also has all fields of [`GenomicsFile`](#genomicsfile):
+
+| Field | Type | Required | Meaning and constraints |
+| --- | --- | --- | --- |
+| `encodingFormat` | [`MediaType`](#mediatype) | yes | Media type of the matrix. Formats with no registered media type, such as AnnData (.h5ad), are application/octet-stream. One of: `text/csv`, `text/tab-separated-values`, `application/vnd.apache.parquet`, `application/octet-stream`. |
+| `measurementTechnique` | [`GenomicsAssayEnum`](#genomicsassayenum) | yes | The assay the expression was quantified from, rna_seq or other. One of: `rna_seq`, `other`. |
 
 ### IndexFile
 
@@ -522,7 +556,7 @@ The kind of data in a file: the values of the "modality" class annotation. Each 
 | `clinical_tabular` | Registry, patient-reported, claims or mortality tables not in OMOP or FHIR form (TabularFile). |
 | `clinical_text` | Unstructured clinical text such as notes. De-identified before use. |
 | `consent` | Consent elements for subjects (ConsentFile). |
-| `genomics` | Sequencing reads, alignments, variant calls and related indexes. |
+| `genomics` | Sequencing reads, alignments, variant calls, gene expression quantifications and related indexes. |
 | `imaging` | Medical images such as DICOM. |
 | `video` | Video recordings (VideoFile). |
 | `audio` | Audio recordings, including voice (AudioFile). |

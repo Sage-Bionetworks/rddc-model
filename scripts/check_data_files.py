@@ -94,8 +94,24 @@ VALID = {
         measurementTechnique="wgs", sequencingPlatform="pacbio_smrt", referenceGenome="GRCh38",
     ),
     "variants": item(
-        "VariantFile", 13, contentUrl="genomics/S1.vcf.gz", encodingFormat="text/plain",
+        "GermlineVariantFile", 13, contentUrl="genomics/S1.vcf.gz", encodingFormat="text/plain",
         compression="gzip", measurementTechnique="wes", sequencingPlatform="illumina", referenceGenome="T2T-CHM13v2.0",
+    ),
+    "somatic_variants": item(
+        "SomaticVariantFile", 26, contentUrl="genomics/T1.maf", encodingFormat="text/plain",
+        measurementTechnique="wes", sequencingPlatform="illumina", referenceGenome="GRCh38",
+    ),
+    "rna_reads": item(
+        "SequenceReadsFile", 27, contentUrl="genomics/S1_rna_R1.fastq.gz", encodingFormat="text/plain",
+        compression="gzip", measurementTechnique="rna_seq", sequencingPlatform="illumina",
+    ),
+    "expression": item(
+        "GeneExpressionFile", 28, contentUrl="genomics/counts.tsv", encodingFormat="text/tab-separated-values",
+        measurementTechnique="rna_seq", sequencingPlatform="illumina", subjectIds=["S1", "S2"],
+    ),
+    "expression_h5ad": item(
+        "GeneExpressionFile", 29, contentUrl="genomics/counts.h5ad", encodingFormat="application/octet-stream",
+        measurementTechnique="rna_seq", sequencingPlatform="illumina",
     ),
     "index": item(
         "IndexFile", 14, contentUrl="genomics/S1.bam.bai", encodingFormat="application/octet-stream",
@@ -202,6 +218,11 @@ INVALID = {
     "sampling rate on derived measures": put("sensor_measure", ["samplingRate"], 1),
     "removed SensorDataFile class used directly": put("sensor_measure", ["additionalType"], "rddc:SensorDataFile"),
     "imaging assay on a genomics file": put("reads", ["measurementTechnique"], "mri"),
+    "abstract VariantFile used directly": put("variants", ["additionalType"], "rddc:VariantFile"),
+    "somatic variants without a reference genome": drop("somatic_variants", ["referenceGenome"]),
+    "expression quantified from a DNA assay": put("expression", ["measurementTechnique"], "wgs"),
+    "expression matrix as an image": put("expression", ["encodingFormat"], "image/png"),
+    "reference genome on an expression matrix": put("expression", ["referenceGenome"], "GRCh38"),
     "face image from microscopy": put("face", ["measurementTechnique"], "microscopy"),
     "face scan with an invented PLY media type": put("face_scan", ["encodingFormat"], "model/ply"),
     "empty subject list": put("face", ["subjectIds"], []),
