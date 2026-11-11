@@ -15,7 +15,6 @@ RDDC fields use camelCase in the `rddc:` namespace.
 
 | Path | What |
 | --- | --- |
-| `docs/data_classes.md` | Reference for the data file classes, generated from `schema/data.yaml` (`make docs`) |
 | `docs/sidecar_requirements.md` | Metadata sidecar requirements, v0.2 (draft for TA1–TA3 review) |
 | `schema/rddc_sidecar.yaml` | LinkML module for the sidecar and the per-source descriptor (schema version 0.1.0) |
 | `schema/data.yaml` | LinkML module with the file classes: `FileObject`, with the fields every file has (`contentUrl`, `contentSize`, `encodingFormat`, `md5`), and the data file classes (`DataFile` and subclasses) with their class annotations: `modality`, `structure`, `fileSetClass`, `biometric`, `identifying` and the sensitivity flags the class fixes |
@@ -25,9 +24,10 @@ RDDC fields use camelCase in the `rddc:` namespace.
 | `schema/generated/rddc_sidecar.schema.json` | Closed JSON Schema for the sidecar document |
 | `schema/generated/rddc_source_descriptor.schema.json` | Closed JSON Schema for the source descriptor (plain JSON) |
 | `examples/` | Example sidecars (deposit, withdrawal, C-CDA document set) and a source descriptor |
-| `site/` | Documentation site sources: pages, recipe sidecars, template and assets |
+| `examples/data_files/valid.json` | One valid data file object per data class, checked by `make check` and shown on the site |
+| `site/` | Documentation site sources: pages, recipe sidecars, template and assets. The data classes are documented here, generated from the schema |
 | `site/slides.html` | Standalone four-slide presentation on Croissant and the RDDC sidecar |
-| `scripts/` | Context builder, example and data file checkers, class annotation checker, version checker, enum generator, data class docs generator and site builder |
+| `scripts/` | Context builder, example and data file checkers, class annotation checker, version checker, enum generator and site builder |
 
 ## Build and check
 
@@ -37,9 +37,8 @@ make schema     # JSON-LD context (also refreshed in examples/), then JSON Schem
 make check      # examples and data file objects against the JSON Schemas, plus must-fail mutations
 make check CROISSANT_PY=/path/to/python-with-mlcroissant   # also Croissant validation
 make lint       # linkml-lint, plus the class annotation check
-make docs       # regenerate docs/data_classes.md (CI checks it)
 make enums      # regenerate the FHIR resource type and OMOP table enums from HL7 and OHDSI
-make site       # documentation and slides into site/dist (checks the recipes first)
+make site       # documentation and slides into site/dist (checks the recipes and data file examples first; CI builds it too)
 ```
 
 The presentation is built at `site/dist/slides.html` and linked from the docs.
