@@ -129,6 +129,7 @@ NAV = [
         ("data-vocabularies.html", "Data class vocabularies"),
     ]),
     ("The sidecar", [
+        ("sidecar-overview.html", "What the sidecar is for"),
         ("foundations.html", "Foundations"),
         ("croissant.html", "RDDC and Croissant"),
         ("concepts.html", "Core concepts"),
