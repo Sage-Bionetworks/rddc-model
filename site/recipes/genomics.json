@@ -98,7 +98,7 @@
     {
       "@id": "urn:uuid:0000a505-0000-4000-8000-00000000a505",
       "@type": "cr:FileObject",
-      "additionalType": "rddc:VcfFile",
+      "additionalType": "rddc:GermlineVariantFile",
       "name": "wgs/P0001.vcf.gz",
       "contentUrl": "wgs/P0001.vcf.gz",
       "contentSize": "160000000 B",
