@@ -1,8 +1,8 @@
 <h1>Recipes by data type</h1>
-<p class="lede">Complete metadata sidecars for each supported data type. The <a href="data-overview.html">data class pages</a> explain each class and show a valid file object; these recipes show the files in a whole sidecar, with their file sets, subjects and sensitivity. Their IDs, paths, sizes and checksums are placeholders for actual batch values. The site build validates every download against JSON Schema. Completed sidecars also need validation against the batch files before upload.</p>
+<p class="lede">Complete metadata sidecars for each supported data type. The <a href="data-overview.html">data class pages</a> explain each class and show a valid file object; these recipes show complete sidecars, with their file sets, subjects and sensitivity. Their IDs, paths, sizes and checksums are placeholders for actual batch values. The site build validates every download against JSON Schema. Completed sidecars also need validation against the batch files before upload.</p>
 
 <div class="note"><strong>Complete downloads</strong>
-<p>To keep the page readable, most snippets show only the parts that differ between recipes. The downloads are complete sidecars, including the embedded context and the standard header from <a href="tutorial.html">Sidecar tutorial</a>.</p></div>
+<p>Most snippets show only recipe-specific sections. The downloads are complete sidecars, including the embedded context and the standard header from <a href="tutorial.html">Sidecar tutorial</a>.</p></div>
 
 <div class="table-wrap"><table>
 <thead><tr><th>Data</th><th>File class</th><th>File set class</th><th>Recipe</th></tr></thead>
@@ -20,7 +20,7 @@
 </tbody></table></div>
 
 <h2>FHIR bundles from synthetic data</h2>
-<p>Synthea test patients, exported as one FHIR <code>collection</code> Bundle per patient. Three things to notice:</p>
+<p>Synthea test patients, exported as one FHIR <code>collection</code> Bundle per patient. Key points:</p>
 <ul>
 <li><code>synthetic: true</code> on the batch tells validators there are no real people, which relaxes identifier checks to warnings.</li>
 <li>The subject IDs are FHIR <code>Patient.identifier</code> values, so each row needs <code>identifierSystemUri</code>.</li>
@@ -48,7 +48,7 @@
 </div>
 
 <h2>Clinical notes</h2>
-<p>Each clinical note goes through text de-identification before further processing. A <code>ClinicalDocumentFile</code> must list its subject. This batch sets <code>containsFreeText: true</code> to request the scan. The scanned PDF also has an informational processing hint; any value used for pipeline decisions must be a defined schema field.</p>
+<p>Clinical notes undergo text de-identification before further processing. A <code>ClinicalDocumentFile</code> must list its subject. This batch sets <code>containsFreeText: true</code> to request the scan. The scanned PDF also has an informational processing hint; any value used for pipeline decisions must be a defined schema field.</p>
 <rddc-json src="site/recipes/clinical_notes.json" keys="sensitivity,distribution" title="clinical_notes.json (excerpt)"></rddc-json>
 
 <h2>Genomics</h2>
@@ -67,11 +67,11 @@
 <rddc-json src="site/recipes/imaging_media.json" keys="sensitivity,distribution" title="imaging_media.json (excerpt)"></rddc-json>
 
 <h2>Consent</h2>
-<p>A consent batch uses <code>interaction: consent</code>. Every subject row carries a <code>consentRef</code>, and the batch may include <code>ConsentFile</code>s listing the subjects they cover. What a consent batch must contain beyond this is still an open question for the GOVERN register specification.</p>
+<p>A consent batch uses <code>interaction: consent</code>. Every subject row carries a <code>consentRef</code>, and the batch may include <code>ConsentFile</code>s listing the subjects they cover. Additional consent batch requirements remain undefined in the GOVERN register specification.</p>
 <rddc-json src="site/recipes/consent.json" keys="interaction,subjects,distribution" title="consent.json (excerpt)"></rddc-json>
 
 <h2>Restriction</h2>
-<p>A restriction looks like a <a href="examples.html#withdrawal">withdrawal</a>: no data files, a non-empty subject table and a <code>noticeRef</code>. The notice registered with GOVERN holds the restriction terms.</p>
+<p>Restrictions and <a href="examples.html#withdrawal">withdrawals</a> require no data files, a non-empty subject table and a <code>noticeRef</code>. The notice registered with GOVERN holds the restriction terms.</p>
 <rddc-json src="site/recipes/restrict.json" keys="batchId,interaction,noticeRef,subjects,distribution" title="restrict.json (excerpt)"></rddc-json>
 
 <h2>Download all recipes</h2>

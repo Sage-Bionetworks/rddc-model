@@ -1,10 +1,10 @@
 <h1>Imaging, audio and video</h1>
-<p class="lede">Medical and clinical images, facial photographs and 3D scans, and audio and video recordings. Faces and voices are biometric identifiers, which decides where these files can be used.</p>
+<p class="lede">Medical and clinical images, facial photographs and 3D scans, and audio and video recordings. Faces and voices are biometric identifiers, which determine where these files can be used.</p>
 
 <rddc-family names="ImagingFile,FacialImagingFile,AudioFile,VideoFile"></rddc-family>
 
 <h2>Images</h2>
-<p>An <code>ImagingFile</code> is a medical or clinical image, such as a DICOM CT or MRI series, a microscopy image or a clinical photograph. Every image states the technique that produced it in <code>measurementTechnique</code>; analysis depends on it. Values map to OBI assay terms where OBI has one, and to NCIT or SNOMED CT terms where it does not.</p>
+<p>An <code>ImagingFile</code> is a medical or clinical image, such as a DICOM CT or MRI series, a microscopy image or a clinical photograph. Every image requires <code>measurementTechnique</code> for analysis. Values map to OBI assay terms where OBI has one, and to NCIT or SNOMED CT terms where it does not.</p>
 <rddc-enum name="ImagingAssayEnum"></rddc-enum>
 <rddc-example key="imaging"></rddc-example>
 
@@ -31,7 +31,7 @@
   <div><rddc-example key="audio"></rddc-example></div>
   <div><rddc-example key="video"></rddc-example></div>
 </div>
-<p>Whether a recording identifies a person depends on what it records, so these classes are not biometric. A recording of a person's voice, or a video that shows a face, contains biometric identifiers: set <code>sensitivity.containsBiometricIdentifiers</code> to <code>true</code> on the file, as the voice recording above does. Files with biometric identifiers stay in the TRE.</p>
+<p>Whether a recording identifies a person depends on its content, so these classes are not biometric. A recording of a person's voice, or a video that shows a face, contains biometric identifiers: set <code>sensitivity.containsBiometricIdentifiers</code> to <code>true</code> on the file, as the voice recording above does. Files with biometric identifiers stay in the TRE.</p>
 
 <h2>Acquisition details</h2>
 <p>A table describing how images or recordings were acquired, such as the device, settings or date of each, is a <a href="data-other.html">DocumentationFile</a> that points to the files it describes.</p>

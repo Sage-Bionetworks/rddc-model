@@ -1,21 +1,21 @@
 <h1>Common mistakes</h1>
 <p class="lede">Common metadata sidecar errors and how to fix them. The site build checks that JSON Schema rejects each invalid example.</p>
 
-<h2>Putting the RDDC class in @type</h2>
+<h2 id="putting-the-rddc-class-in-type">RDDC class in @type</h2>
 <p>A file's <code>@type</code> is always <code>cr:FileObject</code>, and a file set's is always <code>cr:FileSet</code>, so that Croissant tools recognise them. The RDDC class goes in <code>additionalType</code>.</p>
 <div class="pair">
   <div><p class="label cr">Rejected</p><rddc-json src="site/recipes/mistakes/subclass_in_type.json" pointer="/distribution/0" keys="@id,@type,additionalType" title="@type is the subclass"></rddc-json></div>
   <div><p class="label rddc">Valid</p><rddc-json src="site/recipes/minimal.json" pointer="/distribution/0" keys="@id,@type,additionalType" title="@type is cr:FileObject"></rddc-json></div>
 </div>
 
-<h2>Describing the wrapper instead of the content</h2>
+<h2 id="describing-the-wrapper-instead-of-the-content">Compression format in encodingFormat</h2>
 <p><code>encodingFormat</code> is the media type <em>after</em> decompression. A gzipped FHIR NDJSON file is still <code>application/fhir+ndjson</code>; the gzip goes in <code>compression</code>.</p>
 <div class="pair">
   <div><p class="label cr">Rejected</p><rddc-json src="site/recipes/mistakes/wrapper_format.json" pointer="/distribution/0" keys="additionalType,contentUrl,encodingFormat" title="encodingFormat names the archive"></rddc-json></div>
   <div><p class="label rddc">Valid</p><rddc-json src="examples/deposit_fhir_omop.json" pointer="/distribution/3" keys="additionalType,contentUrl,encodingFormat,compression" title="encodingFormat names the content"></rddc-json></div>
 </div>
 
-<h2>Writing the size as a number</h2>
+<h2 id="writing-the-size-as-a-number">Numeric contentSize</h2>
 <p>Croissant writes sizes as strings with a unit. In a sidecar the unit is always bytes: <code>"4096 B"</code>.</p>
 <div class="pair">
   <div><p class="label cr">Rejected</p><rddc-code title="contentSize is a number">{ "contentSize": 4096 }</rddc-code></div>
@@ -37,14 +37,14 @@
 </div>
 <p class="muted">A full <code>s3://</code> URL is also invalid in <code>contentUrl</code>. The pattern in schema {{version}} does not yet detect this error.</p>
 
-<h2>Using an HTTPS URL for the batch</h2>
+<h2 id="using-an-https-url-for-the-batch">HTTPS batch URL</h2>
 <p>The sidecar's <code>url</code> must be the <code>s3://</code> form of the batch prefix, ending with a slash.</p>
 <div class="pair">
   <div><p class="label cr">Rejected</p><rddc-json src="site/recipes/mistakes/https_url.json" keys="url" title="virtual-hosted HTTPS URL"></rddc-json></div>
   <div><p class="label rddc">Valid</p><rddc-json src="site/recipes/minimal.json" keys="url" title="s3:// prefix with trailing slash"></rddc-json></div>
 </div>
 
-<h2>Using field names from older drafts</h2>
+<h2 id="using-field-names-from-older-drafts">Outdated field names</h2>
 <p>Early drafts used snake_case names such as <code>batch_id</code>, <code>file_id</code> and <code>source_id</code>. Schema {{version}} uses the names below. Unknown properties fail validation.</p>
 <div class="table-wrap"><table>
 <thead><tr><th>Older draft</th><th>Schema {{version}}</th></tr></thead>
@@ -70,25 +70,25 @@
   <div><p class="label rddc">Valid</p><rddc-json src="examples/withdraw.json" keys="interaction,noticeRef,distribution" title="noticeRef names the notice"></rddc-json></div>
 </div>
 
-<h2>Setting batch-only flags on a file</h2>
+<h2 id="setting-batch-only-flags-on-a-file">Batch-only flags on files</h2>
 <p><code>synthetic</code> and <code>directIdentifiersRemoved</code> describe the whole batch and can't be overridden per file. Only the <code>contains*</code> flags and <code>notes</code> are allowed in a file's <code>sensitivity</code>.</p>
 <div class="pair">
   <div><p class="label cr">Rejected</p><rddc-json src="site/recipes/mistakes/synthetic_per_file.json" pointer="/distribution/0" keys="name,sensitivity" title="synthetic on a file"></rddc-json></div>
   <div><p class="label rddc">Valid</p><rddc-json src="examples/deposit_fhir_omop.json" pointer="/distribution/3" keys="name,sensitivity" title="a contains* flag on a file"></rddc-json></div>
 </div>
 
-<h2>Un-namespaced extensions</h2>
+<h2 id="un-namespaced-extensions">Extensions without namespaces</h2>
 <p>Use <code>ext:&lt;namespace&gt;:&lt;key&gt;</code> for extension keys so projects can define their own values without name conflicts.</p>
 <div class="pair">
   <div><p class="label cr">Rejected</p><rddc-json src="site/recipes/mistakes/extension_key.json" keys="additionalProperty" title="bare key"></rddc-json></div>
   <div><p class="label rddc">Valid</p><rddc-json src="site/recipes/registry_dictionary.json" keys="additionalProperty" title="namespaced key"></rddc-json></div>
 </div>
 
-<h2>Mistakes only the full validator catches</h2>
+<h2 id="mistakes-only-the-full-validator-catches">Errors requiring the RDDC validator</h2>
 <p>These pass JSON Schema but fail the RDDC validator:</p>
 <ul>
 <li>A file's <code>subjectIds</code> names someone who isn't in the subject table.</li>
-<li>A file is on disk (or in the bucket) but not in <code>distribution</code>, or the other way round. The sidecar itself is never listed.</li>
+<li>A file is missing from <code>distribution</code> or from disk/the bucket. The sidecar itself is never listed.</li>
 <li>A file set lists a member in <code>hasPart</code> that isn't in <code>distribution</code>.</li>
 <li>Two files share an <code>@id</code>, or the same subject appears twice.</li>
 <li>A file set's <code>conformsTo</code> is not one of the pinned standards, for example <code>http://hl7.org/fhir/R5</code>.</li>

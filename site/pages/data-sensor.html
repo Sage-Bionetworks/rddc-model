@@ -6,7 +6,7 @@
 <h2>Raw signals and derived measures</h2>
 <p>Raw signals and the measures derived from them need different processing, so they are different classes:</p>
 <ul>
-<li>A <code>SensorSignalFile</code> holds a signal before any aggregation, such as 100 Hz accelerometry, an ECG waveform or a sleep study's channels. Common formats are EDF/EDF+, WFDB, DICOM waveform and device or vendor formats. Those without a registered media type are <code>application/octet-stream</code>. Give the signal's sampling rate in hertz in <code>samplingRate</code>, Croissant's term; when channels differ, give the highest.</li>
+<li>A <code>SensorSignalFile</code> holds a signal before any aggregation, such as 100 Hz accelerometry, an ECG waveform or a sleep study's channels. Common formats are EDF/EDF+, WFDB, DICOM waveform and device or vendor formats. Those without a registered media type are <code>application/octet-stream</code>. Set Croissant's <code>samplingRate</code> to the highest channel sampling rate, in hertz.</li>
 <li>A <code>SensorMeasureFile</code> holds measures derived from a signal, such as per-minute step counts, sleep stages or daily heart rate summaries, as a table or JSON.</li>
 </ul>
 <div class="pair">
@@ -15,13 +15,13 @@
 </div>
 
 <h2>Techniques and devices</h2>
-<p><code>measurementTechnique</code> lists the sensing techniques that produced the data. It is a list because one recording or summary can combine several. Values map to NCIT, OBI and SNOMED CT terms. The device that recorded the data, such as <code>ActiGraph GT9X</code>, goes in <code>platform</code>.</p>
+<p><code>measurementTechnique</code> lists the sensing techniques that produced the data. The list supports recordings or summaries that combine techniques. Values map to NCIT, OBI and SNOMED CT terms. Set <code>platform</code> to the recording device, such as <code>ActiGraph GT9X</code>.</p>
 <rddc-enum name="SensorAssayEnum"></rddc-enum>
 
 <h2>Standards</h2>
 <ul>
-<li><strong>IEEE 1752.1</strong> (Open mHealth) defines JSON schemas for sleep and physical activity measures. A collection of such measures can declare that it follows it.</li>
-<li>Sensor data already in FHIR form, such as device Observations, is not sensor data in this sense: it goes in a <a href="data-clinical.html#fhir">FHIR file</a>, in a collection that declares the HL7 Personal Health Device IG.</li>
+<li><strong>IEEE 1752.1</strong> (Open mHealth) defines JSON schemas for sleep and physical activity measures. A collection of these measures can declare conformance to IEEE 1752.1.</li>
+<li>Store sensor data already in FHIR form, such as device Observations, in a <a href="data-clinical.html#fhir">FHIR file</a>, in a collection that declares the HL7 Personal Health Device IG.</li>
 </ul>
 
 <h2>Sensitivity</h2>
