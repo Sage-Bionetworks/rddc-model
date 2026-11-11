@@ -235,18 +235,18 @@ that need confirmation.
 | JSON, other `resourceType` | `FhirResourceFile` | `application/fhir+json` | `resourceType` |
 | NDJSON, one `resourceType` | `FhirNdjsonFile` | `application/fhir+ndjson` | `resourceType`, `recordCount`, subjects from `Patient` |
 | Bulk `$export` status JSON | (metadata; not a data file unless listed) | | Declared outputs reconciled with present files; `exportTime` |
-| CSV/TSV/Parquet whose columns match a CDM 5.4 table | `OmopTableFile` | `text/csv` / `text/tab-separated-values` / `application/vnd.apache.parquet` | `cdmTable`; CDM version from version-specific columns; `cdm_source` row; subjects from `person.person_source_value` |
+| CSV/TSV/Parquet whose columns match a CDM 5.4 table | `OmopTableFile` | `text/csv` / `text/tab-separated-values` / `application/vnd.apache.parquet` | `cdmTable`; the CDM version, from version-specific columns, goes in the instance's `conformsTo`; `cdm_source` row; subjects from `person.person_source_value` |
 | XML `ClinicalDocument` with C-CDA templates | `CcdaDocumentFile` | `application/xml` | Release from the header template IDs (2015-08-01 → 2.1), checked against the set's `conformsTo`; subject from `recordTarget/patientRole/id`. The template IDs are not written to the sidecar |
 | Other delimited tables | `TabularFile` | as above | `recordCount`, columns, direct-identifier-like columns. Consent tables (`ConsentFile`) and sensor measures (`SensorMeasureFile`) are declared, not detected |
-| Text, PDF, RTF | `ClinicalDocumentFile` | `text/plain`, `application/pdf`, `application/rtf` (scans: `image/tiff`, `image/jpeg`, `image/png`, declared) | `containsFreeText: true` |
-| FASTQ / BAM, CRAM / VCF | `SequenceReadsFile` / `AlignmentFile` / `VariantFile` | see 5.2 | `referenceGenome` from VCF `##reference`/BAM `@SQ` when present; R1/R2 pairing (`inferred`) |
+| Text, PDF, RTF | `ClinicalDocumentFile` | `text/plain`, `application/pdf`, `application/rtf` (scans: `image/tiff`, `image/jpeg`, `image/png`, declared) | The class fixes `containsFreeText`; nothing to write |
+| FASTQ, unaligned BAM / BAM, CRAM / VCF, BCF | `FastqFile`, `UnalignedBamFile` / `BamFile`, `CramFile` / `VcfFile`, `BcfFile` (from magic bytes; BAM vs unaligned BAM from the header's `@SQ` lines) | see 5.2 | `compression` `bgzf` or `gzip` from the gzip extra field; `referenceGenome` from VCF `##reference`/BAM `@SQ` when present; R1/R2 pairing (`inferred`) |
 | `.bai`, `.crai`, `.tbi`, `.csi` | `IndexFile` | `application/octet-stream` | `indexOf` from name pairing (`detected` when the target exists) |
-| DICOM, PNG, JPEG, TIFF | `ImagingFile` | `application/dicom`, `image/*` | `containsBiometricIdentifiers` left to the contributor; a warning when not declared |
+| DICOM / PNG, JPEG, TIFF, whole-slide, NIfTI | `DicomImageFile` / `ImageFile` | `application/dicom` / `image/*`, `application/octet-stream` | `containsBiometricIdentifiers` left to the contributor; a warning when not declared |
 | Photographs of faces | `FacialImagingFile` (declared, not detected) | `image/jpeg`, `image/png`, `image/tiff`, `image/heic`, `application/dicom` | Always biometric; the tool cannot tell a face from other images, so the contributor declares the class |
 | MP4, MOV, … | `VideoFile` | `video/*` | as imaging |
 | WAV, MP3, … | `AudioFile` | `audio/*` | as imaging |
 | JSON or JSON Lines whose objects have `header.schema_id.namespace: "ieee"` and a `body` | `SensorMeasureFile` | `application/json`, `application/jsonlines` | IEEE 1752.1 data points or series; the schema named in `schema_id` (e.g. `physical-activity` 1.0) is reported. `measurementTechnique` is left to the contributor: the data does not say which sensor produced it |
-| EDF/EDF+ (`0       ` header and `.edf`), WFDB (`.hea` with signal files) | `SensorSignalFile` | `application/octet-stream` | `samplingRate` and channel labels from the header; `measurementTechnique` `inferred` from channel labels (e.g. `ECG`, `EEG`) |
+| EDF/EDF+ (`0       ` header and `.edf`) / WFDB (`.hea` with signal files) / DICOM waveform / other device formats | `EdfSignalFile` / `WfdbSignalFile` / `DicomWaveformFile` / `VendorSignalFile` (declared, with `platform`) | `application/octet-stream` (WFDB header: `text/plain`; DICOM: `application/dicom`) | `samplingRate` and channel labels from the header; `measurementTechnique` `inferred` from channel labels (e.g. `ECG`, `EEG`) |
 | Data dictionary next to tables (`*dictionary*`, `*codebook*`) | `DocumentationFile` | by format | `about` (`inferred`) |
 | Anything else | `GenericFile` | from magic bytes, else `application/octet-stream` | |
 
