@@ -21,7 +21,7 @@ description: >-
     unstructured: content without defined fields (notes, PDF or scanned documents,
       images, audio, video). Using it needs NLP, OCR or image analysis.
     mixed: the class admits either kind, so the file's content decides
-      (DocumentationFile, GenericFile).
+      (DocumentationFile, DifferentialDiagnosisFile, GenericFile).
 
 
   Each concrete class also carries a "modality" annotation, a ModalityEnum value naming
@@ -101,6 +101,14 @@ enums:
         description: Consent elements for subjects (ConsentFile).
       intake_form:
         description: Responses to patient intake forms, read with the form's definition (IntakeFormFile).
+      genetic_testing:
+        description: >-
+          Results of clinical genetic tests and molecular pathology, as reported to the
+          clinician (GeneticTestResultFile).
+      diagnosis_support:
+        description: >-
+          Candidate diagnoses ranked by a decision support tool, not confirmed diagnoses
+          (DifferentialDiagnosisFile).
       genomics:
         description: >-
           Sequencing reads, alignments, variant calls, gene expression quantifications
@@ -992,6 +1000,42 @@ enums:
           A sensing technique not listed here. Name it in the file's description; a
           curator decides whether it needs its own value.
 
+  DiagnosisCodeSystemEnum:
+    description: >-
+      Code systems that candidate diagnoses are coded in.
+    permissible_values:
+      snomed_ct:
+        title: SNOMED CT
+        description: SNOMED CT clinical findings and disorders.
+        aliases:
+        - SNOMEDCT
+      icd10:
+        title: ICD-10
+        description: WHO International Classification of Diseases, 10th revision.
+      icd10_cm:
+        title: ICD-10-CM
+        description: The US clinical modification of ICD-10.
+      icd11:
+        title: ICD-11
+        description: WHO International Classification of Diseases, 11th revision.
+      orphanet:
+        title: Orphanet (ORDO)
+        description: Orphanet rare disease nomenclature, as the Orphanet Rare Disease Ontology.
+        aliases:
+        - ORDO
+        - ORPHA
+      omim:
+        title: OMIM
+        description: Online Mendelian Inheritance in Man phenotype entries.
+      mondo:
+        title: MONDO
+        description: Mondo Disease Ontology.
+      other:
+        title: Other code system
+        description: >-
+          A code system not listed here, or uncoded names. Name it in the file's
+          description; a curator decides whether it needs its own value.
+
   OmopCdmVersionEnum:
     description: >-
       OMOP CDM versions accepted in a deposit, as major.minor. Patch releases of a
@@ -1489,13 +1533,80 @@ classes:
       subjectIds:
         required: true
 
+  GeneticTestResultFile:
+    is_a: DataFile
+    close_mappings:
+    - fhir:DiagnosticReport
+    description: >-
+      Results of clinical genetic tests or molecular pathology, exported as records: for
+      each test, its name, method, date and status, and its findings, such as genes,
+      variants in HGVS notation, zygosity and classification (for example ACMG/AMP), with
+      the laboratory's interpretation as text. The interpretation makes the file
+      contain free text (containsFreeText). Report documents (PDFs) go in
+      ClinicalDocumentFiles that reportDocuments points to; sequencing data and variant
+      calls go in the genomics classes. A report lists few variants, not a genome, so
+      the class is not identifying, although a rare variant can single a person out
+      within a small cohort.
+    annotations:
+      structure: structured
+      modality: genetic_testing
+    slots:
+    - referenceGenome
+    - reportDocuments
+    slot_usage:
+      encodingFormat:
+        any_of:
+        - equals_string: text/csv
+        - equals_string: text/tab-separated-values
+        - equals_string: application/vnd.apache.parquet
+        - equals_string: application/json
+        - equals_string: application/jsonlines
+        - equals_string: application/xml
+        - equals_string: text/xml
+      referenceGenome:
+        description: >-
+          Reference assembly of the genomic coordinates in the results, when they have
+          any. Variants given only in transcript HGVS notation need none.
+      subjectIds:
+        required: true
+
+  DifferentialDiagnosisFile:
+    is_a: DataFile
+    close_mappings:
+    - fhir:RiskAssessment
+    description: >-
+      Candidate diagnoses ranked by a diagnosis support tool, such as a facial
+      phenotyping or phenotype-matching tool, or by another method: for each subject, the top candidates with
+      their rank, score and code. The candidates are suggestions, not diagnoses, so they
+      are kept apart from confirmed conditions; in FHIR they are Conditions with
+      verificationStatus "differential". A tool's export is structured; a report in PDF
+      is unstructured and needs text extraction. wasDerivedFrom points to the files in
+      the sidecar the tool analysed, such as facial images.
+    annotations:
+      structure: mixed
+      modality: diagnosis_support
+    slots:
+    - software
+    - softwareVersion
+    - diagnosisCodeSystems
+    slot_usage:
+      encodingFormat:
+        any_of:
+        - equals_string: text/csv
+        - equals_string: text/tab-separated-values
+        - equals_string: application/json
+        - equals_string: application/jsonlines
+        - equals_string: application/pdf
+      subjectIds:
+        required: true
+
   ClinicalDocumentFile:
     is_a: DataFile
     broad_mappings:
     - EDAM:data_3861
     description: >-
-      An unstructured clinical document, such as a note or a scanned report. A scan is
-      a PDF or an image (TIFF, JPEG or PNG).
+      An unstructured clinical document, such as a note, a scanned report or a genetic
+      test report. A scan is a PDF or an image (TIFF, JPEG or PNG).
     annotations:
       structure: unstructured
       modality: clinical_text
@@ -1897,6 +2008,32 @@ slots:
     description: >-
       The version of the form the responses answer, as the form's owner numbers it.
       Answer codes can change between versions.
+
+  # --- genetic test results (GeneticTestResultFile) --------------------------
+  reportDocuments:
+    range: NodeRef
+    multivalued: true
+    inlined_as_list: true
+    minimum_cardinality: 1
+    description: >-
+      The report documents of the results, ClinicalDocumentFiles in this sidecar, such
+      as the laboratory's signed PDF reports.
+
+  # --- diagnosis support (DifferentialDiagnosisFile) -------------------------
+  software:
+    description: >-
+      The tool that produced the candidates, e.g. "Face2Gene" or "Exomiser", when they
+      come from a known tool. The ranking depends on the tool.
+  softwareVersion:
+    slot_uri: sc:softwareVersion
+    description: The version of the tool, or of its model, that produced the candidates.
+  diagnosisCodeSystems:
+    range: DiagnosisCodeSystemEnum
+    multivalued: true
+    minimum_cardinality: 1
+    description: >-
+      The code systems the candidate diagnoses are coded in, e.g. orphanet and omim,
+      when they are coded. A list, since tools often give several codes per candidate.
 
   # --- documentation (DocumentationFile) ------------------------------------
   about:

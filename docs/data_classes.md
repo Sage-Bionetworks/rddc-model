@@ -11,7 +11,7 @@ DataFile extends FileObject from core.yaml, the only module this one imports. Th
 Each concrete class carries a "structure" annotation describing its content. It is a property of the class, so sidecars do not include it.
 - **structured**: records with defined fields that software can read without text or image analysis (FHIR, OMOP and other tables, C-CDA, VCF, FASTQ, BAM). Free text inside such a file is declared with containsFreeText.
 - **unstructured**: content without defined fields (notes, PDF or scanned documents, images, audio, video). Using it needs NLP, OCR or image analysis.
-- **mixed**: the class admits either kind, so the file's content decides (DocumentationFile, GenericFile).
+- **mixed**: the class admits either kind, so the file's content decides (DocumentationFile, DifferentialDiagnosisFile, GenericFile).
 
 Each concrete class also carries a "modality" annotation, a ModalityEnum value naming the kind of data it holds. The platform reads it from the class to decide how to process the file, so sidecars do not include it either. A new kind of data gets a new class rather than a new value on an existing one.
 
@@ -37,6 +37,8 @@ DistributionItem
       TabularFile  (structured, clinical_tabular)
       ConsentFile  (structured, consent)
       IntakeFormFile  (structured, intake_form)
+      GeneticTestResultFile  (structured, genetic_testing)
+      DifferentialDiagnosisFile  (mixed, diagnosis_support)
       ClinicalDocumentFile  (unstructured, clinical_text)
       DocumentationFile  (mixed, metadata)
       GenomicsFile  (abstract)
@@ -71,6 +73,8 @@ Every concrete class also requires the fields shared by all data files: `@id`, `
 | [`TabularFile`](#tabularfile) | `clinical_tabular` | structured | `text/csv`, `text/tab-separated-values`, `application/vnd.apache.parquet`, `application/json`, `application/jsonlines` |  |
 | [`ConsentFile`](#consentfile) | `consent` | structured | `text/csv`, `text/tab-separated-values`, `application/json`, `application/jsonlines` | `subjectIds` |
 | [`IntakeFormFile`](#intakeformfile) | `intake_form` | structured | `text/csv`, `text/tab-separated-values`, `application/vnd.apache.parquet`, `application/json`, `application/jsonlines` | `formDefinition`, `subjectIds` |
+| [`GeneticTestResultFile`](#genetictestresultfile) | `genetic_testing` | structured | `text/csv`, `text/tab-separated-values`, `application/vnd.apache.parquet`, `application/json`, `application/jsonlines`, `application/xml`, `text/xml` | `subjectIds` |
+| [`DifferentialDiagnosisFile`](#differentialdiagnosisfile) | `diagnosis_support` | mixed | `text/csv`, `text/tab-separated-values`, `application/json`, `application/jsonlines`, `application/pdf` | `subjectIds` |
 | [`ClinicalDocumentFile`](#clinicaldocumentfile) | `clinical_text` | unstructured | `text/plain`, `application/pdf`, `application/rtf`, `image/tiff`, `image/jpeg`, `image/png` | `subjectIds` |
 | [`DocumentationFile`](#documentationfile) | `metadata` | mixed | any |  |
 | [`SequenceReadsFile`](#sequencereadsfile) | `genomics` | structured | `text/plain`, `application/octet-stream` | `measurementTechnique`, `sequencingPlatform` |
@@ -93,7 +97,7 @@ Every concrete class also requires the fields shared by all data files: `@id`, `
 
 A data object of the batch, with subjects, sensitivity and provenance. Its class determines its modality (see the modality annotation).
 
-Abstract: not used directly. Inherits from `FileObject` → `DistributionItem`. Subclasses: [`FhirFile`](#fhirfile), [`OmopTableFile`](#omoptablefile), [`CcdaDocumentFile`](#ccdadocumentfile), [`TabularFile`](#tabularfile), [`ConsentFile`](#consentfile), [`IntakeFormFile`](#intakeformfile), [`ClinicalDocumentFile`](#clinicaldocumentfile), [`DocumentationFile`](#documentationfile), [`GenomicsFile`](#genomicsfile), [`IndexFile`](#indexfile), [`ImagingFile`](#imagingfile), [`AudioFile`](#audiofile), [`VideoFile`](#videofile), [`SensorDataFile`](#sensordatafile), [`GenericFile`](#genericfile).
+Abstract: not used directly. Inherits from `FileObject` → `DistributionItem`. Subclasses: [`FhirFile`](#fhirfile), [`OmopTableFile`](#omoptablefile), [`CcdaDocumentFile`](#ccdadocumentfile), [`TabularFile`](#tabularfile), [`ConsentFile`](#consentfile), [`IntakeFormFile`](#intakeformfile), [`GeneticTestResultFile`](#genetictestresultfile), [`DifferentialDiagnosisFile`](#differentialdiagnosisfile), [`ClinicalDocumentFile`](#clinicaldocumentfile), [`DocumentationFile`](#documentationfile), [`GenomicsFile`](#genomicsfile), [`IndexFile`](#indexfile), [`ImagingFile`](#imagingfile), [`AudioFile`](#audiofile), [`VideoFile`](#videofile), [`SensorDataFile`](#sensordatafile), [`GenericFile`](#genericfile).
 
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
@@ -247,9 +251,40 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 | `subjectIds` | [`Identifier`](#identifier) (list) | yes | Subject IDs the file contains. Each must appear in the subject table. |
 | `formVersion` | `string` | | The version of the form the responses answer, as the form's owner numbers it. Answer codes can change between versions. |
 
+### GeneticTestResultFile
+
+Results of clinical genetic tests or molecular pathology, exported as records: for each test, its name, method, date and status, and its findings, such as genes, variants in HGVS notation, zygosity and classification (for example ACMG/AMP), with the laboratory's interpretation as text. The interpretation makes the file contain free text (containsFreeText). Report documents (PDFs) go in ClinicalDocumentFiles that reportDocuments points to; sequencing data and variant calls go in the genomics classes. A report lists few variants, not a genome, so the class is not identifying, although a rare variant can single a person out within a small cohort.
+
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:GeneticTestResultFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genetic_testing`. Close to [`fhir:DiagnosticReport`](http://hl7.org/fhir/DiagnosticReport).
+
+Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
+
+| Field | Type | Required | Meaning and constraints |
+| --- | --- | --- | --- |
+| `encodingFormat` | [`MediaType`](#mediatype) | yes | Media type of the content (after decompression when compression is set). One of: `text/csv`, `text/tab-separated-values`, `application/vnd.apache.parquet`, `application/json`, `application/jsonlines`, `application/xml`, `text/xml`. |
+| `subjectIds` | [`Identifier`](#identifier) (list) | yes | Subject IDs the file contains. Each must appear in the subject table. |
+| `referenceGenome` | [`ReferenceGenomeEnum`](#referencegenomeenum) | | Reference assembly of the genomic coordinates in the results, when they have any. Variants given only in transcript HGVS notation need none. |
+| `reportDocuments` | [`NodeRef`](#noderef) (list) | | The report documents of the results, ClinicalDocumentFiles in this sidecar, such as the laboratory's signed PDF reports. |
+
+### DifferentialDiagnosisFile
+
+Candidate diagnoses ranked by a diagnosis support tool, such as a facial phenotyping or phenotype-matching tool, or by another method: for each subject, the top candidates with their rank, score and code. The candidates are suggestions, not diagnoses, so they are kept apart from confirmed conditions; in FHIR they are Conditions with verificationStatus "differential". A tool's export is structured; a report in PDF is unstructured and needs text extraction. wasDerivedFrom points to the files in the sidecar the tool analysed, such as facial images.
+
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:DifferentialDiagnosisFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: mixed. Modality: `diagnosis_support`. Close to [`fhir:RiskAssessment`](http://hl7.org/fhir/RiskAssessment).
+
+Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
+
+| Field | Type | Required | Meaning and constraints |
+| --- | --- | --- | --- |
+| `encodingFormat` | [`MediaType`](#mediatype) | yes | Media type of the content (after decompression when compression is set). One of: `text/csv`, `text/tab-separated-values`, `application/json`, `application/jsonlines`, `application/pdf`. |
+| `subjectIds` | [`Identifier`](#identifier) (list) | yes | Subject IDs the file contains. Each must appear in the subject table. |
+| `diagnosisCodeSystems` | [`DiagnosisCodeSystemEnum`](#diagnosiscodesystemenum) (list) | | The code systems the candidate diagnoses are coded in, e.g. orphanet and omim, when they are coded. A list, since tools often give several codes per candidate. |
+| `software` | `string` | | The tool that produced the candidates, e.g. "Face2Gene" or "Exomiser", when they come from a known tool. The ranking depends on the tool. |
+| `softwareVersion` | `string` | | The version of the tool, or of its model, that produced the candidates. |
+
 ### ClinicalDocumentFile
 
-An unstructured clinical document, such as a note or a scanned report. A scan is a PDF or an image (TIFF, JPEG or PNG).
+An unstructured clinical document, such as a note, a scanned report or a genetic test report. A scan is a PDF or an image (TIFF, JPEG or PNG).
 
 Use as `"@type": "cr:FileObject", "additionalType": "rddc:ClinicalDocumentFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: unstructured. Modality: `clinical_text`. A kind of [`EDAM:data_3861`](http://edamontology.org/data_3861).
 
@@ -574,6 +609,8 @@ The kind of data in a file: the values of the "modality" class annotation. Each 
 | `clinical_text` | Unstructured clinical text such as notes. De-identified before use. |
 | `consent` | Consent elements for subjects (ConsentFile). |
 | `intake_form` | Responses to patient intake forms, read with the form's definition (IntakeFormFile). |
+| `genetic_testing` | Results of clinical genetic tests and molecular pathology, as reported to the clinician (GeneticTestResultFile). |
+| `diagnosis_support` | Candidate diagnoses ranked by a decision support tool, not confirmed diagnoses (DifferentialDiagnosisFile). |
 | `genomics` | Sequencing reads, alignments, variant calls, gene expression quantifications and related indexes. |
 | `imaging` | Medical images such as DICOM. |
 | `video` | Video recordings (VideoFile). |
@@ -679,6 +716,21 @@ Sensing techniques accepted for sensor data. Meanings are NCIT (26.02d) terms, O
 | `respiration` | [`NCIT:C176738`](http://purl.obolibrary.org/obo/NCIT_C176738) | Breathing measured by a chest band or similar sensor. |
 | `eda` | close: [`NCIT:C93039`](http://purl.obolibrary.org/obo/NCIT_C93039) | Changes in the skin's electrical conductance, also called galvanic skin response. |
 | `other` |  | A sensing technique not listed here. Name it in the file's description; a curator decides whether it needs its own value. |
+
+### DiagnosisCodeSystemEnum
+
+Code systems that candidate diagnoses are coded in.
+
+| Value | Meaning |
+| --- | --- |
+| `snomed_ct` | SNOMED CT clinical findings and disorders. |
+| `icd10` | WHO International Classification of Diseases, 10th revision. |
+| `icd10_cm` | The US clinical modification of ICD-10. |
+| `icd11` | WHO International Classification of Diseases, 11th revision. |
+| `orphanet` | Orphanet rare disease nomenclature, as the Orphanet Rare Disease Ontology. |
+| `omim` | Online Mendelian Inheritance in Man phenotype entries. |
+| `mondo` | Mondo Disease Ontology. |
+| `other` | A code system not listed here, or uncoded names. Name it in the file's description; a curator decides whether it needs its own value. |
 
 ### OmopCdmVersionEnum
 
