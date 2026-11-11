@@ -8,12 +8,15 @@
 # Checked by scripts/check_rules.py (names exist in the pinned release; verification
 # properties hold). scripts/orchestrate.py works out the next steps for a batch.
 id: rddc_rules
-version: 0.8.0-draft
+version: 0.9.0-draft
 modelRelease: v0.1.0
 description: Draft processing rules with placeholder workflows.
 
 # --- data properties --------------------------------------------------------
-# A missing contains* flag counts as present.
+# Properties come from the sidecar's flags, the class annotations and the source
+# register, never from class names. A flag's value is what the file's class fixes, else
+# what the file sets, else what the batch sets, else the class default, else unknown,
+# which counts as present.
 properties:
 - id: direct_identifiers
   description: The contributor has not confirmed that direct identifiers are removed.
@@ -35,12 +38,21 @@ properties:
   - source: flag_true
     key: containsBiometricIdentifiers
 - id: free_text
-  description: The content contains free text, or is an unstructured clinical document.
+  description: >-
+    The content contains free text. A clinical document always does (its class fixes
+    containsFreeText), and a genomics file never does.
   derivedFrom:
   - source: flag_true
     key: containsFreeText
-  - source: data_class
-    classes: [ClinicalDocumentFile]
+- id: content_unconfirmed
+  description: >-
+    The content is unstructured (notes, scans, images, audio, video), so identifiers in
+    it can only be found by content analysis, and no independent check has confirmed
+    its de-identification yet.
+  derivedFrom:
+  - source: annotation
+    key: structure
+    value: unstructured
 - id: dates
   description: The content contains full dates.
   derivedFrom:
@@ -56,15 +68,17 @@ properties:
 - id: consent_unrecorded
   description: The file's consent elements are not yet recorded in GOVERN's participants table.
   derivedFrom:
-  - source: data_class
-    classes: [ConsentFile]
+  - source: annotation
+    key: modality
+    value: consent
 - id: deid_confirmed
   description: An independent check confirmed the file's de-identification. Set by workflows only.
 - id: sensor_qc_pending
   description: Sensor data that has not yet passed qc_sensory.
   derivedFrom:
-  - source: data_class
-    classes: [SensorDataFile]
+  - source: annotation
+    key: modality
+    value: sensor
 - id: unregistered_modality
   description: "Register: the file's modality is not one the source is registered for."
   derivedFrom:
@@ -182,7 +196,7 @@ workflows:
   # In Cirro: file rules copied from Cirro (2026-11-09). Long reads first, by
   # sequencingPlatform; the short-read types take only short-read platforms.
   - dataType: nanopore_fastq
-    classes: [SequenceReadsFile]
+    classes: [FastqFile]
     platforms: [oxford_nanopore]
     fileRules:
     - description: Nanopore Sequencing (FASTQ)
@@ -192,7 +206,7 @@ workflows:
       - {exampleName: 'SampleName.fastq(.gz)', description: 'FASTQ',
          namePattern: '(?P<sampleName>[\S ]*)\.(fq|fastq)(\.gz|)'}
   - dataType: long_read_fastq
-    classes: [SequenceReadsFile]
+    classes: [FastqFile]
     platforms: [pacbio_smrt, oxford_nanopore]
     fileRules:
     - description: PacBio / Oxford Nanopore FASTQ
@@ -208,7 +222,7 @@ workflows:
       - {exampleName: 'SampleName.fastq.gz', description: 'FASTQ (.fastq.gz)',
          namePattern: '(?P<sampleName>[\S ]*)\.(fq|fastq)(\.gz|)'}
   - dataType: paired_dnaseq
-    classes: [SequenceReadsFile]
+    classes: [FastqFile]
     techniques: [wgs, wes, targeted_panel, methylation_seq]
     platforms: [illumina, element, dnbseq, ion_torrent, ultima]
     fileRules:
@@ -231,7 +245,7 @@ workflows:
       - {exampleName: 'SampleName_S1_R1_001.fastq.gz', description: 'FASTQ (Illumina Format - no lane)',
          namePattern: '(?P<sampleName>\S*)_S(?P<libraryIndex>\S*)_(?P<readType>R|I)(?P<read>1|2|3|4)_001\.fastq\.gz'}
   - dataType: rnaseq
-    classes: [SequenceReadsFile]
+    classes: [FastqFile]
     techniques: [rna_seq]
     platforms: [illumina, element, dnbseq, ion_torrent, ultima]
     fileRules:
@@ -254,7 +268,7 @@ workflows:
       - {exampleName: 'SampleName_S1_R1_001.fastq.gz', description: 'FASTQ (Illumina Format - no lane)',
          namePattern: '(?P<sampleName>\S*)_S(?P<libraryIndex>\S*)_(?P<readType>R|I)(?P<read>1|2|3|4)_001\.fastq\.gz'}
   - dataType: rnaseq-single
-    classes: [SequenceReadsFile]
+    classes: [FastqFile]
     techniques: [rna_seq]
     platforms: [illumina, element, dnbseq, ion_torrent, ultima]
     fileRules:
@@ -277,7 +291,7 @@ workflows:
       - {exampleName: 'SampleName_S1_R1_001.fastq.gz', description: 'FASTQ (Illumina Format - no lane)',
          namePattern: '(?P<sampleName>\S*)_S(?P<libraryIndex>\S*)_(?P<readType>R|I)(?P<read>1|2|3|4)_001\.fastq\.gz'}
   - dataType: ingest_unaligned_bam
-    classes: [SequenceReadsFile]
+    classes: [UnalignedBamFile]
     fileRules:
     - description: Unaligned BAMs
       minFiles: 1
@@ -288,7 +302,7 @@ workflows:
       - {exampleName: 'SampleName.bam', description: 'BAM',
          namePattern: '(?P<sampleName>[\S ]*).bam'}
   - dataType: ingest_aligned_bam
-    classes: [AlignmentFile, IndexFile]
+    classes: [BamFile, IndexFile]
     fileRules:
     - description: Aligned BAMs
       minFiles: 1
@@ -299,7 +313,7 @@ workflows:
       - {exampleName: 'SampleName.bam.bai', description: 'BAM Index',
          namePattern: '(?P<sampleName>[\S ]*).bam.bai'}
   - dataType: ingest_cram
-    classes: [AlignmentFile]
+    classes: [CramFile]
     fileRules:
     - description: CRAM Files
       minFiles: 1
@@ -310,7 +324,7 @@ workflows:
   # To add to Cirro: a fallback for a CRAM delivered with its index, which Cirro's
   # ingest_cram does not take. File rules are proposals.
   - dataType: rddc_ingest_cram
-    classes: [AlignmentFile, IndexFile]
+    classes: [CramFile, IndexFile]
     fileRules:
     - description: CRAM files
       minFiles: 1
@@ -324,8 +338,10 @@ workflows:
       fileNamePatterns:
       - {exampleName: 'SampleName.cram.crai', description: 'CRAM index',
          namePattern: '(?P<sampleName>[\S ]*)\.cram\.crai'}
+  # Cirro's VCF type takes a bgzipped VCF: the class and compression say so, not the name.
   - dataType: vcf
-    classes: [VariantFile]
+    classes: [VcfFile]
+    compressions: [bgzf]
     fileRules:
     - description: Genomic Variants (VCF)
       minFiles: 1
@@ -333,10 +349,10 @@ workflows:
       fileNamePatterns:
       - {exampleName: 'Sample.vcf.gz', description: 'VCF',
          namePattern: '(?P<sampleName>[\S ]*)\.vcf\.gz'}
-  # To add to Cirro: a fallback for variant calls Cirro's vcf does not take (an
-  # uncompressed VCF, a BCF, or a VCF with its index). File rules are proposals.
+  # To add to Cirro: a fallback for variant calls Cirro's vcf does not take (a VCF that
+  # is not bgzipped, a BCF, or a VCF with its index). File rules are proposals.
   - dataType: rddc_ingest_vcf
-    classes: [VariantFile, IndexFile]
+    classes: [VcfFile, BcfFile, IndexFile]
     fileRules:
     - description: Variant calls
       minFiles: 1
@@ -368,7 +384,7 @@ workflows:
          namePattern: '(?P<sampleName>[\S ]*)\.(obj|stl|glb|gltf|mtl|ply)'}
   # In Cirro.
   - dataType: ingest_dicom
-    classes: [ImagingFile]
+    classes: [DicomImageFile]
     fileRules:
     - description: DICOM Files
       minFiles: 1
@@ -443,7 +459,7 @@ workflows:
       - {exampleName: 'recording.edf', description: 'Any file (sensor formats are not agreed yet)',
          namePattern: '(?P<sampleName>[\S ]*)'}
   - dataType: rddc_ingest_imaging
-    classes: [ImagingFile]
+    classes: [ImageFile]
     fileRules:
     - description: Images
       minFiles: 1
@@ -665,7 +681,7 @@ workflows:
     anyProperties: [deid_unconfirmed]
   readsFrom: [deid_qc]
   writesTo: deid_qc
-  clears: [deid_unconfirmed]
+  clears: [deid_unconfirmed, content_unconfirmed]
   sets: [deid_confirmed]
   parameters:
   - id: language_code
@@ -705,7 +721,7 @@ workflows:
   writesTo: deid_qc
   clears: [consent_unrecorded]
 - id: imaging_deid
-  description: Removes identifiers from DICOM headers. Not for facial images.
+  description: Removes identifiers from DICOM headers. Facial images are not DicomImageFiles.
   runner: cirro
   cirroProcess: process-rddc-imaging-deid-0_0
   cirroExecutor: NEXTFLOW
@@ -716,7 +732,7 @@ workflows:
   kind: deidentify
   operation: EDAM:operation_3283
   consumes:
-    classes: [ImagingFile]
+    classes: [DicomImageFile]
     anyProperties: [direct_identifiers]
     noProperties: [biometric]
   readsFrom: [deid_qc]
@@ -965,9 +981,16 @@ targets:
   goalZone: deid_qc
   priority: 2
 - id: imaging
-  description: For imaging workflows.
-  when: {classes: [ImagingFile], noProperties: [biometric]}
+  description: For imaging workflows. DICOM headers are de-identified in place.
+  when: {classes: [DicomImageFile], noProperties: [biometric]}
   goalNoProperties: [direct_identifiers]
+  goalZone: deid_qc
+  priority: 1
+- id: images
+  description: >-
+    For imaging workflows. Other image formats have no header to de-identify; burned-in
+    text is found by content analysis.
+  when: {classes: [ImageFile], noProperties: [biometric]}
   goalZone: deid_qc
   priority: 1
 - id: facial
@@ -1013,6 +1036,14 @@ obligations:
 - id: confirm_deid_before_loading
   description: The check is Amazon Comprehend Medical PHI detection (confirm_deid).
   when: {anyProperties: [deid_unconfirmed]}
+  requiredKind: confirm
+  beforeZones: [normalized, release, public]
+- id: confirm_unstructured_before_loading
+  description: >-
+    Unstructured content (the structure class annotation) is independently confirmed
+    de-identified before it enters the normalized store or a release, since its
+    identifiers can only be found by content analysis.
+  when: {anyProperties: [content_unconfirmed]}
   requiredKind: confirm
   beforeZones: [normalized, release, public]
 - id: sensor_qc_before_loading

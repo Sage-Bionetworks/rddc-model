@@ -3,9 +3,7 @@
   "name": "Images other than DICOM",
   "description": "RDDC data type: Images other than DICOM, uploaded by ingest_files.",
   "executor": "INGEST",
-  "childProcessIds": [
-    "process-rddc-imaging-deid-0_0"
-  ],
+  "childProcessIds": [],
   "parentProcessIds": [],
   "linkedProjectIds": [
     "rddc-processing"

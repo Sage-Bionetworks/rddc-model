@@ -58,10 +58,15 @@ python scripts/check_orchestration.py    # routes, batch states, dispatch
 An **item** is a file at deposit. Its **state** is its data class, the standard it
 conforms to, the zone it is in, and a set of **data properties** (`dates`,
 `free_text`, `identifying`, `needs_expert_review`, ...). A property starts out true
-if any of its sources says so. A source can be a class annotation (`identifying`,
-`biometric`), the data class itself, a sensitivity flag, or the **source register**:
-a register field value, or the file's modality not being one the source is registered
-for. **A missing flag counts as present**, and so does a missing register field.
+if any of its sources says so. A source can be a class annotation with a value
+(`identifying`, `biometric`, `modality` is `consent`, `structure` is `unstructured`), a
+sensitivity flag, or the **source register**: a register field value, or the file's
+modality not being one the source is registered for. Rules never name data classes
+in a property: a new class with the same annotations is processed the same way. A
+flag's value is what the file's class fixes (`always`, `n/a`), else what the file
+sets, else what the batch sets, else the class default (`false`), else unknown.
+**An unknown flag counts as present**, and so does a missing register field. A
+genomics file therefore never has `free_text`, and a clinical document always does.
 
 A **workflow** accepts items whose state matches its `consumes` condition, in one of its
 `readsFrom` zones. It writes them to `writesTo`, and may change their class
@@ -136,13 +141,16 @@ which Cirro pipelines can run on the dataset (`childProcessIds`). So `ingest_fil
 no `cirroProcess`. It lists `cirroIngestTypes` in order of preference. Each entry gives:
 
 - a `dataType` from `CirroDataTypeEnum` in `schema/processing.yaml`;
-- the `classes` it takes, and optionally `techniques` and `platforms` (the file's
-  `sequencingPlatform`);
+- the `classes` it takes, and optionally `techniques`, `platforms` (the file's
+  `sequencingPlatform`) and `compressions` (the file's `compression`; Cirro's `vcf`
+  type takes a bgzipped VCF, which the class and compression say, not the file name);
 - `fileRules`: a description, `minFiles`/`maxFiles` and `fileNamePatterns`, as in Cirro.
 
 When an ingest step is ready, the orchestrator picks the first type that accepts every
 file of the group. A file must be of one of the type's classes, declare one of its
-techniques and platforms (if any are listed), and its path must match a pattern in full. Each rule must
+techniques, platforms and compressions (if any are listed), and its path must match a pattern in full. The
+format classes (`FastqFile`, `BamFile`, `CramFile`, `VcfFile`, `BcfFile`, `DicomImageFile`)
+decide the type; the name patterns are Cirro's own requirement. Each rule must
 match between `minFiles` and `maxFiles` of the files. The chosen type becomes the step's
 `cirroProcess`. `cirroAvailability` says whether that type is in Cirro yet. If no type
 accepts the files, the group is blocked with the reason.
@@ -163,8 +171,9 @@ and which still have to be added to the Cirro environment (`to_add`).
 - **To add:** our own types are named `rddc_ingest_<type>`, for example
   `rddc_ingest_fhir`. Their file rules are proposals.
 
-The checker requires a type with no technique or platform test for every class that
-targets bring into a Cirro environment.
+The checker requires a type for every class that targets bring into a Cirro
+environment; a type's technique, platform or compression test may still leave some
+files of the class without one, and the orchestrator blocks those for a person.
 
 Every genomics file states its `sequencingPlatform` (INSDC platform types). Reads come in
 this order:
@@ -253,8 +262,8 @@ access boundary.
 
 Known gaps in Cirro's types:
 
-- `ingest_cram` takes no `.crai`, and `vcf` takes no `.tbi`, `.csi`, uncompressed VCF or
-  BCF. Our fallbacks `rddc_ingest_cram` and `rddc_ingest_vcf` take those. Each comes right
+- `ingest_cram` takes no `.crai`, and `vcf` takes no `.tbi`, `.csi`, VCF that is not
+  bgzipped, or BCF. Our fallbacks `rddc_ingest_cram` and `rddc_ingest_vcf` take those. Each comes right
   after the Cirro type, so files that Cirro's type accepts still go there and keep
   Cirro's downstream pipelines. If Cirro adds optional index rules to its types, the
   fallbacks can go.
@@ -275,7 +284,11 @@ every step. The site's "Pipelines by data type" table lists them for each class.
 - **De-identification:** `deid_fhir` (FHIR narrative and notes), `deid_ccda` (C-CDA
   sections), `deid_tabular` (tables), `deid_clinical_documents` (notes and scans),
   `deid_omop_notes` (a deposited OMOP instance's note tables), `imaging_deid` (DICOM
-  headers).
+  headers, so `DicomImageFile` only; other image formats have none).
+- **Unstructured content** (the `structure` class annotation: documents, images,
+  recordings) carries `content_unconfirmed` until an independent check confirms its
+  de-identification (`confirm_unstructured_before_loading`), since identifiers in it
+  can only be found by content analysis.
 - **QC:** `qc_sensory`, the only INTAKE pipeline for sensor data, which has no
   de-identification pipeline. Sensor data passes it before the normalized store
   (`sensor_qc_before_loading`). A sensor file with free text (or an unstated

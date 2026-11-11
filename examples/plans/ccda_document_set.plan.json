@@ -2,7 +2,7 @@
   "batch": "src-ta2-01/2026-12-ccda",
   "sidecarConformsTo": "https://w3id.org/rddc/sidecar/0.1.0",
   "ruleSet": "rddc_rules",
-  "ruleSetVersion": "0.8.0-draft",
+  "ruleSetVersion": "0.9.0-draft",
   "modelRelease": "v0.1.0",
   "registerVersion": "2026-10-20",
   "groups": [

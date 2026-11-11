@@ -122,7 +122,7 @@ MUTATIONS = {
         "runs process-rddc-release-mask-0_0 like release_mask_shift, but with other code"),
     "Cirro ingest: no data type takes video": (
         edit(lambda r: ingest(r).remove(next(t for t in ingest(r) if t["dataType"] == "rddc_ingest_video"))),
-        "no data type (without a technique or platform test) takes VideoFile"),
+        "no data type takes VideoFile"),
     "publish no longer requires masked dates": (
         edit(lambda r: wf(r, "publish")["consumes"]["noProperties"].remove("dates")),
         "obligation mask_before_release"),

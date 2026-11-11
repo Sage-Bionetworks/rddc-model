@@ -70,7 +70,8 @@ def explorer_data(rules, rel):
                                             for p in rules.get("properties", []) for src in p.get("derivedFrom", [])),
                    "description": (sv.induced_slot(k, "SensitivityDeclaration").description or "")} for k in flags],
         "combos": [[c, s] for c, s in combos],
-        "classes": [{"name": c, "modality": rel.modality(c)} for c in rel.concrete],
+        # fixedFlags: what the class says about a flag (always, n/a or a false default).
+        "classes": [{"name": c, "modality": rel.modality(c), "fixedFlags": rel.flag_fixes.get(c, {})} for c in rel.concrete],
         "dims": [{"name": n, "options": [option_label(n, v) for v in opts]} for n, opts in dims],
         "standards": {s["id"]: s.get("description", s["id"]) for s in rules.get("standards", [])},
         "properties": [[p["id"], p.get("description", "")] for p in rules.get("properties", [])],
@@ -530,15 +531,16 @@ locations.</p>""")
 
     out.append(cirro_data_types(rules, rel))
 
-    out.append("<h2>Data properties</h2><p>What the rules track about a file. A sensitivity flag that is not stated counts as present.</p>")
+    out.append("<h2>Data properties</h2><p>What the rules track about a file. Properties come from the sidecar's "
+               "flags, the class annotations and the source register, never from class names. A sensitivity flag "
+               "that is not stated counts as present, unless the file's class fixes it or gives a default.</p>")
     rows = []
     for p in rules.get("properties", []):
         srcs = []
         for s in p.get("derivedFrom", []):
             srcs.append({"flag_true": lambda s: f"sidecar {code(s['key'])} is true or not stated",
                          "flag_false": lambda s: f"sidecar {code(s['key'])} is false or not stated",
-                         "annotation": lambda s: f"class annotation {code(s['key'])}",
-                         "data_class": lambda s: "class " + join_or(code(c) for c in s.get("classes", [])),
+                         "annotation": lambda s: f"class annotation {code(s['key'])}" + (f" is {code(s['value'])}" if s.get("value") else ""),
                          "register": lambda s: f"source register {code(s['key'])} is " + join_or(code(v) for v in s.get("anyOf", [])) + " or not set",
                          "modality_not_registered": lambda s: "the source is not registered for the file's modality"}[s["source"]](s))
         rows.append(f"<tr><td>{code(p['id'])}</td><td>{esc(p.get('description', ''))}</td>"
@@ -563,7 +565,8 @@ def explorer_page(rules):
 <p class="lede">Describe a file and its source, and see where the rules send it, through which
 workflows, and why. Generated from the rule set {code(rules['id'])} {esc(rules['version'])}.</p>
 <div class="note"><strong>Prototype for discussion.</strong> Workflows and register values are placeholders.
-A sensitivity flag left unstated in a sidecar counts as true. The route shown is the one the
+A sensitivity flag left unstated in a sidecar counts as true, unless the file's class fixes it
+or gives a default; a flag the class fixes cannot be changed here. The route shown is the one the
 orchestrator would choose for this file on its own. Files of one file set with the same target
 move together: if one of them needs a step, such as de-identification, all of them take it. See <a href="processing-rules.html">Rules and targets</a>
 for every rule.</div>

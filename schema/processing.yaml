@@ -242,13 +242,18 @@ enums:
     description: "Where the value of a data property comes from."
     permissible_values:
       flag_true:
-        description: "A sensitivity flag that is true, or missing (unknown counts as present)."
+        description: >-
+          A sensitivity flag that is true, or unknown. A flag's value is what the file's
+          class fixes ("always" or "n/a"), else what the file sets, else what the batch
+          sets, else the class default, else unknown, which counts as present.
       flag_false:
-        description: "A sensitivity flag that is false, or missing (unknown counts as present)."
+        description: "A sensitivity flag that is false, or unknown (which counts as present)."
       annotation:
-        description: 'A class annotation set to "true" on the data class.'
-      data_class:
-        description: "The data class itself (or a superclass) is one of the listed classes."
+        description: >-
+          A class annotation on the data class has the given value ("true" unless value
+          says otherwise), e.g. identifying, or modality consent. Rules read class
+          annotations, never class names, so a new class with the same annotations is
+          processed the same way.
       register:
         description: >-
           A source register field has one of the listed values. A missing field counts
@@ -386,7 +391,7 @@ classes:
     slots:
     - source
     - key
-    - classes
+    - value
     - anyOf
     slot_usage:
       source:
@@ -395,6 +400,8 @@ classes:
         description: >-
           The sensitivity flag (flag_true, flag_false), class annotation (annotation) or
           source register field (register) to read.
+      value:
+        description: 'For annotation: the value the annotation must have. Default "true".'
       anyOf:
         description: "For register: the values that make the property true."
 
@@ -608,6 +615,7 @@ classes:
     - classes
     - techniques
     - platforms
+    - compressions
     - fileRules
     slot_usage:
       dataType:
@@ -1067,6 +1075,11 @@ slots:
   platforms:
     multivalued: true
     description: "SequencingPlatformEnum values; the file's sequencingPlatform is one of them."
+  compressions:
+    multivalued: true
+    description: >-
+      CompressionEnum values; the file's compression is one of them. For a type that
+      needs BGZF, which a tabix or CSI index requires.
   dataType:
     description: "A Cirro data type (an INGEST process id)."
     range: CirroDataTypeEnum
@@ -1105,7 +1118,7 @@ slots:
     multivalued: true
     inlined_as_list: true
   value:
-    description: "A literal parameter value."
+    description: "A literal: a parameter's value, or the value a class annotation must have."
   fromSidecar:
     description: >-
       A sidecar field: "batch.<field>" for the sidecar header, or "fileSet.<field>" for

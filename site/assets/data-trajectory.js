@@ -304,10 +304,29 @@
       // Default to the class's standard, if it has one.
       stdSel.value = want !== undefined && opts.indexOf(want) >= 0 ? want : (opts[1] || "");
     }
+    // A flag the class fixes ("always" or "n/a") cannot be changed; a "false" default
+    // only replaces an unstated flag, and here every flag is stated.
+    function fixedFlag(cls, key) {
+      var c = data.classes.filter(function (c) { return c.name === cls; })[0];
+      var fix = c && c.fixedFlags ? c.fixedFlags[key] : undefined;
+      return fix === "always" ? true : fix === "n/a" ? false : null;
+    }
+    function applyFixes() {
+      data.flags.forEach(function (f) {
+        var fix = fixedFlag(state.cls, f.key);
+        if (fix !== null) state.flags[f.key] = fix;
+      });
+    }
     function toControls() {
       clsSel.value = state.cls;
       fillStd(state.cls, state.std);
-      data.flags.forEach(function (f, j) { flagBoxes[j].checked = !!state.flags[f.key]; });
+      applyFixes();
+      data.flags.forEach(function (f, j) {
+        var fix = fixedFlag(state.cls, f.key);
+        flagBoxes[j].checked = !!state.flags[f.key];
+        flagBoxes[j].disabled = fix !== null;
+        flagBoxes[j].title = fix === null ? "" : "Fixed by the class: " + (fix ? "always true" : "not applicable");
+      });
       regBox.checked = state.registered;
       var mod = data.classes.filter(function (c) { return c.name === state.cls; })[0].modality;
       regLabel.textContent = "";
@@ -319,6 +338,7 @@
       state.cls = clsSel.value;
       state.std = stdSel.value;
       data.flags.forEach(function (f, j) { state.flags[f.key] = flagBoxes[j].checked; });
+      applyFixes();
       state.registered = regBox.checked;
       state.dims = dimSelects.map(function (s) { return Number(s.value); });
     }

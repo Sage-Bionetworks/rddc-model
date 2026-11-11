@@ -83,6 +83,16 @@
                     },
                     "type": "array"
                 },
+                "compressions": {
+                    "description": "CompressionEnum values; the file's compression is one of them. For a type that needs BGZF, which a tabix or CSI index requires.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
                 "dataType": {
                     "$ref": "#/$defs/CirroDataTypeEnum",
                     "description": "A Cirro data type (an INGEST process id)."
@@ -526,7 +536,7 @@
                     "type": "string"
                 },
                 "value": {
-                    "description": "A literal parameter value.",
+                    "description": "A literal: a parameter's value, or the value a class annotation must have.",
                     "type": [
                         "string",
                         "null"
@@ -872,16 +882,6 @@
                         "null"
                     ]
                 },
-                "classes": {
-                    "description": "Data class names from the pinned release. A class matches its subclasses too.",
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": [
-                        "array",
-                        "null"
-                    ]
-                },
                 "key": {
                     "description": "The sensitivity flag (flag_true, flag_false), class annotation (annotation) or source register field (register) to read.",
                     "type": [
@@ -892,6 +892,13 @@
                 "source": {
                     "$ref": "#/$defs/PropertySourceEnum",
                     "description": "The kind of source."
+                },
+                "value": {
+                    "description": "For annotation: the value the annotation must have. Default \"true\".",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 }
             },
             "required": [
@@ -906,7 +913,6 @@
                 "flag_true",
                 "flag_false",
                 "annotation",
-                "data_class",
                 "register",
                 "modality_not_registered"
             ],

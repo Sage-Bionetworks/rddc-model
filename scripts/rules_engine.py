@@ -26,6 +26,8 @@ SIDECAR_VERSION = re.compile(r"^https://w3id\.org/rddc/sidecar/(\d+\.\d+\.\d+)$"
 ASSAY_ENUMS = ("GenomicsAssayEnum", "ImagingAssayEnum", "SensorAssayEnum")
 BATCH_LEVEL = {"withdraw", "restrict"}
 FLAG_SOURCES = {"flag_true", "flag_false"}
+# The sensitivity flags a data class can fix or default (its class annotations).
+FLAGS = ("containsDates", "containsZipCodes", "containsFreeText", "containsBiometricIdentifiers")
 # Kinds of workflow that record a finding or decision and write no data.
 NO_DATA_KINDS = {"expert_review", "confirm", "record"}
 
@@ -53,7 +55,9 @@ class Release:
         self.annotations = {
             c: {k: a.value for k, a in sv.get_class(c).annotations.items()} for c in self.data_classes}
         self.annotation_keys = {k for anns in self.annotations.values() for k in anns}
+        self.flag_fixes = {c: self._flag_fixes(c) for c in self.data_classes}
         self.flags = set(sv.class_slots("SensitivityDeclaration")) | set(sv.class_slots("FileSensitivity"))
+        self.compressions = set(sv.get_enum("CompressionEnum").permissible_values)
         self.interactions = set(sv.get_enum("InteractionEnum").permissible_values)
         self.techniques = {v for e in ASSAY_ENUMS for v in sv.get_enum(e).permissible_values}
         self.platforms = set(sv.get_enum("SequencingPlatformEnum").permissible_values)
@@ -84,6 +88,14 @@ class Release:
         archive = subprocess.run(["git", "-C", ROOT, "archive", tag, "schema"], capture_output=True, check=True)
         subprocess.run(["tar", "-x", "-C", self._tmp.name], input=archive.stdout, check=True)
         return os.path.join(self._tmp.name, "schema")
+
+    def _flag_fixes(self, cls):
+        """What the class says about each sensitivity flag: "always" or "n/a" fix it,
+        "false" is its default. A biometric class fixes containsBiometricIdentifiers."""
+        out = {f: v for f, v in self.annotations[cls].items() if f in FLAGS}
+        if self.annotations[cls].get("biometric") == "true":
+            out["containsBiometricIdentifiers"] = "always"
+        return out
 
     def is_a(self, cls, ancestor):
         return ancestor in self.ancestors.get(cls, ())
@@ -163,8 +175,6 @@ def name_errors(rules, rel):
                     errs.append(f"{where}: reads synthetic, but synthetic batches must follow the same routes (seed rule 10)")
             elif src["source"] == "annotation":
                 need(where, [src.get("key")], rel.annotation_keys, "annotation")
-            elif src["source"] == "data_class":
-                need(where, src.get("classes"), rel.data_classes, "data class")
     for where, field, values in register_tests(rules):
         need(where, [field], rel.register_fields, "register field")
         known = rel.register_fields.get(field)
@@ -253,8 +263,9 @@ def cirro_errors(rules):
 
 def ingest_type_errors(rules, rel):
     """A Cirro ingest's data types: real names, file rules that compile, and a type for every
-    class that targets bring into a Cirro environment (one with no technique or platform
-    test, so files of any technique and platform have one)."""
+    class that targets bring into a Cirro environment. A type may test the technique,
+    platform or compression, so files of a class can still have no type (reads from an
+    unlisted platform, by design); the orchestrator then blocks them for a person."""
     errs = []
     environments = {z["id"] for z in rules.get("zones", []) if "cirroEnvironment" in z}
     ingested = set()
@@ -276,6 +287,7 @@ def ingest_type_errors(rules, rel):
             errs += [f"{at}: data class {c!r} is not in release {rel.tag}" for c in t["classes"] if c not in rel.data_classes]
             errs += [f"{at}: technique {v!r} is not in release {rel.tag}" for v in t.get("techniques", []) if v not in rel.techniques]
             errs += [f"{at}: sequencing platform {v!r} is not in release {rel.tag}" for v in t.get("platforms", []) if v not in rel.platforms]
+            errs += [f"{at}: compression {v!r} is not in release {rel.tag}" for v in t.get("compressions", []) if v not in rel.compressions]
             for r in t["fileRules"]:
                 for fp in r["fileNamePatterns"]:
                     try:
@@ -283,10 +295,8 @@ def ingest_type_errors(rules, rel):
                     except re.error as e:
                         errs.append(f"{at}: pattern {fp['namePattern']!r} does not compile: {e}")
         for c in sorted(ingested):
-            if not any(not t.get("techniques") and not t.get("platforms") and any(rel.is_a(c, k) for k in t["classes"])
-                       for t in types):
-                errs.append(f"{where}: no data type (without a technique or platform test) takes {c}, "
-                            "which targets bring into a Cirro environment")
+            if not any(any(rel.is_a(c, k) for k in t["classes"]) for t in types):
+                errs.append(f"{where}: no data type takes {c}, which targets bring into a Cirro environment")
     return errs
 
 
@@ -315,15 +325,17 @@ def pipeline_repository_errors(rules):
 
 def ingest_type(workflow, files, rel):
     """The first of a Cirro ingest's data types that accepts every file, or None. A file is
-    accepted if it is of one of the type's classes (and declares one of its techniques and
-    platforms, if any are listed) and its path matches a pattern of some file rule; each rule must match
-    between minFiles and maxFiles of the files."""
+    accepted if it is of one of the type's classes (and declares one of its techniques,
+    platforms and compressions, if any are listed) and its path matches a pattern of some
+    file rule; each rule must match between minFiles and maxFiles of the files."""
     for t in workflow.get("cirroIngestTypes", []):
         if not all(any(rel.is_a(f["class"], c) for c in t["classes"]) for f in files):
             continue
         if t.get("techniques") and not all(set(f["profile"]["techniques"]) & set(t["techniques"]) for f in files):
             continue
         if t.get("platforms") and not all(f.get("platform") in t["platforms"] for f in files):
+            continue
+        if t.get("compressions") and not all(f.get("compression") in t["compressions"] for f in files):
             continue
         pats = [[re.compile(p["namePattern"]) for p in r["fileNamePatterns"]] for r in t["fileRules"]]
         hits = [[any(p.fullmatch(f["path"]) for p in ps) for ps in pats] for f in files]
@@ -430,17 +442,46 @@ def start_fact(profile, cls, std, mask):
 
 
 def class_props(rules, rel, cls):
-    """Properties the class makes true (forced), and those the sidecar flags decide (free)."""
+    """Properties the class makes true (forced), and those the sidecar flags decide (free).
+    A flag the class fixes is forced ("always") or never present ("n/a"); a class
+    default ("false") only replaces an unknown flag, so the property stays free."""
     forced, free = set(), set()
+    fixes = rel.flag_fixes.get(cls, {})
     for p in rules.get("properties", []):
         for src in p.get("derivedFrom", []):
-            if src["source"] == "annotation" and rel.annotations[cls].get(src["key"]) == "true":
-                forced.add(p["id"])
-            elif src["source"] == "data_class" and any(rel.is_a(cls, c) for c in src.get("classes", [])):
-                forced.add(p["id"])
-            elif src["source"] in FLAG_SOURCES:
+            if src["source"] == "annotation":
+                if rel.annotations[cls].get(src["key"]) == src.get("value", "true"):
+                    forced.add(p["id"])
+            elif src["source"] == "flag_true":
+                fix = fixes.get(src["key"])
+                if fix == "always":
+                    forced.add(p["id"])
+                elif fix != "n/a":
+                    free.add(p["id"])
+            elif src["source"] == "flag_false":
                 free.add(p["id"])
     return forced, free - forced
+
+
+def effective_flags(rel, cls, batch, file):
+    """Each sensitivity flag's value for a file: what its class fixes, else what the
+    file sets, else what the batch sets, else the class default, else None (unknown).
+    batch and file are the sensitivity objects of the sidecar and the file."""
+    fixes = rel.flag_fixes.get(cls, {})
+    out = {}
+    for key in set(batch) | set(file) | set(fixes):
+        fix = fixes.get(key)
+        if fix == "always":
+            out[key] = True
+        elif fix == "n/a":
+            out[key] = False
+        elif key in file:
+            out[key] = file[key]
+        elif key in batch:
+            out[key] = batch[key]
+        elif fix == "false":
+            out[key] = False
+    return out
 
 
 def register_props(rules, rel, register, cls):
@@ -572,21 +613,27 @@ def flag_keys(rules):
 
 
 def flag_props(rules, flags):
-    """Properties the sensitivity flags make true. flags: {key: bool}; a missing flag
-    means unknown, which counts as present."""
+    """Properties the sensitivity flags make true. flags: {key: bool or None} as
+    effective_flags gives them; a missing or None flag is unknown, which counts as
+    present."""
     out = set()
     for p in rules.get("properties", []):
         for src in p.get("derivedFrom", []):
-            if src["source"] == "flag_true" and flags.get(src["key"], True) is True:
+            if src["source"] not in FLAG_SOURCES:
+                continue
+            value = flags.get(src["key"])
+            if src["source"] == "flag_true" and value in (True, None):
                 out.add(p["id"])
-            elif src["source"] == "flag_false" and flags.get(src["key"], False) is False:
+            elif src["source"] == "flag_false" and value in (False, None):
                 out.add(p["id"])
     return out
 
 
 def deposit_mask(rules, rel, cls, flags, register, modality_registered):
-    """The starting property mask of a file: from its class, its flags and the register."""
+    """The starting property mask of a file: from its class, its flags (as the sidecar
+    states them; the class may fix or default them) and the register."""
     reg = dict(register, modalities=[rel.modality(cls)] if modality_registered else [])
+    flags = effective_flags(rel, cls, {}, flags)
     present = class_props(rules, rel, cls)[0] | flag_props(rules, flags) | register_props(rules, rel, reg, cls)
     bits = prop_bits(rules)
     return sum(bits[p] for p in present)
@@ -673,7 +720,7 @@ def sidecar_files(sidecar, entry, rules, rel):
         cls = local(d["additionalType"])
         fs_id = member_of.get(d["@id"])
         fs = sets.get(fs_id, {})
-        sens = dict(batch_sens, **d.get("sensitivity", {}))
+        sens = effective_flags(rel, cls, batch_sens, d.get("sensitivity", {}))
         present = class_props(rules, rel, cls)[0] | register_props(rules, rel, register, cls) | flag_props(rules, sens)
         std = next((s["id"] for s in rules.get("standards", [])
                     if s["url"] in fs.get("conformsTo", []) and s["id"] in class_standards(rules, rel, cls)), None)
@@ -682,6 +729,7 @@ def sidecar_files(sidecar, entry, rules, rel):
             "id": d["@id"], "class": cls, "standard": std,
             "mask": sum(bits[p] for p in present),
             "fileSet": fs_id, "path": d.get("contentUrl", ""), "platform": d.get("sequencingPlatform"),
+            "compression": d.get("compression"),
             "indexOf": (d.get("indexOf") or {}).get("@id"), "location": base + d.get("contentUrl", ""),
             "profile": {"fileSetClass": local(fs["additionalType"]) if fs else None,
                         "techniques": tuple(tech if isinstance(tech, list) else [tech]),

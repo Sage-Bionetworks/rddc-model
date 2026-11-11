@@ -1,12 +1,11 @@
 {
   "id": "process-rddc-imaging-deid-0_0",
   "name": "imaging_deid",
-  "description": "Removes identifiers from DICOM headers. Not for facial images.",
+  "description": "Removes identifiers from DICOM headers. Facial images are not DicomImageFiles.",
   "executor": "NEXTFLOW",
   "childProcessIds": [],
   "parentProcessIds": [
-    "ingest_dicom",
-    "rddc_ingest_imaging"
+    "ingest_dicom"
   ],
   "linkedProjectIds": [
     "rddc-processing"

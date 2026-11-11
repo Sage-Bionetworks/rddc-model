@@ -59,12 +59,19 @@ def register(fn=None):
     return reg
 
 
+def detach(doc, key):
+    """Take a file out of its file set, so it routes on its own."""
+    for d in doc["distribution"]:
+        if d.get("@type") == "cr:FileSet":
+            d["hasPart"] = [p for p in d.get("hasPart", []) if p["@id"] != FILES[key]]
+
+
 def free_text_visits(doc):
     file_obj(doc, "visits")["sensitivity"] = {"containsFreeText": True}
 
 
 def sensor_visits(doc):
-    file_obj(doc, "visits").update(additionalType="rddc:SensorSignalFile", measurementTechnique=["accelerometry"],
+    file_obj(doc, "visits").update(additionalType="rddc:EdfSignalFile", measurementTechnique=["accelerometry"],
                                    encodingFormat="application/octet-stream")
 
 
@@ -110,21 +117,28 @@ ROUTES = {
         sidecar(lambda d: file_obj(d, "Patient").update(sensitivity={"containsBiometricIdentifiers": True})),
         register(), {"Patient": ["curation_hold"],
                      "Observation": ["ingest_files", "deid_fhir", "confirm_deid", "fhir_to_omop"]}),
-    "a missing flag counts as present": (
+    "a missing flag counts as present, unless the class gives a default (OMOP tables hold no biometrics)": (
         sidecar(lambda d: d["sensitivity"].pop("containsBiometricIdentifiers")), register(),
-        {"Patient": ["curation_hold"], "patients": ["curation_hold"]}),
-    "register: sensor signals from a source registered for wearables become measures": (
-        sidecar(sensor_visits), register(lambda s: s["modalities"].append("wearable")),
+        {"Patient": ["curation_hold"], "patients": ["curation_hold"], "person": ["ingest_files", "omop_load"]}),
+    "a class fixes a flag: a clinical document is free text even when the batch says otherwise": (
+        sidecar(lambda d: (detach(d, "visits"),
+                           file_obj(d, "visits").update(additionalType="rddc:ClinicalDocumentFile", contentUrl="notes/visits.txt",
+                                                        encodingFormat="text/plain", subjectIds=["P0001"]))),
+        register(lambda s: s["modalities"].append("clinical_text")),
+        {"visits": ["ingest_files", "deid_clinical_documents", "confirm_deid", "tabular_load"]}),
+    "register: sensor signals from a source registered for sensor data become measures": (
+        sidecar(sensor_visits), register(lambda s: s["modalities"].append("sensor")),
         {"visits": ["ingest_files", "qc_sensory", "sensor_to_measures", "sensor_load"]}),
-    "register: sensor signals from a source not registered for wearables are held": (
+    "register: sensor signals from a source not registered for sensor data are held": (
         sidecar(sensor_visits), register(), {"visits": ["curation_hold"], "patients": ["ingest_files", "tabular_load"]}),
     "register: consent elements are recorded in GOVERN; the file stays in INTAKE": (
         sidecar(lambda d: file_obj(d, "visits").update(additionalType="rddc:ConsentFile")),
         register(lambda s: s["modalities"].append("consent")),
         {"visits": ["ingest_files", "record_consent"], "patients": ["ingest_files", "tabular_load"]}),
-    "normalization: a VCF is represented in GA4GH VRS in the normalized store": (
-        sidecar(lambda d: file_obj(d, "visits").update(additionalType="rddc:VariantFile", measurementTechnique="wgs",
-                                                        referenceGenome="GRCh38", encodingFormat="text/plain")),
+    "normalization: a VCF is represented in GA4GH VRS in the normalized store (no flag applies to it)": (
+        sidecar(lambda d: file_obj(d, "visits").update(additionalType="rddc:VcfFile", measurementTechnique="wgs",
+                                                        referenceGenome="GRCh38", encodingFormat="text/plain",
+                                                        contentUrl="registry/visits.vcf.gz", compression="bgzf")),
         register(lambda s: s["modalities"].append("genomics")),
         {"visits": ["ingest_files", "vcf_to_vrs"]}),
     "audio and video go to INTAKE's de-id/QC environment, not to a curator": (
@@ -274,13 +288,17 @@ def dispatch_checks():
 
 def deposit_of(files):
     """The example batch with only these files: (class, path, technique, platform), where
-    technique and platform may be None. An IndexFile indexes the file before it."""
+    technique and platform may be None. An IndexFile indexes the file before it. A
+    .vcf.gz is bgzipped and a .fastq.gz gzipped."""
     doc = copy.deepcopy(BASE)
     uid = "urn:uuid:00000000-0000-4000-8000-{:012d}".format
+    compression = lambda path: {"compression": "bgzf"} if path.endswith(".vcf.gz") else \
+        {"compression": "gzip"} if path.endswith(".gz") else {}
     doc["distribution"] = [dict({"@type": "cr:FileObject", "@id": uid(i),
                                  "additionalType": f"rddc:{cls}", "contentUrl": path},
                                 **({"measurementTechnique": tech} if tech else {}),
                                 **({"sequencingPlatform": platform} if platform else {}),
+                                **compression(path),
                                 **({"indexOf": {"@id": uid(i - 1)}} if cls == "IndexFile" else {}))
                            for i, (cls, path, tech, platform) in enumerate(files, 1)]
     return doc
@@ -292,43 +310,51 @@ def ingest_checks():
     genomics = register(lambda e: e["modalities"].append("genomics"))
     cases = [
         ("paired Illumina WGS reads go to Cirro's paired_dnaseq",
-         [("SequenceReadsFile", "reads/S1_R1.fastq.gz", "wgs", "illumina"),
-          ("SequenceReadsFile", "reads/S1_R2.fastq.gz", "wgs", "illumina")],
+         [("FastqFile", "reads/S1_R1.fastq.gz", "wgs", "illumina"),
+          ("FastqFile", "reads/S1_R2.fastq.gz", "wgs", "illumina")],
          ("paired_dnaseq", "available")),
         ("Nanopore WGS reads go to nanopore_fastq, even when named like a read pair",
-         [("SequenceReadsFile", "reads/S1_R1.fastq.gz", "wgs", "oxford_nanopore"),
-          ("SequenceReadsFile", "reads/S1_R2.fastq.gz", "wgs", "oxford_nanopore")],
+         [("FastqFile", "reads/S1_R1.fastq.gz", "wgs", "oxford_nanopore"),
+          ("FastqFile", "reads/S1_R2.fastq.gz", "wgs", "oxford_nanopore")],
          ("nanopore_fastq", "available")),
         ("PacBio HiFi reads go to long_read_fastq",
-         [("SequenceReadsFile", "reads/S1.hifi_reads.fastq.gz", "wgs", "pacbio_smrt")],
+         [("FastqFile", "reads/S1.hifi_reads.fastq.gz", "wgs", "pacbio_smrt")],
          ("long_read_fastq", "available")),
         ("a single Illumina RNA-seq FASTQ goes to rnaseq-single (paired needs two files)",
-         [("SequenceReadsFile", "reads/S1_R1.fastq.gz", "rna_seq", "illumina")], ("rnaseq-single", "available")),
+         [("FastqFile", "reads/S1_R1.fastq.gz", "rna_seq", "illumina")], ("rnaseq-single", "available")),
+        ("an unaligned BAM goes to ingest_unaligned_bam by its class, whatever its name",
+         [("UnalignedBamFile", "reads/S1.bam", "wgs", "oxford_nanopore")], ("ingest_unaligned_bam", "available")),
         ("a BAM and its index go to ingest_aligned_bam",
-         [("AlignmentFile", "aln/S1.bam", "wgs", "illumina"), ("IndexFile", "aln/S1.bam.bai", None, None)],
+         [("BamFile", "aln/S1.bam", "wgs", "illumina"), ("IndexFile", "aln/S1.bam.bai", None, None)],
          ("ingest_aligned_bam", "available")),
         ("a CRAM on its own goes to Cirro's ingest_cram",
-         [("AlignmentFile", "aln/S1.cram", "wgs", "illumina")], ("ingest_cram", "available")),
+         [("CramFile", "aln/S1.cram", "wgs", "illumina")], ("ingest_cram", "available")),
         ("a CRAM and its index go to rddc_ingest_cram (Cirro's CRAM type takes no .crai)",
-         [("AlignmentFile", "aln/S1.cram", "wgs", "illumina"), ("IndexFile", "aln/S1.cram.crai", None, None)],
+         [("CramFile", "aln/S1.cram", "wgs", "illumina"), ("IndexFile", "aln/S1.cram.crai", None, None)],
          ("rddc_ingest_cram", "to_add")),
         ("a bgzipped VCF on its own goes to Cirro's vcf",
-         [("VariantFile", "vcf/S1.vcf.gz", "wes", "illumina")], ("vcf", "available")),
+         [("VcfFile", "vcf/S1.vcf.gz", "wes", "illumina")], ("vcf", "available")),
         ("a VCF and its index go to rddc_ingest_vcf (Cirro's VCF type takes no .tbi)",
-         [("VariantFile", "vcf/S1.vcf.gz", "wes", "illumina"), ("IndexFile", "vcf/S1.vcf.gz.tbi", None, None)],
+         [("VcfFile", "vcf/S1.vcf.gz", "wes", "illumina"), ("IndexFile", "vcf/S1.vcf.gz.tbi", None, None)],
          ("rddc_ingest_vcf", "to_add")),
         ("a BCF goes to rddc_ingest_vcf",
-         [("VariantFile", "vcf/S1.bcf", "wes", "illumina")], ("rddc_ingest_vcf", "to_add")),
+         [("BcfFile", "vcf/S1.bcf", "wes", "illumina")], ("rddc_ingest_vcf", "to_add")),
     ]
+    # A VCF that is gzipped but not bgzipped cannot carry an index, so Cirro's vcf type
+    # does not take it: the class and compression decide, not the file name.
+    plain = deposit_of([("VcfFile", "vcf/S1.vcf.gz", "wes", "illumina")])
+    plain["distribution"][0]["compression"] = "gzip"
+    cases.append(("a gzipped (not bgzipped) VCF goes to rddc_ingest_vcf", None, ("rddc_ingest_vcf", "to_add")))
+    docs = {name: deposit_of(files) if files else plain for name, files, _ in cases}
     out = []
     for name, files, want in cases:
-        p = O.orchestrate(deposit_of(files), rules, genomics)
+        p = O.orchestrate(docs[name], rules, genomics)
         steps = [g["steps"][0] for g in p["groups"]]
         got = {(s.get("cirroProcess"), s.get("cirroAvailability")) for s in steps}
         # Files that belong together share one ingest dispatch, even in separate groups.
         out.append((name, got == {want} and len({s.get("dispatchId") for s in steps}) == 1,
                     f"got {sorted(map(str, got))}, {len(p['groups'])} group(s)"))
-    vcf = deposit_of([("VariantFile", "vcf/S1.vcf.gz", "wes", "illumina"),
+    vcf = deposit_of([("VcfFile", "vcf/S1.vcf.gz", "wes", "illumina"),
                       ("IndexFile", "vcf/S1.vcf.gz.tbi", None, None)])
     p = run(vcf, genomics)
     final = {g["files"][0][-2:]: [s["workflow"] for s in g["steps"]] for g in p["groups"]}
@@ -339,8 +365,8 @@ def ingest_checks():
         ("a file no data type accepts blocks its group, with the reason",
          [("TabularFile", "registry/patients.xlsx", None, None)], REGISTER),
         ("FASTQ from an unlisted platform blocks its group (no catch-all type)",
-         [("SequenceReadsFile", "reads/S1_R1.fastq.gz", "wgs", "other"),
-          ("SequenceReadsFile", "reads/S1_R2.fastq.gz", "wgs", "other")], genomics),
+         [("FastqFile", "reads/S1_R1.fastq.gz", "wgs", "other"),
+          ("FastqFile", "reads/S1_R2.fastq.gz", "wgs", "other")], genomics),
     ]
     for name, files, reg in blocked:
         p = O.orchestrate(deposit_of(files), rules, reg)
