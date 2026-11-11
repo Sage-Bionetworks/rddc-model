@@ -4,7 +4,11 @@ SCHEMA=schema/rddc_sidecar.yaml
 # Interpreter with mlcroissant installed, for the Croissant half of `make check`.
 CROISSANT_PY?=python3
 
+# The data class schemas (JSON Schema and SHACL shapes) are published as on the
+# data-classes branch; the sidecar's own JSON Schemas and context follow.
 schema: context
+	gen-json-schema --closed schema/data.yaml > schema/generated/data.schema.json
+	gen-shacl schema/data.yaml > schema/generated/data.shacl.ttl
 	gen-json-schema --closed $(SCHEMA) > schema/generated/rddc_sidecar.schema.json
 	gen-json-schema --closed --top-class SourceDescriptor $(SCHEMA) > schema/generated/rddc_source_descriptor.schema.json
 
