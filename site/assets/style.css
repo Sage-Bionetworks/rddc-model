@@ -1,7 +1,11 @@
-/* RDDC sidecar docs.
-   Colour carries one piece of information: which vocabulary a term comes
-   from. schema.org (slate blue), Croissant (baked amber), RDDC (teal),
-   W3C PROV (plum). Everything else stays neutral. */
+/* RDDC data model docs.
+   Colour carries two pieces of information. In code and term chips: which
+   vocabulary a term comes from, schema.org (slate blue), Croissant (baked
+   amber), RDDC (teal), W3C PROV (plum). In the page chrome only (sidebar,
+   page label, header rule, pager): which part of the docs a page is in,
+   1 Data classes (crimson) or 2 The sidecar (olive). The part hues sit away
+   from the vocabulary hues and always come with the part number, so neither
+   depends on colour alone. Everything else stays neutral. */
 
 :root {
   --paper: #f6f8f9;
@@ -23,6 +27,11 @@
   --o-cr-bg: #fbefdc;
   --o-rddc-bg: #dff2ee;
   --o-prov-bg: #f4e6f4;
+
+  --sec-data: #a8324e;
+  --sec-data-bg: #fbeaee;
+  --sec-sidecar: #4d7314;
+  --sec-sidecar-bg: #eef4e2;
 
   --sans: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
@@ -53,6 +62,10 @@
   --o-cr-bg: #3a2a12;
   --o-rddc-bg: #10352f;
   --o-prov-bg: #36203a;
+  --sec-data: #f08aa1;
+  --sec-data-bg: #3a1b24;
+  --sec-sidecar: #a9d36b;
+  --sec-sidecar-bg: #243117;
   color-scheme: dark;
 }
 
@@ -76,6 +89,10 @@
     --o-cr-bg: #3a2a12;
     --o-rddc-bg: #10352f;
     --o-prov-bg: #36203a;
+    --sec-data: #f08aa1;
+    --sec-data-bg: #3a1b24;
+    --sec-sidecar: #a9d36b;
+    --sec-sidecar-bg: #243117;
     color-scheme: dark;
   }
 }
@@ -187,6 +204,38 @@ code, pre { font-family: var(--mono); font-size: 0.86em; }
 /* Current page: inverted ink, so colour stays reserved for term origins */
 .side a[aria-current="page"],
 .side a[aria-current="page"]:hover { color: var(--paper); background: var(--ink); font-weight: 600; }
+
+/* ---------------------------------------------------------- parts (sections) */
+.sec-data { --sec: var(--sec-data); --sec-bg: var(--sec-data-bg); }
+.sec-sidecar { --sec: var(--sec-sidecar); --sec-bg: var(--sec-sidecar-bg); }
+.part {
+  display: inline-grid; place-items: center; width: 1.45em; height: 1.45em; margin-right: 0.5em;
+  border-radius: 4px; background: var(--sec); color: var(--surface);
+  font-size: 0.78em; font-weight: 800; line-height: 1; vertical-align: 0.08em;
+}
+.part.sub { background: transparent; color: var(--sec); box-shadow: inset 0 0 0 1.5px var(--sec); }
+/* Sidebar: each part's groups get a rule in its colour, and its current page a tint */
+.side .group[class*="sec-"] { border-left: 3px solid var(--sec); margin-left: -8px; padding-left: 5px; }
+.side .group[class*="sec-"] p { color: var(--sec); font-weight: 700; }
+.side .group[class*="sec-"] a[aria-current="page"],
+.side .group[class*="sec-"] a[aria-current="page"]:hover { color: var(--ink); background: var(--sec-bg); box-shadow: inset 3px 0 0 var(--sec); }
+/* Reference pages that belong to a part carry its marker */
+.side li[class*="sec-"] a { display: flex; align-items: center; gap: 8px; }
+.side li[class*="sec-"] a::after {
+  content: ""; flex: none; width: 7px; height: 7px; margin-left: auto; border-radius: 2px; background: var(--sec);
+}
+.side li[class*="sec-"] a[aria-current="page"],
+.side li[class*="sec-"] a[aria-current="page"]:hover { color: var(--ink); background: var(--sec-bg); box-shadow: inset 3px 0 0 var(--sec); }
+/* Pages in a part: a rule under the header and a label above the title */
+body[class*="sec-"] .top { box-shadow: inset 0 -3px 0 var(--sec); }
+.kicker { margin: 0 0 10px; font-size: 0.85rem; font-weight: 700; letter-spacing: 0.02em; color: var(--sec); }
+.pager a[class*="sec-"] { border-color: var(--sec); }
+.pager a[class*="sec-"] span { color: var(--sec); font-weight: 600; }
+/* Home page: the two parts side by side */
+.paths a[class*="sec-"] b { color: var(--sec); }
+.paths .part { color: var(--surface); font-size: 0.78em; }
+.paths a[class*="sec-"] { box-shadow: inset 0 3px 0 var(--sec); }
+dl.parts dt[class*="sec-"] { color: var(--sec); }
 
 main { min-width: 0; outline: none; }
 .doc { max-width: calc(var(--measure) + 96px); padding: 40px 48px 64px; }
