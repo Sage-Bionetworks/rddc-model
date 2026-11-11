@@ -128,7 +128,7 @@ NAV = [
         ("data-classes.html", "Data class reference"),
         ("data-vocabularies.html", "Data class vocabularies"),
     ]),
-    ("The sidecar", [
+    ("Metadata sidecar", [
         ("sidecar-overview.html", "What the sidecar is for"),
         ("foundations.html", "Foundations"),
         ("croissant.html", "RDDC and Croissant"),
@@ -154,10 +154,36 @@ PAGES = [p for _, items in NAV for p in items]
 # The two parts of the docs, told apart by a numbered label and an accent colour
 # (style.css: .sec-data, .sec-sidecar). Groups map to a part; pages in other groups
 # can belong to one too.
-SECTIONS = {"data": (1, "Data classes"), "sidecar": (2, "The sidecar")}
-GROUP_SECTION = {"Data classes": "data", "The sidecar": "sidecar", "Sidecar examples": "sidecar"}
+SECTIONS = {"data": (1, "Data classes"), "sidecar": (2, "Metadata sidecar")}
+GROUP_SECTION = {"Data classes": "data", "Metadata sidecar": "sidecar", "Sidecar examples": "sidecar"}
 PAGE_SECTION = {f: GROUP_SECTION[g] for g, items in NAV if g in GROUP_SECTION for f, _ in items}
 PAGE_SECTION.update({"reference.html": "sidecar", "vocabularies.html": "sidecar"})
+
+
+# The first mention of the sidecar on a page says "metadata sidecar"; later ones may
+# say "sidecar". Code, file names (_sidecar.json, rddc-sidecar) and tags are skipped.
+_SKIP = re.compile(r"(<pre.*?</pre>|<code[^>]*>.*?</code>|<rddc-code[^>]*>.*?</rddc-code>|<[^>]+>)", re.S)
+_SIDECAR = re.compile(r"(?<![\w./-])([Ss])idecar(s?)\b")
+
+
+def qualify_first_sidecar(body):
+    """Make the first mention of the sidecar in a page's text "metadata sidecar"."""
+    parts = _SKIP.split(body)
+    before = ""
+    for i, part in enumerate(parts):
+        if i % 2:  # a tag or code: skipped, but it separates words
+            before += " "
+            continue
+        m = _SIDECAR.search(part)
+        if not m:
+            before += part
+            continue
+        if re.search(r"(?i)metadata\s*$", before + part[:m.start()]):
+            return body  # already qualified
+        word = ("Metadata s" if m.group(1) == "S" else "metadata s") + "idecar" + m.group(2)
+        parts[i] = part[:m.start()] + word + part[m.end():]
+        return "".join(parts)
+    return body
 
 
 def part_label(section):
@@ -1231,6 +1257,7 @@ def search_entries(fname, title, body):
 
 def render(fname, title, body, template, home=False):
     body = add_heading_ids(expand_directives(body))
+    body = qualify_first_sidecar(body)
     section = PAGE_SECTION.get(fname)
     if section:  # the part this page belongs to, above its title
         body = body.replace("<h1", f"<p class='kicker'>{part_label(section)}</p><h1", 1)
