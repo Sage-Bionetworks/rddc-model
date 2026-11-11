@@ -484,9 +484,17 @@ classes:
 
   SourceDescriptor:
     description: >-
-      Source register values issued by the ACT at registration. The generator and local
-      validator read this plain JSON file, rddc_source.json. It is separate from the
-      sidecar.
+      The ACT issues rddc_source.json at registration. This plain JSON file contains the
+      source's registration details and is used by the generator and local validator. It
+      is separate from the sidecar.
+    notes:
+    - >-
+      The sidecar header copies contributorId, sourceId and registerVersion unchanged,
+      recording the source and register version used. bucket and prefixPattern, with
+      {sourceId} and {batchId} filled in, form url (the batch prefix). sourceId and the
+      batch ID form name. modalities is not copied; it limits allowed data classes to
+      those whose modality annotation matches a listed value. conformsTo, issuedAt,
+      issuedBy, region and description stay in the source descriptor.
     slots:
     - conformsTo
     - contributorId
@@ -495,7 +503,6 @@ classes:
     - prefixPattern
     - region
     - modalities
-    - deliveryRole
     - registerVersion
     - issuedAt
     - issuedBy
@@ -642,7 +649,7 @@ slots:
     description: The contributor's registered ID.
     range: Identifier
   sourceId:
-    description: The source register ID. Must match the delivery role used for upload.
+    description: The source register ID. Must match the source the upload's delivery role is registered for.
     range: Identifier
   batchId:
     description: Contributor-assigned batch ID, unique within the source.
@@ -731,8 +738,6 @@ slots:
       held for a curator.
     range: ModalityEnum
     multivalued: true
-  deliveryRole:
-    description: "The delivery role ID, such as an IAM role ARN. Included for information; the platform enforces the role."
   issuedAt:
     description: "When the descriptor was issued."
     range: datetime

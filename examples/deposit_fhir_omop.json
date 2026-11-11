@@ -79,7 +79,6 @@
     "containsFreeText": "rddc:containsFreeText",
     "containsZipCodes": "rddc:containsZipCodes",
     "contributorId": "rddc:contributorId",
-    "deliveryRole": "rddc:deliveryRole",
     "diagnosisCodeSystems": "rddc:diagnosisCodeSystems",
     "directIdentifiersRemoved": "rddc:directIdentifiersRemoved",
     "documentType": "rddc:documentType",

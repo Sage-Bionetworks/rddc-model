@@ -8998,7 +8998,7 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sourceId": {
-                    "description": "The source register ID. Must match the delivery role used for upload.",
+                    "description": "The source register ID. Must match the source the upload's delivery role is registered for.",
                     "pattern": "^[A-Za-z0-9._:-]+$",
                     "type": "string"
                 },
@@ -9270,7 +9270,7 @@
         },
         "SourceDescriptor": {
             "additionalProperties": false,
-            "description": "Source register values issued by the ACT at registration. The generator and local validator read this plain JSON file, rddc_source.json. It is separate from the sidecar.",
+            "description": "The ACT issues rddc_source.json at registration. This plain JSON file contains the source's registration details and is used by the generator and local validator. It is separate from the sidecar.",
             "properties": {
                 "bucket": {
                     "description": "S3 bucket name.",
@@ -9288,13 +9288,6 @@
                     "description": "The contributor's registered ID.",
                     "pattern": "^[A-Za-z0-9._:-]+$",
                     "type": "string"
-                },
-                "deliveryRole": {
-                    "description": "The delivery role ID, such as an IAM role ARN. Included for information; the platform enforces the role.",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
                 },
                 "description": {
                     "description": "Free-text description.",
@@ -9336,7 +9329,7 @@
                     "type": "string"
                 },
                 "sourceId": {
-                    "description": "The source register ID. Must match the delivery role used for upload.",
+                    "description": "The source register ID. Must match the source the upload's delivery role is registered for.",
                     "pattern": "^[A-Za-z0-9._:-]+$",
                     "type": "string"
                 }
@@ -10980,7 +10973,7 @@
             "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
         },
         "sourceId": {
-            "description": "The source register ID. Must match the delivery role used for upload.",
+            "description": "The source register ID. Must match the source the upload's delivery role is registered for.",
             "pattern": "^[A-Za-z0-9._:-]+$",
             "type": "string"
         },
