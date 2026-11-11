@@ -53,6 +53,16 @@ description: >-
   identifying class de-identified, whatever the sensitivity flags say. "biometric"
   implies "identifying", so a biometric class does not carry both: consumers treat a
   biometric class as identifying and, in addition, keep its files in the TRE.
+
+
+  A class whose files can carry other files inside them carries an "embedsFiles"
+  annotation set to "true": FHIR files, whose DocumentReference, Media and Binary
+  resources can hold documents and images as base64 data, and C-CDA documents, whose
+  body can be a non-XML document and whose entries can hold media. Each embedded file
+  can be a note, a scan or a face photograph, whatever the outer file's class, so its
+  content is not covered by the class's annotations or the sensitivity flags. The
+  annotation says what the content can hold, not how to process it: the processing
+  rules decide which files are scanned for embedded files.
 license: https://creativecommons.org/publicdomain/zero/1.0/
 
 prefixes:
@@ -1400,6 +1410,7 @@ classes:
     annotations:
       structure: structured
       modality: clinical_fhir
+      embedsFiles: "true"
     slots:
     - bundleType
     slot_usage:
@@ -1428,6 +1439,7 @@ classes:
     annotations:
       structure: structured
       modality: clinical_fhir
+      embedsFiles: "true"
     slot_usage:
       encodingFormat:
         range: string  # equals_string needs a string range; the fixed value is a valid MediaType
@@ -1443,6 +1455,7 @@ classes:
     annotations:
       structure: structured
       modality: clinical_fhir
+      embedsFiles: "true"
     slot_usage:
       encodingFormat:
         range: string  # equals_string needs a string range; the fixed value is a valid MediaType
@@ -1532,6 +1545,7 @@ classes:
     annotations:
       structure: structured
       modality: clinical_ccda
+      embedsFiles: "true"
     slot_usage:
       encodingFormat:
         any_of:

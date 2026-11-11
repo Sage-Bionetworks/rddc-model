@@ -7,8 +7,8 @@ so this script does. Exits non-zero if any concrete DataFile subclass:
 
 - has no "structure" annotation, or an unknown value;
 - has no "modality" annotation, or a value that is not in ModalityEnum;
-- has a "biometric" or "identifying" annotation other than "true", or is a
-  subclass of a class with one and does not repeat it;
+- has a "biometric", "identifying" or "embedsFiles" annotation other than "true",
+  or is a subclass of a class with one and does not repeat it;
 - has both: "biometric" implies "identifying", so a biometric class leaves it out;
 - has an "rai:dataCollectionType" annotation that is not one of the Croissant
   Responsible AI recommended values (the annotation is optional).
@@ -21,7 +21,7 @@ from linkml_runtime.utils.schemaview import SchemaView
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STRUCTURES = {"structured", "unstructured", "mixed"}
-BIOMETRIC = {"true"}
+TRUE = {"true"}
 # Recommended values of rai:dataCollectionType (Croissant RAI vocabulary, croissant_rai.ttl).
 COLLECTION_TYPES = {
     "Surveys", "Secondary Data analysis", "Physical data collection", "Direct measurement",
@@ -45,25 +45,30 @@ def main():
         cls = sv.get_class(name)
         if cls.abstract:
             continue
-        structure, modality, biometric, identifying, collection = (
-            value(cls, k) for k in ("structure", "modality", "biometric", "identifying", "rai:dataCollectionType"))
-        # A subclass of a biometric or identifying class identifies a person too, so it must say so.
+        structure, modality, biometric, identifying, embeds, collection = (
+            value(cls, k) for k in ("structure", "modality", "biometric", "identifying", "embedsFiles",
+                                    "rai:dataCollectionType"))
+        # A subclass of a biometric, identifying or embedding class is one too, so it must say so.
         ancestors = [sv.get_class(a) for a in sv.class_ancestors(name, reflexive=False)]
         inherited = any(value(a, "biometric") is not None for a in ancestors)
         inherited_identifying = any(value(a, "identifying") is not None for a in ancestors)
+        inherited_embeds = any(value(a, "embedsFiles") is not None for a in ancestors)
         ok = (
             structure in STRUCTURES
             and modality in modalities
-            and (biometric is None or biometric in BIOMETRIC)
+            and (biometric is None or biometric in TRUE)
             and (biometric is not None or not inherited)
-            and (identifying is None or identifying in BIOMETRIC)
+            and (identifying is None or identifying in TRUE)
             and (identifying is not None or not inherited_identifying)
+            and (embeds is None or embeds in TRUE)
+            and (embeds is not None or not inherited_embeds)
             and not (biometric is not None and identifying is not None)
             and (collection is None or collection in COLLECTION_TYPES)
         )
         bad += [] if ok else [name]
         extra = f", biometric: {biometric}" if biometric is not None else ""
         extra += f", identifying: {identifying}" if identifying is not None else ""
+        extra += f", embedsFiles: {embeds}" if embeds is not None else ""
         extra += f", collected by: {collection}" if collection is not None else ""
         print(f"{'ok  ' if ok else 'FAIL'} {name}: {structure}, {modality}{extra}")
     print(f"\n{len(bad)} failure(s)")

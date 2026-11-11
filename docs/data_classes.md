@@ -21,6 +21,8 @@ A class whose content always identifies a person carries a "biometric" annotatio
 
 A class whose content can identify a person on its own, though it is not a biometric identifier under HIPAA Safe Harbor, carries an "identifying" annotation set to "true": sequencing reads and alignments of any assay, DNA or RNA, and germline variant calls, which DPV classes as genetic data (pd:Genetic). RNA-seq and methylation reads carry the germline variants of the sequenced regions, so they identify a person as DNA reads do. Germline-filtered somatic variant calls and gene expression quantifications are not identifying on their own, so their classes leave the annotation out. Removing direct identifiers does not make files of an identifying class de-identified, whatever the sensitivity flags say. "biometric" implies "identifying", so a biometric class does not carry both: consumers treat a biometric class as identifying and, in addition, keep its files in the TRE.
 
+A class whose files can carry other files inside them carries an "embedsFiles" annotation set to "true": FHIR files, whose DocumentReference, Media and Binary resources can hold documents and images as base64 data, and C-CDA documents, whose body can be a non-XML document and whose entries can hold media. Each embedded file can be a note, a scan or a face photograph, whatever the outer file's class, so its content is not covered by the class's annotations or the sensitivity flags. The annotation says what the content can hold, not how to process it: the processing rules decide which files are scanned for embedded files.
+
 ## Hierarchy
 
 ```
@@ -28,12 +30,12 @@ DistributionItem
   FileObject
     DataFile  (abstract)
       FhirFile  (abstract)
-        FhirBundleFile  (structured, clinical_fhir)
+        FhirBundleFile  (structured, clinical_fhir, embeds files)
         FhirSingleTypeFile  (abstract)
-          FhirResourceFile  (structured, clinical_fhir)
-          FhirNdjsonFile  (structured, clinical_fhir)
+          FhirResourceFile  (structured, clinical_fhir, embeds files)
+          FhirNdjsonFile  (structured, clinical_fhir, embeds files)
       OmopTableFile  (structured, clinical_omop)
-      CcdaDocumentFile  (structured, clinical_ccda)
+      CcdaDocumentFile  (structured, clinical_ccda, embeds files)
       TabularFile  (structured, clinical_tabular)
       ConsentFile  (structured, consent)
       IntakeFormFile  (structured, intake_form)
@@ -133,7 +135,7 @@ No fields beyond those of [`DataFile`](#datafile).
 
 One FHIR Bundle JSON document.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:FhirBundleFile"`. Inherits from [`FhirFile`](#fhirfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `clinical_fhir`.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:FhirBundleFile"`. Inherits from [`FhirFile`](#fhirfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `clinical_fhir`. Embeds files: can carry documents or images inside it, whose content its class and sensitivity flags do not describe.
 
 Fields it adds or changes; it also has all fields of [`FhirFile`](#fhirfile):
 
@@ -159,7 +161,7 @@ Fields it adds or changes; it also has all fields of [`FhirFile`](#fhirfile):
 
 One FHIR resource JSON document that is not a Bundle.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:FhirResourceFile"`. Inherits from [`FhirSingleTypeFile`](#fhirsingletypefile) → [`FhirFile`](#fhirfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `clinical_fhir`.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:FhirResourceFile"`. Inherits from [`FhirSingleTypeFile`](#fhirsingletypefile) → [`FhirFile`](#fhirfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `clinical_fhir`. Embeds files: can carry documents or images inside it, whose content its class and sensitivity flags do not describe.
 
 Fields it adds or changes; it also has all fields of [`FhirSingleTypeFile`](#fhirsingletypefile):
 
@@ -172,7 +174,7 @@ Fields it adds or changes; it also has all fields of [`FhirSingleTypeFile`](#fhi
 
 FHIR Bulk Data NDJSON, one resource type per file.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:FhirNdjsonFile"`. Inherits from [`FhirSingleTypeFile`](#fhirsingletypefile) → [`FhirFile`](#fhirfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `clinical_fhir`.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:FhirNdjsonFile"`. Inherits from [`FhirSingleTypeFile`](#fhirsingletypefile) → [`FhirFile`](#fhirfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `clinical_fhir`. Embeds files: can carry documents or images inside it, whose content its class and sensitivity flags do not describe.
 
 Fields it adds or changes; it also has all fields of [`FhirSingleTypeFile`](#fhirsingletypefile):
 
@@ -202,7 +204,7 @@ Rules:
 
 One HL7 C-CDA document. Its template IDs are in the document header and its C-CDA release is in the conformsTo of the file set it belongs to, so neither is repeated per file.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:CcdaDocumentFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `clinical_ccda`. A kind of [`EDAM:data_3861`](http://edamontology.org/data_3861).
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:CcdaDocumentFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `clinical_ccda`. A kind of [`EDAM:data_3861`](http://edamontology.org/data_3861). Embeds files: can carry documents or images inside it, whose content its class and sensitivity flags do not describe.
 
 Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
