@@ -33,5 +33,5 @@
 </div>
 <p>Whether a recording identifies a person depends on what it records, so these classes are not biometric. A recording of a person's voice, or a video that shows a face, contains biometric identifiers: set <code>sensitivity.containsBiometricIdentifiers</code> to <code>true</code> on the file, as the voice recording above does. Files with biometric identifiers stay in the TRE.</p>
 
-<h2>In a sidecar</h2>
-<p>Images and recordings are grouped in a <code>FileCollection</code> file set. An acquisition table describing them is a <a href="data-other.html">DocumentationFile</a>. The <a href="recipes.html#images-and-video">images and video recipe</a> shows a facial photograph, a gait video and an acquisition table in one batch.</p>
+<h2>Acquisition details</h2>
+<p>A table describing how images or recordings were acquired, such as the device, settings or date of each, is a <a href="data-other.html">DocumentationFile</a> that points to the files it describes.</p>
