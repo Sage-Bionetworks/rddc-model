@@ -467,9 +467,10 @@ CLASS_GROUPS = [
      ["Sidecar", "Agent", "SensitivityDeclaration", "SubjectEntry"]),
     ("Shared distribution fields", "Shared by every file and file set. The data file classes "
      "built on FileObject have their own page, <a href='data-classes.html'>Data class reference</a>.",
-     ["DistributionItem", "FileObject", "FileSensitivity", "BiometricFileSensitivity"]),
+     ["DistributionItem", "FileObject", "FileSensitivity", "BiometricFileSensitivity",
+      "DocumentFileSensitivity", "FixedSensitivity"]),
     ("File set classes", "Name one of these in a file set's additionalType. @type stays cr:FileSet.",
-     ["FileSet", "FhirBulkExport", "FhirBundleCollection", "OmopCdmInstance", "CdmSource",
+     ["FileSet", "FhirBulkExport", "FhirBundleCollection", "FhirResourceCollection", "OmopCdmInstance", "CdmSource",
       "CcdaDocumentSet", "TabularDataset", "DocumentSet", "FileCollection"]),
     ("Record sets", "Croissant's table structure, used for data dictionaries and joins.",
      ["RecordSet", "RecordSetField", "FieldSource", "Extract", "FieldReference"]),
@@ -633,6 +634,12 @@ def class_section(name, view=None):
     modality = cls.annotations.get("modality")
     if modality:
         meta.append(f"<span>Modality: <code>{html.escape(modality.value)}</code></span>")
+    set_class = cls.annotations.get("fileSetClass")
+    if set_class:
+        meta.append(f"<span>Belongs to a <a href='{class_href(set_class.value)}'><code>{html.escape(set_class.value)}</code></a></span>")
+    fixed = [f"<code>{f}</code> {FLAG_WORDS[cls.annotations[f].value]}" for f in FLAGS if cls.annotations.get(f)]
+    if fixed:
+        meta.append("<span>Sensitivity: " + "; ".join(fixed) + "</span>")
     for kind, label in (("exact_mappings", "Same as"), ("close_mappings", "Close to"),
                         ("broad_mappings", "A kind of"), ("narrow_mappings", "Broader than")):
         terms = getattr(cls, kind) or []
@@ -743,8 +750,8 @@ def description_html(text):
     out, items = [], []
     for line in (text or "").split("\n"):
         indent = len(line) - len(line.lstrip())
-        if indent == 2 and ":" in line:
-            term, rest = line.strip().split(":", 1)
+        if indent == 2 and ": " in line:
+            term, rest = line.strip().split(": ", 1)  # a term may be a CURIE (rai:dataCollectionType)
             items.append([term, rest.strip()])
         elif indent > 2 and items:
             items[-1][1] += " " + line.strip()
@@ -804,11 +811,13 @@ record set sources and keys, and each file's <code>subjectIds</code> (against th
 <code>DocumentationFile</code>s (modality <code>metadata</code>).</li>
 <li><code>withdraw</code> and <code>restrict</code> batches list no data files, and every row of a consent batch has a <code>consentRef</code>.</li>
 <li>File set <code>conformsTo</code> values come from the pinned list (FHIR R4, US Core 6.1, HL7 Personal Health Device IG 2.0.0, OMOP CDM 5.4, C-CDA 2.1, IEEE 1752.1-2021).</li>
-<li>Every FHIR, OMOP and C-CDA file belongs to a file set of its standard, whose <code>conformsTo</code> gives its version.
-A FHIR file's <code>resourceType</code> is a resource type of that FHIR version.</li>
+<li>Every file of a class with a <code>fileSetClass</code> annotation (FHIR, OMOP and C-CDA files) belongs to a file set
+of that class, whose <code>conformsTo</code> gives the standard and version. A FHIR file's <code>resourceType</code> is a
+resource type of that FHIR version, and an OMOP file's <code>cdmTable</code> is a table of that CDM version.</li>
 <li><code>directIdentifiersRemoved</code> is <code>true</code> unless <code>synthetic</code> is <code>true</code>.</li>
-<li>A file of a biometric class (<code>FacialImagingFile</code>) always counts as containing biometric identifiers,
-whatever the batch default. The schema stops the file setting the flag itself.</li>
+<li>A flag a class fixes (<code>always</code>, <code>n/a</code>, or a biometric class) holds whatever the batch says, and a
+class default of <code>false</code> applies when neither the file nor the batch sets the flag. The schema stops a file
+setting a flag its class fixes.</li>
 </ul>
 """
 
@@ -1067,6 +1076,42 @@ def gen_enum(attrs):
             + enum_table(name))
 
 
+FLAGS = ("containsDates", "containsZipCodes", "containsFreeText", "containsBiometricIdentifiers")
+FLAG_WORDS = {"always": "always true", "n/a": "not applicable, so false", "false": "false unless set"}
+
+
+def flag_cell(name, flag):
+    """What a class says about one flag: fixed, a default, or the batch value."""
+    if flag == "containsBiometricIdentifiers" and annotation(name, "biometric"):
+        return "<span class='badge'>always</span>"
+    value = annotation(name, flag)
+    if value == "always":
+        return "<span class='badge'>always</span>"
+    if value == "n/a":
+        return "<span class='muted'>n/a</span>"
+    if value == "false":
+        return "<code>false</code> unless set"
+    return "batch value"
+
+
+def gen_flag_defaults(attrs):
+    """Every concrete data class's sensitivity flag annotations, by family page."""
+    titles = dict(t for _, items in NAV for t in items)
+    rows = []
+    for page in [f for f, _ in PAGES if f in FAMILY_CLASSES.values()]:
+        rows.append(f"<tr><th colspan='5'><a href='{page}'>{titles[page]}</a></th></tr>")
+        rows.extend(
+            f"<tr><td><a href='{class_href(c)}'><code>{c}</code></a></td>"
+            + "".join(f"<td>{flag_cell(c, f)}</td>" for f in FLAGS) + "</tr>"
+            for c in CONCRETE_DATA if FAMILY_CLASSES.get(c) == page
+        )
+    return (
+        "<div class='table-wrap'><table><thead><tr><th>Class</th>"
+        + "".join(f"<th><code>{f}</code></th>" for f in FLAGS) + "</tr></thead><tbody>"
+        + "".join(rows) + "</tbody></table></div>"
+    )
+
+
 def gen_flags(attrs):
     """The sensitivity flags a data file can carry, with their regulatory citations and mappings."""
     rows = [f"<tr><td>{key_code(slot)}</td><td>{esc(slot.description)}{slot_mappings(slot)}</td></tr>"
@@ -1149,6 +1194,7 @@ GENERATORS = {
     "technique": gen_technique,
     "enum": gen_enum,
     "flags": gen_flags,
+    "flag-defaults": gen_flag_defaults,
     "terms": gen_terms,
 }
 
