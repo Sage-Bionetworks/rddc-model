@@ -1,0 +1,37 @@
+<h1>Imaging, audio and video</h1>
+<p class="lede">Medical and clinical images, facial photographs and 3D scans, and audio and video recordings. Faces and voices are biometric identifiers, which decides where these files can be used.</p>
+
+<rddc-family names="ImagingFile,FacialImagingFile,AudioFile,VideoFile"></rddc-family>
+
+<h2>Images</h2>
+<p>An <code>ImagingFile</code> is a medical or clinical image, such as a DICOM CT or MRI series, a microscopy image or a clinical photograph. Every image states the technique that produced it in <code>measurementTechnique</code>; analysis depends on it. Values map to OBI assay terms where OBI has one, and to NCIT or SNOMED CT terms where it does not.</p>
+<rddc-enum name="ImagingAssayEnum"></rddc-enum>
+<rddc-example key="imaging"></rddc-example>
+
+<h2>Facial images and 3D scans</h2>
+<p>An image or 3D surface model of a person's face, such as those taken for dysmorphology assessment or facial phenotyping, is a <code>FacialImagingFile</code>. Its <code>measurementTechnique</code> says how it was captured: a photograph, a 3D surface scan, or a CT or MRI. 2D photographs and 3D models go to different facial analysis tools.</p>
+<p>A 3D model is an OBJ, STL, glTF or PLY file. An OBJ model's material file is a separate <code>FacialImagingFile</code> with media type <code>model/mtl</code>. PLY has no registered media type, so a PLY model is <code>application/octet-stream</code>.</p>
+<div class="tabs">
+  <div role="tablist" aria-label="Facial image examples">
+    <button role="tab" id="t-i-1" aria-controls="p-i-1" aria-selected="true">Photograph</button>
+    <button role="tab" id="t-i-2" aria-controls="p-i-2" aria-selected="false" tabindex="-1">OBJ model</button>
+    <button role="tab" id="t-i-3" aria-controls="p-i-3" aria-selected="false" tabindex="-1">OBJ material</button>
+    <button role="tab" id="t-i-4" aria-controls="p-i-4" aria-selected="false" tabindex="-1">PLY model</button>
+  </div>
+  <div role="tabpanel" id="p-i-1" aria-labelledby="t-i-1"><rddc-example key="face"></rddc-example></div>
+  <div role="tabpanel" id="p-i-2" aria-labelledby="t-i-2" hidden><rddc-example key="face_scan"></rddc-example></div>
+  <div role="tabpanel" id="p-i-3" aria-labelledby="t-i-3" hidden><rddc-example key="face_scan_material"></rddc-example></div>
+  <div role="tabpanel" id="p-i-4" aria-labelledby="t-i-4" hidden><rddc-example key="face_scan_ply"></rddc-example></div>
+</div>
+<p>A face is a biometric identifier, so <code>FacialImagingFile</code> is a <a href="data-overview.html#files-that-identify-a-person">biometric class</a>: every file counts as containing biometric identifiers and stays in the trusted research environment (TRE). The file's <code>sensitivity</code> can still set the other flags, as the photograph above does for dates, but not <code>containsBiometricIdentifiers</code>.</p>
+
+<h2>Audio and video</h2>
+<p><code>AudioFile</code> and <code>VideoFile</code> accept any audio or video media type respectively, such as <code>audio/wav</code> or <code>video/mp4</code>.</p>
+<div class="pair">
+  <div><rddc-example key="audio"></rddc-example></div>
+  <div><rddc-example key="video"></rddc-example></div>
+</div>
+<p>Whether a recording identifies a person depends on what it records, so these classes are not biometric. A recording of a person's voice, or a video that shows a face, contains biometric identifiers: set <code>sensitivity.containsBiometricIdentifiers</code> to <code>true</code> on the file, as the voice recording above does. Files with biometric identifiers stay in the TRE.</p>
+
+<h2>In a sidecar</h2>
+<p>Images and recordings are grouped in a <code>FileCollection</code> file set. An acquisition table describing them is a <a href="data-other.html">DocumentationFile</a>. The <a href="recipes.html#images-and-video">images and video recipe</a> shows a facial photograph, a gait video and an acquisition table in one batch.</p>

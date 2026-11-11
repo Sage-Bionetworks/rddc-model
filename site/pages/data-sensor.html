@@ -1,0 +1,28 @@
+<h1>Sensor data</h1>
+<p class="lede">Data recorded by wearables and other sensor devices: raw signals such as accelerometry or ECG waveforms, and measures derived from them such as step counts or sleep stages.</p>
+
+<rddc-family names="SensorSignalFile,SensorMeasureFile"></rddc-family>
+
+<h2>Raw signals and derived measures</h2>
+<p>Raw signals and the measures derived from them need different processing, so they are different classes:</p>
+<ul>
+<li>A <code>SensorSignalFile</code> holds a signal before any aggregation, such as 100 Hz accelerometry, an ECG waveform or a sleep study's channels. Common formats are EDF/EDF+, WFDB, DICOM waveform and device or vendor formats. Those without a registered media type are <code>application/octet-stream</code>. Give the signal's sampling rate in hertz in <code>samplingRate</code>, Croissant's term; when channels differ, give the highest.</li>
+<li>A <code>SensorMeasureFile</code> holds measures derived from a signal, such as per-minute step counts, sleep stages or daily heart rate summaries, as a table or JSON.</li>
+</ul>
+<div class="pair">
+  <div><rddc-example key="sensor_signal" title="A sleep study recording with EEG and ECG channels"></rddc-example></div>
+  <div><rddc-example key="sensor_measure" title="Step counts derived from accelerometry"></rddc-example></div>
+</div>
+
+<h2>Techniques and devices</h2>
+<p><code>measurementTechnique</code> lists the sensing techniques that produced the data. It is a list because one recording or summary can combine several. Values map to NCIT, OBI and SNOMED CT terms. The device that recorded the data, such as <code>ActiGraph GT9X</code>, goes in <code>platform</code>.</p>
+<rddc-enum name="SensorAssayEnum"></rddc-enum>
+
+<h2>Standards</h2>
+<ul>
+<li><strong>IEEE 1752.1</strong> (Open mHealth) defines JSON schemas for sleep and physical activity measures. A file set of such measures declares it in <code>conformsTo</code>, from the <a href="concepts.html#pinned-standards">pinned list</a>.</li>
+<li>Sensor data already in FHIR form, such as device Observations, is not sensor data in this sense: it goes in a <a href="data-clinical.html#fhir">FHIR file</a>, in a file set that declares the HL7 Personal Health Device IG.</li>
+</ul>
+
+<h2>Sensitivity</h2>
+<p>Sensor data usually carries timestamps more precise than a year, which count as dates. Leave <code>containsDates</code> unset or <code>true</code> unless they have been removed.</p>
