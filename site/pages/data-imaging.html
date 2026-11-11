@@ -1,15 +1,18 @@
 <h1>Imaging, audio and video</h1>
 <p class="lede">Medical and clinical images, facial photographs and 3D scans, and audio and video recordings. Faces and voices are biometric identifiers, which determine where these files can be used.</p>
 
-<rddc-family names="ImagingFile,FacialImagingFile,AudioFile,VideoFile"></rddc-family>
+<rddc-family names="DicomImageFile,ImageFile,FacialImagingFile,AudioFile,VideoFile"></rddc-family>
 
 <h2>Images</h2>
-<p>An <code>ImagingFile</code> is a medical or clinical image, such as a DICOM CT or MRI series, a microscopy image or a clinical photograph. Every image requires <code>measurementTechnique</code> for analysis. Values map to OBI assay terms where OBI has one, and to NCIT or SNOMED CT terms where it does not.</p>
+<p>A medical or clinical image, such as a CT or MRI series, a microscopy image or a clinical photograph, is a <code>DicomImageFile</code> when it is DICOM and an <code>ImageFile</code> otherwise: TIFF or OME-TIFF, PNG, JPEG, JPEG 2000, or a whole-slide or NIfTI format with no registered media type. DICOM headers carry patient details that are de-identified in place; other formats carry none, though burned-in text counts as free text. Every image requires <code>measurementTechnique</code> for analysis. Values map to OBI assay terms where OBI has one, and to NCIT or SNOMED CT terms where it does not.</p>
 <rddc-enum name="ImagingAssayEnum"></rddc-enum>
-<rddc-example key="imaging"></rddc-example>
+<div class="pair">
+  <div><rddc-example key="dicom_image" title="A DICOM CT series"></rddc-example></div>
+  <div><rddc-example key="image" title="A whole-slide microscopy image"></rddc-example></div>
+</div>
 
 <h2>Facial images and 3D scans</h2>
-<p>An image or 3D surface model of a person's face, such as those taken for dysmorphology assessment or facial phenotyping, is a <code>FacialImagingFile</code>. Its <code>measurementTechnique</code> says how it was captured: a photograph, a 3D surface scan, or a CT or MRI. 2D photographs and 3D models go to different facial analysis tools.</p>
+<p>An image or 3D surface model of a person's face, such as those taken for dysmorphology assessment or facial phenotyping, is a <code>FacialImagingFile</code>. Its <code>measurementTechnique</code> says how it was captured: a photograph, a 3D surface scan, or a CT or MRI. 2D photographs and 3D models go to different facial analysis tools. It is not a subclass of the image classes: rules for images do not apply to it.</p>
 <p>A 3D model is an OBJ, STL, glTF or PLY file. An OBJ model's material file is a separate <code>FacialImagingFile</code> with media type <code>model/mtl</code>. PLY has no registered media type, so a PLY model is <code>application/octet-stream</code>.</p>
 <div class="tabs">
   <div role="tablist" aria-label="Facial image examples">
@@ -23,7 +26,7 @@
   <div role="tabpanel" id="p-i-3" aria-labelledby="t-i-3" hidden><rddc-example key="face_scan_material"></rddc-example></div>
   <div role="tabpanel" id="p-i-4" aria-labelledby="t-i-4" hidden><rddc-example key="face_scan_ply"></rddc-example></div>
 </div>
-<p>A face is a biometric identifier, so <code>FacialImagingFile</code> is a <a href="data-overview.html#files-that-identify-a-person">biometric class</a>: every file counts as containing biometric identifiers and stays in the trusted research environment (TRE). The file's <code>sensitivity</code> can still set the other flags, as the photograph above does for dates, but not <code>containsBiometricIdentifiers</code>.</p>
+<p>A face is a biometric identifier, so <code>FacialImagingFile</code> is a <a href="data-overview.html#files-that-identify-a-person">biometric class</a>: every file counts as containing biometric identifiers and never leaves INTAKE. The file's <code>sensitivity</code> can still set the other flags, as the photograph above does for dates, but not <code>containsBiometricIdentifiers</code>.</p>
 
 <h2>Audio and video</h2>
 <p><code>AudioFile</code> and <code>VideoFile</code> accept any audio or video media type respectively, such as <code>audio/wav</code> or <code>video/mp4</code>.</p>
@@ -31,7 +34,7 @@
   <div><rddc-example key="audio"></rddc-example></div>
   <div><rddc-example key="video"></rddc-example></div>
 </div>
-<p>Whether a recording identifies a person depends on its content, so these classes are not biometric. A recording of a person's voice, or a video that shows a face, contains biometric identifiers: set <code>sensitivity.containsBiometricIdentifiers</code> to <code>true</code> on the file, as the voice recording above does. Files with biometric identifiers stay in the TRE.</p>
+<p>Whether a recording identifies a person depends on its content, so these classes are not biometric. A recording of a person's voice, or a video that shows a face, contains biometric identifiers: set <code>sensitivity.containsBiometricIdentifiers</code> to <code>true</code> on the file, as the voice recording above does. Files with biometric identifiers never leave INTAKE. Speech and on-screen text count as free text; recordings carry no address, so <code>containsZipCodes</code> is <code>false</code> unless set.</p>
 
 <h2>Acquisition details</h2>
 <p>A table describing how images or recordings were acquired, such as the device, settings or date of each, is a <a href="data-other.html">DocumentationFile</a> that points to the files it describes.</p>
