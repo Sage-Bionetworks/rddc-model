@@ -273,6 +273,7 @@
       d.options.forEach(function (o, j) { s.appendChild(el("option", { value: String(j), text: o.label })); });
       dimSelects.push(s);
       if (d.options.length > 1 && d.name === "fileSetClass") fileFs.appendChild(field("File set class", s));
+      if (d.options.length > 1 && d.name === "encodingFormat") fileFs.appendChild(field("Media type (encodingFormat), where a rule tests it", s));
     });
     form.appendChild(fileFs);
 

@@ -136,11 +136,22 @@ ROUTES = {
         register(lambda s: s["modalities"].append("consent")),
         {"visits": ["ingest_files", "record_consent"], "patients": ["ingest_files", "tabular_load"]}),
     "normalization: a VCF is represented in GA4GH VRS in the normalized store (no flag applies to it)": (
-        sidecar(lambda d: file_obj(d, "visits").update(additionalType="rddc:VcfFile", measurementTechnique="wgs",
+        sidecar(lambda d: file_obj(d, "visits").update(additionalType="rddc:GermlineVariantFile", measurementTechnique="wgs",
                                                         referenceGenome="GRCh38", encodingFormat="text/plain",
                                                         contentUrl="registry/visits.vcf.gz", compression="bgzf")),
         register(lambda s: s["modalities"].append("genomics")),
         {"visits": ["ingest_files", "vcf_to_vrs"]}),
+    "normalization: a somatic MAF stays in INTAKE, since the VRS pipeline reads VCF and BCF only": (
+        sidecar(lambda d: file_obj(d, "visits").update(additionalType="rddc:SomaticVariantFile", measurementTechnique="wes",
+                                                        referenceGenome="GRCh38", encodingFormat="text/tab-separated-values",
+                                                        contentUrl="registry/visits.maf")),
+        register(lambda s: s["modalities"].append("genomics")),
+        {"visits": ["ingest_files"]}),
+    "intake form responses take the tables lane": (
+        sidecar(lambda d: file_obj(d, "visits").update(additionalType="rddc:IntakeFormFile", subjectIds=["P0001"],
+                                                        formDefinition={"@id": "https://example.org/fhir/Questionnaire/intake"})),
+        register(lambda s: s["modalities"].append("intake_form")),
+        {"visits": ["ingest_files", "tabular_load"], "patients": ["ingest_files", "tabular_load"]}),
     "audio and video go to INTAKE's de-id/QC environment, not to a curator": (
         sidecar(lambda d: (file_obj(d, "visits").update(additionalType="rddc:AudioFile", encodingFormat="audio/wav"),
                            file_obj(d, "patients").update(additionalType="rddc:VideoFile", encodingFormat="video/mp4"))),
@@ -289,13 +300,15 @@ def dispatch_checks():
 def deposit_of(files):
     """The example batch with only these files: (class, path, technique, platform), where
     technique and platform may be None. An IndexFile indexes the file before it. A
-    .vcf.gz is bgzipped and a .fastq.gz gzipped."""
+    .vcf.gz is bgzipped and a .fastq.gz gzipped; the media type follows the extension."""
     doc = copy.deepcopy(BASE)
     uid = "urn:uuid:00000000-0000-4000-8000-{:012d}".format
     compression = lambda path: {"compression": "bgzf"} if path.endswith(".vcf.gz") else \
         {"compression": "gzip"} if path.endswith(".gz") else {}
+    media = lambda path: "text/plain" if path.endswith((".fastq.gz", ".vcf.gz")) else \
+        "application/dicom" if path.endswith(".dcm") else "application/octet-stream"
     doc["distribution"] = [dict({"@type": "cr:FileObject", "@id": uid(i),
-                                 "additionalType": f"rddc:{cls}", "contentUrl": path},
+                                 "additionalType": f"rddc:{cls}", "contentUrl": path, "encodingFormat": media(path)},
                                 **({"measurementTechnique": tech} if tech else {}),
                                 **({"sequencingPlatform": platform} if platform else {}),
                                 **compression(path),
@@ -333,16 +346,16 @@ def ingest_checks():
          [("CramFile", "aln/S1.cram", "wgs", "illumina"), ("IndexFile", "aln/S1.cram.crai", None, None)],
          ("rddc_ingest_cram", "to_add")),
         ("a bgzipped VCF on its own goes to Cirro's vcf",
-         [("VcfFile", "vcf/S1.vcf.gz", "wes", "illumina")], ("vcf", "available")),
+         [("GermlineVariantFile", "vcf/S1.vcf.gz", "wes", "illumina")], ("vcf", "available")),
         ("a VCF and its index go to rddc_ingest_vcf (Cirro's VCF type takes no .tbi)",
-         [("VcfFile", "vcf/S1.vcf.gz", "wes", "illumina"), ("IndexFile", "vcf/S1.vcf.gz.tbi", None, None)],
+         [("GermlineVariantFile", "vcf/S1.vcf.gz", "wes", "illumina"), ("IndexFile", "vcf/S1.vcf.gz.tbi", None, None)],
          ("rddc_ingest_vcf", "to_add")),
-        ("a BCF goes to rddc_ingest_vcf",
-         [("BcfFile", "vcf/S1.bcf", "wes", "illumina")], ("rddc_ingest_vcf", "to_add")),
+        ("a BCF goes to rddc_ingest_vcf, by its media type",
+         [("GermlineVariantFile", "vcf/S1.bcf", "wes", "illumina")], ("rddc_ingest_vcf", "to_add")),
     ]
     # A VCF that is gzipped but not bgzipped cannot carry an index, so Cirro's vcf type
     # does not take it: the class and compression decide, not the file name.
-    plain = deposit_of([("VcfFile", "vcf/S1.vcf.gz", "wes", "illumina")])
+    plain = deposit_of([("GermlineVariantFile", "vcf/S1.vcf.gz", "wes", "illumina")])
     plain["distribution"][0]["compression"] = "gzip"
     cases.append(("a gzipped (not bgzipped) VCF goes to rddc_ingest_vcf", None, ("rddc_ingest_vcf", "to_add")))
     docs = {name: deposit_of(files) if files else plain for name, files, _ in cases}
@@ -354,7 +367,7 @@ def ingest_checks():
         # Files that belong together share one ingest dispatch, even in separate groups.
         out.append((name, got == {want} and len({s.get("dispatchId") for s in steps}) == 1,
                     f"got {sorted(map(str, got))}, {len(p['groups'])} group(s)"))
-    vcf = deposit_of([("VcfFile", "vcf/S1.vcf.gz", "wes", "illumina"),
+    vcf = deposit_of([("GermlineVariantFile", "vcf/S1.vcf.gz", "wes", "illumina"),
                       ("IndexFile", "vcf/S1.vcf.gz.tbi", None, None)])
     p = run(vcf, genomics)
     final = {g["files"][0][-2:]: [s["workflow"] for s in g["steps"]] for g in p["groups"]}

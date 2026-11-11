@@ -8,7 +8,7 @@
 # Checked by scripts/check_rules.py (names exist in the pinned release; verification
 # properties hold). scripts/orchestrate.py works out the next steps for a batch.
 id: rddc_rules
-version: 0.9.0-draft
+version: 0.10.0-draft
 modelRelease: v0.1.0
 description: Draft processing rules with placeholder workflows.
 
@@ -338,9 +338,11 @@ workflows:
       fileNamePatterns:
       - {exampleName: 'SampleName.cram.crai', description: 'CRAM index',
          namePattern: '(?P<sampleName>[\S ]*)\.cram\.crai'}
-  # Cirro's VCF type takes a bgzipped VCF: the class and compression say so, not the name.
+  # Cirro's VCF type takes a bgzipped VCF: the class, media type and compression say
+  # so, not the name (a BCF is application/octet-stream, a MAF text/tab-separated-values).
   - dataType: vcf
-    classes: [VcfFile]
+    classes: [VariantFile]
+    encodingFormats: [text/plain]
     compressions: [bgzf]
     fileRules:
     - description: Genomic Variants (VCF)
@@ -352,7 +354,7 @@ workflows:
   # To add to Cirro: a fallback for variant calls Cirro's vcf does not take (a VCF that
   # is not bgzipped, a BCF, or a VCF with its index). File rules are proposals.
   - dataType: rddc_ingest_vcf
-    classes: [VcfFile, BcfFile, IndexFile]
+    classes: [VariantFile, IndexFile]
     fileRules:
     - description: Variant calls
       minFiles: 1
@@ -423,14 +425,24 @@ workflows:
       - {exampleName: 'doc_0000001.xml', description: 'XML',
          namePattern: '(?P<sampleName>[\S ]*)\.xml(\.gz)?'}
   - dataType: rddc_ingest_tabular
-    classes: [TabularFile]
+    classes: [TabularFile, IntakeFormFile, GeneticTestResultFile]
     fileRules:
-    - description: Tables
+    - description: Tables, intake form responses and genetic test results
       minFiles: 1
       maxFiles: 50000
       fileNamePatterns:
-      - {exampleName: 'patients.csv', description: 'CSV, TSV, Parquet or JSON',
-         namePattern: '(?P<sampleName>[\S ]*)\.(csv|tsv|parquet|json|jsonl)(\.gz)?'}
+      - {exampleName: 'patients.csv', description: 'CSV, TSV, Parquet, JSON or XML',
+         namePattern: '(?P<sampleName>[\S ]*)\.(csv|tsv|parquet|json|jsonl|xml)(\.gz)?'}
+  # To add to Cirro: expression matrices. File rules are proposals.
+  - dataType: rddc_ingest_expression
+    classes: [GeneExpressionFile]
+    fileRules:
+    - description: Expression matrices
+      minFiles: 1
+      maxFiles: 50000
+      fileNamePatterns:
+      - {exampleName: 'counts.tsv', description: 'CSV, TSV, Parquet, AnnData or HDF5',
+         namePattern: '(?P<sampleName>[\S ]*)\.(csv|tsv|parquet|h5ad|h5|mtx)(\.gz)?'}
   - dataType: rddc_ingest_clinical_documents
     classes: [ClinicalDocumentFile]
     fileRules:
@@ -613,7 +625,7 @@ workflows:
   kind: deidentify
   operation: EDAM:operation_3283
   consumes:
-    classes: [TabularFile]
+    classes: [TabularFile, IntakeFormFile, GeneticTestResultFile]
     noProperties: [identifying, deid_unconfirmed, deid_confirmed]
   readsFrom: [deid_qc]
   writesTo: deid_qc
@@ -701,7 +713,7 @@ workflows:
   pipelineVersion: 0.0.0
   kind: load
   consumes:
-    classes: [TabularFile, ClinicalDocumentFile]
+    classes: [TabularFile, IntakeFormFile, GeneticTestResultFile, ClinicalDocumentFile]
     noProperties: [free_text, deid_unconfirmed, biometric, unregistered_modality]
   readsFrom: [deid_qc]
   writesTo: normalized
@@ -753,6 +765,7 @@ workflows:
   operation: EDAM:operation_0335
   consumes:
     classes: [VariantFile]
+    encodingFormats: [text/plain, application/octet-stream]
     noProperties: [free_text, deid_unconfirmed, biometric, unregistered_modality]
   producesStandard: ga4gh_vrs_2
   readsFrom: [deid_qc]
@@ -834,7 +847,7 @@ workflows:
   kind: mask
   operation: EDAM:operation_3283
   consumes:
-    classes: [OmopTableFile, TabularFile, ClinicalDocumentFile, SensorMeasureFile]
+    classes: [OmopTableFile, TabularFile, IntakeFormFile, GeneticTestResultFile, ClinicalDocumentFile, SensorMeasureFile]
     anyProperties: [dates, zip_codes]
     sourceFacts:
     - field: datePolicy
@@ -857,7 +870,7 @@ workflows:
   kind: mask
   operation: EDAM:operation_3283
   consumes:
-    classes: [OmopTableFile, TabularFile, ClinicalDocumentFile, SensorMeasureFile]
+    classes: [OmopTableFile, TabularFile, IntakeFormFile, GeneticTestResultFile, ClinicalDocumentFile, SensorMeasureFile]
     anyProperties: [dates, zip_codes]
     sourceFacts:
     - field: datePolicy
@@ -886,7 +899,7 @@ workflows:
   pipelineVersion: 0.0.0
   kind: publish
   consumes:
-    classes: [OmopTableFile, TabularFile, ClinicalDocumentFile, SensorMeasureFile]
+    classes: [OmopTableFile, TabularFile, IntakeFormFile, GeneticTestResultFile, ClinicalDocumentFile, SensorMeasureFile]
     noProperties: [direct_identifiers, identifying, biometric, free_text, dates, zip_codes,
                    deid_unconfirmed, unregistered_modality, needs_expert_review]
   readsFrom: [normalized]
@@ -956,8 +969,10 @@ targets:
   goalZone: normalized
   priority: 1
 - id: tables_and_text
-  description: Seed rule 5 (lane 4).
-  when: {classes: [TabularFile, ClinicalDocumentFile], noProperties: [identifying, biometric]}
+  description: >-
+    Seed rule 5 (lane 4). Intake form responses and genetic test results are tables of
+    the lane too.
+  when: {classes: [TabularFile, IntakeFormFile, GeneticTestResultFile, ClinicalDocumentFile], noProperties: [identifying, biometric]}
   goalZone: normalized
   priority: 1
 - id: consent
@@ -969,8 +984,10 @@ targets:
   goalZone: deid_qc
   priority: 1
 - id: vrs
-  description: Normalization requirement.
-  when: {classes: [VariantFile], noProperties: [biometric, free_text]}
+  description: >-
+    Normalization requirement, for VCF and BCF (by media type); a MAF stays under the
+    general genomics target until a pipeline reads it.
+  when: {classes: [VariantFile], encodingFormats: [text/plain, application/octet-stream], noProperties: [biometric, free_text]}
   goalClasses: [VariantFile]
   goalStandard: ga4gh_vrs_2
   goalZone: normalized

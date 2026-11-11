@@ -213,6 +213,9 @@ enums:
       rddc_ingest_ccda:
         title: C-CDA documents (XML)
         annotations: {availability: to_add}
+      rddc_ingest_expression:
+        title: Expression matrices
+        annotations: {availability: to_add}
       rddc_ingest_tabular:
         title: Tables (CSV, TSV, Parquet, JSON)
         annotations: {availability: to_add}
@@ -615,6 +618,7 @@ classes:
     - classes
     - techniques
     - platforms
+    - encodingFormats
     - compressions
     - fileRules
     slot_usage:
@@ -678,6 +682,7 @@ classes:
     - noProperties
     - fileSetClasses
     - techniques
+    - encodingFormats
     - interactions
     - sourceFacts
 
@@ -1137,6 +1142,12 @@ slots:
   techniques:
     multivalued: true
     description: "measurementTechnique values; the file declares at least one."
+  encodingFormats:
+    multivalued: true
+    description: >-
+      Media types; the file's encodingFormat is one of them. For classes that cover
+      several formats, such as the variant classes (VCF is text/plain, BCF
+      application/octet-stream, MAF text/tab-separated-values).
   interactions:
     multivalued: true
     description: "InteractionEnum values of the batch."

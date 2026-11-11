@@ -49,6 +49,7 @@
                 "rddc_ingest_fhir",
                 "rddc_ingest_omop",
                 "rddc_ingest_ccda",
+                "rddc_ingest_expression",
                 "rddc_ingest_tabular",
                 "rddc_ingest_clinical_documents",
                 "rddc_ingest_consent",
@@ -96,6 +97,16 @@
                 "dataType": {
                     "$ref": "#/$defs/CirroDataTypeEnum",
                     "description": "A Cirro data type (an INGEST process id)."
+                },
+                "encodingFormats": {
+                    "description": "Media types; the file's encodingFormat is one of them. For classes that cover several formats, such as the variant classes (VCF is text/plain, BCF application/octet-stream, MAF text/tab-separated-values).",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
                 },
                 "fileRules": {
                     "description": "The files a data type requires.",
@@ -149,6 +160,16 @@
                 },
                 "classes": {
                     "description": "Data class names from the pinned release. A class matches its subclasses too.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "encodingFormats": {
+                    "description": "Media types; the file's encodingFormat is one of them. For classes that cover several formats, such as the variant classes (VCF is text/plain, BCF application/octet-stream, MAF text/tab-separated-values).",
                     "items": {
                         "type": "string"
                     },

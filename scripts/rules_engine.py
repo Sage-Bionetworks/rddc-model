@@ -28,6 +28,7 @@ BATCH_LEVEL = {"withdraw", "restrict"}
 FLAG_SOURCES = {"flag_true", "flag_false"}
 # The sensitivity flags a data class can fix or default (its class annotations).
 FLAGS = ("containsDates", "containsZipCodes", "containsFreeText", "containsBiometricIdentifiers")
+MEDIA_TYPE = re.compile(r"^[a-z]+/[A-Za-z0-9.+_-]+$")
 # Kinds of workflow that record a finding or decision and write no data.
 NO_DATA_KINDS = {"expert_review", "confirm", "record"}
 
@@ -193,6 +194,8 @@ def name_errors(rules, rel):
         need(where, c.get("fileSetClasses"), rel.file_set_classes, "file set class")
         need(where, c.get("techniques"), rel.techniques, "technique")
         need(where, c.get("interactions"), rel.interactions, "interaction")
+        errs += [f"{where}: encoding format {v!r} is not a media type" for v in c.get("encodingFormats") or []
+                 if not MEDIA_TYPE.match(v)]
     for w in rules.get("workflows", []):
         where = f"workflow {w['id']}"
         need(where, [w["produces"]] if "produces" in w else [], rel.data_classes, "data class")
@@ -288,6 +291,7 @@ def ingest_type_errors(rules, rel):
             errs += [f"{at}: technique {v!r} is not in release {rel.tag}" for v in t.get("techniques", []) if v not in rel.techniques]
             errs += [f"{at}: sequencing platform {v!r} is not in release {rel.tag}" for v in t.get("platforms", []) if v not in rel.platforms]
             errs += [f"{at}: compression {v!r} is not in release {rel.tag}" for v in t.get("compressions", []) if v not in rel.compressions]
+            errs += [f"{at}: encoding format {v!r} is not a media type" for v in t.get("encodingFormats", []) if not MEDIA_TYPE.match(v)]
             for r in t["fileRules"]:
                 for fp in r["fileNamePatterns"]:
                     try:
@@ -326,8 +330,9 @@ def pipeline_repository_errors(rules):
 def ingest_type(workflow, files, rel):
     """The first of a Cirro ingest's data types that accepts every file, or None. A file is
     accepted if it is of one of the type's classes (and declares one of its techniques,
-    platforms and compressions, if any are listed) and its path matches a pattern of some
-    file rule; each rule must match between minFiles and maxFiles of the files."""
+    platforms, encoding formats and compressions, if any are listed) and its path
+    matches a pattern of some file rule; each rule must match between minFiles and
+    maxFiles of the files."""
     for t in workflow.get("cirroIngestTypes", []):
         if not all(any(rel.is_a(f["class"], c) for c in t["classes"]) for f in files):
             continue
@@ -336,6 +341,8 @@ def ingest_type(workflow, files, rel):
         if t.get("platforms") and not all(f.get("platform") in t["platforms"] for f in files):
             continue
         if t.get("compressions") and not all(f.get("compression") in t["compressions"] for f in files):
+            continue
+        if t.get("encodingFormats") and not all(f.get("encodingFormat") in t["encodingFormats"] for f in files):
             continue
         pats = [[re.compile(p["namePattern"]) for p in r["fileNamePatterns"]] for r in t["fileRules"]]
         hits = [[any(p.fullmatch(f["path"]) for p in ps) for ps in pats] for f in files]
@@ -375,7 +382,8 @@ def catalog_facts(rules, rel):
         f = [f"cond({name})."]
         for slot, pred in (("classes", "c_class"), ("standards", "c_std"), ("anyProperties", "c_any"),
                            ("noProperties", "c_none"), ("fileSetClasses", "c_fileset"),
-                           ("techniques", "c_tech"), ("interactions", "c_inter")):
+                           ("techniques", "c_tech"), ("interactions", "c_inter"),
+                           ("encodingFormats", "c_fmt")):
             f += [f"{pred}({name}, {q(v)})." for v in c.get(slot) or []]
         for t in c.get("sourceFacts") or []:
             f += [f"c_src_any({name}, {q(t['field'])}, {q(v)})." for v in t.get("anyOf") or []]
@@ -420,11 +428,14 @@ def catalog_facts(rules, rel):
 
 
 def profile_facts(name, prof):
-    """prof: fileSetClass, techniques, interaction, and register {field: [values]}."""
+    """prof: fileSetClass, techniques, interaction, encodingFormat, and register
+    {field: [values]}."""
     n = q(name)
     out = [f"profile({n})."]
     if prof.get("fileSetClass"):
         out.append(f"p_fileset({n}, {q(prof['fileSetClass'])}).")
+    if prof.get("encodingFormat"):
+        out.append(f"p_fmt({n}, {q(prof['encodingFormat'])}).")
     out += [f"p_tech({n}, {q(t)})." for t in prof.get("techniques", ())]
     if prof.get("interaction"):
         out.append(f"p_inter({n}, {q(prof['interaction'])}).")
@@ -540,15 +551,16 @@ def register_options(rules):
 
 def profile_dims(rules):
     """The dimensions of a deposit profile, in the order profiles are enumerated:
-    [(name, options)]. Names are fileSetClass, techniques, interaction and
-    "register:<field>"; options include None (none, or a missing register field)."""
-    used = {k: set() for k in ("fileSetClasses", "techniques", "interactions")}
+    [(name, options)]. Names are fileSetClass, techniques, interaction, encodingFormat
+    and "register:<field>"; options include None (none, or a missing register field)."""
+    used = {k: set() for k in ("fileSetClasses", "techniques", "interactions", "encodingFormats")}
     for _, c in conditions(rules):
         for k in used:
             used[k] |= set(c.get(k) or [])
     dims = [("fileSetClass", [None] + sorted(used["fileSetClasses"])),
             ("techniques", [None] + sorted(used["techniques"])),
-            ("interaction", [None] + sorted(used["interactions"]))]
+            ("interaction", [None] + sorted(used["interactions"])),
+            ("encodingFormat", [None] + sorted(used["encodingFormats"]))]
     fields = register_options(rules)
     dims += [(f"register:{f}", fields[f]) for f in sorted(fields)]
     return dims
@@ -648,6 +660,8 @@ def describe_deposit(prof, state, rules):
         parts.append(f"in a {prof['fileSetClass']}")
     if prof.get("techniques"):
         parts.append(f"technique {prof['techniques'][0]}")
+    if prof.get("encodingFormat"):
+        parts.append(f"as {prof['encodingFormat']}")
     if prof.get("interaction"):
         parts.append(f"in a {prof['interaction']} batch")
     reg = ", ".join(f"{f}={v[0]}" for f, v in sorted(prof.get("register", {}).items()))
@@ -711,6 +725,8 @@ def sidecar_files(sidecar, entry, rules, rel):
             member_of[d["@id"]] = hits[0]
     batch_sens = sidecar.get("sensitivity", {})
     register = entry_facts(entry, rules)
+    # Only media types some condition names are part of a profile (profile_dims).
+    formats = {f for _, c in conditions(rules) for f in c.get("encodingFormats") or []}
     bits = prop_bits(rules)
     base = sidecar.get("url", "").rstrip("/") + "/"
     files = []
@@ -729,11 +745,12 @@ def sidecar_files(sidecar, entry, rules, rel):
             "id": d["@id"], "class": cls, "standard": std,
             "mask": sum(bits[p] for p in present),
             "fileSet": fs_id, "path": d.get("contentUrl", ""), "platform": d.get("sequencingPlatform"),
-            "compression": d.get("compression"),
+            "compression": d.get("compression"), "encodingFormat": d.get("encodingFormat"),
             "indexOf": (d.get("indexOf") or {}).get("@id"), "location": base + d.get("contentUrl", ""),
             "profile": {"fileSetClass": local(fs["additionalType"]) if fs else None,
                         "techniques": tuple(tech if isinstance(tech, list) else [tech]),
-                        "interaction": sidecar.get("interaction"), "register": register},
+                        "interaction": sidecar.get("interaction"), "register": register,
+                        "encodingFormat": d.get("encodingFormat") if d.get("encodingFormat") in formats else None},
         })
     return files
 

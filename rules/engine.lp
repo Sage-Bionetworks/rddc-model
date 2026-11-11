@@ -17,14 +17,15 @@
 %   workflow(W). kind(W, K). reads(W, Z). writes(W, Z). produces(W, C).
 %   produces_std(W, S). clears(W, P). sets(W, P). wprio(W, N). consumes(W, Cond).
 %   cond(Cond). c_class(Cond, C). c_std(Cond, S). c_any(Cond, P). c_none(Cond, P).
-%   c_fileset(Cond, F). c_tech(Cond, T). c_inter(Cond, I).
+%   c_fileset(Cond, F). c_tech(Cond, T). c_inter(Cond, I). c_fmt(Cond, MediaType).
 %   c_src(Cond, Field). c_src_any(Cond, Field, V). c_src_none(Cond, Field, V).
 %   target(T, Cond, Priority). goal_class(T, C). goal_std(T, S). goal_zone(T, Z).
 %   goal_none(T, P).                     the goal state lacks property P
 %   obligation(O, Cond, Kind). before_zone(O, Z). before_wf(O, W).
 %   prohibition(H, Cond). prohibited(H, Z).
 %   interaction_rule(I, W). covers(W, Z).
-%   profile(P). p_fileset(P, F). p_tech(P, T). p_inter(P, I). p_src(P, Field, V).
+%   profile(P). p_fileset(P, F). p_tech(P, T). p_inter(P, I). p_fmt(P, MediaType).
+%   p_src(P, Field, V).
 %   start(P, C, S, M).                    a deposit: profile and starting state
 
 % --- conditions: each part is checked on its own, so matching stays positive ---
@@ -34,6 +35,7 @@ has_any(K) :- c_any(K, _).
 has_fileset(K) :- c_fileset(K, _).
 has_tech(K) :- c_tech(K, _).
 has_inter(K) :- c_inter(K, _).
+has_fmt(K) :- c_fmt(K, _).
 
 class_ok(K, C) :- cond(K), class(C), not has_class(K).
 class_ok(K, C) :- c_class(K, A), isa(C, A).
@@ -53,11 +55,13 @@ tech_ok(K, P) :- cond(K), profile(P), not has_tech(K).
 tech_ok(K, P) :- c_tech(K, T), p_tech(P, T).
 inter_ok(K, P) :- cond(K), profile(P), not has_inter(K).
 inter_ok(K, P) :- c_inter(K, I), p_inter(P, I).
+fmt_ok(K, P) :- cond(K), profile(P), not has_fmt(K).
+fmt_ok(K, P) :- c_fmt(K, F), p_fmt(P, F).
 % A register test: some value in anyOf (if given), and no value in noneOf.
 src_hit(K, P, F) :- c_src_any(K, F, V), p_src(P, F, V).
 src_bad(K, P) :- c_src_any(K, F, _), profile(P), not src_hit(K, P, F).
 src_bad(K, P) :- c_src_none(K, F, V), p_src(P, F, V).
-profile_ok(K, P) :- fileset_ok(K, P), tech_ok(K, P), inter_ok(K, P), not src_bad(K, P).
+profile_ok(K, P) :- fileset_ok(K, P), tech_ok(K, P), inter_ok(K, P), fmt_ok(K, P), not src_bad(K, P).
 
 % Matching is computed only where a rule needs it.
 need(K, P, St) :- consumes(W, K), reads(W, Z), reach(P, St), St = s(_, _, Z, _).

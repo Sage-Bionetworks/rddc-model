@@ -14,14 +14,14 @@
   "isTenantWide": false,
   "fileMappingRules": [
     {
-      "description": "Tables",
+      "description": "Tables, intake form responses and genetic test results",
       "min": 1,
       "max": 50000,
       "fileNamePatterns": [
         {
           "exampleName": "patients.csv",
-          "description": "CSV, TSV, Parquet or JSON",
-          "sampleMatchingPattern": "(?P<sampleName>[\\S ]*)\\.(csv|tsv|parquet|json|jsonl)(\\.gz)?"
+          "description": "CSV, TSV, Parquet, JSON or XML",
+          "sampleMatchingPattern": "(?P<sampleName>[\\S ]*)\\.(csv|tsv|parquet|json|jsonl|xml)(\\.gz)?"
         }
       ]
     }

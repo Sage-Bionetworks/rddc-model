@@ -74,7 +74,8 @@ A **workflow** accepts items whose state matches its `consumes` condition, in on
 them (`sets`). A property with no sources, such as `deid_unconfirmed`, starts false,
 and only workflows set it. A
 condition matches when every slot that is set matches; within a slot, any listed value
-matches. `sourceFacts` tests the source's register entry: a field must have one of
+matches. `encodingFormats` tests the file's media type, for classes that cover several
+formats. `sourceFacts` tests the source's register entry: a field must have one of
 `anyOf` and none of `noneOf`. For example, open publication requires `accessTier` to
 be `open`, and the date masking workflow used depends on `datePolicy`.
 
@@ -148,9 +149,11 @@ no `cirroProcess`. It lists `cirroIngestTypes` in order of preference. Each entr
 
 When an ingest step is ready, the orchestrator picks the first type that accepts every
 file of the group. A file must be of one of the type's classes, declare one of its
-techniques, platforms and compressions (if any are listed), and its path must match a pattern in full. The
-format classes (`FastqFile`, `BamFile`, `CramFile`, `VcfFile`, `BcfFile`, `DicomImageFile`)
-decide the type; the name patterns are Cirro's own requirement. Each rule must
+techniques, platforms, encoding formats and compressions (if any are listed), and its path must match a pattern in full. The
+format classes (`FastqFile`, `BamFile`, `CramFile`, `DicomImageFile`) decide the type, and
+for the variant classes the media type does (VCF is `text/plain`, BCF
+`application/octet-stream`, MAF `text/tab-separated-values`); the name patterns are Cirro's
+own requirement. Each rule must
 match between `minFiles` and `maxFiles` of the files. The chosen type becomes the step's
 `cirroProcess`. `cirroAvailability` says whether that type is in Cirro yet. If no type
 accepts the files, the group is blocked with the reason.
@@ -313,9 +316,10 @@ those files. With no automatic retries, the files are then blocked for a person.
 
 ## Normalizing variants to GA4GH VRS
 
-Variant files (VCF) are a normalization requirement: `vcf_to_vrs` represents their
+Variant files in VCF or BCF (`GermlineVariantFile` or `SomaticVariantFile`, by media type:
+a condition's `encodingFormats`) are a normalization requirement: `vcf_to_vrs` represents their
 variant calls as GA4GH VRS 2.0 alleles and loads them into the normalized store (target
-`vrs`). VRS is an output-only standard (`outputOnly: true`): workflows produce it and
+`vrs`). A MAF stays under the general genomics target until a pipeline reads it. VRS is an output-only standard (`outputOnly: true`): workflows produce it and
 sidecars never declare it, so it is not one of the release's pinned `conformsTo` values,
 and no deposited file takes it. A variant file the target does not take (one with free
 text or biometric identifiers) stays in INTAKE under the general genomics target.

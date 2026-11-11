@@ -1,0 +1,26 @@
+{
+  "id": "rddc_ingest_expression",
+  "name": "Expression matrices",
+  "description": "RDDC data type: Expression matrices, uploaded by ingest_files.",
+  "executor": "INGEST",
+  "childProcessIds": [],
+  "parentProcessIds": [],
+  "linkedProjectIds": [
+    "rddc-processing"
+  ],
+  "isTenantWide": false,
+  "fileMappingRules": [
+    {
+      "description": "Expression matrices",
+      "min": 1,
+      "max": 50000,
+      "fileNamePatterns": [
+        {
+          "exampleName": "counts.tsv",
+          "description": "CSV, TSV, Parquet, AnnData or HDF5",
+          "sampleMatchingPattern": "(?P<sampleName>[\\S ]*)\\.(csv|tsv|parquet|h5ad|h5|mtx)(\\.gz)?"
+        }
+      ]
+    }
+  ]
+}

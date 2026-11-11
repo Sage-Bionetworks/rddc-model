@@ -177,6 +177,8 @@ def condition_text(cond, rules):
         parts.append("without " + join_or((prop(p) for p in cond["noProperties"]), "or"))
     if cond.get("techniques"):
         parts.append("measured by " + join_or(code(t) for t in cond["techniques"]))
+    if cond.get("encodingFormats"):
+        parts.append("as " + join_or(code(f) for f in cond["encodingFormats"]))
     if cond.get("interactions"):
         parts.append("in a " + join_or(code(i) for i in cond["interactions"]) + " batch")
     for t in cond.get("sourceFacts") or []:
@@ -197,7 +199,7 @@ def subject(cond, rules):
     if text.startswith("any"):
         text = "A" + text[1:]
     qualified = any((cond or {}).get(k) for k in ("standards", "fileSetClasses", "anyProperties", "noProperties",
-                                                   "techniques", "interactions", "sourceFacts"))
+                                                   "techniques", "interactions", "encodingFormats", "sourceFacts"))
     return text + ("," if qualified and (cond or {}).get("classes") else "")
 
 
@@ -225,15 +227,17 @@ def route_html(steps, rules):
 
 def typical_deposit(rules, rel, data, cls):
     """The deposit the targets map shows for a class: its first standard, the file set
-    class a rule pairs with it, flags all off except directIdentifiersRemoved, the
-    modality registered, and register values no rule singles out."""
+    class and media type a rule pairs with it, flags all off except
+    directIdentifiersRemoved, the modality registered, and register values no rule
+    singles out."""
     stds = E.class_standards(rules, rel, cls)
     std = stds[0] if stds else None
     values = []
     for d in data["dims"]:
         opts = [o["value"] for o in d["options"]]
-        if d["name"] == "fileSetClass":
-            paired = [f for _, c in E.conditions(rules) for f in c.get("fileSetClasses") or []
+        if d["name"] in ("fileSetClass", "encodingFormat"):
+            slot = "fileSetClasses" if d["name"] == "fileSetClass" else "encodingFormats"
+            paired = [f for _, c in E.conditions(rules) for f in c.get(slot) or []
                       if any(rel.is_a(cls, k) for k in c.get("classes") or [])]
             values.append(paired[0] if paired and paired[0] in opts else None)
         elif d["name"].startswith("register:"):
