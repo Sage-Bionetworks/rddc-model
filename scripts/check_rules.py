@@ -103,7 +103,26 @@ def edit(fn):
 
 
 # Seeded broken rules, with a fragment of the violation each must produce.
+def ingest(r):
+    return wf(r, "ingest_files")["cirroIngestTypes"]
+
+
 MUTATIONS = {
+    "Cirro ingest: a data type that is not in the enum": (
+        edit(lambda r: ingest(r)[0].update(dataType="paired_dna_seq")),
+        "not a value of CirroDataTypeEnum"),
+    "Cirro ingest: an INSDC platform token instead of the enum value": (
+        edit(lambda r: ingest(r)[0].update(platforms=["OXFORD_NANOPORE"])),
+        "sequencing platform 'OXFORD_NANOPORE' is not in release"),
+    "pipelines: a pipeline in a repository the rule set does not list": (
+        edit(lambda r: wf(r, "deid_fhir").update(pipelineRepository="clinicl")),
+        "pipeline repository 'clinicl' is not in the rule set"),
+    "pipelines: the two date masking workflows run one process from different code": (
+        edit(lambda r: wf(r, "release_mask_year").update(pipelineName="mask_year")),
+        "runs process-rddc-release-mask-0_0 like release_mask_shift, but with other code"),
+    "Cirro ingest: no data type takes video": (
+        edit(lambda r: ingest(r).remove(next(t for t in ingest(r) if t["dataType"] == "rddc_ingest_video"))),
+        "no data type (without a technique or platform test) takes VideoFile"),
     "publish no longer requires masked dates": (
         edit(lambda r: wf(r, "publish")["consumes"]["noProperties"].remove("dates")),
         "obligation mask_before_release"),

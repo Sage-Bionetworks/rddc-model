@@ -1,0 +1,30 @@
+{
+  "id": "process-rddc-qc-sensory-0_0",
+  "name": "qc_sensory",
+  "description": "Quality control for sensor data (signals and measures): checks completeness, sampling and device metadata. The only INTAKE pipeline for sensor data; it has no de-identification pipeline.",
+  "executor": "NEXTFLOW",
+  "childProcessIds": [
+    "process-rddc-sensor-load-0_0",
+    "process-rddc-sensor-to-measures-0_0"
+  ],
+  "parentProcessIds": [
+    "rddc_ingest_sensor"
+  ],
+  "linkedProjectIds": [
+    "rddc-processing"
+  ],
+  "isTenantWide": false,
+  "dataType": "qc_sensory (qc_sensory)",
+  "pipelineCode": {
+    "repositoryPath": "rddc-sensor-pipelines",
+    "version": "qc_sensory/v0.0.0",
+    "repositoryType": "GITHUB_PRIVATE",
+    "entryPoint": "workflows/qc_sensory/main.nf"
+  },
+  "customSettings": {
+    "repository": "rddc-sensor-pipelines",
+    "branch": "qc_sensory/v0.0.0",
+    "folder": ".cirro/qc_sensory",
+    "repositoryType": "GITHUB_PRIVATE"
+  }
+}

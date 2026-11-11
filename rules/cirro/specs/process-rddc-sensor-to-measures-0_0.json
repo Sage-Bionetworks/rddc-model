@@ -1,0 +1,29 @@
+{
+  "id": "process-rddc-sensor-to-measures-0_0",
+  "name": "sensor_to_measures",
+  "description": "Derives measures (IEEE 1752.1) from raw sensor signals.",
+  "executor": "CROMWELL",
+  "childProcessIds": [
+    "process-rddc-sensor-load-0_0"
+  ],
+  "parentProcessIds": [
+    "process-rddc-qc-sensory-0_0"
+  ],
+  "linkedProjectIds": [
+    "rddc-processing"
+  ],
+  "isTenantWide": false,
+  "dataType": "SensorMeasureFile (sensor_to_measures)",
+  "pipelineCode": {
+    "repositoryPath": "rddc-sensor-pipelines",
+    "version": "sensor_to_measures/v0.0.0",
+    "repositoryType": "GITHUB_PRIVATE",
+    "entryPoint": "workflows/sensor_to_measures/main.wdl"
+  },
+  "customSettings": {
+    "repository": "rddc-sensor-pipelines",
+    "branch": "sensor_to_measures/v0.0.0",
+    "folder": ".cirro/sensor_to_measures",
+    "repositoryType": "GITHUB_PRIVATE"
+  }
+}

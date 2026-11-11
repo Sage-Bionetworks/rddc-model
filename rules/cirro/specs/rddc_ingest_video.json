@@ -1,0 +1,26 @@
+{
+  "id": "rddc_ingest_video",
+  "name": "Video recordings",
+  "description": "RDDC data type: Video recordings, uploaded by ingest_files.",
+  "executor": "INGEST",
+  "childProcessIds": [],
+  "parentProcessIds": [],
+  "linkedProjectIds": [
+    "rddc-processing"
+  ],
+  "isTenantWide": false,
+  "fileMappingRules": [
+    {
+      "description": "Video recordings",
+      "min": 1,
+      "max": 50000,
+      "fileNamePatterns": [
+        {
+          "exampleName": "session.mp4",
+          "description": "Video",
+          "sampleMatchingPattern": "(?P<sampleName>[\\S ]*)\\.(mp4|mov|avi|mkv|webm)"
+        }
+      ]
+    }
+  ]
+}

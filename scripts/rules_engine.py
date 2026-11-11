@@ -56,6 +56,7 @@ class Release:
         self.flags = set(sv.class_slots("SensitivityDeclaration")) | set(sv.class_slots("FileSensitivity"))
         self.interactions = set(sv.get_enum("InteractionEnum").permissible_values)
         self.techniques = {v for e in ASSAY_ENUMS for v in sv.get_enum(e).permissible_values}
+        self.platforms = set(sv.get_enum("SequencingPlatformEnum").permissible_values)
         self.batch_slots = set(sv.class_slots("Sidecar"))
         self.file_set_slots = {s for c in self.file_set_classes for s in sv.class_slots(c)}
         # The pinned conformsTo values are listed in the FileSet conformsTo description.
@@ -67,6 +68,11 @@ class Release:
             rng = pv.induced_slot(s, "SourceRegisterEntry").range
             enum = pv.get_enum(rng) if rng in pv.all_enums() else None
             self.register_fields[s] = set(enum.permissible_values) if enum else None
+        # Cirro data types and whether each is in Cirro yet.
+        self.cirro_data_types = {
+            v: (pv_.annotations["availability"].value if "availability" in pv_.annotations else None)
+            for v, pv_ in pv.get_enum("CirroDataTypeEnum").permissible_values.items()}
+        self.cirro_data_type_titles = {v: pv_.title for v, pv_ in pv.get_enum("CirroDataTypeEnum").permissible_values.items()}
 
     def _schema_dir(self, tag):
         found = subprocess.run(["git", "-C", ROOT, "rev-parse", "-q", "--verify", f"refs/tags/{tag}"],
@@ -212,6 +218,8 @@ def name_errors(rules, rel):
         need(where, [r["workflow"]], wfs, "workflow")
         if r["workflow"] in kinds and kinds[r["workflow"]] != r["interaction"]:
             errs.append(f"{where}: workflow {r['workflow']} has kind {kinds[r['workflow']]}")
+    errs += ingest_type_errors(rules, rel)
+    errs += pipeline_repository_errors(rules)
     covered = {r["interaction"] for r in rules.get("interactionRules", [])}
     errs += [f"interaction {i} has no interaction rule" for i in sorted(BATCH_LEVEL - covered)]
     return errs
@@ -241,6 +249,90 @@ def cirro_errors(rules):
         if (w.get("cirroExecutor") == "INGEST") != (w["kind"] == "ingest"):
             errs.append(f"{where}: kind ingest and Cirro executor INGEST go together")
     return errs
+
+
+def ingest_type_errors(rules, rel):
+    """A Cirro ingest's data types: real names, file rules that compile, and a type for every
+    class that targets bring into a Cirro environment (one with no technique or platform
+    test, so files of any technique and platform have one)."""
+    errs = []
+    environments = {z["id"] for z in rules.get("zones", []) if "cirroEnvironment" in z}
+    ingested = set()
+    for t in rules.get("targets", []):
+        if t["goalZone"] in environments:
+            for c in (t.get("when") or {}).get("classes", []):
+                ingested |= {d for d in rel.concrete if rel.is_a(d, c)}
+    for w in rules.get("workflows", []):
+        if w.get("cirroExecutor") != "INGEST":
+            continue
+        where = f"workflow {w['id']}"
+        if "cirroProcess" in w:
+            errs.append(f"{where}: an ingest names no cirroProcess; the orchestrator picks a data type")
+        types = w.get("cirroIngestTypes", [])
+        for t in types:
+            at = f"{where}: data type {t['dataType']}"
+            if t["dataType"] not in rel.cirro_data_types:
+                errs.append(f"{at}: not a value of CirroDataTypeEnum in release {rel.tag}")
+            errs += [f"{at}: data class {c!r} is not in release {rel.tag}" for c in t["classes"] if c not in rel.data_classes]
+            errs += [f"{at}: technique {v!r} is not in release {rel.tag}" for v in t.get("techniques", []) if v not in rel.techniques]
+            errs += [f"{at}: sequencing platform {v!r} is not in release {rel.tag}" for v in t.get("platforms", []) if v not in rel.platforms]
+            for r in t["fileRules"]:
+                for fp in r["fileNamePatterns"]:
+                    try:
+                        re.compile(fp["namePattern"])
+                    except re.error as e:
+                        errs.append(f"{at}: pattern {fp['namePattern']!r} does not compile: {e}")
+        for c in sorted(ingested):
+            if not any(not t.get("techniques") and not t.get("platforms") and any(rel.is_a(c, k) for k in t["classes"])
+                       for t in types):
+                errs.append(f"{where}: no data type (without a technique or platform test) takes {c}, "
+                            "which targets bring into a Cirro environment")
+    return errs
+
+
+def pipeline_repository_errors(rules):
+    """Our pipelines name a repository the rule set lists. Workflows that run one Cirro
+    process share its repository, name and version; different processes in a repository
+    have different names."""
+    errs = []
+    repos = {r["id"] for r in rules.get("pipelineRepositories", [])}
+    by_process, by_name = {}, {}
+    for w in rules.get("workflows", []):
+        if "pipelineRepository" not in w:
+            continue
+        where = f"workflow {w['id']}"
+        if w["pipelineRepository"] not in repos:
+            errs.append(f"{where}: pipeline repository {w['pipelineRepository']!r} is not in the rule set")
+        code = (w["pipelineRepository"], w.get("pipelineName"), w["pipelineVersion"])
+        first = by_process.setdefault(w.get("cirroProcess"), (w["id"], code))
+        if first[1] != code:
+            errs.append(f"{where}: runs {w.get('cirroProcess')} like {first[0]}, but with other code {code}")
+        other = by_name.setdefault(code[:2], (w["id"], w.get("cirroProcess")))
+        if other[1] != w.get("cirroProcess"):
+            errs.append(f"{where}: pipeline name {code[1]} is already used in {code[0]} by {other[0]}")
+    return errs
+
+
+def ingest_type(workflow, files, rel):
+    """The first of a Cirro ingest's data types that accepts every file, or None. A file is
+    accepted if it is of one of the type's classes (and declares one of its techniques and
+    platforms, if any are listed) and its path matches a pattern of some file rule; each rule must match
+    between minFiles and maxFiles of the files."""
+    for t in workflow.get("cirroIngestTypes", []):
+        if not all(any(rel.is_a(f["class"], c) for c in t["classes"]) for f in files):
+            continue
+        if t.get("techniques") and not all(set(f["profile"]["techniques"]) & set(t["techniques"]) for f in files):
+            continue
+        if t.get("platforms") and not all(f.get("platform") in t["platforms"] for f in files):
+            continue
+        pats = [[re.compile(p["namePattern"]) for p in r["fileNamePatterns"]] for r in t["fileRules"]]
+        hits = [[any(p.fullmatch(f["path"]) for p in ps) for ps in pats] for f in files]
+        if not all(any(h) for h in hits):
+            continue
+        counts = [sum(h[i] for h in hits) for i in range(len(pats))]
+        if all(r["minFiles"] <= n <= r.get("maxFiles", n) for r, n in zip(t["fileRules"], counts)):
+            return t["dataType"]
+    return None
 
 
 # --- facts ----------------------------------------------------------------------
@@ -589,7 +681,8 @@ def sidecar_files(sidecar, entry, rules, rel):
         files.append({
             "id": d["@id"], "class": cls, "standard": std,
             "mask": sum(bits[p] for p in present),
-            "fileSet": fs_id, "location": base + d.get("contentUrl", ""),
+            "fileSet": fs_id, "path": d.get("contentUrl", ""), "platform": d.get("sequencingPlatform"),
+            "indexOf": (d.get("indexOf") or {}).get("@id"), "location": base + d.get("contentUrl", ""),
             "profile": {"fileSetClass": local(fs["additionalType"]) if fs else None,
                         "techniques": tuple(tech if isinstance(tech, list) else [tech]),
                         "interaction": sidecar.get("interaction"), "register": register},
@@ -685,6 +778,25 @@ def best_route(edges, start, is_goal, prio):
             elif c == best[b][0] and [x for x, _ in p] != [x for x, _ in best[b][1]]:
                 tied.add(b)
     return None, False
+
+
+def deposit_space(rules, rel):
+    """Every deposit a reader can describe, in a fixed order: for each profile
+    (profile_dims), data class with a standard, combination of the sensitivity flags the
+    rules read, and whether the source is registered for the class's modality, the
+    deposit (profile, class, standard or None, mask). Different descriptions can give the
+    same deposit."""
+    dims, flags = profile_dims(rules), flag_keys(rules)
+    combos = [(c, s) for c in rel.concrete for s in [None] + class_standards(rules, rel, c)]
+    out = []
+    for values in product(*[opts for _, opts in dims]):
+        prof = profile_of(dims, values)
+        for cls, std in combos:
+            for bits in range(1 << len(flags)):
+                fv = {k: bool(bits >> j & 1) for j, k in enumerate(flags)}
+                for registered in (False, True):
+                    out.append((prof, cls, std, deposit_mask(rules, rel, cls, fv, prof["register"], registered)))
+    return out
 
 
 def deposit_routes(rules, rel, deposits):

@@ -1,0 +1,45 @@
+{
+  "id": "rddc_ingest_vcf",
+  "name": "Variant calls (VCF or BCF, with indexes)",
+  "description": "RDDC data type: Variant calls (VCF or BCF, with indexes), uploaded by ingest_files.",
+  "executor": "INGEST",
+  "childProcessIds": [
+    "process-rddc-vcf-to-vrs-0_0"
+  ],
+  "parentProcessIds": [],
+  "linkedProjectIds": [
+    "rddc-processing"
+  ],
+  "isTenantWide": false,
+  "fileMappingRules": [
+    {
+      "description": "Variant calls",
+      "min": 1,
+      "max": 50000,
+      "fileNamePatterns": [
+        {
+          "exampleName": "Sample.vcf.gz",
+          "description": "VCF",
+          "sampleMatchingPattern": "(?P<sampleName>[\\S ]*)\\.vcf(\\.gz)?"
+        },
+        {
+          "exampleName": "Sample.bcf",
+          "description": "BCF",
+          "sampleMatchingPattern": "(?P<sampleName>[\\S ]*)\\.bcf"
+        }
+      ]
+    },
+    {
+      "description": "Variant call indexes",
+      "min": 0,
+      "max": 50000,
+      "fileNamePatterns": [
+        {
+          "exampleName": "Sample.vcf.gz.tbi",
+          "description": "Tabix or CSI index",
+          "sampleMatchingPattern": "(?P<sampleName>[\\S ]*)\\.(vcf\\.gz|bcf)\\.(tbi|csi)"
+        }
+      ]
+    }
+  ]
+}

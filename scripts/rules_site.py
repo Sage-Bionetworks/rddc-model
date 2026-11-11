@@ -46,15 +46,7 @@ def explorer_data(rules, rel):
     dims = E.profile_dims(rules)
     flags = E.flag_keys(rules)
     combos = [(c, s) for c in rel.concrete for s in [None] + E.class_standards(rules, rel, c)]
-    keys, deposits = [], []
-    for values in product(*[opts for _, opts in dims]):
-        prof = E.profile_of(dims, values)
-        for cls, std in combos:
-            for bits in range(1 << len(flags)):
-                fv = {k: bool(bits >> j & 1) for j, k in enumerate(flags)}
-                for registered in (False, True):
-                    mask = E.deposit_mask(rules, rel, cls, fv, prof["register"], registered)
-                    deposits.append((prof, cls, std, mask))
+    deposits = E.deposit_space(rules, rel)
     unique = list({json.dumps(d, sort_keys=True, default=list): d for d in deposits}.values())
     routed = dict(zip((json.dumps(d, sort_keys=True, default=list) for d in unique),
                       E.deposit_routes(rules, rel, unique)))
@@ -416,6 +408,43 @@ def zone_list(zones):
     return join_or(code(z) for z in zones)
 
 
+def cirro_data_types(rules, rel):
+    """The Cirro data types the ingest uploads files as, in the order it tries them."""
+    out = ["""<h2 id="cirro-data-types">Cirro data types</h2><p>In Cirro, files are uploaded
+as a dataset of a data type (an INGEST process). Cirro checks the file names against the
+type's rules, and the type decides which Cirro pipelines can run on the dataset. For each
+group of files, the ingest takes the first type below that accepts all of them. Types marked
+<em>to add</em> are not in Cirro yet: they have to be added to the Cirro environment before
+files of that kind can be ingested.</p>"""]
+    for w in rules["workflows"]:
+        if not w.get("cirroIngestTypes"):
+            continue
+        rows = []
+        for t in w["cirroIngestTypes"]:
+            avail = rel.cirro_data_types.get(t["dataType"])
+            badge = ("<span class='badge'>in Cirro</span>" if avail == "available"
+                     else "<span class='badge pr-todo'>to add</span>")
+            takes = join_or((code(c) for c in t["classes"]), "or")
+            if t.get("techniques"):
+                takes += " with technique " + join_or((code(v) for v in t["techniques"]), "or")
+            if t.get("platforms"):
+                takes += " from platform " + join_or((code(v) for v in t["platforms"]), "or")
+            def examples(r):
+                fps = r["fileNamePatterns"]
+                shown = ", ".join(scode(fp["exampleName"], fp["namePattern"]) for fp in fps[:2])
+                more = f" <span class='muted'>and {len(fps) - 2} more</span>" if len(fps) > 2 else ""
+                least = (f" <span class='muted'>(at least {r['minFiles']})</span>" if r["minFiles"] > 1
+                         else " <span class='muted'>(optional)</span>" if r["minFiles"] == 0 else "")
+                return f"{esc(r['description'])}{least}: {shown}{more}"
+            names = "<br>".join(examples(r) for r in t["fileRules"])
+            rows.append(f"<tr><td>{scode(t['dataType'])}<br><span class='muted'>"
+                        f"{esc(rel.cirro_data_type_titles.get(t['dataType']) or '')}</span></td>"
+                        f"<td>{badge}</td><td>{takes}</td><td>{names}</td></tr>")
+        out.append("<div class='table-wrap'><table><thead><tr><th>Data type</th><th>Status</th>"
+                   "<th>Takes</th><th>File names (examples)</th></tr></thead>" + "".join(rows) + "</table></div>")
+    return "\n".join(out)
+
+
 def rules_page(rules, rel, data, problems, deposits):
     stds = {s["id"]: s.get("description", s["id"]) for s in rules.get("standards", [])}
     zones = {z["id"]: z for z in rules["zones"]}
@@ -423,7 +452,7 @@ def rules_page(rules, rel, data, problems, deposits):
 <p class="lede">What the RDDC does with each deposited file, generated from the rule set
 {code(rules['id'])} {esc(rules['version'])}, which is written for model release {esc(rules['modelRelease'])}.</p>
 <div class="note"><strong>Prototype for discussion.</strong> The workflows, Cirro process and environment ids,
-locations and source register values are provisional. A class includes its subclasses
+locations and source register values are placeholders. A class includes its subclasses
 throughout. To see what happens to a particular file, use
 <a href="data-trajectory.html">Data trajectory</a>.</div>"""]
     if problems:
@@ -481,10 +510,13 @@ locations.</p>""")
             if w.get("sets"):
                 effects.append("now has " + join_or((code(p) for p in w["sets"]), "and"))
             rows.append(("Effect", "; ".join(effects) or "<span class='muted'>moves the data; changes nothing the rules track</span>"))
-        runs = code(w["cirroProcess"]) if w.get("cirroProcess") else code(w.get("pipeline", ""))
+        runs = (code(w["cirroProcess"]) if w.get("cirroProcess")
+                else "the Cirro data type that fits the files (<a href='#cirro-data-types'>Cirro data types</a>)"
+                if w.get("cirroIngestTypes") else code(w.get("pipeline", "")))
         if w.get("recordsTo"):
             rows.append(("Records to", f"GOVERN: {esc(w['recordsTo'])} <span class='muted'>(register entries; no data files)</span>"))
-        rows.append(("Runs as", f"{runs} <span class='muted'>version {esc(w['pipelineVersion'])}</span>"))
+        todo = " <span class='badge pr-todo'>to add in Cirro</span>" if w.get("cirroAvailability") == "to_add" else ""
+        rows.append(("Runs as", f"{runs}{todo} <span class='muted'>version {esc(w['pipelineVersion'])}</span>"))
         if w.get("parameters"):
             params = []
             for p in w["parameters"]:
@@ -495,6 +527,8 @@ locations.</p>""")
         table = "<table class='pr-kv'>" + "".join(f"<tr><th scope='row'>{k}</th><td>{v}</td></tr>" for k, v in rows) + "</table>"
         out.append(card(f"wf-{w['id']}", code(w["id"]), runner_badge(w) + f"<span class='badge'>{esc(w['kind'])}</span>",
                         esc(w.get("description", "")), table))
+
+    out.append(cirro_data_types(rules, rel))
 
     out.append("<h2>Data properties</h2><p>What the rules track about a file. A sensitivity flag that is not stated counts as present.</p>")
     rows = []
@@ -528,7 +562,7 @@ def explorer_page(rules):
     return f"""<h1>Data trajectory</h1>
 <p class="lede">Describe a file and its source, and see where the rules send it, through which
 workflows, and why. Generated from the rule set {code(rules['id'])} {esc(rules['version'])}.</p>
-<div class="note"><strong>Prototype for discussion.</strong> Workflows and register values are provisional.
+<div class="note"><strong>Prototype for discussion.</strong> Workflows and register values are placeholders.
 A sensitivity flag left unstated in a sidecar counts as true. The route shown is the one the
 orchestrator would choose for this file on its own. Files of one file set with the same target
 move together: if one of them needs a step, such as de-identification, all of them take it. See <a href="processing-rules.html">Rules and targets</a>

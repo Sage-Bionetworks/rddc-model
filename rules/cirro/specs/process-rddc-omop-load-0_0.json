@@ -1,0 +1,30 @@
+{
+  "id": "process-rddc-omop-load-0_0",
+  "name": "omop_load",
+  "description": "Lane 1. Loads an OMOP CDM 5.4 instance.",
+  "executor": "NEXTFLOW",
+  "childProcessIds": [
+    "process-rddc-release-mask-0_0"
+  ],
+  "parentProcessIds": [
+    "process-rddc-omop-note-deid-0_0",
+    "rddc_ingest_omop"
+  ],
+  "linkedProjectIds": [
+    "rddc-processing"
+  ],
+  "isTenantWide": false,
+  "dataType": "omop_load (omop_load)",
+  "pipelineCode": {
+    "repositoryPath": "rddc-clinical-pipelines",
+    "version": "omop_load/v0.0.0",
+    "repositoryType": "GITHUB_PRIVATE",
+    "entryPoint": "workflows/omop_load/main.nf"
+  },
+  "customSettings": {
+    "repository": "rddc-clinical-pipelines",
+    "branch": "omop_load/v0.0.0",
+    "folder": ".cirro/omop_load",
+    "repositoryType": "GITHUB_PRIVATE"
+  }
+}

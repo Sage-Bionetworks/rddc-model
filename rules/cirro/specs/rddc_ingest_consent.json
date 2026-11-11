@@ -1,0 +1,26 @@
+{
+  "id": "rddc_ingest_consent",
+  "name": "Consent records",
+  "description": "RDDC data type: Consent records, uploaded by ingest_files.",
+  "executor": "INGEST",
+  "childProcessIds": [],
+  "parentProcessIds": [],
+  "linkedProjectIds": [
+    "rddc-processing"
+  ],
+  "isTenantWide": false,
+  "fileMappingRules": [
+    {
+      "description": "Consent records",
+      "min": 1,
+      "max": 50000,
+      "fileNamePatterns": [
+        {
+          "exampleName": "consent.csv",
+          "description": "CSV, TSV or JSON",
+          "sampleMatchingPattern": "(?P<sampleName>[\\S ]*)\\.(csv|tsv|json|jsonl)"
+        }
+      ]
+    }
+  ]
+}

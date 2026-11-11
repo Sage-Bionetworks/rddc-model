@@ -1,0 +1,29 @@
+{
+  "id": "process-rddc-omop-note-deid-0_0",
+  "name": "deid_omop_notes",
+  "description": "Removes identifiers from the free text of a deposited OMOP CDM instance (note and note_nlp tables). Runs once per file, also on files of the same file set that need no de-identification themselves, so that the set moves together.",
+  "executor": "NEXTFLOW",
+  "childProcessIds": [
+    "process-rddc-omop-load-0_0"
+  ],
+  "parentProcessIds": [
+    "rddc_ingest_omop"
+  ],
+  "linkedProjectIds": [
+    "rddc-processing"
+  ],
+  "isTenantWide": false,
+  "dataType": "deid_omop_notes (deid_omop_notes)",
+  "pipelineCode": {
+    "repositoryPath": "rddc-clinical-pipelines",
+    "version": "omop_note_deid/v0.0.0",
+    "repositoryType": "GITHUB_PRIVATE",
+    "entryPoint": "workflows/omop_note_deid/main.nf"
+  },
+  "customSettings": {
+    "repository": "rddc-clinical-pipelines",
+    "branch": "omop_note_deid/v0.0.0",
+    "folder": ".cirro/omop_note_deid",
+    "repositoryType": "GITHUB_PRIVATE"
+  }
+}

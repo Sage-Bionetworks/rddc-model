@@ -1,0 +1,30 @@
+{
+  "id": "process-rddc-ccda-to-omop-0_0",
+  "name": "ccda_to_omop",
+  "description": "Lane 3. Transforms C-CDA 2.1 documents to OMOP CDM 5.4.",
+  "executor": "CROMWELL",
+  "childProcessIds": [
+    "process-rddc-release-mask-0_0"
+  ],
+  "parentProcessIds": [
+    "process-rddc-ccda-deid-0_0",
+    "rddc_ingest_ccda"
+  ],
+  "linkedProjectIds": [
+    "rddc-processing"
+  ],
+  "isTenantWide": false,
+  "dataType": "OmopTableFile (ccda_to_omop)",
+  "pipelineCode": {
+    "repositoryPath": "rddc-clinical-pipelines",
+    "version": "ccda_to_omop/v0.0.0",
+    "repositoryType": "GITHUB_PRIVATE",
+    "entryPoint": "workflows/ccda_to_omop/main.wdl"
+  },
+  "customSettings": {
+    "repository": "rddc-clinical-pipelines",
+    "branch": "ccda_to_omop/v0.0.0",
+    "folder": ".cirro/ccda_to_omop",
+    "repositoryType": "GITHUB_PRIVATE"
+  }
+}

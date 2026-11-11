@@ -2,7 +2,7 @@
   "batch": "src-ta2-01/2026-10-b01",
   "sidecarConformsTo": "https://w3id.org/rddc/sidecar/0.1.0",
   "ruleSet": "rddc_rules",
-  "ruleSetVersion": "0.7.0-draft",
+  "ruleSetVersion": "0.8.0-draft",
   "modelRelease": "v0.1.0",
   "registerVersion": "2026-10-20",
   "groups": [
@@ -18,11 +18,12 @@
           "workflow": "ingest_files",
           "status": "ready",
           "runner": "cirro",
-          "cirroProcess": "process-rddc-provisional-ingest-files-0_0",
           "cirroExecutor": "INGEST",
           "pipelineVersion": "0.0.0",
+          "cirroProcess": "rddc_ingest_fhir",
+          "cirroAvailability": "to_add",
           "dispatchId": "ingest_files-6f846f9d6f",
-          "cirroEnvironment": "provisional-rddc-intake",
+          "cirroEnvironment": "rddc-processing",
           "inputs": [
             {
               "file": "urn:uuid:0000000b-0000-4000-8000-00000000000b",
@@ -38,7 +39,8 @@
           "workflow": "deid_fhir",
           "status": "pending",
           "runner": "cirro",
-          "cirroProcess": "process-rddc-provisional-fhir-deid-0_0",
+          "cirroProcess": "process-rddc-fhir-deid-0_0",
+          "cirroAvailability": "to_add",
           "cirroExecutor": "NEXTFLOW",
           "pipelineVersion": "0.0.0"
         },
@@ -53,7 +55,8 @@
           "workflow": "fhir_to_omop",
           "status": "pending",
           "runner": "cirro",
-          "cirroProcess": "process-rddc-provisional-fhir-to-omop-0_0",
+          "cirroProcess": "process-rddc-fhir-to-omop-0_0",
+          "cirroAvailability": "to_add",
           "cirroExecutor": "NEXTFLOW",
           "pipelineVersion": "0.0.0"
         }
@@ -72,11 +75,12 @@
           "workflow": "ingest_files",
           "status": "ready",
           "runner": "cirro",
-          "cirroProcess": "process-rddc-provisional-ingest-files-0_0",
           "cirroExecutor": "INGEST",
           "pipelineVersion": "0.0.0",
+          "cirroProcess": "rddc_ingest_omop",
+          "cirroAvailability": "to_add",
           "dispatchId": "ingest_files-3400b04f05",
-          "cirroEnvironment": "provisional-rddc-intake",
+          "cirroEnvironment": "rddc-processing",
           "inputs": [
             {
               "file": "urn:uuid:00000015-0000-4000-8000-000000000015",
@@ -92,7 +96,8 @@
           "workflow": "omop_load",
           "status": "pending",
           "runner": "cirro",
-          "cirroProcess": "process-rddc-provisional-omop-load-0_0",
+          "cirroProcess": "process-rddc-omop-load-0_0",
+          "cirroAvailability": "to_add",
           "cirroExecutor": "NEXTFLOW",
           "pipelineVersion": "0.0.0"
         }
@@ -111,11 +116,12 @@
           "workflow": "ingest_files",
           "status": "ready",
           "runner": "cirro",
-          "cirroProcess": "process-rddc-provisional-ingest-files-0_0",
           "cirroExecutor": "INGEST",
           "pipelineVersion": "0.0.0",
+          "cirroProcess": "rddc_ingest_tabular",
+          "cirroAvailability": "to_add",
           "dispatchId": "ingest_files-640299868c",
-          "cirroEnvironment": "provisional-rddc-intake",
+          "cirroEnvironment": "rddc-processing",
           "inputs": [
             {
               "file": "urn:uuid:0000001e-0000-4000-8000-00000000001e",
@@ -131,7 +137,8 @@
           "workflow": "tabular_load",
           "status": "pending",
           "runner": "cirro",
-          "cirroProcess": "process-rddc-provisional-tabular-load-0_0",
+          "cirroProcess": "process-rddc-tabular-load-0_0",
+          "cirroAvailability": "to_add",
           "cirroExecutor": "NEXTFLOW",
           "pipelineVersion": "0.0.0"
         }

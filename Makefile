@@ -27,6 +27,7 @@ check:
 	$(CROISSANT_PY) scripts/check_examples.py
 	python3 scripts/check_rules.py rules/rules.yaml
 	python3 scripts/check_orchestration.py
+	python3 scripts/cirro_links.py
 
 lint:
 	linkml-lint --config .linkml-lint.yaml header.yaml

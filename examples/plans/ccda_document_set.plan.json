@@ -2,7 +2,7 @@
   "batch": "src-ta2-01/2026-12-ccda",
   "sidecarConformsTo": "https://w3id.org/rddc/sidecar/0.1.0",
   "ruleSet": "rddc_rules",
-  "ruleSetVersion": "0.7.0-draft",
+  "ruleSetVersion": "0.8.0-draft",
   "modelRelease": "v0.1.0",
   "registerVersion": "2026-10-20",
   "groups": [
@@ -19,11 +19,12 @@
           "workflow": "ingest_files",
           "status": "ready",
           "runner": "cirro",
-          "cirroProcess": "process-rddc-provisional-ingest-files-0_0",
           "cirroExecutor": "INGEST",
           "pipelineVersion": "0.0.0",
+          "cirroProcess": "rddc_ingest_ccda",
+          "cirroAvailability": "to_add",
           "dispatchId": "ingest_files-3a23f33884",
-          "cirroEnvironment": "provisional-rddc-intake",
+          "cirroEnvironment": "rddc-processing",
           "inputs": [
             {
               "file": "urn:uuid:00000029-0000-4000-8000-000000000029",
@@ -43,7 +44,8 @@
           "workflow": "deid_ccda",
           "status": "pending",
           "runner": "cirro",
-          "cirroProcess": "process-rddc-provisional-ccda-deid-0_0",
+          "cirroProcess": "process-rddc-ccda-deid-0_0",
+          "cirroAvailability": "to_add",
           "cirroExecutor": "NEXTFLOW",
           "pipelineVersion": "0.0.0"
         },
@@ -58,7 +60,8 @@
           "workflow": "ccda_to_omop",
           "status": "pending",
           "runner": "cirro",
-          "cirroProcess": "process-rddc-provisional-ccda-to-omop-0_0",
+          "cirroProcess": "process-rddc-ccda-to-omop-0_0",
+          "cirroAvailability": "to_add",
           "cirroExecutor": "CROMWELL",
           "pipelineVersion": "0.0.0"
         }

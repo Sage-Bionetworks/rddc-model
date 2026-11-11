@@ -1,0 +1,29 @@
+{
+  "id": "process-rddc-clinical-document-deid-0_0",
+  "name": "deid_clinical_documents",
+  "description": "Removes identifiers from clinical notes and scanned reports (text and OCR). Runs once per file, also on files of the same file set that need no de-identification themselves, so that the set moves together.",
+  "executor": "NEXTFLOW",
+  "childProcessIds": [
+    "process-rddc-tabular-load-0_0"
+  ],
+  "parentProcessIds": [
+    "rddc_ingest_clinical_documents"
+  ],
+  "linkedProjectIds": [
+    "rddc-processing"
+  ],
+  "isTenantWide": false,
+  "dataType": "deid_clinical_documents (deid_clinical_documents)",
+  "pipelineCode": {
+    "repositoryPath": "rddc-clinical-pipelines",
+    "version": "clinical_document_deid/v0.0.0",
+    "repositoryType": "GITHUB_PRIVATE",
+    "entryPoint": "workflows/clinical_document_deid/main.nf"
+  },
+  "customSettings": {
+    "repository": "rddc-clinical-pipelines",
+    "branch": "clinical_document_deid/v0.0.0",
+    "folder": ".cirro/clinical_document_deid",
+    "repositoryType": "GITHUB_PRIVATE"
+  }
+}

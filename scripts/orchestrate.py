@@ -170,12 +170,15 @@ def dispatch_id(wid, fids, prior):
     return f"{wid}-{hashlib.sha256(key.encode()).hexdigest()[:10]}"
 
 
-def new_step(rules, wid, status, sidecar, file_set, entry, fids=(), prior=(), inputs=None):
+def new_step(rules, wid, status, sidecar, file_set, entry, fids=(), prior=(), inputs=None, data_type=None):
     w = next(x for x in rules["workflows"] if x["id"] == wid)
     out = {"workflow": wid, "status": status, "runner": w["runner"]}
-    for k in ("cirroProcess", "cirroExecutor", "pipeline", "pipelineVersion"):
+    for k in ("cirroProcess", "cirroAvailability", "cirroExecutor", "pipeline", "pipelineVersion"):
         if k in w:
             out[k] = w[k]
+    if data_type:
+        # A Cirro ingest: the process is the data type chosen for these files.
+        out["cirroProcess"], out["cirroAvailability"] = data_type
     if status == "ready":
         did = dispatch_id(wid, fids, prior)
         zone = next((z for z in rules["zones"] if z["id"] == w.get("writesTo")), {})
@@ -238,8 +241,10 @@ def orchestrate(sidecar, rules, register, state=None):
                else "no route from the current state to the target" if f["id"] in stuck else None)
         key = (f["fileSet"], tuple(s["dispatchId"] for s in steps), tuple(future), target.get(f["id"]), why)
         groups.setdefault(key, []).append(f)
+    units = ingest_units(rules, rel, groups, hist)
     out = []
-    for (fs, _, future, tgt, why), members in groups.items():
+    for key, members in groups.items():
+        fs, _, future, tgt, why = key
         fids = [f["id"] for f in members]
         prior = hist[fids[0]]
         gid = re.sub(r"[^A-Za-z0-9_]", "_", f"{fs or 'files'}_{tgt}")
@@ -247,10 +252,21 @@ def orchestrate(sidecar, rules, register, state=None):
             gid += "_2"
         steps = [copy.deepcopy(s) for s in prior]
         waiting = bool(prior) and prior[-1]["status"] in ("running", "failed")
+        data_type, unit = None, members
+        if key in units:
+            unit, dt = units[key]
+            if dt is None:
+                why = (f"no Cirro data type of {future[0]} accepts these files together: "
+                       + ", ".join(sorted(f["path"] for f in unit)))
+            else:
+                data_type = (dt, rel.cirro_data_types.get(dt))
         for i, wid in enumerate(future):
             if i == 0 and not waiting and not why:
-                inputs = [current_location(f, prior) for f in members]
-                steps.append(new_step(rules, wid, "ready", sidecar, sets.get(fs), entry, fids, prior, inputs))
+                # An ingest uploads the whole unit (see ingest_units) as one dataset: every
+                # group in it gets the same step, which the dispatcher runs once.
+                inputs = [current_location(f, hist[f["id"]]) for f in unit]
+                steps.append(new_step(rules, wid, "ready", sidecar, sets.get(fs), entry, [f["id"] for f in unit],
+                                      prior, inputs, data_type))
             else:
                 steps.append(new_step(rules, wid, "pending", sidecar, sets.get(fs), entry))
         g = {"id": gid, "files": fids, "target": tgt, "steps": steps}
@@ -267,10 +283,66 @@ def orchestrate(sidecar, rules, register, state=None):
              for r in rules.get("interactionRules", []) if r["interaction"] == sidecar.get("interaction")]
     if batch:
         plan["batchSteps"] = batch
-    statuses = [s["status"] for g in out for s in g["steps"]] + [s["status"] for s in batch]
+    # A group with a problem waits for a person, whatever its pending steps.
+    statuses = [s["status"] for g in out if "problems" not in g for s in g["steps"]] + [s["status"] for s in batch]
     plan["status"] = ("in_progress" if any(s in ("ready", "running", "pending") for s in statuses)
                       else "blocked" if any("problems" in g for g in out) else "complete")
     return check_schema(plan)
+
+
+def ingest_units(rules, rel, groups, hist):
+    """{group key: (unit files, data type or None)} for groups whose next step is an ingest
+    that can be dispatched now.
+
+    Files that belong together are uploaded as one dataset, even when their routes part
+    afterwards: the files of one file set, and an index with the file it indexes (a VCF
+    goes on to VRS while its .tbi stays in INTAKE, but Cirro needs them together). Such
+    groups form one unit, and the data type must accept all its files. If none does, each
+    group is tried on its own."""
+    ready = {}
+    for key, members in groups.items():
+        _, _, future, _, why = key
+        prior = hist[members[0]["id"]]
+        waiting = bool(prior) and prior[-1]["status"] in ("running", "failed")
+        if future and not waiting and not why and is_ingest(rules, future[0]):
+            ready[key] = members
+    root = {k: k for k in ready}
+
+    def find(k):
+        while root[k] != k:
+            k = root[k]
+        return k
+
+    group_of = {f["id"]: k for k, ms in ready.items() for f in ms}
+    set_of = {}
+    for k, ms in ready.items():
+        for f in ms:
+            for other in filter(None, [f.get("indexOf"), set_of.setdefault(f["fileSet"], k) if f["fileSet"] else None]):
+                o = group_of.get(other, other)
+                if o in root:
+                    root[find(k)] = find(o)
+    units = {}
+    for k in ready:
+        units.setdefault(find(k), []).append(k)
+    out = {}
+    for keys in units.values():
+        files = [f for k in keys for f in ready[k]]
+        w = workflow(rules, keys[0][2][0])
+        dt = E.ingest_type(w, files, rel)
+        if dt is not None or len(keys) == 1:
+            out.update({k: (files, dt) for k in keys})
+        else:
+            out.update({k: (ready[k], E.ingest_type(w, ready[k], rel)) for k in keys})
+    return out
+
+
+def workflow(rules, wid):
+    return next(w for w in rules["workflows"] if w["id"] == wid)
+
+
+def is_ingest(rules, wid):
+    w = workflow(rules, wid)
+    return w["runner"] == "cirro" and w.get("cirroExecutor") == "INGEST"
 
 
 def check_schema(plan):

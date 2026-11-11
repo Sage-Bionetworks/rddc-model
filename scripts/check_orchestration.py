@@ -11,6 +11,8 @@ Usage: python scripts/check_orchestration.py
    residual free text, a step that should not have run) gives the expected statuses.
 4. A ready step carries input locations, an output location and parameters resolved
    from the sidecar and the source register, and orchestration is repeatable.
+5. An ingest step's Cirro data type follows its files' classes, techniques and names, and
+   files no data type accepts block their group.
 
 Exits non-zero on any failure. Regenerate the committed plans with
 python scripts/orchestrate.py examples/<name>.json --register examples/registers/source_register.json \\
@@ -232,7 +234,7 @@ def dispatch_checks():
     deposit = "s3://rddc-deposit-ta2/src-ta2-01/2026-10-b01/registry/visits.csv"
     out.append(("Cirro: an ingest uploads the deposited files into the de-id/QC environment",
                 ingest["runner"] == "cirro" and ingest["cirroExecutor"] == "INGEST"
-                and ingest["cirroEnvironment"] == "provisional-rddc-intake"
+                and ingest["cirroEnvironment"] == "rddc-processing"
                 and ingest["inputs"] == [{"file": FILES["patients"], "location": deposit.replace("visits", "patients")},
                                          {"file": FILES["visits"], "location": deposit}]
                 and "outputLocation" not in ingest and "sourceDatasets" not in ingest,
@@ -243,7 +245,7 @@ def dispatch_checks():
     params = {x["id"]: x["value"] for x in deid.get("parameters", [])}
     out.append(("Cirro: an analysis reads its inputs' datasets, with parameters from the register",
                 deid["workflow"] == "deid_tabular" and deid["status"] == "ready"
-                and deid["cirroProcess"] == "process-rddc-provisional-tabular-deid-0_0"
+                and deid["cirroProcess"] == "process-rddc-tabular-deid-0_0"
                 and deid["sourceDatasets"] == [ds] and deid["inputs"][0]["dataset"] == ds
                 and params == {"deid_class": "safe_harbor"},
                 json.dumps(deid)))
@@ -253,8 +255,8 @@ def dispatch_checks():
     out.append(("a service step (Comprehend Medical) reads the de-identified dataset and writes its report",
                 check["workflow"] == "confirm_deid" and check["status"] == "ready" and check["runner"] == "service"
                 and check["pipeline"] == "aws:comprehendmedical:StartPHIDetectionJob"
-                and check["inputs"][0]["location"].startswith("s3://provisional-rddc-intake/datasets/stub-dataset-deid_tabular-")
-                and params["output_s3_uri"] == f"s3://provisional-rddc-deid-reports/src-ta2-01/2026-10-b01/{check['dispatchId']}/"
+                and check["inputs"][0]["location"].startswith("s3://rddc-processing/datasets/stub-dataset-deid_tabular-")
+                and params["output_s3_uri"] == f"s3://rddc-deid-reports/src-ta2-01/2026-10-b01/{check['dispatchId']}/"
                 and params["language_code"] == "en"
                 and "outputLocation" not in check and "cirroEnvironment" not in check,
                 json.dumps(check)))
@@ -265,8 +267,87 @@ def dispatch_checks():
     hold = group_of(p, "Patient")["steps"][0]
     out.append(("a service step gets an output location from its zone's template",
                 hold["runner"] == "service"
-                and hold["outputLocation"].startswith("s3://provisional-rddc-curation/src-ta2-01/2026-10-b01/curation_hold-"),
+                and hold["outputLocation"].startswith("s3://rddc-curation/src-ta2-01/2026-10-b01/curation_hold-"),
                 json.dumps(hold)))
+    return out
+
+
+def deposit_of(files):
+    """The example batch with only these files: (class, path, technique, platform), where
+    technique and platform may be None. An IndexFile indexes the file before it."""
+    doc = copy.deepcopy(BASE)
+    uid = "urn:uuid:00000000-0000-4000-8000-{:012d}".format
+    doc["distribution"] = [dict({"@type": "cr:FileObject", "@id": uid(i),
+                                 "additionalType": f"rddc:{cls}", "contentUrl": path},
+                                **({"measurementTechnique": tech} if tech else {}),
+                                **({"sequencingPlatform": platform} if platform else {}),
+                                **({"indexOf": {"@id": uid(i - 1)}} if cls == "IndexFile" else {}))
+                           for i, (cls, path, tech, platform) in enumerate(files, 1)]
+    return doc
+
+
+def ingest_checks():
+    """The ingest step's Cirro data type follows the files' classes, techniques and names."""
+    rules = E.load_rules()
+    genomics = register(lambda e: e["modalities"].append("genomics"))
+    cases = [
+        ("paired Illumina WGS reads go to Cirro's paired_dnaseq",
+         [("SequenceReadsFile", "reads/S1_R1.fastq.gz", "wgs", "illumina"),
+          ("SequenceReadsFile", "reads/S1_R2.fastq.gz", "wgs", "illumina")],
+         ("paired_dnaseq", "available")),
+        ("Nanopore WGS reads go to nanopore_fastq, even when named like a read pair",
+         [("SequenceReadsFile", "reads/S1_R1.fastq.gz", "wgs", "oxford_nanopore"),
+          ("SequenceReadsFile", "reads/S1_R2.fastq.gz", "wgs", "oxford_nanopore")],
+         ("nanopore_fastq", "available")),
+        ("PacBio HiFi reads go to long_read_fastq",
+         [("SequenceReadsFile", "reads/S1.hifi_reads.fastq.gz", "wgs", "pacbio_smrt")],
+         ("long_read_fastq", "available")),
+        ("a single Illumina RNA-seq FASTQ goes to rnaseq-single (paired needs two files)",
+         [("SequenceReadsFile", "reads/S1_R1.fastq.gz", "rna_seq", "illumina")], ("rnaseq-single", "available")),
+        ("a BAM and its index go to ingest_aligned_bam",
+         [("AlignmentFile", "aln/S1.bam", "wgs", "illumina"), ("IndexFile", "aln/S1.bam.bai", None, None)],
+         ("ingest_aligned_bam", "available")),
+        ("a CRAM on its own goes to Cirro's ingest_cram",
+         [("AlignmentFile", "aln/S1.cram", "wgs", "illumina")], ("ingest_cram", "available")),
+        ("a CRAM and its index go to rddc_ingest_cram (Cirro's CRAM type takes no .crai)",
+         [("AlignmentFile", "aln/S1.cram", "wgs", "illumina"), ("IndexFile", "aln/S1.cram.crai", None, None)],
+         ("rddc_ingest_cram", "to_add")),
+        ("a bgzipped VCF on its own goes to Cirro's vcf",
+         [("VariantFile", "vcf/S1.vcf.gz", "wes", "illumina")], ("vcf", "available")),
+        ("a VCF and its index go to rddc_ingest_vcf (Cirro's VCF type takes no .tbi)",
+         [("VariantFile", "vcf/S1.vcf.gz", "wes", "illumina"), ("IndexFile", "vcf/S1.vcf.gz.tbi", None, None)],
+         ("rddc_ingest_vcf", "to_add")),
+        ("a BCF goes to rddc_ingest_vcf",
+         [("VariantFile", "vcf/S1.bcf", "wes", "illumina")], ("rddc_ingest_vcf", "to_add")),
+    ]
+    out = []
+    for name, files, want in cases:
+        p = O.orchestrate(deposit_of(files), rules, genomics)
+        steps = [g["steps"][0] for g in p["groups"]]
+        got = {(s.get("cirroProcess"), s.get("cirroAvailability")) for s in steps}
+        # Files that belong together share one ingest dispatch, even in separate groups.
+        out.append((name, got == {want} and len({s.get("dispatchId") for s in steps}) == 1,
+                    f"got {sorted(map(str, got))}, {len(p['groups'])} group(s)"))
+    vcf = deposit_of([("VariantFile", "vcf/S1.vcf.gz", "wes", "illumina"),
+                      ("IndexFile", "vcf/S1.vcf.gz.tbi", None, None)])
+    p = run(vcf, genomics)
+    final = {g["files"][0][-2:]: [s["workflow"] for s in g["steps"]] for g in p["groups"]}
+    out.append(("after the shared ingest, the VCF goes on to VRS and its index stays in INTAKE",
+                p["status"] == "complete" and final == {"01": ["ingest_files", "vcf_to_vrs"], "02": ["ingest_files"]},
+                f"status {p['status']}, routes {final}"))
+    blocked = [
+        ("a file no data type accepts blocks its group, with the reason",
+         [("TabularFile", "registry/patients.xlsx", None, None)], REGISTER),
+        ("FASTQ from an unlisted platform blocks its group (no catch-all type)",
+         [("SequenceReadsFile", "reads/S1_R1.fastq.gz", "wgs", "other"),
+          ("SequenceReadsFile", "reads/S1_R2.fastq.gz", "wgs", "other")], genomics),
+    ]
+    for name, files, reg in blocked:
+        p = O.orchestrate(deposit_of(files), rules, reg)
+        g = p["groups"][0]
+        out.append((name, p["status"] == "blocked" and "no Cirro data type" in " ".join(g.get("problems", []))
+                    and all(s["status"] == "pending" for s in g["steps"]),
+                    f"status {p['status']}, problems {g.get('problems')}"))
     return out
 
 
@@ -336,6 +417,10 @@ def main():
 
     print("\nDispatch:")
     for name, ok, detail in dispatch_checks():
+        report(ok, name, detail)
+
+    print("\nCirro data types for the ingest:")
+    for name, ok, detail in ingest_checks():
         report(ok, name, detail)
     sys.exit(1 if failed else 0)
 

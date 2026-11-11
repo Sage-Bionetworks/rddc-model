@@ -92,6 +92,9 @@ jobs:
       - name: Check the orchestrator on the example sidecars and batch states
         run: python scripts/check_orchestration.py
 
+      - name: Check the Cirro process specs and links against the routes
+        run: python scripts/cirro_links.py
+
   release:
     needs: validate
     if: startsWith(github.ref, 'refs/tags/v')

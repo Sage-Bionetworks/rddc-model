@@ -1,0 +1,30 @@
+{
+  "id": "process-rddc-sensor-load-0_0",
+  "name": "sensor_load",
+  "description": "Loads sensor measures.",
+  "executor": "NEXTFLOW",
+  "childProcessIds": [
+    "process-rddc-release-mask-0_0"
+  ],
+  "parentProcessIds": [
+    "process-rddc-qc-sensory-0_0",
+    "process-rddc-sensor-to-measures-0_0"
+  ],
+  "linkedProjectIds": [
+    "rddc-processing"
+  ],
+  "isTenantWide": false,
+  "dataType": "sensor_load (sensor_load)",
+  "pipelineCode": {
+    "repositoryPath": "rddc-sensor-pipelines",
+    "version": "sensor_load/v0.0.0",
+    "repositoryType": "GITHUB_PRIVATE",
+    "entryPoint": "workflows/sensor_load/main.nf"
+  },
+  "customSettings": {
+    "repository": "rddc-sensor-pipelines",
+    "branch": "sensor_load/v0.0.0",
+    "folder": ".cirro/sensor_load",
+    "repositoryType": "GITHUB_PRIVATE"
+  }
+}

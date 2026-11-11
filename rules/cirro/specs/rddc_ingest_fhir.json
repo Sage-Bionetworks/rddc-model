@@ -1,0 +1,34 @@
+{
+  "id": "rddc_ingest_fhir",
+  "name": "FHIR R4 (JSON or NDJSON)",
+  "description": "RDDC data type: FHIR R4 (JSON or NDJSON), uploaded by ingest_files.",
+  "executor": "INGEST",
+  "childProcessIds": [
+    "process-rddc-fhir-deid-0_0",
+    "process-rddc-fhir-to-omop-0_0"
+  ],
+  "parentProcessIds": [],
+  "linkedProjectIds": [
+    "rddc-processing"
+  ],
+  "isTenantWide": false,
+  "fileMappingRules": [
+    {
+      "description": "FHIR resources or bulk export files",
+      "min": 1,
+      "max": 50000,
+      "fileNamePatterns": [
+        {
+          "exampleName": "Patient.ndjson.gz",
+          "description": "NDJSON",
+          "sampleMatchingPattern": "(?P<sampleName>[\\S ]*)\\.ndjson(\\.gz)?"
+        },
+        {
+          "exampleName": "bundle.json",
+          "description": "JSON",
+          "sampleMatchingPattern": "(?P<sampleName>[\\S ]*)\\.json(\\.gz)?"
+        }
+      ]
+    }
+  ]
+}

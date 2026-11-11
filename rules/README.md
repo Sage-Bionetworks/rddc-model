@@ -11,7 +11,7 @@ containers or services, such as GOVERN.
 
 **This is a draft.** The workflows (including the Cirro process and environment ids), zone
 locations and register values in this directory and in `../examples/registers/` are
-provisional placeholders.
+placeholders.
 
 | File | What it is |
 | --- | --- |
@@ -109,7 +109,7 @@ applies **seeded broken rules** and checks that each one is caught.
 ## Cirro
 
 A workflow with `runner: cirro` names its Cirro process (`cirroProcess`, Cirro's
-`Process.id`) and executor (`cirroExecutor`: `INGEST`, `NEXTFLOW`, `CROMWELL` or
+`Process.id`; an ingest lists data types instead, see below) and executor (`cirroExecutor`: `INGEST`, `NEXTFLOW`, `CROMWELL` or
 `OMICS_READY2RUN`, Cirro's `Executor`). A zone with a `cirroEnvironment` is a Cirro environment, which the Cirro Data API calls a project (`projectId` in the paths below).
 Cirro processes work on datasets, so the checker enforces three things:
 
@@ -126,6 +126,138 @@ A ready Cirro step maps onto the API as follows:
 | analysis: `cirroEnvironment`, `cirroProcess`, `sourceDatasets`, `parameters`, `dispatchId` | `POST /projects/{cirroEnvironment}/execution` (`RunAnalysisRequest`): `processId`, `sourceDatasetIds`, `params`, `name` |
 | `results[]`: `dataset`, `location` | The new dataset's `id` and `s3` |
 | `status` | The dataset's `status`: `COMPLETED` to succeeded; `FAILED` to failed; `PENDING`, `STARTING`, `RUNNING` and `STOPPING` to running |
+
+### Cirro data types for the ingest
+
+In Cirro, an INGEST process is a data type, not a pipeline. Uploading files under a type
+creates a dataset of that type (its `source` is `INGESTED`). Cirro checks the file names
+against the type's `fileMappingRules`, but not the file contents. The type also decides
+which Cirro pipelines can run on the dataset (`childProcessIds`). So `ingest_files` names
+no `cirroProcess`. It lists `cirroIngestTypes` in order of preference. Each entry gives:
+
+- a `dataType` from `CirroDataTypeEnum` in `schema/processing.yaml`;
+- the `classes` it takes, and optionally `techniques` and `platforms` (the file's
+  `sequencingPlatform`);
+- `fileRules`: a description, `minFiles`/`maxFiles` and `fileNamePatterns`, as in Cirro.
+
+When an ingest step is ready, the orchestrator picks the first type that accepts every
+file of the group. A file must be of one of the type's classes, declare one of its
+techniques and platforms (if any are listed), and its path must match a pattern in full. Each rule must
+match between `minFiles` and `maxFiles` of the files. The chosen type becomes the step's
+`cirroProcess`. `cirroAvailability` says whether that type is in Cirro yet. If no type
+accepts the files, the group is blocked with the reason.
+
+Files that belong together are uploaded as one dataset, even when their routes part
+afterwards. That covers the files of one file set, and an index with the file it indexes
+(`indexOf`). For example, a VCF goes on to VRS while its `.tbi` stays in INTAKE. Their
+groups get the same ingest step (one `dispatchId`), and the data type must accept all
+their files. If none does, each group is tried on its own.
+
+The enum's `availability` annotation says which types are in Cirro's catalog (`available`)
+and which still have to be added to the Cirro environment (`to_add`).
+
+- **Available:** `nanopore_fastq`, `long_read_fastq`, `paired_dnaseq`, `rnaseq`,
+  `rnaseq-single`, `ingest_unaligned_bam`,
+  `ingest_aligned_bam`, `ingest_cram`, `vcf` and `ingest_dicom`. Their file rules are
+  copied from Cirro's API.
+- **To add:** our own types are named `rddc_ingest_<type>`, for example
+  `rddc_ingest_fhir`. Their file rules are proposals.
+
+The checker requires a type with no technique or platform test for every class that
+targets bring into a Cirro environment.
+
+Every genomics file states its `sequencingPlatform` (INSDC platform types). Reads come in
+this order:
+
+- Nanopore reads go to `nanopore_fastq`, and PacBio reads to `long_read_fastq`, whatever
+  their file names.
+- The short-read types (`paired_dnaseq`, `rnaseq`, `rnaseq-single`) take only short-read
+  platforms.
+- There is no catch-all genomics type. Reads from a platform no type takes (`other`)
+  match no type, so their group is blocked for a person to decide.
+
+### Cirro process specs and links
+
+In Cirro, a pipeline can run on a dataset only if the dataset's producer (a data type, for
+an ingest, or another pipeline) and the pipeline are linked. Either the producer lists
+the pipeline in `childProcessIds`, or the pipeline lists the producer in
+`parentProcessIds`. `scripts/cirro_links.py` works out the links the rules need. It
+covers, for every deposit a reader can describe, the route to the target and the routes
+to the release and public zones. Along a route:
+
+- each Cirro analysis reads the dataset written by the last step that wrote data;
+- after the ingest, that dataset's producer is any data type the ingest may choose for the
+  file's class;
+- steps that write no data (`confirm`, `expert_review`, `record`) are skipped.
+
+Each process the rules mark `to_add` gets a spec in `rules/cirro/specs/<id>.json`: our
+data types (`rddc_ingest_*`), and our pipelines (`cirroAvailability: to_add`). A spec is
+the body of Cirro's `POST /processes` (`CustomProcessInput`). It carries:
+
+- the links;
+- the data type's file rules;
+- `linkedProjectIds`, from the environments of the zones the process reads and writes.
+
+For a link to a process already in Cirro, our side declares it. For example,
+`imaging_deid` lists Cirro's `ingest_dicom` as a parent.
+
+### Pipeline repositories
+
+Our pipelines live in a few GitHub repositories, grouped by modality
+(`pipelineRepositories`):
+
+- `rddc-clinical-pipelines`
+- `rddc-genomics-pipelines`
+- `rddc-imaging-pipelines`
+- `rddc-sensor-pipelines`
+- `rddc-release-pipelines`, since release masking runs on every modality.
+
+Cirro allows several processes per repository. Each process names an entry point, and its
+configuration folder can be any folder. Each of our Cirro pipelines names its
+`pipelineRepository` and `pipelineName`, which together fix its spec:
+
+- **Code:** `pipelineCode` is `workflows/<pipelineName>/main.nf` (`main.wdl` for Cromwell).
+- **Configuration:** `customSettings.folder` is `.cirro/<pipelineName>/`.
+- **Version:** both point at the tag `<pipelineName>/v<pipelineVersion>`. A repository holds
+  several pipelines, each with its own version.
+
+The checker requires that:
+
+- each repository a pipeline names is in the rule set;
+- workflows that run one Cirro process share its code;
+- a name is used by one process per repository.
+
+Add the GitHub owner to each `repository` when the repositories exist.
+
+`rules/cirro/catalog.json` is a snapshot of the Cirro processes the rules mark
+`available`, with their links. Refresh it with `--refresh-catalog`, which needs the
+`cirro` SDK and a saved login. `make check` runs `python scripts/cirro_links.py`. It fails
+if:
+
+- a spec is missing or out of date (regenerate with `--write`);
+- a process marked available is not in the catalog;
+- a link the routes need is declared on neither side.
+
+It also runs three seeded broken cases.
+
+One thing is assumed and needs confirming with Cirro:
+
+Cirro honours a link declared on either side. The catalog shows links declared only by
+the pipeline, such as `images` and Convert Image to OME-TIFF.
+
+INTAKE's `deid_qc` and the `normalized` store share one Cirro environment
+(`rddc-processing`), because Cirro cannot easily move datasets between environments
+(projects). In Cirro, the two zones are datasets in the same project. Cirro's access
+control does not separate them: the zone is a state the rules track, not a storage or
+access boundary.
+
+Known gaps in Cirro's types:
+
+- `ingest_cram` takes no `.crai`, and `vcf` takes no `.tbi`, `.csi`, uncompressed VCF or
+  BCF. Our fallbacks `rddc_ingest_cram` and `rddc_ingest_vcf` take those. Each comes right
+  after the Cirro type, so files that Cirro's type accepts still go there and keep
+  Cirro's downstream pipelines. If Cirro adds optional index rules to its types, the
+  fallbacks can go.
 
 Container and service steps get an `outputLocation` from their zone's template instead.
 A step that records a finding and writes no data (kinds `confirm` and `expert_review`)

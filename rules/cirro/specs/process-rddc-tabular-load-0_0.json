@@ -1,0 +1,31 @@
+{
+  "id": "process-rddc-tabular-load-0_0",
+  "name": "tabular_load",
+  "description": "Lane 4. Loads other tables and de-identified documents.",
+  "executor": "NEXTFLOW",
+  "childProcessIds": [
+    "process-rddc-release-mask-0_0"
+  ],
+  "parentProcessIds": [
+    "process-rddc-clinical-document-deid-0_0",
+    "process-rddc-tabular-deid-0_0",
+    "rddc_ingest_tabular"
+  ],
+  "linkedProjectIds": [
+    "rddc-processing"
+  ],
+  "isTenantWide": false,
+  "dataType": "tabular_load (tabular_load)",
+  "pipelineCode": {
+    "repositoryPath": "rddc-clinical-pipelines",
+    "version": "tabular_load/v0.0.0",
+    "repositoryType": "GITHUB_PRIVATE",
+    "entryPoint": "workflows/tabular_load/main.nf"
+  },
+  "customSettings": {
+    "repository": "rddc-clinical-pipelines",
+    "branch": "tabular_load/v0.0.0",
+    "folder": ".cirro/tabular_load",
+    "repositoryType": "GITHUB_PRIVATE"
+  }
+}

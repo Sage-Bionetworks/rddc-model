@@ -1,0 +1,132 @@
+{
+  "retrieved": "2026-11-09",
+  "source": "Cirro Data API at rddc-dev.cirro.bio, GET /processes",
+  "processes": {
+    "ingest_aligned_bam": {
+      "name": "Aligned BAM",
+      "executor": "INGEST",
+      "parentProcessIds": [],
+      "childProcessIds": [
+        "process-build-genome-browser-jbrowse-1-0",
+        "process-epi2me-wf-human-variation-2",
+        "process-epi2me-wf-somatic-variation-1",
+        "process-nf-core-sarek-call-variants-3-2"
+      ]
+    },
+    "ingest_cram": {
+      "name": "CRAM",
+      "executor": "INGEST",
+      "parentProcessIds": [],
+      "childProcessIds": [
+        "process-build-genome-browser-jbrowse-1-0"
+      ]
+    },
+    "ingest_dicom": {
+      "name": "DICOM",
+      "executor": "INGEST",
+      "parentProcessIds": [],
+      "childProcessIds": []
+    },
+    "ingest_unaligned_bam": {
+      "name": "Unaligned BAM",
+      "executor": "INGEST",
+      "parentProcessIds": [],
+      "childProcessIds": [
+        "process-epi2me-wf-human-variation-2",
+        "process-epi2me-wf-somatic-variation-1",
+        "process-gatk-processing-for-variant-discovery-2_3_1",
+        "process-gatk-whole-genome-germline-single-sample-3_1_6"
+      ]
+    },
+    "long_read_fastq": {
+      "name": "Long Read Sequencing (FASTQ)",
+      "executor": "INGEST",
+      "parentProcessIds": [],
+      "childProcessIds": [
+        "hutch-pacbio-hifi-16S",
+        "hutch-sourmash-tax",
+        "process-build-genome-browser-jbrowse-1-0",
+        "process-nf-core-bacass-hybrid-2-1-0",
+        "process-nf-core-bacass-long-read-2-1-0"
+      ]
+    },
+    "nanopore_fastq": {
+      "name": "Nanopore Sequencing (FASTQ)",
+      "executor": "INGEST",
+      "parentProcessIds": [],
+      "childProcessIds": []
+    },
+    "paired_dnaseq": {
+      "name": "Paired DNAseq (FASTQ)",
+      "executor": "INGEST",
+      "parentProcessIds": [],
+      "childProcessIds": [
+        "hutch-gig-map-align-pangenome-1-0",
+        "hutch-gig-map-align-reads-1-0",
+        "hutch-sourmash-tax",
+        "process-cirro-humann-1-0",
+        "process-gatk-paired-fastq-to-unmapped-bam-3_0_0",
+        "process-hutch-dragen-wgs-align-dna-1-0",
+        "process-hutch-fastqc-1_0",
+        "process-hutch-filter-paired-dnaseq-1-0",
+        "process-hutch-germline-wgs-dragen-1-0",
+        "process-hutch-metaphlan-paired-1-0",
+        "process-hutch-ngscheckmate-1-0",
+        "process-hutch-scrub-human-1-0",
+        "process-hutch-somatic-wgs-dragen-1-0",
+        "process-hutch-subset-fastq-paired-dna-1_0",
+        "process-kneaddata-1-0",
+        "process-nf-core-atacseq-2-0",
+        "process-nf-core-bacass-hybrid-2-1-0",
+        "process-nf-core-bacass-short-read-2-1-0",
+        "process-nf-core-chipseq-2-0",
+        "process-nf-core-cutandrun-2-0",
+        "process-nf-core-fastquorum-1",
+        "process-nf-core-mag-3_0",
+        "process-nf-core-methylseq-3-0",
+        "process-nf-core-sarek-3-1",
+        "process-nf-core-sarek-align-3-2"
+      ]
+    },
+    "rnaseq": {
+      "name": "Paired RNAseq (FASTQ)",
+      "executor": "INGEST",
+      "parentProcessIds": [],
+      "childProcessIds": [
+        "hutch-gig-map-align-pangenome-1-0",
+        "hutch-sourmash-tax",
+        "process-hutch-fastqc-1_0",
+        "process-hutch-filter-paired-rnaseq-1-0",
+        "process-hutch-immune-clonotypes-1_0",
+        "process-hutch-ngscheckmate-1-0",
+        "process-hutch-subset-fastq-paired-rna-1_0",
+        "process-nf-core-mag-3_0",
+        "process-nf-core-rnafusion-3_0",
+        "process-nf-core-rnaseq-3",
+        "process-nf-core-rnasplice-dev"
+      ]
+    },
+    "rnaseq-single": {
+      "name": "Single-End RNAseq (FASTQ)",
+      "executor": "INGEST",
+      "parentProcessIds": [],
+      "childProcessIds": [
+        "hutch-gig-map-align-pangenome-1-0",
+        "hutch-sourmash-tax",
+        "process-hutch-fastqc-1_0",
+        "process-nf-core-rnaseq-3"
+      ]
+    },
+    "vcf": {
+      "name": "Genomic Variants (VCF)",
+      "executor": "INGEST",
+      "parentProcessIds": [],
+      "childProcessIds": [
+        "process-build-genome-browser-jbrowse-1-0",
+        "process-hutch-funcotator-1-0",
+        "process-hutch-indelpred-1-0",
+        "process-nf-core-sarek-annotate-3-1"
+      ]
+    }
+  }
+}

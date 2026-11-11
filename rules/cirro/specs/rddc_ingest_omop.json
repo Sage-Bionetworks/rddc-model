@@ -1,0 +1,29 @@
+{
+  "id": "rddc_ingest_omop",
+  "name": "OMOP CDM tables",
+  "description": "RDDC data type: OMOP CDM tables, uploaded by ingest_files.",
+  "executor": "INGEST",
+  "childProcessIds": [
+    "process-rddc-omop-load-0_0",
+    "process-rddc-omop-note-deid-0_0"
+  ],
+  "parentProcessIds": [],
+  "linkedProjectIds": [
+    "rddc-processing"
+  ],
+  "isTenantWide": false,
+  "fileMappingRules": [
+    {
+      "description": "OMOP CDM tables",
+      "min": 1,
+      "max": 50000,
+      "fileNamePatterns": [
+        {
+          "exampleName": "person.csv",
+          "description": "CSV, TSV or Parquet",
+          "sampleMatchingPattern": "(?P<sampleName>[\\S ]*)\\.(csv|tsv|parquet)(\\.gz)?"
+        }
+      ]
+    }
+  ]
+}

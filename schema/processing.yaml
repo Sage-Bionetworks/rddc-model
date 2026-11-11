@@ -139,6 +139,105 @@ enums:
       OMICS_READY2RUN:
         description: "An AWS HealthOmics Ready2Run workflow."
 
+  CirroAvailabilityEnum:
+    description: "Whether a Cirro process exists in Cirro's catalog yet."
+    permissible_values:
+      available:
+        description: "In Cirro's process catalog now."
+      to_add:
+        description: >-
+          Not in Cirro yet. It has to be added to the Cirro environment before the
+          orchestrator can dispatch it; the rules use the id it is expected to have.
+
+  RepositoryTypeEnum:
+    description: "GitHub repository types, as in Cirro's RepositoryType."
+    permissible_values:
+      GITHUB_PUBLIC:
+        description: "A public GitHub repository."
+      GITHUB_PRIVATE:
+        description: "A private GitHub repository. Cirro has to be authorized to read it."
+
+  CirroDataTypeEnum:
+    description: >-
+      Cirro data types the ingest step can upload files as. In Cirro a data type is an
+      INGEST process: uploading files under it creates a dataset of that type, Cirro checks
+      the file names against the type's rules, and the type decides which pipelines can run
+      on the dataset. Values are Cirro process ids; the annotation availability says
+      whether the type is in Cirro's catalog or still has to be added.
+    permissible_values:
+      nanopore_fastq:
+        title: Nanopore Sequencing (FASTQ)
+        annotations: {availability: available}
+      long_read_fastq:
+        title: Long Read Sequencing (FASTQ)
+        description: "PacBio or Oxford Nanopore FASTQ."
+        annotations: {availability: available}
+      paired_dnaseq:
+        title: Paired DNAseq (FASTQ)
+        annotations: {availability: available}
+      rnaseq:
+        title: Paired RNAseq (FASTQ)
+        annotations: {availability: available}
+      rnaseq-single:
+        title: Single-End RNAseq (FASTQ)
+        annotations: {availability: available}
+      ingest_unaligned_bam:
+        title: Unaligned BAM
+        annotations: {availability: available}
+      ingest_aligned_bam:
+        title: Aligned BAM
+        annotations: {availability: available}
+      ingest_cram:
+        title: CRAM
+        annotations: {availability: available}
+      vcf:
+        title: Genomic Variants (VCF)
+        annotations: {availability: available}
+      ingest_dicom:
+        title: DICOM
+        annotations: {availability: available}
+      rddc_ingest_cram:
+        title: CRAM with its index
+        description: "A fallback for a CRAM delivered with its .crai index, which ingest_cram does not take."
+        annotations: {availability: to_add}
+      rddc_ingest_vcf:
+        title: Variant calls (VCF or BCF, with indexes)
+        description: "A fallback for variant calls vcf does not take: an uncompressed VCF, a BCF, or a VCF with its .tbi or .csi index."
+        annotations: {availability: to_add}
+      rddc_ingest_fhir:
+        title: FHIR R4 (JSON or NDJSON)
+        annotations: {availability: to_add}
+      rddc_ingest_omop:
+        title: OMOP CDM tables
+        annotations: {availability: to_add}
+      rddc_ingest_ccda:
+        title: C-CDA documents (XML)
+        annotations: {availability: to_add}
+      rddc_ingest_tabular:
+        title: Tables (CSV, TSV, Parquet, JSON)
+        annotations: {availability: to_add}
+      rddc_ingest_clinical_documents:
+        title: Clinical documents (text, PDF, RTF, scans)
+        annotations: {availability: to_add}
+      rddc_ingest_consent:
+        title: Consent records
+        annotations: {availability: to_add}
+      rddc_ingest_sensor:
+        title: Sensor data
+        annotations: {availability: to_add}
+      rddc_ingest_imaging:
+        title: Images other than DICOM
+        annotations: {availability: to_add}
+      rddc_ingest_facial_imaging:
+        title: Facial images and scans
+        annotations: {availability: to_add}
+      rddc_ingest_audio:
+        title: Audio recordings
+        annotations: {availability: to_add}
+      rddc_ingest_video:
+        title: Video recordings
+        annotations: {availability: to_add}
+
   PropertySourceEnum:
     description: "Where the value of a data property comes from."
     permissible_values:
@@ -249,6 +348,7 @@ classes:
     - properties
     - standards
     - zones
+    - pipelineRepositories
     - workflows
     - targets
     - obligations
@@ -358,7 +458,11 @@ classes:
     - description
     - runner
     - cirroProcess
+    - cirroAvailability
     - cirroExecutor
+    - cirroIngestTypes
+    - pipelineRepository
+    - pipelineName
     - pipeline
     - pipelineVersion
     - kind
@@ -391,16 +495,50 @@ classes:
       writesTo:
         description: "The zone it writes output to. Required unless the kind is withdraw or restrict."
     rules:
-    - description: A Cirro workflow names its process and executor.
+    - description: A Cirro workflow names its executor.
       preconditions:
         slot_conditions:
           runner:
             equals_string: cirro
       postconditions:
         slot_conditions:
+          cirroExecutor:
+            required: true
+    - description: >-
+        A Cirro analysis names its process. A Cirro ingest instead lists the data types it
+        can upload files as, and the orchestrator picks one for each group of files.
+      preconditions:
+        slot_conditions:
+          runner:
+            equals_string: cirro
+          cirroExecutor:
+            none_of:
+            - equals_string: INGEST
+      postconditions:
+        slot_conditions:
           cirroProcess:
             required: true
+          cirroAvailability:
+            required: true
+    - description: A Cirro pipeline that is not in Cirro yet says where its code will be.
+      preconditions:
+        slot_conditions:
+          cirroAvailability:
+            equals_string: to_add
+      postconditions:
+        slot_conditions:
+          pipelineRepository:
+            required: true
+          pipelineName:
+            required: true
+    - description: A Cirro ingest lists its data types.
+      preconditions:
+        slot_conditions:
           cirroExecutor:
+            equals_string: INGEST
+      postconditions:
+        slot_conditions:
+          cirroIngestTypes:
             required: true
     - description: A container or service workflow names its image or endpoint.
       preconditions:
@@ -438,6 +576,73 @@ classes:
         slot_conditions:
           coversZones:
             required: true
+
+  PipelineRepository:
+    description: >-
+      A GitHub repository that holds the code and Cirro configuration of several
+      pipelines. Each pipeline has a folder of its own: workflows/<pipelineName>/ for the
+      code and .cirro/<pipelineName>/ for the Cirro configuration files, and its versions
+      are tags named <pipelineName>/v<pipelineVersion>.
+    slots:
+    - id
+    - description
+    - repository
+    - repositoryType
+    slot_usage:
+      id:
+        range: Name
+        required: true
+      repository:
+        required: true
+      repositoryType:
+        required: true
+
+  CirroIngestType:
+    description: >-
+      A Cirro data type an ingest can upload files as, and which files go to it. The
+      orchestrator takes the first entry, in order, that accepts every file of a group: each
+      file is of one of the classes (and, if techniques or platforms are listed, declares
+      one of each), and the file names meet the file rules.
+    slots:
+    - dataType
+    - classes
+    - techniques
+    - platforms
+    - fileRules
+    slot_usage:
+      dataType:
+        required: true
+      classes:
+        required: true
+      fileRules:
+        required: true
+
+  FileRule:
+    description: >-
+      Files a Cirro data type requires, as in Cirro's fileMappingRules: each file of the
+      dataset matches a pattern of some rule, and each rule matches between minFiles and
+      maxFiles files. For a type that is in Cirro, copy its rules from Cirro; for one
+      still to add, they are the rules it is expected to have.
+    slots:
+    - description
+    - minFiles
+    - maxFiles
+    - fileNamePatterns
+    slot_usage:
+      minFiles:
+        required: true
+      fileNamePatterns:
+        required: true
+
+  FileNamePattern:
+    description: "One accepted way to name a file, as in Cirro's fileNamePatterns."
+    slots:
+    - description
+    - exampleName
+    - namePattern
+    slot_usage:
+      namePattern:
+        required: true
 
   Parameter:
     description: >-
@@ -669,6 +874,7 @@ classes:
     - status
     - runner
     - cirroProcess
+    - cirroAvailability
     - cirroExecutor
     - pipeline
     - pipelineVersion
@@ -783,14 +989,17 @@ slots:
   pipeline:
     description: "For a container, the image; for a service, the endpoint."
   cirroProcess:
-    description: 'The Cirro process ID (Process.id), e.g. "process-nf-core-rnaseq-3_8".'
+    description: >-
+      The Cirro process ID (Process.id), e.g. "process-nf-core-rnaseq-3". In a plan, an
+      ingest step's process is the data type the orchestrator chose.
   cirroExecutor:
     range: CirroExecutorEnum
     description: "How Cirro executes the process (Process.executor)."
   cirroEnvironment:
     description: >-
       A Cirro environment ID. The Cirro Data API calls an environment a project, so this
-      is the projectId in its paths, e.g. POST /projects/{projectId}/execution.
+      is the projectId in its paths, e.g. POST /projects/{projectId}/execution. Zones can
+      share an environment; they are then states the rules track, not access boundaries.
   dataset:
     description: "A Cirro dataset ID."
   sourceDatasets:
@@ -831,6 +1040,65 @@ slots:
   priority:
     range: integer
     description: "Lower wins. For workflows, breaks ties between equally short routes."
+  pipelineRepositories:
+    description: "Repositories that hold the rule set's own pipelines."
+    range: PipelineRepository
+    multivalued: true
+    inlined_as_list: true
+  repository:
+    description: >-
+      The GitHub repository, as owner/name; the name alone until the owner is known.
+  repositoryType:
+    description: "Whether the repository is public or private, as in Cirro's RepositoryType."
+    range: RepositoryTypeEnum
+  pipelineRepository:
+    description: >-
+      For a Cirro pipeline that is not in Cirro yet: the id of the pipeline repository
+      that holds it.
+  pipelineName:
+    description: >-
+      The pipeline's folder and tag name in its repository, e.g. deid_fhir. Workflows that
+      run the same Cirro process share it.
+  cirroIngestTypes:
+    description: "For a Cirro ingest: the data types it can upload files as, in order of preference."
+    range: CirroIngestType
+    multivalued: true
+    inlined_as_list: true
+  platforms:
+    multivalued: true
+    description: "SequencingPlatformEnum values; the file's sequencingPlatform is one of them."
+  dataType:
+    description: "A Cirro data type (an INGEST process id)."
+    range: CirroDataTypeEnum
+  cirroAvailability:
+    description: >-
+      Whether a Cirro process is in Cirro yet. A workflow whose process is to_add gets a
+      generated process spec (rules/cirro/specs/); a ready step whose process is to_add
+      cannot run until it is added.
+    range: CirroAvailabilityEnum
+  fileRules:
+    description: "The files a data type requires."
+    range: FileRule
+    multivalued: true
+    inlined_as_list: true
+  minFiles:
+    description: "The fewest files the rule must match."
+    range: integer
+  maxFiles:
+    description: "The most files the rule may match."
+    range: integer
+  fileNamePatterns:
+    description: "Accepted ways to name the files."
+    range: FileNamePattern
+    multivalued: true
+    inlined_as_list: true
+  exampleName:
+    description: "An example file name."
+  namePattern:
+    description: >-
+      A Python regular expression the file's path in the batch must match in full. Named
+      groups such as sampleName and read are Cirro's: it uses them to group files into
+      samples.
   parameters:
     description: "Parameters passed to the workflow."
     range: Parameter

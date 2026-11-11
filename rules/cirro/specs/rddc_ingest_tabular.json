@@ -1,0 +1,29 @@
+{
+  "id": "rddc_ingest_tabular",
+  "name": "Tables (CSV, TSV, Parquet, JSON)",
+  "description": "RDDC data type: Tables (CSV, TSV, Parquet, JSON), uploaded by ingest_files.",
+  "executor": "INGEST",
+  "childProcessIds": [
+    "process-rddc-tabular-deid-0_0",
+    "process-rddc-tabular-load-0_0"
+  ],
+  "parentProcessIds": [],
+  "linkedProjectIds": [
+    "rddc-processing"
+  ],
+  "isTenantWide": false,
+  "fileMappingRules": [
+    {
+      "description": "Tables",
+      "min": 1,
+      "max": 50000,
+      "fileNamePatterns": [
+        {
+          "exampleName": "patients.csv",
+          "description": "CSV, TSV, Parquet or JSON",
+          "sampleMatchingPattern": "(?P<sampleName>[\\S ]*)\\.(csv|tsv|parquet|json|jsonl)(\\.gz)?"
+        }
+      ]
+    }
+  ]
+}

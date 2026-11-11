@@ -1,0 +1,38 @@
+{
+  "id": "rddc_ingest_cram",
+  "name": "CRAM with its index",
+  "description": "RDDC data type: CRAM with its index, uploaded by ingest_files.",
+  "executor": "INGEST",
+  "childProcessIds": [],
+  "parentProcessIds": [],
+  "linkedProjectIds": [
+    "rddc-processing"
+  ],
+  "isTenantWide": false,
+  "fileMappingRules": [
+    {
+      "description": "CRAM files",
+      "min": 1,
+      "max": 50000,
+      "fileNamePatterns": [
+        {
+          "exampleName": "SampleName.cram",
+          "description": "CRAM",
+          "sampleMatchingPattern": "(?P<sampleName>[\\S ]*)\\.cram"
+        }
+      ]
+    },
+    {
+      "description": "CRAM indexes",
+      "min": 0,
+      "max": 50000,
+      "fileNamePatterns": [
+        {
+          "exampleName": "SampleName.cram.crai",
+          "description": "CRAM index",
+          "sampleMatchingPattern": "(?P<sampleName>[\\S ]*)\\.cram\\.crai"
+        }
+      ]
+    }
+  ]
+}

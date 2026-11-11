@@ -1,0 +1,28 @@
+{
+  "id": "process-rddc-imaging-deid-0_0",
+  "name": "imaging_deid",
+  "description": "Removes identifiers from DICOM headers. Not for facial images.",
+  "executor": "NEXTFLOW",
+  "childProcessIds": [],
+  "parentProcessIds": [
+    "ingest_dicom",
+    "rddc_ingest_imaging"
+  ],
+  "linkedProjectIds": [
+    "rddc-processing"
+  ],
+  "isTenantWide": false,
+  "dataType": "imaging_deid (imaging_deid)",
+  "pipelineCode": {
+    "repositoryPath": "rddc-imaging-pipelines",
+    "version": "imaging_deid/v0.0.0",
+    "repositoryType": "GITHUB_PRIVATE",
+    "entryPoint": "workflows/imaging_deid/main.nf"
+  },
+  "customSettings": {
+    "repository": "rddc-imaging-pipelines",
+    "branch": "imaging_deid/v0.0.0",
+    "folder": ".cirro/imaging_deid",
+    "repositoryType": "GITHUB_PRIVATE"
+  }
+}

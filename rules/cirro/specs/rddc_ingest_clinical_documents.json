@@ -1,0 +1,28 @@
+{
+  "id": "rddc_ingest_clinical_documents",
+  "name": "Clinical documents (text, PDF, RTF, scans)",
+  "description": "RDDC data type: Clinical documents (text, PDF, RTF, scans), uploaded by ingest_files.",
+  "executor": "INGEST",
+  "childProcessIds": [
+    "process-rddc-clinical-document-deid-0_0"
+  ],
+  "parentProcessIds": [],
+  "linkedProjectIds": [
+    "rddc-processing"
+  ],
+  "isTenantWide": false,
+  "fileMappingRules": [
+    {
+      "description": "Clinical documents",
+      "min": 1,
+      "max": 50000,
+      "fileNamePatterns": [
+        {
+          "exampleName": "note_0001.txt",
+          "description": "Text, PDF, RTF or scan",
+          "sampleMatchingPattern": "(?P<sampleName>[\\S ]*)\\.(txt|pdf|rtf|tiff?|jpe?g|png)"
+        }
+      ]
+    }
+  ]
+}

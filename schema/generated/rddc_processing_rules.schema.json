@@ -22,6 +22,45 @@
             "title": "BatchStatusEnum",
             "type": "string"
         },
+        "CirroAvailabilityEnum": {
+            "description": "Whether a Cirro process exists in Cirro's catalog yet.",
+            "enum": [
+                "available",
+                "to_add"
+            ],
+            "title": "CirroAvailabilityEnum",
+            "type": "string"
+        },
+        "CirroDataTypeEnum": {
+            "description": "Cirro data types the ingest step can upload files as. In Cirro a data type is an INGEST process: uploading files under it creates a dataset of that type, Cirro checks the file names against the type's rules, and the type decides which pipelines can run on the dataset. Values are Cirro process ids; the annotation availability says whether the type is in Cirro's catalog or still has to be added.",
+            "enum": [
+                "nanopore_fastq",
+                "long_read_fastq",
+                "paired_dnaseq",
+                "rnaseq",
+                "rnaseq-single",
+                "ingest_unaligned_bam",
+                "ingest_aligned_bam",
+                "ingest_cram",
+                "vcf",
+                "ingest_dicom",
+                "rddc_ingest_cram",
+                "rddc_ingest_vcf",
+                "rddc_ingest_fhir",
+                "rddc_ingest_omop",
+                "rddc_ingest_ccda",
+                "rddc_ingest_tabular",
+                "rddc_ingest_clinical_documents",
+                "rddc_ingest_consent",
+                "rddc_ingest_sensor",
+                "rddc_ingest_imaging",
+                "rddc_ingest_facial_imaging",
+                "rddc_ingest_audio",
+                "rddc_ingest_video"
+            ],
+            "title": "CirroDataTypeEnum",
+            "type": "string"
+        },
         "CirroExecutorEnum": {
             "description": "How Cirro executes a process: the values of Executor in the Cirro Data API (https://app.cirro.bio/openapi/cirro-data-latest.yml).",
             "enum": [
@@ -32,6 +71,57 @@
             ],
             "title": "CirroExecutorEnum",
             "type": "string"
+        },
+        "CirroIngestType": {
+            "additionalProperties": false,
+            "description": "A Cirro data type an ingest can upload files as, and which files go to it. The orchestrator takes the first entry, in order, that accepts every file of a group: each file is of one of the classes (and, if techniques or platforms are listed, declares one of each), and the file names meet the file rules.",
+            "properties": {
+                "classes": {
+                    "description": "Data class names from the pinned release. A class matches its subclasses too.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "dataType": {
+                    "$ref": "#/$defs/CirroDataTypeEnum",
+                    "description": "A Cirro data type (an INGEST process id)."
+                },
+                "fileRules": {
+                    "description": "The files a data type requires.",
+                    "items": {
+                        "$ref": "#/$defs/FileRule"
+                    },
+                    "type": "array"
+                },
+                "platforms": {
+                    "description": "SequencingPlatformEnum values; the file's sequencingPlatform is one of them.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "techniques": {
+                    "description": "measurementTechnique values; the file declares at least one.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "dataType",
+                "classes",
+                "fileRules"
+            ],
+            "title": "CirroIngestType",
+            "type": "object"
         },
         "Condition": {
             "additionalProperties": false,
@@ -199,6 +289,35 @@
             "title": "FileLocation",
             "type": "object"
         },
+        "FileNamePattern": {
+            "additionalProperties": false,
+            "description": "One accepted way to name a file, as in Cirro's fileNamePatterns.",
+            "properties": {
+                "description": {
+                    "description": "Plain-language description for reviewers.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "exampleName": {
+                    "description": "An example file name.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "namePattern": {
+                    "description": "A Python regular expression the file's path in the batch must match in full. Named groups such as sampleName and read are Cirro's: it uses them to group files into samples.",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "namePattern"
+            ],
+            "title": "FileNamePattern",
+            "type": "object"
+        },
         "FileResult": {
             "additionalProperties": false,
             "description": "What a step reported for one input file: where its output is (for a Cirro step, the output dataset and its location), and which data properties the output still has, if the step checked. Reported properties replace the predicted ones.",
@@ -236,6 +355,43 @@
                 "file"
             ],
             "title": "FileResult",
+            "type": "object"
+        },
+        "FileRule": {
+            "additionalProperties": false,
+            "description": "Files a Cirro data type requires, as in Cirro's fileMappingRules: each file of the dataset matches a pattern of some rule, and each rule matches between minFiles and maxFiles files. For a type that is in Cirro, copy its rules from Cirro; for one still to add, they are the rules it is expected to have.",
+            "properties": {
+                "description": {
+                    "description": "Plain-language description for reviewers.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "fileNamePatterns": {
+                    "description": "Accepted ways to name the files.",
+                    "items": {
+                        "$ref": "#/$defs/FileNamePattern"
+                    },
+                    "type": "array"
+                },
+                "maxFiles": {
+                    "description": "The most files the rule may match.",
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "minFiles": {
+                    "description": "The fewest files the rule must match.",
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "minFiles",
+                "fileNamePatterns"
+            ],
+            "title": "FileRule",
             "type": "object"
         },
         "InteractionRule": {
@@ -383,6 +539,39 @@
             "title": "Parameter",
             "type": "object"
         },
+        "PipelineRepository": {
+            "additionalProperties": false,
+            "description": "A GitHub repository that holds the code and Cirro configuration of several pipelines. Each pipeline has a folder of its own: workflows/<pipelineName>/ for the code and .cirro/<pipelineName>/ for the Cirro configuration files, and its versions are tags named <pipelineName>/v<pipelineVersion>.",
+            "properties": {
+                "description": {
+                    "description": "Plain-language description for reviewers.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "id": {
+                    "description": "A local identifier, unique within its list.",
+                    "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+                    "type": "string"
+                },
+                "repository": {
+                    "description": "The GitHub repository, as owner/name; the name alone until the owner is known.",
+                    "type": "string"
+                },
+                "repositoryType": {
+                    "$ref": "#/$defs/RepositoryTypeEnum",
+                    "description": "Whether the repository is public or private, as in Cirro's RepositoryType."
+                }
+            },
+            "required": [
+                "id",
+                "repository",
+                "repositoryType"
+            ],
+            "title": "PipelineRepository",
+            "type": "object"
+        },
         "Plan": {
             "additionalProperties": false,
             "description": "The orchestrator's view of one batch: groups of files, each with the steps that ran and the steps still to run, and any batch-level steps. scripts/orchestrate.py writes it; the dispatcher runs the ready steps and records their status and results in it; the next call reads it back as the batch state.",
@@ -524,8 +713,12 @@
             "additionalProperties": false,
             "description": "One workflow run on the group's files. A ready step carries everything needed to dispatch it.",
             "properties": {
+                "cirroAvailability": {
+                    "$ref": "#/$defs/CirroAvailabilityEnum",
+                    "description": "Whether a Cirro process is in Cirro yet. A workflow whose process is to_add gets a generated process spec (rules/cirro/specs/); a ready step whose process is to_add cannot run until it is added."
+                },
                 "cirroEnvironment": {
-                    "description": "A Cirro environment ID. The Cirro Data API calls an environment a project, so this is the projectId in its paths, e.g. POST /projects/{projectId}/execution.",
+                    "description": "A Cirro environment ID. The Cirro Data API calls an environment a project, so this is the projectId in its paths, e.g. POST /projects/{projectId}/execution. Zones can share an environment; they are then states the rules track, not access boundaries.",
                     "type": [
                         "string",
                         "null"
@@ -536,7 +729,7 @@
                     "description": "How Cirro executes the process (Process.executor)."
                 },
                 "cirroProcess": {
-                    "description": "The Cirro process ID (Process.id), e.g. \"process-nf-core-rnaseq-3_8\".",
+                    "description": "The Cirro process ID (Process.id), e.g. \"process-nf-core-rnaseq-3\". In a plan, an ingest step's process is the data type the orchestrator chose.",
                     "type": [
                         "string",
                         "null"
@@ -720,6 +913,15 @@
             "title": "PropertySourceEnum",
             "type": "string"
         },
+        "RepositoryTypeEnum": {
+            "description": "GitHub repository types, as in Cirro's RepositoryType.",
+            "enum": [
+                "GITHUB_PUBLIC",
+                "GITHUB_PRIVATE"
+            ],
+            "title": "RepositoryTypeEnum",
+            "type": "string"
+        },
         "RuleSet": {
             "additionalProperties": false,
             "description": "The processing rules for one model release. A batch is processed under the rule set whose modelRelease matches the version in its sidecar's conformsTo.",
@@ -755,6 +957,16 @@
                     "description": "Duties that hold on every route.",
                     "items": {
                         "$ref": "#/$defs/Obligation"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "pipelineRepositories": {
+                    "description": "Repositories that hold the rule set's own pipelines.",
+                    "items": {
+                        "$ref": "#/$defs/PipelineRepository"
                     },
                     "type": [
                         "array",
@@ -1098,12 +1310,87 @@
                     },
                     "then": {
                         "properties": {
-                            "cirroExecutor": {},
+                            "cirroExecutor": {}
+                        },
+                        "required": [
+                            "cirroExecutor"
+                        ]
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "cirroExecutor": {
+                                "not": {
+                                    "anyOf": [
+                                        {
+                                            "const": "INGEST"
+                                        }
+                                    ]
+                                }
+                            },
+                            "runner": {
+                                "const": "cirro"
+                            }
+                        },
+                        "required": [
+                            "runner",
+                            "cirroExecutor"
+                        ]
+                    },
+                    "then": {
+                        "properties": {
+                            "cirroAvailability": {},
                             "cirroProcess": {}
                         },
                         "required": [
                             "cirroProcess",
+                            "cirroAvailability"
+                        ]
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "cirroAvailability": {
+                                "const": "to_add"
+                            }
+                        },
+                        "required": [
+                            "cirroAvailability"
+                        ]
+                    },
+                    "then": {
+                        "properties": {
+                            "pipelineName": {},
+                            "pipelineRepository": {}
+                        },
+                        "required": [
+                            "pipelineRepository",
+                            "pipelineName"
+                        ]
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "cirroExecutor": {
+                                "const": "INGEST"
+                            }
+                        },
+                        "required": [
                             "cirroExecutor"
+                        ]
+                    },
+                    "then": {
+                        "properties": {
+                            "cirroIngestTypes": {
+                                "items": {},
+                                "type": "array"
+                            }
+                        },
+                        "required": [
+                            "cirroIngestTypes"
                         ]
                     }
                 },
@@ -1202,12 +1489,26 @@
             ],
             "description": "An existing workflow the orchestrator can dispatch, described by what it consumes, produces and guarantees, not by how it works.",
             "properties": {
+                "cirroAvailability": {
+                    "$ref": "#/$defs/CirroAvailabilityEnum",
+                    "description": "Whether a Cirro process is in Cirro yet. A workflow whose process is to_add gets a generated process spec (rules/cirro/specs/); a ready step whose process is to_add cannot run until it is added."
+                },
                 "cirroExecutor": {
                     "$ref": "#/$defs/CirroExecutorEnum",
                     "description": "How Cirro executes the process (Process.executor)."
                 },
+                "cirroIngestTypes": {
+                    "description": "For a Cirro ingest: the data types it can upload files as, in order of preference.",
+                    "items": {
+                        "$ref": "#/$defs/CirroIngestType"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
                 "cirroProcess": {
-                    "description": "The Cirro process ID (Process.id), e.g. \"process-nf-core-rnaseq-3_8\".",
+                    "description": "The Cirro process ID (Process.id), e.g. \"process-nf-core-rnaseq-3\". In a plan, an ingest step's process is the data type the orchestrator chose.",
                     "type": [
                         "string",
                         "null"
@@ -1279,6 +1580,20 @@
                 },
                 "pipeline": {
                     "description": "For a container, the image; for a service, the endpoint.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "pipelineName": {
+                    "description": "The pipeline's folder and tag name in its repository, e.g. deid_fhir. Workflows that run the same Cirro process share it.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "pipelineRepository": {
+                    "description": "For a Cirro pipeline that is not in Cirro yet: the id of the pipeline repository that holds it.",
                     "type": [
                         "string",
                         "null"
@@ -1464,6 +1779,16 @@
             "description": "Duties that hold on every route.",
             "items": {
                 "$ref": "#/$defs/Obligation"
+            },
+            "type": [
+                "array",
+                "null"
+            ]
+        },
+        "pipelineRepositories": {
+            "description": "Repositories that hold the rule set's own pipelines.",
+            "items": {
+                "$ref": "#/$defs/PipelineRepository"
             },
             "type": [
                 "array",

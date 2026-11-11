@@ -1,0 +1,31 @@
+{
+  "id": "process-rddc-release-mask-0_0",
+  "name": "release_mask_shift, release_mask_year",
+  "description": "Register: shifts dates by a per-person offset and truncates ZIP codes to 3 digits. Register: reduces dates to the year and truncates ZIP codes to 3 digits.",
+  "executor": "NEXTFLOW",
+  "childProcessIds": [],
+  "parentProcessIds": [
+    "process-rddc-ccda-to-omop-0_0",
+    "process-rddc-fhir-to-omop-0_0",
+    "process-rddc-omop-load-0_0",
+    "process-rddc-sensor-load-0_0",
+    "process-rddc-tabular-load-0_0"
+  ],
+  "linkedProjectIds": [
+    "rddc-processing"
+  ],
+  "isTenantWide": false,
+  "dataType": "release_mask_shift (release_mask_shift)",
+  "pipelineCode": {
+    "repositoryPath": "rddc-release-pipelines",
+    "version": "release_mask/v0.0.0",
+    "repositoryType": "GITHUB_PRIVATE",
+    "entryPoint": "workflows/release_mask/main.nf"
+  },
+  "customSettings": {
+    "repository": "rddc-release-pipelines",
+    "branch": "release_mask/v0.0.0",
+    "folder": ".cirro/release_mask",
+    "repositoryType": "GITHUB_PRIVATE"
+  }
+}

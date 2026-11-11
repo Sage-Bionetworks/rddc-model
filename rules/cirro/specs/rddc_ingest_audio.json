@@ -1,0 +1,26 @@
+{
+  "id": "rddc_ingest_audio",
+  "name": "Audio recordings",
+  "description": "RDDC data type: Audio recordings, uploaded by ingest_files.",
+  "executor": "INGEST",
+  "childProcessIds": [],
+  "parentProcessIds": [],
+  "linkedProjectIds": [
+    "rddc-processing"
+  ],
+  "isTenantWide": false,
+  "fileMappingRules": [
+    {
+      "description": "Audio recordings",
+      "min": 1,
+      "max": 50000,
+      "fileNamePatterns": [
+        {
+          "exampleName": "interview.wav",
+          "description": "Audio",
+          "sampleMatchingPattern": "(?P<sampleName>[\\S ]*)\\.(wav|flac|mp3|m4a|ogg|aac)"
+        }
+      ]
+    }
+  ]
+}

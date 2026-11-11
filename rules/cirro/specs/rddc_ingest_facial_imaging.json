@@ -1,0 +1,36 @@
+{
+  "id": "rddc_ingest_facial_imaging",
+  "name": "Facial images and scans",
+  "description": "RDDC data type: Facial images and scans, uploaded by ingest_files.",
+  "executor": "INGEST",
+  "childProcessIds": [],
+  "parentProcessIds": [],
+  "linkedProjectIds": [
+    "rddc-processing"
+  ],
+  "isTenantWide": false,
+  "fileMappingRules": [
+    {
+      "description": "Facial images and 3D scans",
+      "min": 1,
+      "max": 50000,
+      "fileNamePatterns": [
+        {
+          "exampleName": "face.jpg",
+          "description": "Photograph",
+          "sampleMatchingPattern": "(?P<sampleName>[\\S ]*)\\.(jpe?g|png|tiff?|heic)"
+        },
+        {
+          "exampleName": "face.dcm",
+          "description": "DICOM",
+          "sampleMatchingPattern": "(?P<sampleName>[\\S ]*)\\.dcm"
+        },
+        {
+          "exampleName": "face.obj",
+          "description": "3D surface scan",
+          "sampleMatchingPattern": "(?P<sampleName>[\\S ]*)\\.(obj|stl|glb|gltf|mtl|ply)"
+        }
+      ]
+    }
+  ]
+}

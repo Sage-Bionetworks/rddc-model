@@ -1,0 +1,29 @@
+{
+  "id": "process-rddc-ccda-deid-0_0",
+  "name": "deid_ccda",
+  "description": "Removes identifiers from the narrative sections of C-CDA documents. Output stays C-CDA. Runs once per file, also on files of the same file set that need no de-identification themselves, so that the set moves together.",
+  "executor": "NEXTFLOW",
+  "childProcessIds": [
+    "process-rddc-ccda-to-omop-0_0"
+  ],
+  "parentProcessIds": [
+    "rddc_ingest_ccda"
+  ],
+  "linkedProjectIds": [
+    "rddc-processing"
+  ],
+  "isTenantWide": false,
+  "dataType": "deid_ccda (deid_ccda)",
+  "pipelineCode": {
+    "repositoryPath": "rddc-clinical-pipelines",
+    "version": "ccda_deid/v0.0.0",
+    "repositoryType": "GITHUB_PRIVATE",
+    "entryPoint": "workflows/ccda_deid/main.nf"
+  },
+  "customSettings": {
+    "repository": "rddc-clinical-pipelines",
+    "branch": "ccda_deid/v0.0.0",
+    "folder": ".cirro/ccda_deid",
+    "repositoryType": "GITHUB_PRIVATE"
+  }
+}

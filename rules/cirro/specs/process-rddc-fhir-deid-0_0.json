@@ -1,0 +1,29 @@
+{
+  "id": "process-rddc-fhir-deid-0_0",
+  "name": "deid_fhir",
+  "description": "Removes identifiers from free text in FHIR resources: narrative, notes and other string fields. Output stays FHIR R4. Runs once per file, also on files of the same file set that need no de-identification themselves, so that the set moves together.",
+  "executor": "NEXTFLOW",
+  "childProcessIds": [
+    "process-rddc-fhir-to-omop-0_0"
+  ],
+  "parentProcessIds": [
+    "rddc_ingest_fhir"
+  ],
+  "linkedProjectIds": [
+    "rddc-processing"
+  ],
+  "isTenantWide": false,
+  "dataType": "deid_fhir (deid_fhir)",
+  "pipelineCode": {
+    "repositoryPath": "rddc-clinical-pipelines",
+    "version": "fhir_deid/v0.0.0",
+    "repositoryType": "GITHUB_PRIVATE",
+    "entryPoint": "workflows/fhir_deid/main.nf"
+  },
+  "customSettings": {
+    "repository": "rddc-clinical-pipelines",
+    "branch": "fhir_deid/v0.0.0",
+    "folder": ".cirro/fhir_deid",
+    "repositoryType": "GITHUB_PRIVATE"
+  }
+}

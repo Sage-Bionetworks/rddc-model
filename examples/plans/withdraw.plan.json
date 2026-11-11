@@ -2,7 +2,7 @@
   "batch": "src-ta2-01/2026-11-w01",
   "sidecarConformsTo": "https://w3id.org/rddc/sidecar/0.1.0",
   "ruleSet": "rddc_rules",
-  "ruleSetVersion": "0.7.0-draft",
+  "ruleSetVersion": "0.8.0-draft",
   "modelRelease": "v0.1.0",
   "registerVersion": "2026-10-20",
   "groups": [],
@@ -11,7 +11,7 @@
       "workflow": "withdraw_subjects",
       "status": "ready",
       "runner": "service",
-      "pipeline": "https://provisional.govern.example/withdraw",
+      "pipeline": "https://govern.example/withdraw",
       "pipelineVersion": "0.0.0",
       "dispatchId": "withdraw_subjects-cc895833ee",
       "parameters": [

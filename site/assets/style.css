@@ -408,7 +408,8 @@ ol.steps > li:last-child::after { display: none; }
 /* reference */
 section.class { border-top: 1px solid var(--rule); padding-top: 4px; margin-top: 32px; }
 section.class h3 { font-family: var(--mono); font-size: 1.04rem; font-weight: 600; margin-top: 20px; }
-.badge { font: 500 0.72rem var(--sans); color: var(--ink-3); background: var(--wash); border-radius: 999px; padding: 1px 8px; vertical-align: middle; margin-left: 6px; }
+.badge { font: 500 0.72rem var(--sans); color: var(--ink-3); background: var(--wash); border-radius: 999px; padding: 1px 8px; vertical-align: middle; margin-left: 6px; white-space: nowrap; }
+.badge.pr-todo { border: 1px dashed var(--rule); background: none; white-space: nowrap; color: var(--ink-2, var(--ink-3)); }
 p.meta { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; font-size: 0.86rem; color: var(--ink-2); }
 .rules { font-size: 0.9rem; }
 .rules h4 { margin-top: 8px; }

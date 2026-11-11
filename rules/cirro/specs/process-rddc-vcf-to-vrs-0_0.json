@@ -1,0 +1,28 @@
+{
+  "id": "process-rddc-vcf-to-vrs-0_0",
+  "name": "vcf_to_vrs",
+  "description": "Normalization requirement: represents the variant calls in a VCF as GA4GH VRS 2.0 alleles with computed identifiers, and loads them into the normalized store.",
+  "executor": "NEXTFLOW",
+  "childProcessIds": [],
+  "parentProcessIds": [
+    "rddc_ingest_vcf",
+    "vcf"
+  ],
+  "linkedProjectIds": [
+    "rddc-processing"
+  ],
+  "isTenantWide": false,
+  "dataType": "vcf_to_vrs (vcf_to_vrs)",
+  "pipelineCode": {
+    "repositoryPath": "rddc-genomics-pipelines",
+    "version": "vcf_to_vrs/v0.0.0",
+    "repositoryType": "GITHUB_PRIVATE",
+    "entryPoint": "workflows/vcf_to_vrs/main.nf"
+  },
+  "customSettings": {
+    "repository": "rddc-genomics-pipelines",
+    "branch": "vcf_to_vrs/v0.0.0",
+    "folder": ".cirro/vcf_to_vrs",
+    "repositoryType": "GITHUB_PRIVATE"
+  }
+}

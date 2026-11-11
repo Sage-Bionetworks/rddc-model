@@ -1,6 +1,6 @@
 # RDDC processing rules: a DRAFT for discussion.
 #
-# The workflows below are provisional (pipeline ids, versions, locations and
+# The workflows below are drafts (pipeline ids, versions, locations and
 # parameters are placeholders) until the real pipeline inventory replaces them. The
 # targets, obligations and prohibitions encode the seed rules (numbered for
 # discussion) and rules that read the source register (marked "register").
@@ -8,9 +8,9 @@
 # Checked by scripts/check_rules.py (names exist in the pinned release; verification
 # properties hold). scripts/orchestrate.py works out the next steps for a batch.
 id: rddc_rules
-version: 0.7.0-draft
+version: 0.8.0-draft
 modelRelease: v0.1.0
-description: Draft processing rules with provisional workflows.
+description: Draft processing rules with placeholder workflows.
 
 # --- data properties --------------------------------------------------------
 # A missing contains* flag counts as present.
@@ -116,26 +116,53 @@ zones:
   module: INTAKE
   initial: true
 - id: deid_qc
-  description: The INTAKE Cirro environment where de-identification, QC and domain workflows run.
+  description: Where de-identification, QC and domain workflows run, in the processing Cirro environment.
   module: INTAKE
-  cirroEnvironment: provisional-rddc-intake
+  cirroEnvironment: rddc-processing
 - id: curation
   description: Files held for a curator to decide what to do with them.
   module: INTAKE
-  location: s3://provisional-rddc-curation/{sourceId}/{batchId}/{dispatchId}/
+  location: s3://rddc-curation/{sourceId}/{batchId}/{dispatchId}/
 - id: normalized
-  description: The normalized, analysis-ready store (OMOP and tables), a Cirro environment.
+  description: >-
+    The normalized, analysis-ready store (OMOP and tables). It shares the processing Cirro
+    environment with deid_qc, since Cirro cannot easily move datasets between environments.
   module: NORMALIZE
-  cirroEnvironment: provisional-rddc-normalized
+  cirroEnvironment: rddc-processing
 - id: release
   description: The release database, for the protected tier; researchers reach it from the TRE in DISCOVER.
   module: DISCOVER
-  location: s3://provisional-rddc-release/{sourceId}/{batchId}/{dispatchId}/
+  location: s3://rddc-release/{sourceId}/{batchId}/{dispatchId}/
 - id: public
   description: Open-tier content published outside the security boundary.
-  location: s3://provisional-rddc-public/{sourceId}/{batchId}/{dispatchId}/
+  location: s3://rddc-public/{sourceId}/{batchId}/{dispatchId}/
 
-# --- workflows (PROVISIONAL) -----------------------------------------------
+# --- pipeline repositories ----------------------------------------------------
+# Our own pipelines, grouped by modality. Release masking has a repository of its own,
+# since it runs on every modality. Add the GitHub owner when the repositories exist.
+pipelineRepositories:
+- id: clinical
+  description: De-identification and normalization of clinical data.
+  repository: rddc-clinical-pipelines
+  repositoryType: GITHUB_PRIVATE
+- id: genomics
+  description: Genomics normalization.
+  repository: rddc-genomics-pipelines
+  repositoryType: GITHUB_PRIVATE
+- id: imaging
+  description: Imaging de-identification.
+  repository: rddc-imaging-pipelines
+  repositoryType: GITHUB_PRIVATE
+- id: sensor
+  description: Sensor data QC and normalization.
+  repository: rddc-sensor-pipelines
+  repositoryType: GITHUB_PRIVATE
+- id: release
+  description: Release preparation, such as date masking.
+  repository: rddc-release-pipelines
+  repositoryType: GITHUB_PRIVATE
+
+# --- workflows (DRAFT) ----------------------------------------------------
 # Cirro process ids follow Cirro's pattern but are made up. Workflows that write
 # outside INTAKE refuse biometric data and data of a modality the source is not
 # registered for, and lanes into the normalized store refuse free text that has not been
@@ -146,11 +173,302 @@ workflows:
 - id: ingest_files
   description: >-
     The one generic step: brings deposited files of any type into the de-id/QC
-    environment as a Cirro dataset, unchanged. Every other pipeline is specific to a data
-    type and has its own version.
+    environment as a Cirro dataset, unchanged. The Cirro data type depends on the files
+    (cirroIngestTypes); every other pipeline is specific to a data type and has its own
+    version.
   runner: cirro
-  cirroProcess: process-rddc-provisional-ingest-files-0_0
   cirroExecutor: INGEST
+  cirroIngestTypes:
+  # In Cirro: file rules copied from Cirro (2026-11-09). Long reads first, by
+  # sequencingPlatform; the short-read types take only short-read platforms.
+  - dataType: nanopore_fastq
+    classes: [SequenceReadsFile]
+    platforms: [oxford_nanopore]
+    fileRules:
+    - description: Nanopore Sequencing (FASTQ)
+      minFiles: 1
+      maxFiles: 50000
+      fileNamePatterns:
+      - {exampleName: 'SampleName.fastq(.gz)', description: 'FASTQ',
+         namePattern: '(?P<sampleName>[\S ]*)\.(fq|fastq)(\.gz|)'}
+  - dataType: long_read_fastq
+    classes: [SequenceReadsFile]
+    platforms: [pacbio_smrt, oxford_nanopore]
+    fileRules:
+    - description: PacBio / Oxford Nanopore FASTQ
+      minFiles: 1
+      maxFiles: 50000
+      fileNamePatterns:
+      - {exampleName: 'SampleName.hifi_reads.fastq.gz', description: 'FASTQ (.hifi_reads.fastq.gz)',
+         namePattern: '(?P<sampleName>[\S ]*)\.hifi_reads\.(fq|fastq)(\.gz|)'}
+      - {exampleName: 'SampleName_R1.fastq.gz', description: 'FASTQ (.fastq.gz)',
+         namePattern: '(?P<sampleName>[\S ]*)_R1\.(fq|fastq)(\.gz|)'}
+      - {exampleName: 'SampleName_1.fastq.gz', description: 'FASTQ (.fastq.gz)',
+         namePattern: '(?P<sampleName>[\S ]*)_1\.(fq|fastq)(\.gz|)'}
+      - {exampleName: 'SampleName.fastq.gz', description: 'FASTQ (.fastq.gz)',
+         namePattern: '(?P<sampleName>[\S ]*)\.(fq|fastq)(\.gz|)'}
+  - dataType: paired_dnaseq
+    classes: [SequenceReadsFile]
+    techniques: [wgs, wes, targeted_panel, methylation_seq]
+    platforms: [illumina, element, dnbseq, ion_torrent, ultima]
+    fileRules:
+    - description: FASTQ - Unmatched Barcodes
+      minFiles: 0
+      maxFiles: 50000
+      fileNamePatterns:
+      - {exampleName: 'Undetermined_S0_R1_001.fastq.gz', description: 'FASTQ (No Barcode Match)',
+         namePattern: 'Undetermined\S*\.fastq\.gz'}
+    - description: Paired FASTQs (R1/R2)
+      minFiles: 2
+      maxFiles: 50000
+      fileNamePatterns:
+      - {exampleName: 'SampleName_R1.fastq.gz', description: 'FASTQ',
+         namePattern: '(?P<sampleName>[\S ]*)(\.|_)(?P<readType>R|I|)(?P<read>1|2|3|4)\.(fq|fastq)(\.gz|)'}
+      - {exampleName: 'SampleName_L001_R1_001.fastq.gz', description: 'FASTQ (Illumina Format - no sample index)',
+         namePattern: '(?P<sampleName>[\S]*)_L(?P<lane>\S*)_(?P<readType>R|I)(?P<read>1|2|3|4)_001\.fastq\.gz'}
+      - {exampleName: 'SampleName_S1_L001_R1_001.fastq.gz', description: 'FASTQ (Illumina Format - with lane)',
+         namePattern: '(?P<sampleName>\S*)_S(?P<libraryIndex>\S*)_L(?P<lane>\S*)_(?P<readType>R|I)(?P<read>1|2|3|4)_001\.fastq\.gz'}
+      - {exampleName: 'SampleName_S1_R1_001.fastq.gz', description: 'FASTQ (Illumina Format - no lane)',
+         namePattern: '(?P<sampleName>\S*)_S(?P<libraryIndex>\S*)_(?P<readType>R|I)(?P<read>1|2|3|4)_001\.fastq\.gz'}
+  - dataType: rnaseq
+    classes: [SequenceReadsFile]
+    techniques: [rna_seq]
+    platforms: [illumina, element, dnbseq, ion_torrent, ultima]
+    fileRules:
+    - description: FASTQ - Unmatched Barcodes
+      minFiles: 0
+      maxFiles: 50000
+      fileNamePatterns:
+      - {exampleName: 'Undetermined_S0_R1_001.fastq.gz', description: 'FASTQ (No Barcode Match)',
+         namePattern: 'Undetermined\S*\.fastq\.gz'}
+    - description: Paired FASTQs (R1/R2)
+      minFiles: 2
+      maxFiles: 50000
+      fileNamePatterns:
+      - {exampleName: 'SampleName_R1.fastq.gz', description: 'FASTQ',
+         namePattern: '(?P<sampleName>[\S ]*)(\.|_)(?P<readType>R|I|)(?P<read>1|2|3|4)\.(fq|fastq)(\.gz|)'}
+      - {exampleName: 'SampleName_L001_R1_001.fastq.gz', description: 'FASTQ (Illumina Format - no sample index)',
+         namePattern: '(?P<sampleName>[\S]*)_L(?P<lane>\S*)_(?P<readType>R|I)(?P<read>1|2|3|4)_001\.fastq\.gz'}
+      - {exampleName: 'SampleName_S1_L001_R1_001.fastq.gz', description: 'FASTQ (Illumina Format - with lane)',
+         namePattern: '(?P<sampleName>\S*)_S(?P<libraryIndex>\S*)_L(?P<lane>\S*)_(?P<readType>R|I)(?P<read>1|2|3|4)_001\.fastq\.gz'}
+      - {exampleName: 'SampleName_S1_R1_001.fastq.gz', description: 'FASTQ (Illumina Format - no lane)',
+         namePattern: '(?P<sampleName>\S*)_S(?P<libraryIndex>\S*)_(?P<readType>R|I)(?P<read>1|2|3|4)_001\.fastq\.gz'}
+  - dataType: rnaseq-single
+    classes: [SequenceReadsFile]
+    techniques: [rna_seq]
+    platforms: [illumina, element, dnbseq, ion_torrent, ultima]
+    fileRules:
+    - description: FASTQ - Unmatched Barcodes
+      minFiles: 0
+      maxFiles: 50000
+      fileNamePatterns:
+      - {exampleName: 'Undetermined_S0_R1_001.fastq.gz', description: 'FASTQ (No Barcode Match)',
+         namePattern: 'Undetermined\S*\.fastq\.gz'}
+    - description: FASTQs
+      minFiles: 1
+      maxFiles: 50000
+      fileNamePatterns:
+      - {exampleName: 'SampleName_R1.fastq.gz', description: 'FASTQ',
+         namePattern: '(?P<sampleName>[\S ]*)(\.|_)(?P<readType>R|I|)(?P<read>1|2|3|4)\.(fq|fastq)(\.gz|)'}
+      - {exampleName: 'SampleName_L001_R1_001.fastq.gz', description: 'FASTQ (Illumina Format - no sample index)',
+         namePattern: '(?P<sampleName>[\S]*)_L(?P<lane>\S*)_(?P<readType>R|I)(?P<read>1|2|3|4)_001\.fastq\.gz'}
+      - {exampleName: 'SampleName_S1_L001_R1_001.fastq.gz', description: 'FASTQ (Illumina Format - with lane)',
+         namePattern: '(?P<sampleName>\S*)_S(?P<libraryIndex>\S*)_L(?P<lane>\S*)_(?P<readType>R|I)(?P<read>1|2|3|4)_001\.fastq\.gz'}
+      - {exampleName: 'SampleName_S1_R1_001.fastq.gz', description: 'FASTQ (Illumina Format - no lane)',
+         namePattern: '(?P<sampleName>\S*)_S(?P<libraryIndex>\S*)_(?P<readType>R|I)(?P<read>1|2|3|4)_001\.fastq\.gz'}
+  - dataType: ingest_unaligned_bam
+    classes: [SequenceReadsFile]
+    fileRules:
+    - description: Unaligned BAMs
+      minFiles: 1
+      maxFiles: 50000
+      fileNamePatterns:
+      - {exampleName: 'SampleName.unaligned.bam', description: 'BAM',
+         namePattern: '(?P<sampleName>[\S ]*).unaligned.bam'}
+      - {exampleName: 'SampleName.bam', description: 'BAM',
+         namePattern: '(?P<sampleName>[\S ]*).bam'}
+  - dataType: ingest_aligned_bam
+    classes: [AlignmentFile, IndexFile]
+    fileRules:
+    - description: Aligned BAMs
+      minFiles: 1
+      maxFiles: 50000
+      fileNamePatterns:
+      - {exampleName: 'SampleName.bam', description: 'BAM',
+         namePattern: '(?P<sampleName>[\S ]*).bam'}
+      - {exampleName: 'SampleName.bam.bai', description: 'BAM Index',
+         namePattern: '(?P<sampleName>[\S ]*).bam.bai'}
+  - dataType: ingest_cram
+    classes: [AlignmentFile]
+    fileRules:
+    - description: CRAM Files
+      minFiles: 1
+      maxFiles: 50000
+      fileNamePatterns:
+      - {exampleName: 'SampleName.cram', description: 'CRAM',
+         namePattern: '(?P<sampleName>[\S ]*).cram'}
+  # To add to Cirro: a fallback for a CRAM delivered with its index, which Cirro's
+  # ingest_cram does not take. File rules are proposals.
+  - dataType: rddc_ingest_cram
+    classes: [AlignmentFile, IndexFile]
+    fileRules:
+    - description: CRAM files
+      minFiles: 1
+      maxFiles: 50000
+      fileNamePatterns:
+      - {exampleName: 'SampleName.cram', description: 'CRAM',
+         namePattern: '(?P<sampleName>[\S ]*)\.cram'}
+    - description: CRAM indexes
+      minFiles: 0
+      maxFiles: 50000
+      fileNamePatterns:
+      - {exampleName: 'SampleName.cram.crai', description: 'CRAM index',
+         namePattern: '(?P<sampleName>[\S ]*)\.cram\.crai'}
+  - dataType: vcf
+    classes: [VariantFile]
+    fileRules:
+    - description: Genomic Variants (VCF)
+      minFiles: 1
+      maxFiles: 50000
+      fileNamePatterns:
+      - {exampleName: 'Sample.vcf.gz', description: 'VCF',
+         namePattern: '(?P<sampleName>[\S ]*)\.vcf\.gz'}
+  # To add to Cirro: a fallback for variant calls Cirro's vcf does not take (an
+  # uncompressed VCF, a BCF, or a VCF with its index). File rules are proposals.
+  - dataType: rddc_ingest_vcf
+    classes: [VariantFile, IndexFile]
+    fileRules:
+    - description: Variant calls
+      minFiles: 1
+      maxFiles: 50000
+      fileNamePatterns:
+      - {exampleName: 'Sample.vcf.gz', description: 'VCF',
+         namePattern: '(?P<sampleName>[\S ]*)\.vcf(\.gz)?'}
+      - {exampleName: 'Sample.bcf', description: 'BCF',
+         namePattern: '(?P<sampleName>[\S ]*)\.bcf'}
+    - description: Variant call indexes
+      minFiles: 0
+      maxFiles: 50000
+      fileNamePatterns:
+      - {exampleName: 'Sample.vcf.gz.tbi', description: 'Tabix or CSI index',
+         namePattern: '(?P<sampleName>[\S ]*)\.(vcf\.gz|bcf)\.(tbi|csi)'}
+  # To add to Cirro: file rules are proposals. Facial images come before DICOM so they keep a type of their own.
+  - dataType: rddc_ingest_facial_imaging
+    classes: [FacialImagingFile]
+    fileRules:
+    - description: Facial images and 3D scans
+      minFiles: 1
+      maxFiles: 50000
+      fileNamePatterns:
+      - {exampleName: 'face.jpg', description: 'Photograph',
+         namePattern: '(?P<sampleName>[\S ]*)\.(jpe?g|png|tiff?|heic)'}
+      - {exampleName: 'face.dcm', description: 'DICOM',
+         namePattern: '(?P<sampleName>[\S ]*)\.dcm'}
+      - {exampleName: 'face.obj', description: '3D surface scan',
+         namePattern: '(?P<sampleName>[\S ]*)\.(obj|stl|glb|gltf|mtl|ply)'}
+  # In Cirro.
+  - dataType: ingest_dicom
+    classes: [ImagingFile]
+    fileRules:
+    - description: DICOM Files
+      minFiles: 1
+      maxFiles: 50000
+      fileNamePatterns:
+      - {exampleName: 'SampleName.dcm', description: 'DICOM (.dcm)',
+         namePattern: '(?P<sampleName>[\S ]*).dcm'}
+  # To add to Cirro: file rules are proposals.
+  - dataType: rddc_ingest_fhir
+    classes: [FhirFile]
+    fileRules:
+    - description: FHIR resources or bulk export files
+      minFiles: 1
+      maxFiles: 50000
+      fileNamePatterns:
+      - {exampleName: 'Patient.ndjson.gz', description: 'NDJSON',
+         namePattern: '(?P<sampleName>[\S ]*)\.ndjson(\.gz)?'}
+      - {exampleName: 'bundle.json', description: 'JSON',
+         namePattern: '(?P<sampleName>[\S ]*)\.json(\.gz)?'}
+  - dataType: rddc_ingest_omop
+    classes: [OmopTableFile]
+    fileRules:
+    - description: OMOP CDM tables
+      minFiles: 1
+      maxFiles: 50000
+      fileNamePatterns:
+      - {exampleName: 'person.csv', description: 'CSV, TSV or Parquet',
+         namePattern: '(?P<sampleName>[\S ]*)\.(csv|tsv|parquet)(\.gz)?'}
+  - dataType: rddc_ingest_ccda
+    classes: [CcdaDocumentFile]
+    fileRules:
+    - description: C-CDA documents
+      minFiles: 1
+      maxFiles: 50000
+      fileNamePatterns:
+      - {exampleName: 'doc_0000001.xml', description: 'XML',
+         namePattern: '(?P<sampleName>[\S ]*)\.xml(\.gz)?'}
+  - dataType: rddc_ingest_tabular
+    classes: [TabularFile]
+    fileRules:
+    - description: Tables
+      minFiles: 1
+      maxFiles: 50000
+      fileNamePatterns:
+      - {exampleName: 'patients.csv', description: 'CSV, TSV, Parquet or JSON',
+         namePattern: '(?P<sampleName>[\S ]*)\.(csv|tsv|parquet|json|jsonl)(\.gz)?'}
+  - dataType: rddc_ingest_clinical_documents
+    classes: [ClinicalDocumentFile]
+    fileRules:
+    - description: Clinical documents
+      minFiles: 1
+      maxFiles: 50000
+      fileNamePatterns:
+      - {exampleName: 'note_0001.txt', description: 'Text, PDF, RTF or scan',
+         namePattern: '(?P<sampleName>[\S ]*)\.(txt|pdf|rtf|tiff?|jpe?g|png)'}
+  - dataType: rddc_ingest_consent
+    classes: [ConsentFile]
+    fileRules:
+    - description: Consent records
+      minFiles: 1
+      maxFiles: 50000
+      fileNamePatterns:
+      - {exampleName: 'consent.csv', description: 'CSV, TSV or JSON',
+         namePattern: '(?P<sampleName>[\S ]*)\.(csv|tsv|json|jsonl)'}
+  - dataType: rddc_ingest_sensor
+    classes: [SensorDataFile]
+    fileRules:
+    - description: Sensor signals and measures
+      minFiles: 1
+      maxFiles: 50000
+      fileNamePatterns:
+      - {exampleName: 'recording.edf', description: 'Any file (sensor formats are not agreed yet)',
+         namePattern: '(?P<sampleName>[\S ]*)'}
+  - dataType: rddc_ingest_imaging
+    classes: [ImagingFile]
+    fileRules:
+    - description: Images
+      minFiles: 1
+      maxFiles: 50000
+      fileNamePatterns:
+      - {exampleName: 'slide.tiff', description: 'Image',
+         namePattern: '(?P<sampleName>[\S ]*)\.(tiff?|jpe?g|png|svs|ndpi|czi|nii(\.gz)?)'}
+  - dataType: rddc_ingest_audio
+    classes: [AudioFile]
+    fileRules:
+    - description: Audio recordings
+      minFiles: 1
+      maxFiles: 50000
+      fileNamePatterns:
+      - {exampleName: 'interview.wav', description: 'Audio',
+         namePattern: '(?P<sampleName>[\S ]*)\.(wav|flac|mp3|m4a|ogg|aac)'}
+  - dataType: rddc_ingest_video
+    classes: [VideoFile]
+    fileRules:
+    - description: Video recordings
+      minFiles: 1
+      maxFiles: 50000
+      fileNamePatterns:
+      - {exampleName: 'session.mp4', description: 'Video',
+         namePattern: '(?P<sampleName>[\S ]*)\.(mp4|mov|avi|mkv|webm)'}
   pipelineVersion: 0.0.0
   kind: ingest
   consumes: {}
@@ -159,8 +477,11 @@ workflows:
 - id: fhir_to_omop
   description: Lane 2. Transforms a FHIR R4 export to OMOP CDM 5.4 and loads it.
   runner: cirro
-  cirroProcess: process-rddc-provisional-fhir-to-omop-0_0
+  cirroProcess: process-rddc-fhir-to-omop-0_0
   cirroExecutor: NEXTFLOW
+  cirroAvailability: to_add
+  pipelineRepository: clinical
+  pipelineName: fhir_to_omop
   pipelineVersion: 0.0.0
   kind: transform
   operation: EDAM:operation_0335
@@ -180,8 +501,11 @@ workflows:
 - id: omop_load
   description: Lane 1. Loads an OMOP CDM 5.4 instance.
   runner: cirro
-  cirroProcess: process-rddc-provisional-omop-load-0_0
+  cirroProcess: process-rddc-omop-load-0_0
   cirroExecutor: NEXTFLOW
+  cirroAvailability: to_add
+  pipelineRepository: clinical
+  pipelineName: omop_load
   pipelineVersion: 0.0.0
   kind: load
   consumes:
@@ -197,8 +521,11 @@ workflows:
 - id: ccda_to_omop
   description: Lane 3. Transforms C-CDA 2.1 documents to OMOP CDM 5.4.
   runner: cirro
-  cirroProcess: process-rddc-provisional-ccda-to-omop-0_0
+  cirroProcess: process-rddc-ccda-to-omop-0_0
   cirroExecutor: CROMWELL
+  cirroAvailability: to_add
+  pipelineRepository: clinical
+  pipelineName: ccda_to_omop
   pipelineVersion: 0.0.0
   kind: transform
   operation: EDAM:operation_0335
@@ -215,8 +542,11 @@ workflows:
     Removes identifiers from free text in FHIR resources: narrative, notes and other string fields. Output stays FHIR R4. Runs once per file, also on files of the same file set that need no
     de-identification themselves, so that the set moves together.
   runner: cirro
-  cirroProcess: process-rddc-provisional-fhir-deid-0_0
+  cirroProcess: process-rddc-fhir-deid-0_0
   cirroExecutor: NEXTFLOW
+  cirroAvailability: to_add
+  pipelineRepository: clinical
+  pipelineName: fhir_deid
   pipelineVersion: 0.0.0
   kind: deidentify
   operation: EDAM:operation_3283
@@ -235,8 +565,11 @@ workflows:
     Removes identifiers from the narrative sections of C-CDA documents. Output stays C-CDA. Runs once per file, also on files of the same file set that need no
     de-identification themselves, so that the set moves together.
   runner: cirro
-  cirroProcess: process-rddc-provisional-ccda-deid-0_0
+  cirroProcess: process-rddc-ccda-deid-0_0
   cirroExecutor: NEXTFLOW
+  cirroAvailability: to_add
+  pipelineRepository: clinical
+  pipelineName: ccda_deid
   pipelineVersion: 0.0.0
   kind: deidentify
   operation: EDAM:operation_3283
@@ -255,8 +588,11 @@ workflows:
     Removes identifiers from free-text columns of registry and other tables. Runs once per file, also on files of the same file set that need no
     de-identification themselves, so that the set moves together.
   runner: cirro
-  cirroProcess: process-rddc-provisional-tabular-deid-0_0
+  cirroProcess: process-rddc-tabular-deid-0_0
   cirroExecutor: NEXTFLOW
+  cirroAvailability: to_add
+  pipelineRepository: clinical
+  pipelineName: tabular_deid
   pipelineVersion: 0.0.0
   kind: deidentify
   operation: EDAM:operation_3283
@@ -275,8 +611,11 @@ workflows:
     Removes identifiers from clinical notes and scanned reports (text and OCR). Runs once per file, also on files of the same file set that need no
     de-identification themselves, so that the set moves together.
   runner: cirro
-  cirroProcess: process-rddc-provisional-clinical-document-deid-0_0
+  cirroProcess: process-rddc-clinical-document-deid-0_0
   cirroExecutor: NEXTFLOW
+  cirroAvailability: to_add
+  pipelineRepository: clinical
+  pipelineName: clinical_document_deid
   pipelineVersion: 0.0.0
   kind: deidentify
   operation: EDAM:operation_3283
@@ -295,8 +634,11 @@ workflows:
     Removes identifiers from the free text of a deposited OMOP CDM instance (note and note_nlp tables). Runs once per file, also on files of the same file set that need no
     de-identification themselves, so that the set moves together.
   runner: cirro
-  cirroProcess: process-rddc-provisional-omop-note-deid-0_0
+  cirroProcess: process-rddc-omop-note-deid-0_0
   cirroExecutor: NEXTFLOW
+  cirroAvailability: to_add
+  pipelineRepository: clinical
+  pipelineName: omop_note_deid
   pipelineVersion: 0.0.0
   kind: deidentify
   operation: EDAM:operation_3283
@@ -329,14 +671,17 @@ workflows:
   - id: language_code
     value: en
   - id: data_access_role_arn
-    value: arn:aws:iam::000000000000:role/provisional-rddc-comprehend-medical
+    value: arn:aws:iam::000000000000:role/rddc-comprehend-medical
   - id: output_s3_uri
-    value: s3://provisional-rddc-deid-reports/{sourceId}/{batchId}/{dispatchId}/
+    value: s3://rddc-deid-reports/{sourceId}/{batchId}/{dispatchId}/
 - id: tabular_load
   description: Lane 4. Loads other tables and de-identified documents.
   runner: cirro
-  cirroProcess: process-rddc-provisional-tabular-load-0_0
+  cirroProcess: process-rddc-tabular-load-0_0
   cirroExecutor: NEXTFLOW
+  cirroAvailability: to_add
+  pipelineRepository: clinical
+  pipelineName: tabular_load
   pipelineVersion: 0.0.0
   kind: load
   consumes:
@@ -349,7 +694,7 @@ workflows:
     Matches the consent elements in a consent file to persons by PPRL linkage ID and
     writes them to GOVERN's participants table. The file stays in INTAKE.
   runner: service
-  pipeline: https://provisional.govern.example/participants-table
+  pipeline: https://govern.example/participants-table
   pipelineVersion: 0.0.0
   kind: record
   recordsTo: participants table
@@ -362,8 +707,11 @@ workflows:
 - id: imaging_deid
   description: Removes identifiers from DICOM headers. Not for facial images.
   runner: cirro
-  cirroProcess: process-rddc-provisional-imaging-deid-0_0
+  cirroProcess: process-rddc-imaging-deid-0_0
   cirroExecutor: NEXTFLOW
+  cirroAvailability: to_add
+  pipelineRepository: imaging
+  pipelineName: imaging_deid
   pipelineVersion: 0.0.0
   kind: deidentify
   operation: EDAM:operation_3283
@@ -379,8 +727,11 @@ workflows:
     Normalization requirement: represents the variant calls in a VCF as GA4GH VRS 2.0
     alleles with computed identifiers, and loads them into the normalized store.
   runner: cirro
-  cirroProcess: process-rddc-provisional-vcf-to-vrs-0_0
+  cirroProcess: process-rddc-vcf-to-vrs-0_0
   cirroExecutor: NEXTFLOW
+  cirroAvailability: to_add
+  pipelineRepository: genomics
+  pipelineName: vcf_to_vrs
   pipelineVersion: 0.0.0
   kind: transform
   operation: EDAM:operation_0335
@@ -399,8 +750,11 @@ workflows:
     sampling and device metadata. The only INTAKE pipeline for sensor data; it has no
     de-identification pipeline.
   runner: cirro
-  cirroProcess: process-rddc-provisional-qc-sensory-0_0
+  cirroProcess: process-rddc-qc-sensory-0_0
   cirroExecutor: NEXTFLOW
+  cirroAvailability: to_add
+  pipelineRepository: sensor
+  pipelineName: qc_sensory
   pipelineVersion: 0.0.0
   kind: qc
   consumes:
@@ -412,8 +766,11 @@ workflows:
 - id: sensor_to_measures
   description: Derives measures (IEEE 1752.1) from raw sensor signals.
   runner: cirro
-  cirroProcess: process-rddc-provisional-sensor-to-measures-0_0
+  cirroProcess: process-rddc-sensor-to-measures-0_0
   cirroExecutor: CROMWELL
+  cirroAvailability: to_add
+  pipelineRepository: sensor
+  pipelineName: sensor_to_measures
   pipelineVersion: 0.0.0
   kind: transform
   operation: EDAM:operation_0335
@@ -427,8 +784,11 @@ workflows:
 - id: sensor_load
   description: Loads sensor measures.
   runner: cirro
-  cirroProcess: process-rddc-provisional-sensor-load-0_0
+  cirroProcess: process-rddc-sensor-load-0_0
   cirroExecutor: NEXTFLOW
+  cirroAvailability: to_add
+  pipelineRepository: sensor
+  pipelineName: sensor_load
   pipelineVersion: 0.0.0
   kind: load
   consumes:
@@ -439,7 +799,7 @@ workflows:
 - id: curation_hold
   description: Holds a file for a curator.
   runner: service
-  pipeline: https://provisional.synapse.example/curation-queue
+  pipeline: https://synapse.example/curation-queue
   pipelineVersion: 0.0.0
   kind: hold
   priority: 9
@@ -449,8 +809,11 @@ workflows:
 - id: release_mask_shift
   description: "Register: shifts dates by a per-person offset and truncates ZIP codes to 3 digits."
   runner: cirro
-  cirroProcess: process-rddc-provisional-release-mask-0_0
+  cirroProcess: process-rddc-release-mask-0_0
   cirroExecutor: NEXTFLOW
+  cirroAvailability: to_add
+  pipelineRepository: release
+  pipelineName: release_mask
   pipelineVersion: 0.0.0
   kind: mask
   operation: EDAM:operation_3283
@@ -469,8 +832,11 @@ workflows:
 - id: release_mask_year
   description: "Register: reduces dates to the year and truncates ZIP codes to 3 digits."
   runner: cirro
-  cirroProcess: process-rddc-provisional-release-mask-0_0
+  cirroProcess: process-rddc-release-mask-0_0
   cirroExecutor: NEXTFLOW
+  cirroAvailability: to_add
+  pipelineRepository: release
+  pipelineName: release_mask
   pipelineVersion: 0.0.0
   kind: mask
   operation: EDAM:operation_3283
@@ -489,7 +855,7 @@ workflows:
 - id: expert_determination
   description: "Register: an expert determination of re-identification risk. Records a decision; writes no data."
   runner: service
-  pipeline: https://provisional.expert-determination.example/request
+  pipeline: https://expert-determination.example/request
   pipelineVersion: 0.0.0
   kind: expert_review
   consumes:
@@ -500,7 +866,7 @@ workflows:
 - id: publish
   description: Copies analysis-ready data to the release database.
   runner: container
-  pipeline: provisional.registry/publish:0.0.0
+  pipeline: registry.example/rddc/publish:0.0.0
   pipelineVersion: 0.0.0
   kind: publish
   consumes:
@@ -512,7 +878,7 @@ workflows:
 - id: publish_open
   description: "Register: publishes released data of Open-tier sources whose use terms allow it."
   runner: container
-  pipeline: provisional.registry/publish-open:0.0.0
+  pipeline: registry.example/rddc/publish-open:0.0.0
   pipelineVersion: 0.0.0
   kind: publish
   consumes:
@@ -526,7 +892,7 @@ workflows:
 - id: withdraw_subjects
   description: Removes the listed subjects' data and everything derived from it.
   runner: service
-  pipeline: https://provisional.govern.example/withdraw
+  pipeline: https://govern.example/withdraw
   pipelineVersion: 0.0.0
   kind: withdraw
   coversZones: [deposit, deid_qc, curation, normalized, release, public]
@@ -538,7 +904,7 @@ workflows:
 - id: restrict_subjects
   description: Restricts use of the listed subjects' data.
   runner: service
-  pipeline: https://provisional.govern.example/restrict
+  pipeline: https://govern.example/restrict
   pipelineVersion: 0.0.0
   kind: restrict
   coversZones: [deposit, deid_qc, curation, normalized, release, public]

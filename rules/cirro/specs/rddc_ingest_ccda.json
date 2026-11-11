@@ -1,0 +1,29 @@
+{
+  "id": "rddc_ingest_ccda",
+  "name": "C-CDA documents (XML)",
+  "description": "RDDC data type: C-CDA documents (XML), uploaded by ingest_files.",
+  "executor": "INGEST",
+  "childProcessIds": [
+    "process-rddc-ccda-deid-0_0",
+    "process-rddc-ccda-to-omop-0_0"
+  ],
+  "parentProcessIds": [],
+  "linkedProjectIds": [
+    "rddc-processing"
+  ],
+  "isTenantWide": false,
+  "fileMappingRules": [
+    {
+      "description": "C-CDA documents",
+      "min": 1,
+      "max": 50000,
+      "fileNamePatterns": [
+        {
+          "exampleName": "doc_0000001.xml",
+          "description": "XML",
+          "sampleMatchingPattern": "(?P<sampleName>[\\S ]*)\\.xml(\\.gz)?"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "id": "rddc_ingest_sensor",
+  "name": "Sensor data",
+  "description": "RDDC data type: Sensor data, uploaded by ingest_files.",
+  "executor": "INGEST",
+  "childProcessIds": [
+    "process-rddc-qc-sensory-0_0"
+  ],
+  "parentProcessIds": [],
+  "linkedProjectIds": [
+    "rddc-processing"
+  ],
+  "isTenantWide": false,
+  "fileMappingRules": [
+    {
+      "description": "Sensor signals and measures",
+      "min": 1,
+      "max": 50000,
+      "fileNamePatterns": [
+        {
+          "exampleName": "recording.edf",
+          "description": "Any file (sensor formats are not agreed yet)",
+          "sampleMatchingPattern": "(?P<sampleName>[\\S ]*)"
+        }
+      ]
+    }
+  ]
+}

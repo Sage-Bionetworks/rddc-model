@@ -1,0 +1,28 @@
+{
+  "id": "rddc_ingest_imaging",
+  "name": "Images other than DICOM",
+  "description": "RDDC data type: Images other than DICOM, uploaded by ingest_files.",
+  "executor": "INGEST",
+  "childProcessIds": [
+    "process-rddc-imaging-deid-0_0"
+  ],
+  "parentProcessIds": [],
+  "linkedProjectIds": [
+    "rddc-processing"
+  ],
+  "isTenantWide": false,
+  "fileMappingRules": [
+    {
+      "description": "Images",
+      "min": 1,
+      "max": 50000,
+      "fileNamePatterns": [
+        {
+          "exampleName": "slide.tiff",
+          "description": "Image",
+          "sampleMatchingPattern": "(?P<sampleName>[\\S ]*)\\.(tiff?|jpe?g|png|svs|ndpi|czi|nii(\\.gz)?)"
+        }
+      ]
+    }
+  ]
+}
