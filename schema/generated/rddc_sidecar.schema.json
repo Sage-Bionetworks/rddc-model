@@ -13,7 +13,7 @@
                     "type": "string"
                 },
                 "softwareVersion": {
-                    "description": "Version of the software that wrote the document.",
+                    "description": "Version of the software that wrote the document (the slot is defined in the data module).",
                     "type": [
                         "string",
                         "null"
@@ -2207,7 +2207,7 @@
                     ]
                 },
                 "softwareVersion": {
-                    "description": "Version of the software that wrote the document.",
+                    "description": "The version of the tool, or of its model, that produced the candidates.",
                     "type": [
                         "string",
                         "null"

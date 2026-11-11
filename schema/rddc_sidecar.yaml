@@ -208,6 +208,8 @@ classes:
         range: AgentTypeEnum
       name:
         required: true
+      softwareVersion:
+        description: Version of the software that wrote the document (the slot is defined in the data module).
 
   SensitivityDeclaration:
     description: >-
@@ -582,9 +584,6 @@ slots:
     range: DistributionItem
     multivalued: true
     inlined_as_list: true
-  softwareVersion:
-    description: "Version of the software that wrote the document."
-    slot_uri: sc:softwareVersion
   recordSet:
     description: "Record sets describing the records in the batch's files."
     slot_uri: cr:recordSet
