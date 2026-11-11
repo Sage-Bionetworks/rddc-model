@@ -10,14 +10,8 @@
     </div>
   </div>
   <div class="hero-code">
-    <ul class="legend" aria-label="Term origins. Select one to highlight its keys.">
-      <li><button class="chip o-sc" data-origin="sc" aria-pressed="false">schema.org</button></li>
-      <li><button class="chip o-cr" data-origin="cr" aria-pressed="false">Croissant</button></li>
-      <li><button class="chip o-rddc" data-origin="rddc" aria-pressed="false">RDDC</button></li>
-      <li><button class="chip o-prov" data-origin="prov" aria-pressed="false">W3C PROV</button></li>
-    </ul>
-    <p class="hint">Each key is coloured by the vocabulary that defines it. Select a vocabulary to pick out its keys, or hover over a key for its full IRI.</p>
-    <rddc-example key="alignment" title="One file in a sidecar: a whole-genome alignment"></rddc-example>
+    <rddc-example key="alignment" title="A data file of class AlignmentFile: a whole-genome alignment"></rddc-example>
+    <p class="hint">Every file names its data class in <code>additionalType</code>. The class decides which other fields it needs: here the assay, the sequencing platform and the reference genome.</p>
   </div>
 </div>
 

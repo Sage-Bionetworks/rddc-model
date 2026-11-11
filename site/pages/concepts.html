@@ -64,6 +64,18 @@
 </ul>
 <p>The rest of this page covers what the sidecar adds around its files: file sets, the subject table, sensitivity defaults, provenance and references.</p>
 
+<h3>File identity</h3>
+<p>In a sidecar, every file also has <code>"@type": "cr:FileObject"</code> and an <code>@id</code>, a UUID URN such as <code>urn:uuid:0000000a-0000-4000-8000-00000000000a</code>. The <code>@id</code> identifies one file of the source, not one upload:</p>
+<ul>
+<li>It stays the same when the platform moves or re-registers the object.</li>
+<li>Changed content is a new file with a new <code>@id</code>.</li>
+<li>Identical content under two paths is two files with two <code>@id</code>s.</li>
+<li>It is unique within the sidecar and never reused for a different file.</li>
+</ul>
+<p>Use a lowercase UUID. The RDDC tool creates UUIDv5 values from the source, batch, path and checksum. It can reuse IDs from a previous sidecar for unchanged files. Other tools may generate IDs differently.</p>
+<p>The same file as YAML in part 1 and as JSON-LD in a sidecar differ only by these two keys:</p>
+<rddc-json src="examples/data_files/valid.json" pointer="/fhir_ndjson" title="The FHIR NDJSON file from How data is classified, as a sidecar entry"></rddc-json>
+
 <h2>File sets</h2>
 <p>Files that form one collection, such as an OMOP instance or a FHIR bulk export, are grouped in a file set with <code>"@type": "cr:FileSet"</code> and an RDDC class in <code>additionalType</code>. A file set:</p>
 <ul>

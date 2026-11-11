@@ -50,6 +50,7 @@ import shutil
 import sys
 
 import jsonschema
+import yaml
 from linkml_runtime.utils.schemaview import SchemaView
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -605,7 +606,9 @@ def class_section(name, view=None):
         meta.append("<span>Biometric: always counts as containing biometric identifiers, and so as identifying</span>")
     if cls.annotations.get("identifying"):
         meta.append("<span>Identifying: can identify a person on its own, so it never counts as de-identified</span>")
-    if name in DISPATCHED:
+    if name in DISPATCHED and name in DATA_CLASSES:
+        meta.append(f'<span>Name it as <code>additionalType: rddc:{name}</code></span>')
+    elif name in DISPATCHED:
         typ = "cr:FileSet" if "FileSet" in view.class_ancestors(name) else "cr:FileObject"
         meta.append(f'<span>Use as <code>"@type": "{typ}", "additionalType": "rddc:{name}"</code></span>')
 
@@ -738,9 +741,9 @@ def data_classes_page():
         f"<p>Data files extend {base}. Badges mark abstract classes and each class's structure and modality.</p>",
         "<ul class='tree'>" + hierarchy_html("DataFile") + "</ul>",
         "<h2 id='at-a-glance'>At a glance</h2>",
-        "<p>Every file needs <code>@id</code>, <code>name</code>, <code>contentUrl</code>, <code>contentSize</code>, "
+        "<p>Every file needs <code>name</code>, <code>contentUrl</code>, <code>contentSize</code>, "
         "<code>encodingFormat</code> and <code>sha256</code>. The class adds the fields below, and sets the file's "
-        "modality: a sidecar does not state it.</p>",
+        "modality, so the file does not state it.</p>",
         dispatch_table("FileObject", structure=True),
         "<h2 id='classes'>Classes</h2>",
     ]
@@ -903,14 +906,48 @@ def gen_family(attrs):
     )
 
 
+YAML_KEY = re.compile(r"^(\s*)(- )?('[^']*'|[A-Za-z_][\w]*)(:)(\s.*)?$")
+
+
+def highlight_plain_yaml(text):
+    """Highlight YAML for readers who have not met JSON-LD: neutral keys, muted values."""
+    out = []
+    for line in text.split("\n"):
+        m = YAML_KEY.match(line)
+        if not m:
+            stripped = line.lstrip()
+            if stripped.startswith("- "):
+                lead = line[: len(line) - len(stripped)]
+                out.append(f"{lead}- <span class='s'>{html.escape(stripped[2:])}</span>")
+            else:
+                out.append(html.escape(line))
+            continue
+        indent, dash, key, colon, rest = m.groups()
+        value = f" <span class='s'>{html.escape(rest.strip())}</span>" if rest and rest.strip() else ""
+        out.append(f"{indent}{dash or ''}<span class='yk'>{html.escape(key)}</span>{colon}{value}")
+    return "\n".join(out)
+
+
+def example_yaml(doc):
+    """A data file object as YAML, without the JSON-LD keywords the sidecar adds, and with
+    references to other files written as just their ID."""
+    def simplify(value):  # a reference {"@id": X} reads as just X
+        if isinstance(value, dict):
+            return value["@id"] if set(value) == {"@id"} else {k: simplify(v) for k, v in value.items()}
+        return [simplify(v) for v in value] if isinstance(value, list) else value
+    plain = {k: simplify(v) for k, v in doc.items() if not k.startswith("@")}
+    return yaml.safe_dump(plain, sort_keys=False, allow_unicode=True, width=1000).rstrip()
+
+
 def gen_example(attrs):
     key = attrs["key"]
     if key not in DATA_EXAMPLES:
         raise SystemExit(f"{_current_page[0]}: no example {key!r} in {DATA_EXAMPLES_SRC}")
     cls = DATA_EXAMPLES[key]["additionalType"]
     EXAMPLED_CLASSES.add(cls.split(":", 1)[1])
-    title = attrs.get("title") or f"A valid {cls}"
-    return f'<rddc-json src="{DATA_EXAMPLES_SRC}" pointer="/{key}" title="{html.escape(title)}"></rddc-json>'
+    title = attrs.get("title") or f"A valid {cls.split(':', 1)[1]}"
+    return code_block(highlight_plain_yaml(example_yaml(DATA_EXAMPLES[key])), html.escape(title), lang="yaml")
+
 
 
 def gen_classification(attrs):
@@ -990,16 +1027,11 @@ def gen_enum(attrs):
 
 
 def gen_flags(attrs):
-    """The batch and file sensitivity flags, with their regulatory citations and mappings."""
-    file_flags = {s.name for s in sv.class_induced_slots("FileSensitivity")}
-    rows = []
-    for slot in sv.class_induced_slots("SensitivityDeclaration"):
-        if slot.name == "notes":
-            continue
-        where = "batch or file" if slot.name in file_flags else "batch only"
-        rows.append(f"<tr><td>{key_code(slot)}</td><td>{where}</td><td>{esc(slot.description)}{slot_mappings(slot)}</td></tr>")
+    """The sensitivity flags a data file can carry, with their regulatory citations and mappings."""
+    rows = [f"<tr><td>{key_code(slot)}</td><td>{esc(slot.description)}{slot_mappings(slot)}</td></tr>"
+            for slot in sv.class_induced_slots("FileSensitivity") if slot.name != "notes"]
     return (
-        "<div class='table-wrap'><table class='props'><thead><tr><th>Flag</th><th>Set on</th><th>Meaning, "
+        "<div class='table-wrap'><table class='props'><thead><tr><th>Flag</th><th>Meaning, "
         "citation and mappings</th></tr></thead><tbody>" + "".join(rows) + "</tbody></table></div>"
     )
 

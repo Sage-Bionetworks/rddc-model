@@ -5,14 +5,13 @@
 
 <h2>Documentation</h2>
 <p>A <code>DocumentationFile</code> documents other files: a data dictionary, an acquisition table for images, a codebook or a README. Its modality is <code>metadata</code>, so it is kept with the data rather than processed as data. Its content may be structured (a dictionary in CSV) or not (a README), so its structure is <code>mixed</code>.</p>
-<p>When it documents particular files or record sets, <code>about</code> points to them by <code>@id</code>. A README for the whole batch leaves <code>about</code> out.</p>
+<p>When it documents particular files, <code>about</code> points to them. A README for a whole delivery leaves <code>about</code> out.</p>
 <div class="pair">
   <div><rddc-example key="documentation" title="A data dictionary for one table"></rddc-example></div>
-  <div><rddc-example key="readme" title="A README for the whole batch"></rddc-example></div>
+  <div><rddc-example key="readme" title="A README for a whole delivery"></rddc-example></div>
 </div>
-<p>A batch of documentation files only may have an empty subject table, since such files hold no subjects' data. The <a href="recipes.html#registry-with-a-data-dictionary">registry recipe</a> pairs a data dictionary with the record sets it describes.</p>
 
 <h2>Other data</h2>
 <p>A <code>GenericFile</code> is any data file no other class fits. Its modality is <code>other</code>: a curator decides how it is processed. A kind of data the RDDC receives regularly gets its own class in a later schema version, so if you use <code>GenericFile</code> often for the same kind of file, ask for a class.</p>
 <rddc-example key="generic"></rddc-example>
-<p>A generic file is still checked like any other: its sensitivity flags apply, and unknown content is assumed to contain dates, postal codes, free text and biometric identifiers unless the batch or the file says otherwise.</p>
+<p>A generic file is still checked like any other: its sensitivity flags apply, and unknown content is assumed to contain dates, postal codes, free text and biometric identifiers unless declared otherwise.</p>
