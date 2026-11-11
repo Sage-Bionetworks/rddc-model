@@ -62,6 +62,3 @@ jobs:
 
       - name: Check example data file objects against the schema
         run: python scripts/check_data_files.py schema/data.yaml
-
-      - name: Check the data class docs are up to date
-        run: python scripts/gen_docs.py --check

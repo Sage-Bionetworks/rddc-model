@@ -1,4 +1,4 @@
-.PHONY: lint check enums docs
+.PHONY: lint check enums
 
 lint:
 	linkml-lint --config .linkml-lint.yaml header.yaml
@@ -13,8 +13,3 @@ check:
 # Regenerate the FHIR resource type and OMOP table enums from HL7 and OHDSI (downloads).
 enums:
 	python3 scripts/gen_enums.py
-	python3 scripts/gen_docs.py
-
-# Regenerate docs/data_classes.md from the schema; CI fails if it is out of date.
-docs:
-	python3 scripts/gen_docs.py
