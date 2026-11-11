@@ -4,10 +4,10 @@
 <rddc-family names="FhirBundleFile,FhirResourceFile,FhirNdjsonFile,OmopTableFile,CcdaDocumentFile,TabularFile,ConsentFile,ClinicalDocumentFile"></rddc-family>
 
 <h2 id="data-in-a-clinical-standard">Clinical data standards</h2>
-<p>FHIR, OMOP CDM and C-CDA files are delivered together as a collection: a FHIR export or set of Bundles, an OMOP CDM instance, or a set of C-CDA documents. The collection declares the standard and its version, such as FHIR R4 with US Core 6.1, so the files do not repeat it. OMOP tables are the exception: each names its CDM version, since the table names depend on it.</p>
+<p>FHIR, OMOP CDM and C-CDA files are always delivered as a collection of their class's file set class: a FHIR export, Bundle collection or resource collection, an OMOP CDM instance, or a set of C-CDA documents. The collection declares the standard and its version, such as FHIR R4 with US Core 6.1 or OMOP CDM 5.4, so the files do not repeat it. The validator checks that every such file belongs to a collection of the right class.</p>
 
 <h3>FHIR</h3>
-<p>FHIR files have three forms. A Bulk Data export is NDJSON with one resource type per file, a <code>FhirNdjsonFile</code>. A Bundle, such as one patient's record from Synthea, is a <code>FhirBundleFile</code>; it lists its subjects, since a Bundle usually holds one person. A single resource that is not a Bundle is a <code>FhirResourceFile</code>. The resource type must exist in the FHIR version of the collection.</p>
+<p>FHIR files have three forms. A Bulk Data export is NDJSON with one resource type per file, a <code>FhirNdjsonFile</code> in a <code>FhirBulkExport</code>. A Bundle, such as one patient's record from Synthea, is a <code>FhirBundleFile</code> in a <code>FhirBundleCollection</code>; it lists its subjects, since a Bundle usually holds one person. A single resource that is not a Bundle is a <code>FhirResourceFile</code> in a <code>FhirResourceCollection</code>. The resource type must exist in the FHIR version of the collection.</p>
 <div class="tabs">
   <div role="tablist" aria-label="FHIR file examples">
     <button role="tab" id="t-f-1" aria-controls="p-f-1" aria-selected="true">NDJSON</button>
@@ -21,7 +21,7 @@
 <p>Device data already in FHIR form, such as Observations from a wearable, stays a FHIR file. Its collection declares the HL7 Personal Health Device IG alongside FHIR.</p>
 
 <h3>OMOP CDM</h3>
-<p>Each OMOP table uses an <code>OmopTableFile</code> with <code>cdmTable</code> and <code>omopCdmVersion</code>. The table must exist in that version. The CDM already defines OMOP foreign keys.</p>
+<p>Each OMOP table uses an <code>OmopTableFile</code> with <code>cdmTable</code>, in an <code>OmopCdmInstance</code> whose <code>conformsTo</code> gives the CDM version. The table must exist in that version. The CDM already defines OMOP foreign keys, and CDM tables have no column for an image or recording, so a table contains no biometric identifiers unless it says so.</p>
 <rddc-example key="omop_table"></rddc-example>
 
 <h3>C-CDA</h3>
@@ -33,11 +33,11 @@
 <rddc-example key="tabular_jsonlines" title="A patient-reported outcome table in JSON Lines"></rddc-example>
 
 <h2>Consent</h2>
-<p>A <code>ConsentFile</code> records permitted data uses for each listed subject. The platform applies them to access decisions rather than processing them as clinical data.</p>
+<p>A <code>ConsentFile</code> records permitted data uses for each listed subject. The platform applies them to access decisions rather than processing them as clinical data. A consent elements table holds coded uses and dates, so postal codes, free text and biometric identifiers are <code>false</code> unless the file or batch says otherwise.</p>
 <rddc-example key="consent"></rddc-example>
 
 <h2>Clinical documents</h2>
-<p>Notes, reports and scanned documents are <code>ClinicalDocumentFile</code>s. They are unstructured, so they are de-identified with a text scan, or OCR for scans, before use. Each lists its subject. Their <code>containsFreeText</code> flag is assumed <code>true</code> unless set otherwise. A scanned report can carry a processing hint for the OCR step; hints are informational only.</p>
+<p>Notes, reports and scanned documents are <code>ClinicalDocumentFile</code>s. They are unstructured, so they are de-identified with a text scan, or OCR for scans, before use. Each lists its subject. The whole document is free text, so every file counts as containing free text and cannot set <code>containsFreeText</code>; the other flags can still be set per file. A scanned report can carry a processing hint for the OCR step; hints are informational only.</p>
 <rddc-example key="scanned_report"></rddc-example>
 
 <h2>Sensitivity</h2>
