@@ -69,6 +69,12 @@ enums:
       property; generic Croissant tools ignore this term.
     permissible_values:
       gzip:
+        description: gzip (RFC 1952).
+      bgzf:
+        description: >-
+          Blocked GNU Zip Format, the gzip-compatible block compression of htslib. A
+          BGZF file reads as gzip, but only BGZF can carry a tabix or CSI index, so a
+          .vcf.gz written by bgzip declares bgzf and one written by gzip declares gzip.
       bzip2:
       xz:
       zstd:
@@ -103,7 +109,9 @@ classes:
   FileSensitivity:
     description: >-
       Per-file overrides for the header contains* flags. A file can set these to true or
-      false. Only the batch can set directIdentifiersRemoved and synthetic.
+      false, unless its class fixes the flag (see the class annotations in data.yaml):
+      such classes use a variant of this class without that flag. Only the batch can
+      set directIdentifiersRemoved and synthetic.
     slots:
     - containsDates
     - containsZipCodes
@@ -327,9 +335,10 @@ slots:
   containsBiometricIdentifiers:
     description: >-
       The data includes biometric identifiers, full-face images, voice or similar
-      content. These stay in the trusted research environment (TRE). HIPAA Safe
-      Harbor identifiers (P), biometric identifiers including finger and voice prints,
-      and (Q), full-face photographs and comparable images, 45 CFR 164.514(b)(2)(i).
+      content. Such files never leave INTAKE: they are not loaded into the normalized
+      store or released. HIPAA Safe Harbor identifiers (P), biometric identifiers
+      including finger and voice prints, and (Q), full-face photographs and comparable
+      images, 45 CFR 164.514(b)(2)(i).
     range: boolean
     close_mappings:
     - pd:Biometric

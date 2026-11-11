@@ -7,7 +7,7 @@ standard's version:
 
   fhir  resourceType values. A FHIR file does not declare its version; its file set's
         conformsTo does, and the RDDC validator checks the value against it.
-  omop  cdmTable values. omopCdmVersion on the file selects the allowed values.
+  omop  cdmTable values. Likewise: the OmopCdmInstance's conformsTo gives the version.
 
 For each family the script generates, between BEGIN and END marker comments:
 
@@ -16,9 +16,9 @@ For each family the script generates, between BEGIN and END marker comments:
   <family>-all           the union of all versions' values, the slot's range
                          (FhirResourceTypeEnum, OmopCdmTableEnum)
 
-and, for a family whose files declare their version (omop only):
+and, for a family whose files declare their version (none at present):
 
-  <family>-versions      the version enum (OmopCdmVersionEnum)
+  <family>-versions      the version enum
   <family>-rules         one rule per version: if the file declares that version,
                          the value must be one of that version's values
 
@@ -96,7 +96,7 @@ FAMILIES = {
         ],
     },
     "omop": {
-        "version_slot": "omopCdmVersion",
+        "version_slot": None,  # the file set declares the version
         "value_slot": "cdmTable",
         "sort_union": False,
         "versions": [

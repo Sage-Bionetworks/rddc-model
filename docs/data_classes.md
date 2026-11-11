@@ -8,20 +8,22 @@ Data file classes for RDDC: the FileObject subclasses that describe the data in 
 
 DataFile extends FileObject from core.yaml, the only module this one imports. The sidecar module (rddc_sidecar.yaml) imports this one and lists data files in distribution.
 
-Each concrete class carries a "structure" annotation describing its content. It is a property of the class, so sidecars do not include it.
-- **structured**: records with defined fields that software can read without text or image analysis (FHIR, OMOP and other tables, C-CDA, VCF, FASTQ, BAM). Free text inside such a file is declared with containsFreeText.
-- **unstructured**: content without defined fields (notes, PDF or scanned documents, images, audio, video). Using it needs NLP, OCR or image analysis.
-- **mixed**: the class admits either kind, so the file's content decides (DocumentationFile, DifferentialDiagnosisFile, GenericFile).
+A concrete class is what one processing pipeline consumes. Where the pipeline depends on the format and a media type cannot tell the formats apart (BAM and CRAM, EDF and other sensor formats) or the pipelines differ by format (FASTQ and unaligned BAM, DICOM and other image formats), the format is the class, and the class maps to its EDAM format term. Elsewhere one class covers the formats and encodingFormat and compression say which: FHIR JSON and NDJSON, CSV and Parquet, and the variant call formats VCF, BCF and MAF, whose classes are decided by what they contain, germline or somatic variants.
 
-Each concrete class also carries a "modality" annotation, a ModalityEnum value naming the kind of data it holds. The platform reads it from the class to decide how to process the file, so sidecars do not include it either. A new kind of data gets a new class rather than a new value on an existing one.
+Processing rules match a class together with all its subclasses, so a subclass must be processable as its parent; what differs between siblings, such as whether they identify a person, is in their annotations, which the rules read per concrete class. A facial image is not a subclass of ImagingFile for that reason: the header de-identification and analysis of medical images do not apply to it.
 
-A class whose data is always collected the same way carries an "rai:dataCollectionType" annotation, the Croissant Responsible AI term, with one of its recommended values: "Direct measurement" for genomics, imaging and sensor data. A release can copy it into the dataset's Croissant metadata.
+Class annotations state facts that hold for every file of the class. They are properties of the class, so sidecars do not include them, and processing rules read them rather than class names:
+- **modality**: a ModalityEnum value, the kind of data a source registers to deposit. The platform checks a file's modality against the source register. Each concrete class has exactly one; a new kind of data gets a new class rather than a new value on an existing one.
+- **structure**: whether software can read the content without content analysis. "structured": records with defined fields (FHIR, OMOP and other tables, C-CDA, VCF, FASTQ, BAM); free text inside such a file is declared with containsFreeText. "unstructured": content without defined fields (notes, scanned documents, images, audio, video), where any identifier can only be found by NLP, OCR or image or audio analysis. "mixed": the class admits either kind, so the file's content decides (DocumentationFile, DifferentialDiagnosisFile, GenericFile).
+- **fileSetClass**: the file set class every file of this class belongs to (OmopTableFile in an OmopCdmInstance). The set's conformsTo gives the standard and version the files follow, so the files do not repeat it. The RDDC validator checks membership.
+- **rai:dataCollectionType**: how the data is always collected, the Croissant Responsible AI term with one of its recommended values: "Direct measurement" for genomics, imaging and sensor data. A release can copy it into the dataset's Croissant metadata.
+- **biometric**: "true" on a class whose content is a biometric identifier under HIPAA Safe Harbor (FacialImagingFile). Its files always count as containing biometric identifiers, so they cannot set containsBiometricIdentifiers, and they never leave INTAKE: they are not loaded into the normalized store or released.
+- **identifying**: "true" on a class whose content can identify a person on its own, though it is not a biometric identifier: sequencing reads and alignments of any assay, DNA or RNA, and germline variant calls, which DPV classes as genetic data (pd:Genetic). RNA-seq and methylation reads carry the germline variants of the sequenced regions, so they identify a person as DNA reads do. Germline-filtered somatic variant calls and gene expression quantifications are not identifying on their own, so their classes leave the annotation out. Removing direct identifiers does not make files of an identifying class de-identified, whatever the sensitivity flags say. "biometric" implies "identifying", so a biometric class does not carry both.
+- **embedsFiles**: "true" on a class whose files can carry other files inside them: FHIR files, whose DocumentReference, Media and Binary resources can hold documents and images as base64 data, and C-CDA documents, whose body can be a non-XML document and whose entries can hold media. Each embedded file can be a note, a scan or a face photograph, whatever the outer file's class, so its content is not covered by the class's annotations or the sensitivity flags. The annotation says what the content can hold, not how to process it: the processing rules decide which files are scanned for embedded files.
 
-A class whose content always identifies a person carries a "biometric" annotation set to "true" (FacialImagingFile). Its files count as containing biometric identifiers and stay in the trusted research environment, whatever the sensitivity flags say.
+containsDates, containsZipCodes, containsFreeText, containsBiometricIdentifiers: what the class says about a sensitivity flag. "always": every file has it, so a file cannot set the flag (a ClinicalDocumentFile has free text). "n/a": the format cannot carry it, so the flag is false and a file cannot set it (a FASTQ holds no dates). "false": the value when neither the file nor the batch sets the flag, replacing the usual unknown. A biometric class counts as containsBiometricIdentifiers "always" and does not repeat it. A flag's value for a file is, in order: what the class fixes; what the file sets; what the batch sets; the class default; else unknown, treated as true.
 
-A class whose content can identify a person on its own, though it is not a biometric identifier under HIPAA Safe Harbor, carries an "identifying" annotation set to "true": sequencing reads and alignments of any assay, DNA or RNA, and germline variant calls, which DPV classes as genetic data (pd:Genetic). RNA-seq and methylation reads carry the germline variants of the sequenced regions, so they identify a person as DNA reads do. Germline-filtered somatic variant calls and gene expression quantifications are not identifying on their own, so their classes leave the annotation out. Removing direct identifiers does not make files of an identifying class de-identified, whatever the sensitivity flags say. "biometric" implies "identifying", so a biometric class does not carry both: consumers treat a biometric class as identifying and, in addition, keep its files in the TRE.
-
-A class whose files can carry other files inside them carries an "embedsFiles" annotation set to "true": FHIR files, whose DocumentReference, Media and Binary resources can hold documents and images as base64 data, and C-CDA documents, whose body can be a non-XML document and whose entries can hold media. Each embedded file can be a note, a scan or a face photograph, whatever the outer file's class, so its content is not covered by the class's annotations or the sensitivity flags. The annotation says what the content can hold, not how to process it: the processing rules decide which files are scanned for embedded files.
+These annotations tell the model to treat every file in the class alike. Their absence does not mean a file is de-identified. Other classes, including FHIR, may contain identifying information and require de-identification checks based on their content.
 
 ## Hierarchy
 
@@ -44,20 +46,30 @@ DistributionItem
       ClinicalDocumentFile  (unstructured, clinical_text)
       DocumentationFile  (mixed, metadata)
       GenomicsFile  (abstract)
-        SequenceReadsFile  (structured, genomics, identifying)
-        AlignmentFile  (structured, genomics, identifying)
+        SequenceReadsFile  (abstract, identifying)
+          FastqFile  (structured, genomics, identifying)
+          UnalignedBamFile  (structured, genomics, identifying)
+        AlignmentFile  (abstract, identifying)
+          BamFile  (structured, genomics, identifying)
+          CramFile  (structured, genomics, identifying)
         VariantFile  (abstract)
           GermlineVariantFile  (structured, genomics, identifying)
           SomaticVariantFile  (structured, genomics)
         GeneExpressionFile  (structured, genomics)
       IndexFile  (structured, genomics)
-      ImagingFile  (unstructured, imaging)
-        FacialImagingFile  (unstructured, imaging, biometric)
+      ImagingFile  (abstract)
+        DicomImageFile  (unstructured, imaging)
+        ImageFile  (unstructured, imaging)
+      FacialImagingFile  (unstructured, imaging, biometric)
       AudioFile  (unstructured, audio)
       VideoFile  (unstructured, video)
       SensorDataFile  (abstract)
-        SensorSignalFile  (structured, wearable)
-        SensorMeasureFile  (structured, wearable)
+        SensorSignalFile  (abstract)
+          EdfSignalFile  (structured, sensor)
+          WfdbSignalFile  (structured, sensor)
+          DicomWaveformFile  (structured, sensor)
+          VendorSignalFile  (structured, sensor)
+        SensorMeasureFile  (structured, sensor)
       GenericFile  (mixed, other)
 ```
 
@@ -70,7 +82,7 @@ Every concrete class also requires the fields shared by all data files: `@id`, `
 | [`FhirBundleFile`](#fhirbundlefile) | `clinical_fhir` | structured | `application/fhir+json` | `bundleType`, `subjectIds` |
 | [`FhirResourceFile`](#fhirresourcefile) | `clinical_fhir` | structured | `application/fhir+json` | `resourceType` |
 | [`FhirNdjsonFile`](#fhirndjsonfile) | `clinical_fhir` | structured | `application/fhir+ndjson` | `resourceType` |
-| [`OmopTableFile`](#omoptablefile) | `clinical_omop` | structured | `text/csv`, `text/tab-separated-values`, `application/vnd.apache.parquet` | `cdmTable`, `omopCdmVersion` |
+| [`OmopTableFile`](#omoptablefile) | `clinical_omop` | structured | `text/csv`, `text/tab-separated-values`, `application/vnd.apache.parquet` | `cdmTable` |
 | [`CcdaDocumentFile`](#ccdadocumentfile) | `clinical_ccda` | structured | `application/xml`, `text/xml` | `subjectIds` |
 | [`TabularFile`](#tabularfile) | `clinical_tabular` | structured | `text/csv`, `text/tab-separated-values`, `application/vnd.apache.parquet`, `application/json`, `application/jsonlines` |  |
 | [`ConsentFile`](#consentfile) | `consent` | structured | `text/csv`, `text/tab-separated-values`, `application/json`, `application/jsonlines` | `subjectIds` |
@@ -79,27 +91,33 @@ Every concrete class also requires the fields shared by all data files: `@id`, `
 | [`DifferentialDiagnosisFile`](#differentialdiagnosisfile) | `diagnosis_support` | mixed | `text/csv`, `text/tab-separated-values`, `application/json`, `application/jsonlines`, `application/pdf` | `subjectIds` |
 | [`ClinicalDocumentFile`](#clinicaldocumentfile) | `clinical_text` | unstructured | `text/plain`, `application/pdf`, `application/rtf`, `image/tiff`, `image/jpeg`, `image/png` | `subjectIds` |
 | [`DocumentationFile`](#documentationfile) | `metadata` | mixed | any |  |
-| [`SequenceReadsFile`](#sequencereadsfile) | `genomics` | structured | `text/plain`, `application/octet-stream` | `measurementTechnique`, `sequencingPlatform` |
-| [`AlignmentFile`](#alignmentfile) | `genomics` | structured | `text/plain`, `application/octet-stream` | `referenceGenome`, `measurementTechnique`, `sequencingPlatform` |
-| [`GermlineVariantFile`](#germlinevariantfile) | `genomics` | structured | `text/plain`, `application/octet-stream` | `referenceGenome`, `measurementTechnique`, `sequencingPlatform` |
-| [`SomaticVariantFile`](#somaticvariantfile) | `genomics` | structured | `text/plain`, `application/octet-stream` | `referenceGenome`, `measurementTechnique`, `sequencingPlatform` |
+| [`FastqFile`](#fastqfile) | `genomics` | structured | `text/plain` | `measurementTechnique`, `sequencingPlatform` |
+| [`UnalignedBamFile`](#unalignedbamfile) | `genomics` | structured | `application/octet-stream` | `measurementTechnique`, `sequencingPlatform` |
+| [`BamFile`](#bamfile) | `genomics` | structured | `application/octet-stream` | `referenceGenome`, `measurementTechnique`, `sequencingPlatform` |
+| [`CramFile`](#cramfile) | `genomics` | structured | `application/octet-stream` | `referenceGenome`, `measurementTechnique`, `sequencingPlatform` |
+| [`GermlineVariantFile`](#germlinevariantfile) | `genomics` | structured | `text/plain`, `application/octet-stream`, `text/tab-separated-values` | `referenceGenome`, `measurementTechnique`, `sequencingPlatform` |
+| [`SomaticVariantFile`](#somaticvariantfile) | `genomics` | structured | `text/plain`, `application/octet-stream`, `text/tab-separated-values` | `referenceGenome`, `measurementTechnique`, `sequencingPlatform` |
 | [`GeneExpressionFile`](#geneexpressionfile) | `genomics` | structured | `text/csv`, `text/tab-separated-values`, `application/vnd.apache.parquet`, `application/octet-stream` | `measurementTechnique`, `sequencingPlatform` |
 | [`IndexFile`](#indexfile) | `genomics` | structured | `application/octet-stream` | `indexOf` |
-| [`ImagingFile`](#imagingfile) | `imaging` | unstructured | any | `measurementTechnique` |
+| [`DicomImageFile`](#dicomimagefile) | `imaging` | unstructured | `application/dicom` | `measurementTechnique` |
+| [`ImageFile`](#imagefile) | `imaging` | unstructured | `image/tiff`, `image/png`, `image/jpeg`, `image/jp2`, `application/octet-stream` | `measurementTechnique` |
 | [`FacialImagingFile`](#facialimagingfile) | `imaging` | unstructured | `image/jpeg`, `image/png`, `image/tiff`, `image/heic`, `application/dicom`, `model/obj`, `model/stl`, `model/gltf-binary`, `model/gltf+json`, `model/mtl`, `application/octet-stream` | `measurementTechnique`, `subjectIds` |
 | [`AudioFile`](#audiofile) | `audio` | unstructured | `audio/*` |  |
 | [`VideoFile`](#videofile) | `video` | unstructured | `video/*` |  |
-| [`SensorSignalFile`](#sensorsignalfile) | `wearable` | structured | any | `measurementTechnique` |
-| [`SensorMeasureFile`](#sensormeasurefile) | `wearable` | structured | `text/csv`, `text/tab-separated-values`, `application/vnd.apache.parquet`, `application/json`, `application/jsonlines` | `measurementTechnique` |
+| [`EdfSignalFile`](#edfsignalfile) | `sensor` | structured | `application/octet-stream` | `measurementTechnique` |
+| [`WfdbSignalFile`](#wfdbsignalfile) | `sensor` | structured | `text/plain`, `application/octet-stream` | `measurementTechnique` |
+| [`DicomWaveformFile`](#dicomwaveformfile) | `sensor` | structured | `application/dicom` | `measurementTechnique` |
+| [`VendorSignalFile`](#vendorsignalfile) | `sensor` | structured | `application/octet-stream` | `measurementTechnique`, `platform` |
+| [`SensorMeasureFile`](#sensormeasurefile) | `sensor` | structured | `text/csv`, `text/tab-separated-values`, `application/vnd.apache.parquet`, `application/json`, `application/jsonlines` | `measurementTechnique` |
 | [`GenericFile`](#genericfile) | `other` | mixed | any |  |
 
 ## Classes
 
 ### DataFile
 
-A data object of the batch, with subjects, sensitivity and provenance. Its class determines its modality (see the modality annotation).
+A data object of the batch, with subjects, sensitivity and provenance. Its class determines its modality and how it is processed (see the class annotations).
 
-Abstract: not used directly. Inherits from `FileObject` → `DistributionItem`. Subclasses: [`FhirFile`](#fhirfile), [`OmopTableFile`](#omoptablefile), [`CcdaDocumentFile`](#ccdadocumentfile), [`TabularFile`](#tabularfile), [`ConsentFile`](#consentfile), [`IntakeFormFile`](#intakeformfile), [`GeneticTestResultFile`](#genetictestresultfile), [`DifferentialDiagnosisFile`](#differentialdiagnosisfile), [`ClinicalDocumentFile`](#clinicaldocumentfile), [`DocumentationFile`](#documentationfile), [`GenomicsFile`](#genomicsfile), [`IndexFile`](#indexfile), [`ImagingFile`](#imagingfile), [`AudioFile`](#audiofile), [`VideoFile`](#videofile), [`SensorDataFile`](#sensordatafile), [`GenericFile`](#genericfile).
+Abstract: not used directly. Inherits from `FileObject` → `DistributionItem`. Subclasses: [`FhirFile`](#fhirfile), [`OmopTableFile`](#omoptablefile), [`CcdaDocumentFile`](#ccdadocumentfile), [`TabularFile`](#tabularfile), [`ConsentFile`](#consentfile), [`IntakeFormFile`](#intakeformfile), [`GeneticTestResultFile`](#genetictestresultfile), [`DifferentialDiagnosisFile`](#differentialdiagnosisfile), [`ClinicalDocumentFile`](#clinicaldocumentfile), [`DocumentationFile`](#documentationfile), [`GenomicsFile`](#genomicsfile), [`IndexFile`](#indexfile), [`ImagingFile`](#imagingfile), [`FacialImagingFile`](#facialimagingfile), [`AudioFile`](#audiofile), [`VideoFile`](#videofile), [`SensorDataFile`](#sensordatafile), [`GenericFile`](#genericfile).
 
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
@@ -125,7 +143,7 @@ Abstract: not used directly. Inherits from `FileObject` → `DistributionItem`. 
 
 ### FhirFile
 
-Base class for FHIR JSON files. The FHIR version and the implementation guides the resources follow, such as US Core, are declared once in the conformsTo of the file set the file belongs to, not per file.
+Base class for FHIR JSON files. The FHIR version and the implementation guides the resources follow, such as US Core, are declared once in the conformsTo of the file set the file belongs to (its fileSetClass), not per file.
 
 Abstract: not used directly. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Subclasses: [`FhirBundleFile`](#fhirbundlefile), [`FhirSingleTypeFile`](#fhirsingletypefile). A kind of [`EDAM:data_3861`](http://edamontology.org/data_3861).
 
@@ -133,9 +151,9 @@ No fields beyond those of [`DataFile`](#datafile).
 
 ### FhirBundleFile
 
-One FHIR Bundle JSON document.
+One FHIR Bundle JSON document, in a FhirBundleCollection.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:FhirBundleFile"`. Inherits from [`FhirFile`](#fhirfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `clinical_fhir`. Embeds files: can carry documents or images inside it, whose content its class and sensitivity flags do not describe.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:FhirBundleFile"`. Inherits from [`FhirFile`](#fhirfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `clinical_fhir`. Belongs to a `FhirBundleCollection` file set, whose `conformsTo` gives its standard and version. Embeds files: can carry documents or images inside it, whose content its class and sensitivity flags do not describe.
 
 Fields it adds or changes; it also has all fields of [`FhirFile`](#fhirfile):
 
@@ -159,9 +177,9 @@ Fields it adds or changes; it also has all fields of [`FhirFile`](#fhirfile):
 
 ### FhirResourceFile
 
-One FHIR resource JSON document that is not a Bundle.
+One FHIR resource JSON document that is not a Bundle, in a FhirResourceCollection.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:FhirResourceFile"`. Inherits from [`FhirSingleTypeFile`](#fhirsingletypefile) → [`FhirFile`](#fhirfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `clinical_fhir`. Embeds files: can carry documents or images inside it, whose content its class and sensitivity flags do not describe.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:FhirResourceFile"`. Inherits from [`FhirSingleTypeFile`](#fhirsingletypefile) → [`FhirFile`](#fhirfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `clinical_fhir`. Belongs to a `FhirResourceCollection` file set, whose `conformsTo` gives its standard and version. Embeds files: can carry documents or images inside it, whose content its class and sensitivity flags do not describe.
 
 Fields it adds or changes; it also has all fields of [`FhirSingleTypeFile`](#fhirsingletypefile):
 
@@ -172,9 +190,9 @@ Fields it adds or changes; it also has all fields of [`FhirSingleTypeFile`](#fhi
 
 ### FhirNdjsonFile
 
-FHIR Bulk Data NDJSON, one resource type per file.
+FHIR Bulk Data NDJSON, one resource type per file, in a FhirBulkExport.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:FhirNdjsonFile"`. Inherits from [`FhirSingleTypeFile`](#fhirsingletypefile) → [`FhirFile`](#fhirfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `clinical_fhir`. Embeds files: can carry documents or images inside it, whose content its class and sensitivity flags do not describe.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:FhirNdjsonFile"`. Inherits from [`FhirSingleTypeFile`](#fhirsingletypefile) → [`FhirFile`](#fhirfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `clinical_fhir`. Belongs to a `FhirBulkExport` file set, whose `conformsTo` gives its standard and version. Embeds files: can carry documents or images inside it, whose content its class and sensitivity flags do not describe.
 
 Fields it adds or changes; it also has all fields of [`FhirSingleTypeFile`](#fhirsingletypefile):
 
@@ -184,27 +202,22 @@ Fields it adds or changes; it also has all fields of [`FhirSingleTypeFile`](#fhi
 
 ### OmopTableFile
 
-One OMOP CDM table.
+One OMOP CDM table, in an OmopCdmInstance. The instance's conformsTo gives the CDM version, and the RDDC validator checks that cdmTable exists in that version. CDM tables have no column for images or recordings, so a file contains no biometric identifiers unless it says so.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:OmopTableFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `clinical_omop`. A kind of [`EDAM:data_3861`](http://edamontology.org/data_3861).
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:OmopTableFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `clinical_omop`. Belongs to a `OmopCdmInstance` file set, whose `conformsTo` gives its standard and version. Sensitivity flags: `containsBiometricIdentifiers` false unless set. A kind of [`EDAM:data_3861`](http://edamontology.org/data_3861).
 
 Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
-| `cdmTable` | [`OmopCdmTableEnum`](#omopcdmtableenum) | yes | OMOP CDM table in the file, e.g. person. |
+| `cdmTable` | [`OmopCdmTableEnum`](#omopcdmtableenum) | yes | OMOP CDM table in the file, e.g. person. It must exist in the CDM version the file's OmopCdmInstance declares in conformsTo. |
 | `encodingFormat` | [`MediaType`](#mediatype) | yes | Media type of the content (after decompression when compression is set). One of: `text/csv`, `text/tab-separated-values`, `application/vnd.apache.parquet`. |
-| `omopCdmVersion` | [`OmopCdmVersionEnum`](#omopcdmversionenum) | yes | OMOP CDM version of the table, as major.minor, e.g. "5.4". |
-
-Rules:
-
-- If `omopCdmVersion` is `5.4`, `cdmTable` must be a value of [`OmopCdm54TableEnum`](#omopcdm54tableenum).
 
 ### CcdaDocumentFile
 
-One HL7 C-CDA document. Its template IDs are in the document header and its C-CDA release is in the conformsTo of the file set it belongs to, so neither is repeated per file.
+One HL7 C-CDA document, in a CcdaDocumentSet. Its template IDs are in the document header and its C-CDA release is in the conformsTo of the set, so neither is repeated per file.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:CcdaDocumentFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `clinical_ccda`. A kind of [`EDAM:data_3861`](http://edamontology.org/data_3861). Embeds files: can carry documents or images inside it, whose content its class and sensitivity flags do not describe.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:CcdaDocumentFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `clinical_ccda`. Belongs to a `CcdaDocumentSet` file set, whose `conformsTo` gives its standard and version. A kind of [`EDAM:data_3861`](http://edamontology.org/data_3861). Embeds files: can carry documents or images inside it, whose content its class and sensitivity flags do not describe.
 
 Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
@@ -227,9 +240,9 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 ### ConsentFile
 
-Consent elements for the subjects it lists: which uses each subject agreed to. The platform applies them to access decisions rather than processing them as clinical data.
+Permitted data uses for each listed subject. The platform applies them to access decisions rather than processing them as clinical data. A consent elements table holds coded uses and dates, so postal codes, free text and biometric identifiers are absent unless the file says otherwise.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:ConsentFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `consent`.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:ConsentFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `consent`. Sensitivity flags: `containsZipCodes` false unless set; `containsFreeText` false unless set; `containsBiometricIdentifiers` false unless set.
 
 Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
@@ -240,9 +253,9 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 ### IntakeFormFile
 
-Responses to a patient intake form, exported as a table, such as from REDCap or a clinic portal: one row per completed form, or one per answer. Its columns are the form's questions and its values are coded answers, so it is read with the form's definition, named in formDefinition, rather than as a generic table. Intake forms in FHIR form, QuestionnaireResponse resources, go in a FHIR file, and scanned paper forms in a ClinicalDocumentFile. Free-text answers make the file contain free text (containsFreeText).
+Responses to a patient intake form, exported as a table, such as from REDCap or a clinic portal: one row per completed form, or one per answer. Its columns are the form's questions and its values are coded answers, so it is read with the form's definition, named in formDefinition, rather than as a generic table. Intake forms in FHIR form, QuestionnaireResponse resources, go in a FHIR file, and scanned paper forms in a ClinicalDocumentFile. Free-text answers make the file contain free text (containsFreeText). A table of coded answers holds no biometric identifiers unless the file says so.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:IntakeFormFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `intake_form`. Close to [`fhir:QuestionnaireResponse`](http://hl7.org/fhir/QuestionnaireResponse).
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:IntakeFormFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `intake_form`. Sensitivity flags: `containsBiometricIdentifiers` false unless set. Close to [`fhir:QuestionnaireResponse`](http://hl7.org/fhir/QuestionnaireResponse).
 
 Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
@@ -255,9 +268,9 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 ### GeneticTestResultFile
 
-Results of clinical genetic tests or molecular pathology, exported as records: for each test, its name, method, date and status, and its findings, such as genes, variants in HGVS notation, zygosity and classification (for example ACMG/AMP), with the laboratory's interpretation as text. The interpretation makes the file contain free text (containsFreeText). Report documents (PDFs) go in ClinicalDocumentFiles that reportDocuments points to; sequencing data and variant calls go in the genomics classes. A report lists few variants, not a genome, so the class is not identifying, although a rare variant can single a person out within a small cohort.
+Results of clinical genetic tests or molecular pathology, exported as records: for each test, its name, method, date and status, and its findings, such as genes, variants in HGVS notation, zygosity and classification (for example ACMG/AMP), with the laboratory's interpretation as text. The interpretation makes the file contain free text (containsFreeText). Report documents (PDFs) go in ClinicalDocumentFiles that reportDocuments points to; sequencing data and variant calls go in the genomics classes. A report lists few variants, not a genome, so the class is not identifying, although a rare variant can single a person out within a small cohort. Results records hold no address or image, so postal codes and biometric identifiers are absent unless the file says otherwise.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:GeneticTestResultFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genetic_testing`. Close to [`fhir:DiagnosticReport`](http://hl7.org/fhir/DiagnosticReport).
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:GeneticTestResultFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genetic_testing`. Sensitivity flags: `containsZipCodes` false unless set; `containsBiometricIdentifiers` false unless set. Close to [`fhir:DiagnosticReport`](http://hl7.org/fhir/DiagnosticReport).
 
 Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
@@ -270,9 +283,9 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 ### DifferentialDiagnosisFile
 
-Candidate diagnoses ranked by a diagnosis support tool, such as a facial phenotyping or phenotype-matching tool, or by another method: for each subject, the top candidates with their rank, score and code. The candidates are suggestions, not diagnoses, so they are kept apart from confirmed conditions; in FHIR they are Conditions with verificationStatus "differential". A tool's export is structured; a report in PDF is unstructured and needs text extraction. wasDerivedFrom points to the files in the sidecar the tool analysed, such as facial images.
+Candidate diagnoses ranked by a diagnosis support tool, such as a facial phenotyping or phenotype-matching tool, or by another method: for each subject, the top candidates with their rank, score and code. The candidates are suggestions, not diagnoses, so they are kept apart from confirmed conditions; in FHIR they are Conditions with verificationStatus "differential". A tool's export is structured; a report in PDF is unstructured and needs text extraction. wasDerivedFrom points to the files in the sidecar the tool analysed, such as facial images. Candidates hold no address or image, so postal codes and biometric identifiers are absent unless the file says otherwise.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:DifferentialDiagnosisFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: mixed. Modality: `diagnosis_support`. Close to [`fhir:RiskAssessment`](http://hl7.org/fhir/RiskAssessment).
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:DifferentialDiagnosisFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: mixed. Modality: `diagnosis_support`. Sensitivity flags: `containsZipCodes` false unless set; `containsBiometricIdentifiers` false unless set. Close to [`fhir:RiskAssessment`](http://hl7.org/fhir/RiskAssessment).
 
 Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
@@ -286,9 +299,9 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 ### ClinicalDocumentFile
 
-An unstructured clinical document, such as a note, a scanned report or a genetic test report. A scan is a PDF or an image (TIFF, JPEG or PNG).
+An unstructured clinical document, such as a note, a scanned report or a genetic test report. A scan is a PDF or an image (TIFF, JPEG or PNG). The whole document is free text, so every file counts as containing free text and cannot set containsFreeText.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:ClinicalDocumentFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: unstructured. Modality: `clinical_text`. A kind of [`EDAM:data_3861`](http://edamontology.org/data_3861).
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:ClinicalDocumentFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: unstructured. Modality: `clinical_text`. Sensitivity flags: `containsFreeText` always true. A kind of [`EDAM:data_3861`](http://edamontology.org/data_3861).
 
 Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
@@ -297,12 +310,13 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 | `encodingFormat` | [`MediaType`](#mediatype) | yes | Media type of the content (after decompression when compression is set). One of: `text/plain`, `application/pdf`, `application/rtf`, `image/tiff`, `image/jpeg`, `image/png`. |
 | `subjectIds` | [`Identifier`](#identifier) (list) | yes | Subject IDs the file contains. Each must appear in the subject table. |
 | `documentType` | [`DocumentTypeEnum`](#documenttypeenum) | | The kind of document, e.g. progress_note or referral_note, when the source records it. Text processing and the OMOP note class depend on it. A file holds documents of one kind; documents of several kinds go in separate files, or leave documentType out. |
+| `sensitivity` | [`DocumentFileSensitivity`](#documentfilesensitivity) | | Per-file sensitivity overrides. containsFreeText is left out: the class already says the file is free text. |
 
 ### DocumentationFile
 
-A file that documents other files, such as a data dictionary, the codebook of an intake form, or a README. When it documents particular files or record sets, about points to them; a README for the whole batch leaves about out.
+A file that documents other files, such as a data dictionary, the codebook of an intake form, or a README. When it documents particular files or record sets, about points to them; a README for the whole batch leaves about out. Documentation describes the data and holds no subject-level content, so every flag is false unless the file says otherwise.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:DocumentationFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: mixed. Modality: `metadata`. A kind of [`EDAM:data_2337`](http://edamontology.org/data_2337).
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:DocumentationFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: mixed. Modality: `metadata`. Sensitivity flags: `containsDates` false unless set; `containsZipCodes` false unless set; `containsFreeText` false unless set; `containsBiometricIdentifiers` false unless set. A kind of [`EDAM:data_2337`](http://edamontology.org/data_2337).
 
 Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
@@ -312,7 +326,7 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 ### GenomicsFile
 
-Base class for genomic sequencing data. These formats have no registered media type, so encodingFormat names the container: text/plain for text formats (FASTQ, SAM, VCF) and application/octet-stream for binary ones (BAM, CRAM, BCF). The class says which format it is. A gzip or BGZF-compressed text file (.fastq.gz, .vcf.gz) sets compression to gzip. BAM, CRAM and BCF compress internally as part of the format, so they leave compression unset.
+Base class for genomic sequencing data. For reads and alignments the class names the format and maps to its EDAM format term; for variant calls the media type and compression do. encodingFormat names only the container for formats with no registered media type: text/plain for text formats (FASTQ, VCF) and application/octet-stream for binary ones (BAM, CRAM, BCF). A gzip or BGZF-compressed text file (.fastq.gz, .vcf.gz) says so in compression. BAM, CRAM and BCF compress internally as part of the format, so they leave compression unset. The formats hold sequence data, run metadata and expression values, not subject-level dates, addresses, narrative or biometric identifiers, so the sensitivity flags do not apply: what identifies the person, where the class says so, is the sequence itself (the identifying annotation).
 
 Abstract: not used directly. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Subclasses: [`SequenceReadsFile`](#sequencereadsfile), [`AlignmentFile`](#alignmentfile), [`VariantFile`](#variantfile), [`GeneExpressionFile`](#geneexpressionfile).
 
@@ -320,16 +334,16 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
-| `encodingFormat` | [`MediaType`](#mediatype) | yes | Media type of the content (after decompression when compression is set). One of: `text/plain`, `application/octet-stream`. |
 | `measurementTechnique` | [`GenomicsAssayEnum`](#genomicsassayenum) | yes | The sequencing assay that produced the data, e.g. wgs or wes. Downstream analysis depends on it, so every genomics file states it. |
 | `sequencingPlatform` | [`SequencingPlatformEnum`](#sequencingplatformenum) | yes | The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing. |
 | `platform` | `string` | | The sequencing instrument model, e.g. "Illumina NovaSeq X". |
+| `sensitivity` | [`FixedSensitivity`](#fixedsensitivity) | | Notes only. The class fixes every sensitivity flag. |
 
 ### SequenceReadsFile
 
-Sequencing reads, such as FASTQ or unaligned BAM.
+Base class for sequencing reads before alignment: a FastqFile or an UnalignedBamFile. Paired-end files reference each other through pairedWith.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:SequenceReadsFile"`. Inherits from [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`. Data collection (`rai:dataCollectionType`): Direct measurement. Close to [`EDAM:data_2977`](http://edamontology.org/data_2977). Identifying: can identify a person on its own, so it never counts as de-identified.
+Abstract: not used directly. Inherits from [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Subclasses: [`FastqFile`](#fastqfile), [`UnalignedBamFile`](#unalignedbamfile). Close to [`EDAM:data_2977`](http://edamontology.org/data_2977). Identifying: can identify a person on its own, so it never counts as de-identified.
 
 Fields it adds or changes; it also has all fields of [`GenomicsFile`](#genomicsfile):
 
@@ -337,11 +351,36 @@ Fields it adds or changes; it also has all fields of [`GenomicsFile`](#genomicsf
 | --- | --- | --- | --- |
 | `pairedWith` | [`NodeRef`](#noderef) | | The mate file of paired-end reads. |
 
+### FastqFile
+
+Sequencing reads in FASTQ, usually gzip or BGZF-compressed (.fastq.gz).
+
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:FastqFile"`. Inherits from [`SequenceReadsFile`](#sequencereadsfile) → [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`. Sensitivity flags: `containsDates` not applicable, so false; `containsZipCodes` not applicable, so false; `containsFreeText` not applicable, so false; `containsBiometricIdentifiers` not applicable, so false. Data collection (`rai:dataCollectionType`): Direct measurement. Close to [`EDAM:format_1930`](http://edamontology.org/format_1930). Identifying: can identify a person on its own, so it never counts as de-identified.
+
+Fields it adds or changes; it also has all fields of [`SequenceReadsFile`](#sequencereadsfile):
+
+| Field | Type | Required | Meaning and constraints |
+| --- | --- | --- | --- |
+| `encodingFormat` | `string` | yes | Media type of the content (after decompression when compression is set). Fixed: `text/plain`. |
+| `compression` | [`CompressionEnum`](#compressionenum) | | Compression applied to the file's bytes, if any. One of: `gzip`, `bgzf`. |
+
+### UnalignedBamFile
+
+Sequencing reads in an unaligned BAM (uBAM), such as the output of a PacBio or Oxford Nanopore basecaller.
+
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:UnalignedBamFile"`. Inherits from [`SequenceReadsFile`](#sequencereadsfile) → [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`. Sensitivity flags: `containsDates` not applicable, so false; `containsZipCodes` not applicable, so false; `containsFreeText` not applicable, so false; `containsBiometricIdentifiers` not applicable, so false. Data collection (`rai:dataCollectionType`): Direct measurement. Close to [`EDAM:format_2572`](http://edamontology.org/format_2572). Identifying: can identify a person on its own, so it never counts as de-identified.
+
+Fields it adds or changes; it also has all fields of [`SequenceReadsFile`](#sequencereadsfile):
+
+| Field | Type | Required | Meaning and constraints |
+| --- | --- | --- | --- |
+| `encodingFormat` | `string` | yes | Media type of the content (after decompression when compression is set). Fixed: `application/octet-stream`. |
+
 ### AlignmentFile
 
-Aligned reads, such as BAM or CRAM.
+Base class for aligned reads: a BamFile or a CramFile. SAM, the text form, is not accepted; convert it to BAM.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:AlignmentFile"`. Inherits from [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`. Data collection (`rai:dataCollectionType`): Direct measurement. Close to [`EDAM:data_1383`](http://edamontology.org/data_1383). Identifying: can identify a person on its own, so it never counts as de-identified.
+Abstract: not used directly. Inherits from [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Subclasses: [`BamFile`](#bamfile), [`CramFile`](#cramfile). Close to [`EDAM:data_1383`](http://edamontology.org/data_1383). Identifying: can identify a person on its own, so it never counts as de-identified.
 
 Fields it adds or changes; it also has all fields of [`GenomicsFile`](#genomicsfile):
 
@@ -349,9 +388,33 @@ Fields it adds or changes; it also has all fields of [`GenomicsFile`](#genomicsf
 | --- | --- | --- | --- |
 | `referenceGenome` | [`ReferenceGenomeEnum`](#referencegenomeenum) | yes | Reference assembly the coordinates refer to, e.g. GRCh38. |
 
+### BamFile
+
+Aligned reads in BAM. Its index (.bai) is an IndexFile.
+
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:BamFile"`. Inherits from [`AlignmentFile`](#alignmentfile) → [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`. Sensitivity flags: `containsDates` not applicable, so false; `containsZipCodes` not applicable, so false; `containsFreeText` not applicable, so false; `containsBiometricIdentifiers` not applicable, so false. Data collection (`rai:dataCollectionType`): Direct measurement. Close to [`EDAM:format_2572`](http://edamontology.org/format_2572). Identifying: can identify a person on its own, so it never counts as de-identified.
+
+Fields it adds or changes; it also has all fields of [`AlignmentFile`](#alignmentfile):
+
+| Field | Type | Required | Meaning and constraints |
+| --- | --- | --- | --- |
+| `encodingFormat` | `string` | yes | Media type of the content (after decompression when compression is set). Fixed: `application/octet-stream`. |
+
+### CramFile
+
+Aligned reads in CRAM, which needs the assembly named in referenceGenome to be read. Its index (.crai) is an IndexFile.
+
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:CramFile"`. Inherits from [`AlignmentFile`](#alignmentfile) → [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`. Sensitivity flags: `containsDates` not applicable, so false; `containsZipCodes` not applicable, so false; `containsFreeText` not applicable, so false; `containsBiometricIdentifiers` not applicable, so false. Data collection (`rai:dataCollectionType`): Direct measurement. Close to [`EDAM:format_3462`](http://edamontology.org/format_3462). Identifying: can identify a person on its own, so it never counts as de-identified.
+
+Fields it adds or changes; it also has all fields of [`AlignmentFile`](#alignmentfile):
+
+| Field | Type | Required | Meaning and constraints |
+| --- | --- | --- | --- |
+| `encodingFormat` | `string` | yes | Media type of the content (after decompression when compression is set). Fixed: `application/octet-stream`. |
+
 ### VariantFile
 
-Base class for variant calls, such as VCF, BCF or MAF. Germline variants identify a person and somatic variants alone do not, so a file goes in GermlineVariantFile or SomaticVariantFile depending on which it can contain.
+Base class for variant calls. Germline variants identify a person and somatic variants alone do not, so a file goes in GermlineVariantFile or SomaticVariantFile depending on which it can contain. The format is told by the media type and compression, not the class: a VCF is text/plain and, when it has a tabix or CSI index (an IndexFile), BGZF-compressed (compression bgzf; a plain gzipped VCF sets gzip); a BCF is application/octet-stream; a MAF, a tab-separated table, is text/tab-separated-values.
 
 Abstract: not used directly. Inherits from [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Subclasses: [`GermlineVariantFile`](#germlinevariantfile), [`SomaticVariantFile`](#somaticvariantfile). Close to [`EDAM:data_3498`](http://edamontology.org/data_3498).
 
@@ -359,13 +422,15 @@ Fields it adds or changes; it also has all fields of [`GenomicsFile`](#genomicsf
 
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
+| `encodingFormat` | [`MediaType`](#mediatype) | yes | text/plain for VCF, application/octet-stream for BCF, text/tab-separated-values for MAF. One of: `text/plain`, `application/octet-stream`, `text/tab-separated-values`. |
 | `referenceGenome` | [`ReferenceGenomeEnum`](#referencegenomeenum) | yes | Reference assembly the coordinates refer to, e.g. GRCh38. |
+| `compression` | [`CompressionEnum`](#compressionenum) | | Compression applied to the file's bytes, if any. One of: `gzip`, `bgzf`. |
 
 ### GermlineVariantFile
 
 Variant calls that contain or may contain germline variants: germline calls, joint genotypes, and somatic calls that still include germline variants, such as unfiltered tumor-only calls. Germline variants identify a person.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:GermlineVariantFile"`. Inherits from [`VariantFile`](#variantfile) → [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`. Data collection (`rai:dataCollectionType`): Direct measurement. Identifying: can identify a person on its own, so it never counts as de-identified.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:GermlineVariantFile"`. Inherits from [`VariantFile`](#variantfile) → [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`. Sensitivity flags: `containsDates` not applicable, so false; `containsZipCodes` not applicable, so false; `containsFreeText` not applicable, so false; `containsBiometricIdentifiers` not applicable, so false. Data collection (`rai:dataCollectionType`): Direct measurement. Identifying: can identify a person on its own, so it never counts as de-identified.
 
 No fields beyond those of [`VariantFile`](#variantfile).
 
@@ -373,7 +438,7 @@ No fields beyond those of [`VariantFile`](#variantfile).
 
 Somatic variant calls from tumor or other somatic tissue with germline variants removed, typically by calling against a matched normal sample and filtering against population variant databases, as in the GDC's masked somatic mutation files. Calls that may still include germline variants go in a GermlineVariantFile.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:SomaticVariantFile"`. Inherits from [`VariantFile`](#variantfile) → [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`. Data collection (`rai:dataCollectionType`): Direct measurement.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:SomaticVariantFile"`. Inherits from [`VariantFile`](#variantfile) → [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`. Sensitivity flags: `containsDates` not applicable, so false; `containsZipCodes` not applicable, so false; `containsFreeText` not applicable, so false; `containsBiometricIdentifiers` not applicable, so false. Data collection (`rai:dataCollectionType`): Direct measurement.
 
 No fields beyond those of [`VariantFile`](#variantfile).
 
@@ -381,7 +446,7 @@ No fields beyond those of [`VariantFile`](#variantfile).
 
 Gene or transcript expression quantified from RNA-seq, such as a matrix of counts or TPM per gene and sample. It holds no sequence, so it is not identifying the way the reads and alignments it came from are. Expression values can still be linked to a person's genotype through expression quantitative trait loci (eQTLs), so the file is still personal data.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:GeneExpressionFile"`. Inherits from [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`. Data collection (`rai:dataCollectionType`): Direct measurement. Close to [`EDAM:data_3917`](http://edamontology.org/data_3917). A kind of [`EDAM:data_2603`](http://edamontology.org/data_2603).
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:GeneExpressionFile"`. Inherits from [`GenomicsFile`](#genomicsfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`. Sensitivity flags: `containsDates` not applicable, so false; `containsZipCodes` not applicable, so false; `containsFreeText` not applicable, so false; `containsBiometricIdentifiers` not applicable, so false. Data collection (`rai:dataCollectionType`): Direct measurement. Close to [`EDAM:data_3917`](http://edamontology.org/data_3917). A kind of [`EDAM:data_2603`](http://edamontology.org/data_2603).
 
 Fields it adds or changes; it also has all fields of [`GenomicsFile`](#genomicsfile):
 
@@ -392,9 +457,9 @@ Fields it adds or changes; it also has all fields of [`GenomicsFile`](#genomicsf
 
 ### IndexFile
 
-An index of another file in the sidecar, such as .bai, .crai or .tbi. Indexes are binary, so encodingFormat is application/octet-stream.
+An index of another file in the sidecar. The index format follows the indexed file: .bai for a BamFile, .crai for a CramFile, .tbi or .csi for a VCF and .csi for a BCF (a variant file). Indexes are binary, so encodingFormat is application/octet-stream, and they hold offsets, not content, so the sensitivity flags do not apply.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:IndexFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`. A kind of [`EDAM:data_0955`](http://edamontology.org/data_0955).
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:IndexFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `genomics`. Sensitivity flags: `containsDates` not applicable, so false; `containsZipCodes` not applicable, so false; `containsFreeText` not applicable, so false; `containsBiometricIdentifiers` not applicable, so false. A kind of [`EDAM:data_0955`](http://edamontology.org/data_0955).
 
 Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
@@ -402,12 +467,13 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 | --- | --- | --- | --- |
 | `encodingFormat` | `string` | yes | Media type of the content (after decompression when compression is set). Fixed: `application/octet-stream`. |
 | `indexOf` | [`NodeRef`](#noderef) | yes | The file this file indexes. |
+| `sensitivity` | [`FixedSensitivity`](#fixedsensitivity) | | Notes only. The class fixes every sensitivity flag. |
 
 ### ImagingFile
 
-A medical or photographic image, such as DICOM. A photograph of a person's face goes in a FacialImagingFile instead.
+Base class for medical and clinical images other than facial images: a DicomImageFile or, for other formats, an ImageFile. A photograph or 3D model of a person's face goes in a FacialImagingFile, which is not a subclass of this one: rules for images must not apply to it.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:ImagingFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Subclasses: [`FacialImagingFile`](#facialimagingfile). Structure: unstructured. Modality: `imaging`. Data collection (`rai:dataCollectionType`): Direct measurement. Close to [`EDAM:data_3424`](http://edamontology.org/data_3424).
+Abstract: not used directly. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Subclasses: [`DicomImageFile`](#dicomimagefile), [`ImageFile`](#imagefile). Close to [`EDAM:data_3424`](http://edamontology.org/data_3424).
 
 Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
@@ -415,13 +481,37 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 | --- | --- | --- | --- |
 | `measurementTechnique` | [`ImagingAssayEnum`](#imagingassayenum) | yes | The imaging technique that produced the image, e.g. ct, mri or photography. Analysis depends on it, so every image states it. |
 
-### FacialImagingFile
+### DicomImageFile
 
-An image or 3D surface model of a person's face, such as those taken for dysmorphology assessment or facial phenotyping. measurementTechnique says how it was captured: a photograph, a 3D surface scan, or a CT or MRI. A face is a biometric identifier, so the file always counts as containing biometric identifiers.
+A DICOM image or series, such as a CT or MRI. DICOM headers carry study dates, patient details and comments, and images can carry burned-in text, so the sensitivity flags apply as the batch declares them.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:FacialImagingFile"`. Inherits from [`ImagingFile`](#imagingfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: unstructured. Modality: `imaging`. Data collection (`rai:dataCollectionType`): Direct measurement. A kind of [`EDAM:data_3424`](http://edamontology.org/data_3424). Biometric: always counts as containing biometric identifiers, and so as identifying.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:DicomImageFile"`. Inherits from [`ImagingFile`](#imagingfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: unstructured. Modality: `imaging`. Data collection (`rai:dataCollectionType`): Direct measurement. Close to [`EDAM:format_3548`](http://edamontology.org/format_3548).
 
 Fields it adds or changes; it also has all fields of [`ImagingFile`](#imagingfile):
+
+| Field | Type | Required | Meaning and constraints |
+| --- | --- | --- | --- |
+| `encodingFormat` | `string` | yes | Media type of the content (after decompression when compression is set). Fixed: `application/dicom`. |
+
+### ImageFile
+
+An image in a format other than DICOM: TIFF or OME-TIFF, PNG, JPEG, JPEG 2000, or a whole-slide, microscopy or NIfTI volume format with no registered media type (application/octet-stream). These formats have no field for an address, so a file contains no postal codes unless it says so; burned-in text counts as free text.
+
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:ImageFile"`. Inherits from [`ImagingFile`](#imagingfile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: unstructured. Modality: `imaging`. Sensitivity flags: `containsZipCodes` false unless set. Data collection (`rai:dataCollectionType`): Direct measurement. Close to [`EDAM:format_3591`](http://edamontology.org/format_3591), [`EDAM:format_3727`](http://edamontology.org/format_3727), [`EDAM:format_3603`](http://edamontology.org/format_3603), [`EDAM:format_3579`](http://edamontology.org/format_3579), [`EDAM:format_4001`](http://edamontology.org/format_4001).
+
+Fields it adds or changes; it also has all fields of [`ImagingFile`](#imagingfile):
+
+| Field | Type | Required | Meaning and constraints |
+| --- | --- | --- | --- |
+| `encodingFormat` | [`MediaType`](#mediatype) | yes | Media type of the image. Whole-slide (SVS, NDPI, CZI) and NIfTI files have no registered media type, so they are application/octet-stream. One of: `image/tiff`, `image/png`, `image/jpeg`, `image/jp2`, `application/octet-stream`. |
+
+### FacialImagingFile
+
+An image or 3D surface model of a person's face, such as those taken for dysmorphology assessment or facial phenotyping. measurementTechnique says how it was captured: a photograph, a 3D surface scan, or a CT or MRI. A face is a biometric identifier, so the file always counts as containing biometric identifiers. Not a subclass of ImagingFile: facial images are processed by their own tools and never leave INTAKE.
+
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:FacialImagingFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: unstructured. Modality: `imaging`. Data collection (`rai:dataCollectionType`): Direct measurement. A kind of [`EDAM:data_3424`](http://edamontology.org/data_3424). Biometric: always counts as containing biometric identifiers, and so as identifying.
+
+Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
@@ -432,9 +522,9 @@ Fields it adds or changes; it also has all fields of [`ImagingFile`](#imagingfil
 
 ### AudioFile
 
-An audio recording. A recording of a person's voice contains biometric identifiers, so set sensitivity.containsBiometricIdentifiers to true.
+An audio recording. A recording of a person's voice contains biometric identifiers, so set sensitivity.containsBiometricIdentifiers to true. Audio formats have no field for an address, so a file contains no postal codes unless it says so; speech counts as free text.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:AudioFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: unstructured. Modality: `audio`.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:AudioFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: unstructured. Modality: `audio`. Sensitivity flags: `containsZipCodes` false unless set.
 
 Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
@@ -444,9 +534,9 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 ### VideoFile
 
-A video recording. A recording that shows a person's face or voice contains biometric identifiers, so set sensitivity.containsBiometricIdentifiers to true.
+A video recording. A recording containing a person's face or voice contains biometric identifiers, so set sensitivity.containsBiometricIdentifiers to true. Video formats have no field for an address, so a file contains no postal codes unless it says so; speech and on-screen text count as free text.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:VideoFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: unstructured. Modality: `video`.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:VideoFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: unstructured. Modality: `video`. Sensitivity flags: `containsZipCodes` false unless set.
 
 Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
@@ -456,7 +546,7 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 ### SensorDataFile
 
-Base class for data recorded by a wearable or other sensor device. A raw signal goes in a SensorSignalFile and measures derived from it in a SensorMeasureFile, since they need different processing. Sensor data already in FHIR form, such as device Observations, goes in a FHIR file instead.
+Base class for data recorded by a wearable or other sensor device. A raw signal goes in one of the SensorSignalFile classes and measures derived from it in a SensorMeasureFile, since they need different processing. Sensor data already in FHIR form, such as device Observations, goes in a FHIR file instead. Sensor data carries timestamps, which count as dates; it is not a biometric identifier under HIPAA Safe Harbor, and its formats have no field for an address.
 
 Abstract: not used directly. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Subclasses: [`SensorSignalFile`](#sensorsignalfile), [`SensorMeasureFile`](#sensormeasurefile).
 
@@ -469,9 +559,9 @@ Fields it adds or changes; it also has all fields of [`DataFile`](#datafile):
 
 ### SensorSignalFile
 
-A raw sensor signal, such as 100 Hz accelerometry or an ECG waveform, before any aggregation. Common formats are EDF/EDF+, WFDB, DICOM waveform and device or vendor formats; EDF, WFDB and vendor formats have no registered media type, so they are application/octet-stream.
+Base class for a raw sensor signal, such as 100 Hz accelerometry or an ECG waveform, before any aggregation. The class names the format: EdfSignalFile, WfdbSignalFile, DicomWaveformFile or, for a device maker's own format, VendorSignalFile.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:SensorSignalFile"`. Inherits from [`SensorDataFile`](#sensordatafile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `wearable`. Data collection (`rai:dataCollectionType`): Direct measurement.
+Abstract: not used directly. Inherits from [`SensorDataFile`](#sensordatafile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Subclasses: [`EdfSignalFile`](#edfsignalfile), [`WfdbSignalFile`](#wfdbsignalfile), [`DicomWaveformFile`](#dicomwaveformfile), [`VendorSignalFile`](#vendorsignalfile).
 
 Fields it adds or changes; it also has all fields of [`SensorDataFile`](#sensordatafile):
 
@@ -479,11 +569,60 @@ Fields it adds or changes; it also has all fields of [`SensorDataFile`](#sensord
 | --- | --- | --- | --- |
 | `samplingRate` | `float` | | Samples per second of the recorded signal, in hertz. When channels differ, the highest rate. Croissant's term, which Croissant sets on audio fields. Minimum: 0. |
 
+### EdfSignalFile
+
+A signal in EDF or EDF+ (European Data Format), the usual format for polysomnography and EEG. Its header has fields for the patient's identification and the recording start date, and EDF+ annotation channels hold free text, so those flags apply as the batch declares them. EDF has no registered media type, so it is application/octet-stream.
+
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:EdfSignalFile"`. Inherits from [`SensorSignalFile`](#sensorsignalfile) → [`SensorDataFile`](#sensordatafile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `sensor`. Sensitivity flags: `containsZipCodes` false unless set; `containsBiometricIdentifiers` false unless set. Data collection (`rai:dataCollectionType`): Direct measurement.
+
+Fields it adds or changes; it also has all fields of [`SensorSignalFile`](#sensorsignalfile):
+
+| Field | Type | Required | Meaning and constraints |
+| --- | --- | --- | --- |
+| `encodingFormat` | `string` | yes | Media type of the content (after decompression when compression is set). Fixed: `application/octet-stream`. |
+
+### WfdbSignalFile
+
+One file of a WFDB (PhysioNet WaveForm DataBase) record: the header (.hea, text/plain) or a signal file (.dat, application/octet-stream). The files of one record are kept together in a file set, and the header names the signal files. Header comments can hold free text.
+
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:WfdbSignalFile"`. Inherits from [`SensorSignalFile`](#sensorsignalfile) → [`SensorDataFile`](#sensordatafile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `sensor`. Sensitivity flags: `containsZipCodes` false unless set; `containsBiometricIdentifiers` false unless set. Data collection (`rai:dataCollectionType`): Direct measurement.
+
+Fields it adds or changes; it also has all fields of [`SensorSignalFile`](#sensorsignalfile):
+
+| Field | Type | Required | Meaning and constraints |
+| --- | --- | --- | --- |
+| `encodingFormat` | [`MediaType`](#mediatype) | yes | Media type of the content (after decompression when compression is set). One of: `text/plain`, `application/octet-stream`. |
+
+### DicomWaveformFile
+
+A DICOM waveform object, such as a 12-lead ECG. Its headers carry the same patient details as a DICOM image, including an address, so every flag except biometric identifiers applies as the batch declares it.
+
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:DicomWaveformFile"`. Inherits from [`SensorSignalFile`](#sensorsignalfile) → [`SensorDataFile`](#sensordatafile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `sensor`. Sensitivity flags: `containsBiometricIdentifiers` false unless set. Data collection (`rai:dataCollectionType`): Direct measurement. Close to [`EDAM:format_3548`](http://edamontology.org/format_3548).
+
+Fields it adds or changes; it also has all fields of [`SensorSignalFile`](#sensorsignalfile):
+
+| Field | Type | Required | Meaning and constraints |
+| --- | --- | --- | --- |
+| `encodingFormat` | `string` | yes | Media type of the content (after decompression when compression is set). Fixed: `application/dicom`. |
+
+### VendorSignalFile
+
+A signal in a device maker's own format, such as ActiGraph .gt3x or Garmin FIT. platform, the device, is required, since it decides how the file is read. Such formats have no registered media type, so the file is application/octet-stream.
+
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:VendorSignalFile"`. Inherits from [`SensorSignalFile`](#sensorsignalfile) → [`SensorDataFile`](#sensordatafile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `sensor`. Sensitivity flags: `containsZipCodes` false unless set; `containsBiometricIdentifiers` false unless set. Data collection (`rai:dataCollectionType`): Direct measurement.
+
+Fields it adds or changes; it also has all fields of [`SensorSignalFile`](#sensorsignalfile):
+
+| Field | Type | Required | Meaning and constraints |
+| --- | --- | --- | --- |
+| `encodingFormat` | `string` | yes | Media type of the content (after decompression when compression is set). Fixed: `application/octet-stream`. |
+| `platform` | `string` | yes | The device that recorded the data, e.g. "ActiGraph GT9X". |
+
 ### SensorMeasureFile
 
-Measures derived from sensor data, such as per-minute step counts, sleep stages or daily heart rate summaries. IEEE 1752.1 (Open mHealth) defines JSON schemas for sleep and physical activity measures.
+Measures derived from sensor data, such as per-minute step counts, sleep stages or daily heart rate summaries, as a table or JSON. IEEE 1752.1 (Open mHealth) defines JSON schemas for sleep and physical activity measures. Measures are structured values with timestamps, so a file contains no free text unless it says so.
 
-Use as `"@type": "cr:FileObject", "additionalType": "rddc:SensorMeasureFile"`. Inherits from [`SensorDataFile`](#sensordatafile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `wearable`. Data collection (`rai:dataCollectionType`): Direct measurement.
+Use as `"@type": "cr:FileObject", "additionalType": "rddc:SensorMeasureFile"`. Inherits from [`SensorDataFile`](#sensordatafile) → [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: structured. Modality: `sensor`. Sensitivity flags: `containsZipCodes` false unless set; `containsFreeText` false unless set; `containsBiometricIdentifiers` false unless set. Data collection (`rai:dataCollectionType`): Direct measurement.
 
 Fields it adds or changes; it also has all fields of [`SensorDataFile`](#sensordatafile):
 
@@ -493,7 +632,7 @@ Fields it adds or changes; it also has all fields of [`SensorDataFile`](#sensord
 
 ### GenericFile
 
-Any other data file. A curator decides how to process it.
+Any other data file. GenericFile is strongly discouraged. A dedicated data class is required; using GenericFile triggers lengthy manual review.
 
 Use as `"@type": "cr:FileObject", "additionalType": "rddc:GenericFile"`. Inherits from [`DataFile`](#datafile) → `FileObject` → `DistributionItem`. Structure: mixed. Modality: `other`.
 
@@ -515,11 +654,11 @@ An ID assigned to a file by another system, represented as a schema.org Property
 
 ### FileSensitivity
 
-Per-file overrides for the header contains* flags. A file can set these to true or false. Only the batch can set directIdentifiersRemoved and synthetic.
+Per-file overrides for the header contains* flags. A file can set these to true or false, unless its class fixes the flag (see the class annotations in data.yaml): such classes use a variant of this class without that flag. Only the batch can set directIdentifiersRemoved and synthetic.
 
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
-| `containsBiometricIdentifiers` | `boolean` | | The data includes biometric identifiers, full-face images, voice or similar content. These stay in the trusted research environment (TRE). HIPAA Safe Harbor identifiers (P), biometric identifiers including finger and voice prints, and (Q), full-face photographs and comparable images, 45 CFR 164.514(b)(2)(i). Close to [`pd:Biometric`](https://w3id.org/dpv/pd#Biometric). Related to [`pd:Picture`](https://w3id.org/dpv/pd#Picture). |
+| `containsBiometricIdentifiers` | `boolean` | | The data includes biometric identifiers, full-face images, voice or similar content. Such files never leave INTAKE: they are not loaded into the normalized store or released. HIPAA Safe Harbor identifiers (P), biometric identifiers including finger and voice prints, and (Q), full-face photographs and comparable images, 45 CFR 164.514(b)(2)(i). Close to [`pd:Biometric`](https://w3id.org/dpv/pd#Biometric). Related to [`pd:Picture`](https://w3id.org/dpv/pd#Picture). |
 | `containsDates` | `boolean` | | The data includes dates more precise than a year. These are accepted at deposit and masked at release. HIPAA Safe Harbor identifier (C), 45 CFR 164.514(b)(2)(i)(C), which also covers ages over 89. Broader than [`pd:BirthDate`](https://w3id.org/dpv/pd#BirthDate). |
 | `containsFreeText` | `boolean` | | The data includes unstructured text that needs a de-identification scan. Not a HIPAA Safe Harbor identifier itself: free text can contain any of them. |
 | `containsZipCodes` | `boolean` | | The data includes postal codes. These are accepted at deposit and masked at release. Part of HIPAA Safe Harbor identifier (B), 45 CFR 164.514(b)(2)(i)(B), which covers all geographic subdivisions smaller than a state; this flag covers postal codes only. Same as [`pd:PostalCode`](https://w3id.org/dpv/pd#PostalCode). |
@@ -567,12 +706,31 @@ A project-specific key-value pair with a namespace, stored in additionalProperty
 
 ### BiometricFileSensitivity
 
-Per-file sensitivity overrides for a class whose content always identifies a person, such as FacialImagingFile. It has no containsBiometricIdentifiers flag, so a file cannot contradict its class.
+Per-file sensitivity overrides for a biometric class (FacialImagingFile). It has no containsBiometricIdentifiers flag: the class already says every file contains biometric identifiers.
 
 | Field | Type | Required | Meaning and constraints |
 | --- | --- | --- | --- |
 | `containsDates` | `boolean` | | The data includes dates more precise than a year. These are accepted at deposit and masked at release. HIPAA Safe Harbor identifier (C), 45 CFR 164.514(b)(2)(i)(C), which also covers ages over 89. Broader than [`pd:BirthDate`](https://w3id.org/dpv/pd#BirthDate). |
 | `containsFreeText` | `boolean` | | The data includes unstructured text that needs a de-identification scan. Not a HIPAA Safe Harbor identifier itself: free text can contain any of them. |
+| `containsZipCodes` | `boolean` | | The data includes postal codes. These are accepted at deposit and masked at release. Part of HIPAA Safe Harbor identifier (B), 45 CFR 164.514(b)(2)(i)(B), which covers all geographic subdivisions smaller than a state; this flag covers postal codes only. Same as [`pd:PostalCode`](https://w3id.org/dpv/pd#PostalCode). |
+| `notes` | `string` | | Free-text notes on the sensitivity values. |
+
+### FixedSensitivity
+
+Per-file sensitivity for a class whose format can carry none of the flagged content (the genomics classes and IndexFile). Notes only.
+
+| Field | Type | Required | Meaning and constraints |
+| --- | --- | --- | --- |
+| `notes` | `string` | | Free-text notes on the sensitivity values. |
+
+### DocumentFileSensitivity
+
+Per-file sensitivity overrides for an unstructured document class (ClinicalDocumentFile). It has no containsFreeText flag: the class already says every file is free text.
+
+| Field | Type | Required | Meaning and constraints |
+| --- | --- | --- | --- |
+| `containsBiometricIdentifiers` | `boolean` | | The data includes biometric identifiers, full-face images, voice or similar content. Such files never leave INTAKE: they are not loaded into the normalized store or released. HIPAA Safe Harbor identifiers (P), biometric identifiers including finger and voice prints, and (Q), full-face photographs and comparable images, 45 CFR 164.514(b)(2)(i). Close to [`pd:Biometric`](https://w3id.org/dpv/pd#Biometric). Related to [`pd:Picture`](https://w3id.org/dpv/pd#Picture). |
+| `containsDates` | `boolean` | | The data includes dates more precise than a year. These are accepted at deposit and masked at release. HIPAA Safe Harbor identifier (C), 45 CFR 164.514(b)(2)(i)(C), which also covers ages over 89. Broader than [`pd:BirthDate`](https://w3id.org/dpv/pd#BirthDate). |
 | `containsZipCodes` | `boolean` | | The data includes postal codes. These are accepted at deposit and masked at release. Part of HIPAA Safe Harbor identifier (B), 45 CFR 164.514(b)(2)(i)(B), which covers all geographic subdivisions smaller than a state; this flag covers postal codes only. Same as [`pd:PostalCode`](https://w3id.org/dpv/pd#PostalCode). |
 | `notes` | `string` | | Free-text notes on the sensitivity values. |
 
@@ -584,7 +742,8 @@ Compression applied to the file's bytes. encodingFormat names the media type of 
 
 | Value | Meaning |
 | --- | --- |
-| `gzip` |  |
+| `gzip` | gzip (RFC 1952). |
+| `bgzf` | Blocked GNU Zip Format, the gzip-compatible block compression of htslib. A BGZF file reads as gzip, but only BGZF can carry a tabix or CSI index, so a .vcf.gz written by bgzip declares bgzf and one written by gzip declares gzip. |
 | `bzip2` |  |
 | `xz` |  |
 | `zstd` |  |
@@ -601,7 +760,7 @@ Where an auto-filled value came from.
 
 ### ModalityEnum
 
-The kind of data in a file: the values of the "modality" class annotation. Each concrete data file class has exactly one, so a sidecar does not state it; the platform reads it from the file's class to decide how to process the file. A new kind of data gets a new class.
+The kinds of data a source registers to deposit: the values of the "modality" class annotation. Each concrete data file class has exactly one, so a sidecar does not state it; the platform reads it from the file's class and checks it against the source register. How a file is processed follows from its class, not from its modality.
 
 | Value | Meaning |
 | --- | --- |
@@ -618,9 +777,9 @@ The kind of data in a file: the values of the "modality" class annotation. Each 
 | `imaging` | Medical images such as DICOM. |
 | `video` | Video recordings (VideoFile). |
 | `audio` | Audio recordings, including voice (AudioFile). |
-| `wearable` | Device or wearable sensor data (SensorSignalFile, SensorMeasureFile). |
+| `sensor` | Data from wearables and other sensor devices: raw signals (the SensorSignalFile classes) and measures derived from them (SensorMeasureFile). |
 | `metadata` | Files that describe other files, such as data dictionaries or acquisition metadata (DocumentationFile). |
-| `other` | Anything else, routed by curator decision (GenericFile). |
+| `other` | Other data (GenericFile). Strongly discouraged: a dedicated data class is required; using GenericFile triggers lengthy manual review. |
 
 ### FhirBundleTypeEnum
 
@@ -757,17 +916,9 @@ Code systems that candidate diagnoses are coded in.
 | `mondo` | Mondo Disease Ontology. |
 | `other` | A code system not listed here, or uncoded names. Name it in the file's description; a curator decides whether it needs its own value. |
 
-### OmopCdmVersionEnum
-
-OMOP CDM versions accepted in a deposit, as major.minor. Patch releases of a version share its tables.
-
-| Value | Meaning |
-| --- | --- |
-| `5.4` | OMOP CDM 5.4 |
-
 ### OmopCdmTableEnum
 
-OMOP CDM tables of every accepted CDM version, the range of cdmTable. A rule on OmopTableFile narrows the values to the file's omopCdmVersion. The descriptions and groups are in the per-version enums, such as OmopCdm54TableEnum. All tables, including vocabulary and results tables, may be deposited.
+OMOP CDM tables of every accepted CDM version, the range of cdmTable. The RDDC validator checks that the table exists in the CDM version the file's OmopCdmInstance declares in conformsTo. The descriptions and groups are in the per-version enums, such as OmopCdm54TableEnum. All tables, including vocabulary and results tables, may be deposited.
 
 39 values: `person`, `observation_period`, `visit_occurrence`, `visit_detail`, `condition_occurrence`, `drug_exposure`, `procedure_occurrence`, `device_exposure`, `measurement`, `observation`, `death`, `note`, `note_nlp`, `specimen`, `fact_relationship`, `location`, `care_site`, `provider`, `payer_plan_period`, `cost`, `drug_era`, `dose_era`, `condition_era`, `episode`, `episode_event`, `metadata`, `cdm_source`, `concept`, `vocabulary`, `domain`, `concept_class`, `concept_relationship`, `relationship`, `concept_synonym`, `concept_ancestor`, `source_to_concept_map`, `drug_strength`, `cohort`, `cohort_definition`.
 

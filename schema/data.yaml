@@ -13,56 +13,83 @@ description: >-
   distribution.
 
 
-  Each concrete class carries a "structure" annotation describing its content. It is a
-  property of the class, so sidecars do not include it.
-    structured: records with defined fields that software can read without text or
-      image analysis (FHIR, OMOP and other tables, C-CDA, VCF, FASTQ, BAM). Free text
-      inside such a file is declared with containsFreeText.
-    unstructured: content without defined fields (notes, PDF or scanned documents,
-      images, audio, video). Using it needs NLP, OCR or image analysis.
-    mixed: the class admits either kind, so the file's content decides
-      (DocumentationFile, DifferentialDiagnosisFile, GenericFile).
+  A concrete class is what one processing pipeline consumes. Where the pipeline
+  depends on the format and a media type cannot tell the formats apart (BAM and CRAM,
+  EDF and other sensor formats) or the pipelines differ by format (FASTQ and unaligned
+  BAM, DICOM and other image formats), the format is the class, and the class maps to
+  its EDAM format term. Elsewhere one class covers the formats and encodingFormat and
+  compression say which: FHIR JSON and NDJSON, CSV and Parquet, and the variant call
+  formats VCF, BCF and MAF, whose classes are decided by what they contain, germline or
+  somatic variants.
 
 
-  Each concrete class also carries a "modality" annotation, a ModalityEnum value naming
-  the kind of data it holds. The platform reads it from the class to decide how to
-  process the file, so sidecars do not include it either. A new kind of data gets a
-  new class rather than a new value on an existing one.
+  Processing rules match a class together with all its subclasses, so a subclass must
+  be processable as its parent; what differs between siblings, such as whether they
+  identify a person, is in their annotations, which the rules read per concrete class.
+  A facial image is not a subclass of ImagingFile for that reason: the header
+  de-identification and analysis of medical images do not apply to it.
 
 
-  A class whose data is always collected the same way carries an
-  "rai:dataCollectionType" annotation, the Croissant Responsible AI term, with one of
-  its recommended values: "Direct measurement" for genomics, imaging and sensor data.
-  A release can copy it into the dataset's Croissant metadata.
+  Class annotations state facts that hold for every file of the class. They are
+  properties of the class, so sidecars do not include them, and processing rules read
+  them rather than class names:
+    modality: a ModalityEnum value, the kind of data a source registers to deposit.
+      The platform checks a file's modality against the source register. Each
+      concrete class has exactly one; a new kind of data gets a new class rather than
+      a new value on an existing one.
+    structure: whether software can read the content without content analysis.
+      "structured": records with defined fields (FHIR, OMOP and other tables, C-CDA,
+      VCF, FASTQ, BAM); free text inside such a file is declared with
+      containsFreeText. "unstructured": content without defined fields (notes,
+      scanned documents, images, audio, video), where any identifier can only be
+      found by NLP, OCR or image or audio analysis. "mixed": the class admits either
+      kind, so the file's content decides (DocumentationFile,
+      DifferentialDiagnosisFile, GenericFile).
+    fileSetClass: the file set class every file of this class belongs to
+      (OmopTableFile in an OmopCdmInstance). The set's conformsTo gives the standard
+      and version the files follow, so the files do not repeat it. The RDDC validator
+      checks membership.
+    rai:dataCollectionType: how the data is always collected, the Croissant
+      Responsible AI term with one of its recommended values: "Direct measurement"
+      for genomics, imaging and sensor data. A release can copy it into the dataset's
+      Croissant metadata.
+    biometric: "true" on a class whose content is a biometric identifier under HIPAA
+      Safe Harbor (FacialImagingFile). Its files always count as containing biometric
+      identifiers, so they cannot set containsBiometricIdentifiers, and they never
+      leave INTAKE: they are not loaded into the normalized store or released.
+    identifying: "true" on a class whose content can identify a person on its
+      own, though it is not a biometric identifier: sequencing reads and alignments
+      of any assay, DNA or RNA, and germline variant calls, which DPV classes as
+      genetic data (pd:Genetic). RNA-seq and methylation reads carry the germline
+      variants of the sequenced regions, so they identify a person as DNA reads do.
+      Germline-filtered somatic variant calls and gene expression quantifications are
+      not identifying on their own, so their classes leave the annotation out.
+      Removing direct identifiers does not make files of an identifying class
+      de-identified, whatever the sensitivity flags say. "biometric" implies
+      "identifying", so a biometric class does not carry both.
+    embedsFiles: "true" on a class whose files can carry other files inside them:
+      FHIR files, whose DocumentReference, Media and Binary resources can hold
+      documents and images as base64 data, and C-CDA documents, whose body can be a
+      non-XML document and whose entries can hold media. Each embedded file can be a
+      note, a scan or a face photograph, whatever the outer file's class, so its
+      content is not covered by the class's annotations or the sensitivity flags. The
+      annotation says what the content can hold, not how to process it: the processing
+      rules decide which files are scanned for embedded files.
+    containsDates, containsZipCodes, containsFreeText, containsBiometricIdentifiers:
+      what the class says about a sensitivity flag. "always": every file has it, so a
+      file cannot set the flag (a ClinicalDocumentFile has free text). "n/a": the
+      format cannot carry it, so the flag is false and a file cannot set it (a FASTQ
+      holds no dates). "false": the value when neither the file nor the batch sets
+      the flag, replacing the usual unknown. A biometric class counts as
+      containsBiometricIdentifiers "always" and does not repeat it. A flag's value
+      for a file is, in order: what the class fixes; what the file sets; what the
+      batch sets; the class default; else unknown, treated as true.
 
 
-  A class whose content always identifies a person carries a "biometric" annotation
-  set to "true" (FacialImagingFile). Its files count as containing biometric
-  identifiers and stay in the trusted research environment, whatever the sensitivity
-  flags say.
-
-
-  A class whose content can identify a person on its own, though it is not a
-  biometric identifier under HIPAA Safe Harbor, carries an "identifying" annotation set
-  to "true": sequencing reads and alignments of any assay, DNA or RNA, and germline
-  variant calls, which DPV classes as genetic data (pd:Genetic). RNA-seq and
-  methylation reads carry the germline variants of the sequenced regions, so they
-  identify a person as DNA reads do. Germline-filtered somatic variant calls and gene
-  expression quantifications are not identifying on their own, so their classes leave
-  the annotation out. Removing direct identifiers does not make files of an
-  identifying class de-identified, whatever the sensitivity flags say. "biometric"
-  implies "identifying", so a biometric class does not carry both: consumers treat a
-  biometric class as identifying and, in addition, keep its files in the TRE.
-
-
-  A class whose files can carry other files inside them carries an "embedsFiles"
-  annotation set to "true": FHIR files, whose DocumentReference, Media and Binary
-  resources can hold documents and images as base64 data, and C-CDA documents, whose
-  body can be a non-XML document and whose entries can hold media. Each embedded file
-  can be a note, a scan or a face photograph, whatever the outer file's class, so its
-  content is not covered by the class's annotations or the sensitivity flags. The
-  annotation says what the content can hold, not how to process it: the processing
-  rules decide which files are scanned for embedded files.
+  These annotations tell the model to treat every file in the class alike. Their
+  absence does not mean a file is de-identified. Other classes, including FHIR, may
+  contain identifying information and require de-identification checks based on their
+  content.
 license: https://creativecommons.org/publicdomain/zero/1.0/
 
 prefixes:
@@ -93,10 +120,11 @@ enums:
 
   ModalityEnum:
     description: >-
-      The kind of data in a file: the values of the "modality" class annotation. Each
-      concrete data file class has exactly one, so a sidecar does not state it; the
-      platform reads it from the file's class to decide how to process the file. A new
-      kind of data gets a new class.
+      The kinds of data a source registers to deposit: the values of the "modality"
+      class annotation. Each concrete data file class has exactly one, so a sidecar does
+      not state it; the platform reads it from the file's class and checks it against
+      the source register. How a file is processed follows from its class, not from
+      its modality.
     permissible_values:
       clinical_fhir:
         description: HL7 FHIR resources.
@@ -130,12 +158,16 @@ enums:
         description: Video recordings (VideoFile).
       audio:
         description: Audio recordings, including voice (AudioFile).
-      wearable:
-        description: Device or wearable sensor data (SensorSignalFile, SensorMeasureFile).
+      sensor:
+        description: >-
+          Data from wearables and other sensor devices: raw signals (the
+          SensorSignalFile classes) and measures derived from them (SensorMeasureFile).
       metadata:
         description: Files that describe other files, such as data dictionaries or acquisition metadata (DocumentationFile).
       other:
-        description: Anything else, routed by curator decision (GenericFile).
+        description: >-
+          Other data (GenericFile). Strongly discouraged: a dedicated data class
+          is required; using GenericFile triggers lengthy manual review.
 
   FhirBundleTypeEnum:
     description: FHIR Bundle.type values accepted in a deposit.
@@ -1126,22 +1158,13 @@ enums:
           A code system not listed here, or uncoded names. Name it in the file's
           description; a curator decides whether it needs its own value.
 
-  OmopCdmVersionEnum:
-    description: >-
-      OMOP CDM versions accepted in a deposit, as major.minor. Patch releases of a
-      version share its tables.
-    permissible_values:
-      # BEGIN generated by scripts/gen_enums.py omop-versions
-      "5.4":
-        description: "OMOP CDM 5.4"
-      # END generated by scripts/gen_enums.py omop-versions
-
   OmopCdmTableEnum:
     description: >-
-      OMOP CDM tables of every accepted CDM version, the range of cdmTable. A rule on
-      OmopTableFile narrows the values to the file's omopCdmVersion. The descriptions
-      and groups are in the per-version enums, such as OmopCdm54TableEnum. All tables,
-      including vocabulary and results tables, may be deposited.
+      OMOP CDM tables of every accepted CDM version, the range of cdmTable. The RDDC
+      validator checks that the table exists in the CDM version the file's
+      OmopCdmInstance declares in conformsTo. The descriptions and groups are in the
+      per-version enums, such as OmopCdm54TableEnum. All tables, including vocabulary
+      and results tables, may be deposited.
     permissible_values:
       # BEGIN generated by scripts/gen_enums.py omop-all
       person:
@@ -1361,7 +1384,7 @@ classes:
     abstract: true
     description: >-
       A data object of the batch, with subjects, sensitivity and provenance. Its class
-      determines its modality (see the modality annotation).
+      determines its modality and how it is processed (see the class annotations).
     slots:
     - subjectIds
     - recordCount
@@ -1392,6 +1415,39 @@ classes:
       value:
         required: true
 
+  # --- per-file sensitivity for classes that fix a flag ----------------------
+  # FileSensitivity (core.yaml) has every flag. A class that fixes a flag ("always"
+  # or "n/a") uses a variant without it, so a file cannot contradict its class.
+
+  BiometricFileSensitivity:
+    description: >-
+      Per-file sensitivity overrides for a biometric class (FacialImagingFile). It has
+      no containsBiometricIdentifiers flag: the class already says every file contains
+      biometric identifiers.
+    slots:
+    - containsDates
+    - containsZipCodes
+    - containsFreeText
+    - notes
+
+  DocumentFileSensitivity:
+    description: >-
+      Per-file sensitivity overrides for an unstructured document class
+      (ClinicalDocumentFile). It has no containsFreeText flag: the class already says
+      every file is free text.
+    slots:
+    - containsDates
+    - containsZipCodes
+    - containsBiometricIdentifiers
+    - notes
+
+  FixedSensitivity:
+    description: >-
+      Per-file sensitivity for a class whose format can carry none of the flagged
+      content (the genomics classes and IndexFile). Notes only.
+    slots:
+    - notes
+
   # --- clinical -------------------------------------------------------------
 
   FhirFile:
@@ -1402,14 +1458,15 @@ classes:
     description: >-
       Base class for FHIR JSON files. The FHIR version and the implementation guides the
       resources follow, such as US Core, are declared once in the conformsTo of the file
-      set the file belongs to, not per file.
+      set the file belongs to (its fileSetClass), not per file.
 
   FhirBundleFile:
     is_a: FhirFile
-    description: One FHIR Bundle JSON document.
+    description: One FHIR Bundle JSON document, in a FhirBundleCollection.
     annotations:
       structure: structured
       modality: clinical_fhir
+      fileSetClass: FhirBundleCollection
       embedsFiles: "true"
     slots:
     - bundleType
@@ -1435,10 +1492,11 @@ classes:
 
   FhirResourceFile:
     is_a: FhirSingleTypeFile
-    description: One FHIR resource JSON document that is not a Bundle.
+    description: One FHIR resource JSON document that is not a Bundle, in a FhirResourceCollection.
     annotations:
       structure: structured
       modality: clinical_fhir
+      fileSetClass: FhirResourceCollection
       embedsFiles: "true"
     slot_usage:
       encodingFormat:
@@ -1451,10 +1509,11 @@ classes:
 
   FhirNdjsonFile:
     is_a: FhirSingleTypeFile
-    description: FHIR Bulk Data NDJSON, one resource type per file.
+    description: FHIR Bulk Data NDJSON, one resource type per file, in a FhirBulkExport.
     annotations:
       structure: structured
       modality: clinical_fhir
+      fileSetClass: FhirBulkExport
       embedsFiles: "true"
     slot_usage:
       encodingFormat:
@@ -1465,13 +1524,18 @@ classes:
     is_a: DataFile
     broad_mappings:
     - EDAM:data_3861
-    description: One OMOP CDM table.
+    description: >-
+      One OMOP CDM table, in an OmopCdmInstance. The instance's conformsTo gives the
+      CDM version, and the RDDC validator checks that cdmTable exists in that version.
+      CDM tables have no column for images or recordings, so a file contains no
+      biometric identifiers unless it says so.
     annotations:
       structure: structured
       modality: clinical_omop
+      fileSetClass: OmopCdmInstance
+      containsBiometricIdentifiers: "false"
     slots:
     - cdmTable
-    - omopCdmVersion
     slot_usage:
       encodingFormat:
         any_of:
@@ -1480,71 +1544,19 @@ classes:
         - equals_string: application/vnd.apache.parquet
       cdmTable:
         required: true
-      omopCdmVersion:
-        required: true
-    rules:
-    # BEGIN generated by scripts/gen_enums.py omop-rules
-    - description: "A file that declares OMOP CDM 5.4 uses its cdmTable values."
-      preconditions:
-        slot_conditions:
-          omopCdmVersion:
-            equals_string: "5.4"
-      postconditions:
-        slot_conditions:
-          cdmTable:
-            equals_string_in:
-            - person
-            - observation_period
-            - visit_occurrence
-            - visit_detail
-            - condition_occurrence
-            - drug_exposure
-            - procedure_occurrence
-            - device_exposure
-            - measurement
-            - observation
-            - death
-            - note
-            - note_nlp
-            - specimen
-            - fact_relationship
-            - location
-            - care_site
-            - provider
-            - payer_plan_period
-            - cost
-            - drug_era
-            - dose_era
-            - condition_era
-            - episode
-            - episode_event
-            - metadata
-            - cdm_source
-            - concept
-            - vocabulary
-            - domain
-            - concept_class
-            - concept_relationship
-            - relationship
-            - concept_synonym
-            - concept_ancestor
-            - source_to_concept_map
-            - drug_strength
-            - cohort
-            - cohort_definition
-    # END generated by scripts/gen_enums.py omop-rules
 
   CcdaDocumentFile:
     is_a: DataFile
     broad_mappings:
     - EDAM:data_3861
     description: >-
-      One HL7 C-CDA document. Its template IDs are in the document header and its C-CDA
-      release is in the conformsTo of the file set it belongs to, so neither is repeated
-      per file.
+      One HL7 C-CDA document, in a CcdaDocumentSet. Its template IDs are in the document
+      header and its C-CDA release is in the conformsTo of the set, so neither is
+      repeated per file.
     annotations:
       structure: structured
       modality: clinical_ccda
+      fileSetClass: CcdaDocumentSet
       embedsFiles: "true"
     slot_usage:
       encodingFormat:
@@ -1580,12 +1592,16 @@ classes:
   ConsentFile:
     is_a: DataFile
     description: >-
-      Consent elements for the subjects it lists: which uses each subject agreed to. The
-      platform applies them to access decisions rather than processing them as clinical
-      data.
+      Permitted data uses for each listed subject. The platform applies them to access
+      decisions rather than processing them as clinical data. A consent elements table
+      holds coded uses and dates, so postal codes, free text and biometric identifiers
+      are absent unless the file says otherwise.
     annotations:
       structure: structured
       modality: consent
+      containsZipCodes: "false"
+      containsFreeText: "false"
+      containsBiometricIdentifiers: "false"
     slot_usage:
       encodingFormat:
         any_of:
@@ -1607,10 +1623,12 @@ classes:
       definition, named in formDefinition, rather than as a generic table. Intake forms
       in FHIR form, QuestionnaireResponse resources, go in a FHIR file, and scanned
       paper forms in a ClinicalDocumentFile. Free-text answers make the file contain
-      free text (containsFreeText).
+      free text (containsFreeText). A table of coded answers holds no biometric
+      identifiers unless the file says so.
     annotations:
       structure: structured
       modality: intake_form
+      containsBiometricIdentifiers: "false"
     slots:
     - formDefinition
     - formVersion
@@ -1640,10 +1658,13 @@ classes:
       ClinicalDocumentFiles that reportDocuments points to; sequencing data and variant
       calls go in the genomics classes. A report lists few variants, not a genome, so
       the class is not identifying, although a rare variant can single a person out
-      within a small cohort.
+      within a small cohort. Results records hold no address or image, so postal codes
+      and biometric identifiers are absent unless the file says otherwise.
     annotations:
       structure: structured
       modality: genetic_testing
+      containsZipCodes: "false"
+      containsBiometricIdentifiers: "false"
     slots:
     - referenceGenome
     - reportDocuments
@@ -1675,10 +1696,14 @@ classes:
       are kept apart from confirmed conditions; in FHIR they are Conditions with
       verificationStatus "differential". A tool's export is structured; a report in PDF
       is unstructured and needs text extraction. wasDerivedFrom points to the files in
-      the sidecar the tool analysed, such as facial images.
+      the sidecar the tool analysed, such as facial images. Candidates hold no address
+      or image, so postal codes and biometric identifiers are absent unless the file
+      says otherwise.
     annotations:
       structure: mixed
       modality: diagnosis_support
+      containsZipCodes: "false"
+      containsBiometricIdentifiers: "false"
     slots:
     - software
     - softwareVersion
@@ -1700,10 +1725,13 @@ classes:
     - EDAM:data_3861
     description: >-
       An unstructured clinical document, such as a note, a scanned report or a genetic
-      test report. A scan is a PDF or an image (TIFF, JPEG or PNG).
+      test report. A scan is a PDF or an image (TIFF, JPEG or PNG). The whole document
+      is free text, so every file counts as containing free text and cannot set
+      containsFreeText.
     annotations:
       structure: unstructured
       modality: clinical_text
+      containsFreeText: always
     slots:
     - documentType
     slot_usage:
@@ -1717,6 +1745,11 @@ classes:
         - equals_string: image/png
       subjectIds:
         required: true
+      sensitivity:
+        range: DocumentFileSensitivity
+        description: >-
+          Per-file sensitivity overrides. containsFreeText is left out: the class
+          already says the file is free text.
 
   DocumentationFile:
     is_a: DataFile
@@ -1724,38 +1757,39 @@ classes:
     - EDAM:data_2337
     description: >-
       A file that documents other files, such as a data dictionary, the codebook of an
-      intake form, or a README. When it
-      documents particular files or record sets, about points to them; a README for the
-      whole batch leaves about out.
+      intake form, or a README. When it documents particular files or record sets,
+      about points to them; a README for the whole batch leaves about out.
+      Documentation describes the data and holds no
+      subject-level content, so every flag is false unless the file says otherwise.
     annotations:
       structure: mixed
       modality: metadata
+      containsDates: "false"
+      containsZipCodes: "false"
+      containsFreeText: "false"
+      containsBiometricIdentifiers: "false"
     slots:
     - about
 
-  BiometricFileSensitivity:
-    description: >-
-      Per-file sensitivity overrides for a class whose content always identifies a
-      person, such as FacialImagingFile. It has no containsBiometricIdentifiers flag, so
-      a file cannot contradict its class.
-    slots:
-    - containsDates
-    - containsZipCodes
-    - containsFreeText
-    - notes
-
   # --- omics ----------------------------------------------------------------
+  # The format is the class: FASTQ, BAM, CRAM, VCF and BCF have no registered media
+  # type, and the pipelines differ by format.
 
   GenomicsFile:
     is_a: DataFile
     abstract: true
     description: >-
-      Base class for genomic sequencing data. These formats have no registered media
-      type, so encodingFormat names the container: text/plain for text formats (FASTQ,
-      SAM, VCF) and application/octet-stream for binary ones (BAM, CRAM, BCF). The class
-      says which format it is. A gzip or BGZF-compressed text file (.fastq.gz,
-      .vcf.gz) sets compression to gzip. BAM, CRAM and BCF compress internally as part of
-      the format, so they leave compression unset.
+      Base class for genomic sequencing data. For reads and alignments the class names
+      the format and maps to its EDAM format term; for variant calls the media type and
+      compression do. encodingFormat names only the container for formats with no
+      registered media type: text/plain for text formats (FASTQ, VCF) and
+      application/octet-stream for binary ones (BAM, CRAM, BCF). A gzip or
+      BGZF-compressed text file (.fastq.gz, .vcf.gz) says so in compression. BAM, CRAM
+      and BCF compress internally as part of the format, so they leave compression
+      unset. The formats hold sequence data, run metadata and expression values, not
+      subject-level dates, addresses, narrative or biometric identifiers, so the
+      sensitivity flags do not apply: what identifies the person, where the class
+      says so, is the sequence itself (the identifying annotation).
     slots:
     - measurementTechnique
     - sequencingPlatform
@@ -1771,33 +1805,77 @@ classes:
         required: true
       platform:
         description: The sequencing instrument model, e.g. "Illumina NovaSeq X".
-      encodingFormat:
-        any_of:
-        - equals_string: text/plain
-        - equals_string: application/octet-stream
+      sensitivity:
+        range: FixedSensitivity
+        description: Notes only. The class fixes every sensitivity flag.
 
   SequenceReadsFile:
     is_a: GenomicsFile
     close_mappings:
     - EDAM:data_2977
-    description: Sequencing reads, such as FASTQ or unaligned BAM.
+    abstract: true
+    description: >-
+      Base class for sequencing reads before alignment: a FastqFile or an
+      UnalignedBamFile. Paired-end files reference each other through pairedWith.
+    annotations:
+      identifying: "true"
+    slots:
+    - pairedWith
+
+  FastqFile:
+    is_a: SequenceReadsFile
+    close_mappings:
+    - EDAM:format_1930
+    description: >-
+      Sequencing reads in FASTQ, usually gzip or BGZF-compressed (.fastq.gz).
     annotations:
       structure: structured
       modality: genomics
       rai:dataCollectionType: Direct measurement
       identifying: "true"
-    slots:
-    - pairedWith
+      containsDates: n/a
+      containsZipCodes: n/a
+      containsFreeText: n/a
+      containsBiometricIdentifiers: n/a
+    slot_usage:
+      encodingFormat:
+        range: string  # equals_string needs a string range; the fixed value is a valid MediaType
+        equals_string: text/plain
+      compression:
+        any_of:
+        - equals_string: gzip
+        - equals_string: bgzf
+
+  UnalignedBamFile:
+    is_a: SequenceReadsFile
+    close_mappings:
+    - EDAM:format_2572
+    description: >-
+      Sequencing reads in an unaligned BAM (uBAM), such as the output of a PacBio or
+      Oxford Nanopore basecaller.
+    annotations:
+      structure: structured
+      modality: genomics
+      rai:dataCollectionType: Direct measurement
+      identifying: "true"
+      containsDates: n/a
+      containsZipCodes: n/a
+      containsFreeText: n/a
+      containsBiometricIdentifiers: n/a
+    slot_usage:
+      encodingFormat:
+        range: string  # equals_string needs a string range; the fixed value is a valid MediaType
+        equals_string: application/octet-stream
 
   AlignmentFile:
     is_a: GenomicsFile
     close_mappings:
     - EDAM:data_1383
-    description: Aligned reads, such as BAM or CRAM.
+    abstract: true
+    description: >-
+      Base class for aligned reads: a BamFile or a CramFile. SAM, the text form, is
+      not accepted; convert it to BAM.
     annotations:
-      structure: structured
-      modality: genomics
-      rai:dataCollectionType: Direct measurement
       identifying: "true"
     slots:
     - referenceGenome
@@ -1805,20 +1883,74 @@ classes:
       referenceGenome:
         required: true
 
+  BamFile:
+    is_a: AlignmentFile
+    close_mappings:
+    - EDAM:format_2572
+    description: Aligned reads in BAM. Its index (.bai) is an IndexFile.
+    annotations:
+      structure: structured
+      modality: genomics
+      rai:dataCollectionType: Direct measurement
+      identifying: "true"
+      containsDates: n/a
+      containsZipCodes: n/a
+      containsFreeText: n/a
+      containsBiometricIdentifiers: n/a
+    slot_usage:
+      encodingFormat:
+        range: string  # equals_string needs a string range; the fixed value is a valid MediaType
+        equals_string: application/octet-stream
+
+  CramFile:
+    is_a: AlignmentFile
+    close_mappings:
+    - EDAM:format_3462
+    description: >-
+      Aligned reads in CRAM, which needs the assembly named in referenceGenome to be
+      read. Its index (.crai) is an IndexFile.
+    annotations:
+      structure: structured
+      modality: genomics
+      rai:dataCollectionType: Direct measurement
+      identifying: "true"
+      containsDates: n/a
+      containsZipCodes: n/a
+      containsFreeText: n/a
+      containsBiometricIdentifiers: n/a
+    slot_usage:
+      encodingFormat:
+        range: string  # equals_string needs a string range; the fixed value is a valid MediaType
+        equals_string: application/octet-stream
+
   VariantFile:
     is_a: GenomicsFile
-    abstract: true
     close_mappings:
     - EDAM:data_3498
+    abstract: true
     description: >-
-      Base class for variant calls, such as VCF, BCF or MAF. Germline variants identify a
-      person and somatic variants alone do not, so a file goes in GermlineVariantFile
-      or SomaticVariantFile depending on which it can contain.
+      Base class for variant calls. Germline variants identify a person and somatic
+      variants alone do not, so a file goes in GermlineVariantFile or
+      SomaticVariantFile depending on which it can contain. The format is told by the
+      media type and compression, not the class: a VCF is text/plain and, when it has a
+      tabix or CSI index (an IndexFile), BGZF-compressed (compression bgzf; a plain
+      gzipped VCF sets gzip); a BCF is application/octet-stream; a MAF, a tab-separated
+      table, is text/tab-separated-values.
     slots:
     - referenceGenome
     slot_usage:
       referenceGenome:
         required: true
+      encodingFormat:
+        any_of:
+        - equals_string: text/plain
+        - equals_string: application/octet-stream
+        - equals_string: text/tab-separated-values
+        description: text/plain for VCF, application/octet-stream for BCF, text/tab-separated-values for MAF.
+      compression:
+        any_of:
+        - equals_string: gzip
+        - equals_string: bgzf
 
   GermlineVariantFile:
     is_a: VariantFile
@@ -1831,6 +1963,10 @@ classes:
       modality: genomics
       rai:dataCollectionType: Direct measurement
       identifying: "true"
+      containsDates: n/a
+      containsZipCodes: n/a
+      containsFreeText: n/a
+      containsBiometricIdentifiers: n/a
 
   SomaticVariantFile:
     is_a: VariantFile
@@ -1843,6 +1979,10 @@ classes:
       structure: structured
       modality: genomics
       rai:dataCollectionType: Direct measurement
+      containsDates: n/a
+      containsZipCodes: n/a
+      containsFreeText: n/a
+      containsBiometricIdentifiers: n/a
 
   GeneExpressionFile:
     is_a: GenomicsFile
@@ -1860,6 +2000,10 @@ classes:
       structure: structured
       modality: genomics
       rai:dataCollectionType: Direct measurement
+      containsDates: n/a
+      containsZipCodes: n/a
+      containsFreeText: n/a
+      containsBiometricIdentifiers: n/a
     slot_usage:
       measurementTechnique:
         any_of:
@@ -1881,11 +2025,18 @@ classes:
     broad_mappings:
     - EDAM:data_0955
     description: >-
-      An index of another file in the sidecar, such as .bai, .crai or .tbi. Indexes are
-      binary, so encodingFormat is application/octet-stream.
+      An index of another file in the sidecar. The index format follows the indexed
+      file: .bai for a BamFile, .crai for a CramFile, .tbi or .csi for a VCF and .csi
+      for a BCF (a variant file). Indexes are binary, so encodingFormat is
+      application/octet-stream, and they hold offsets, not content, so the sensitivity
+      flags do not apply.
     annotations:
       structure: structured
       modality: genomics
+      containsDates: n/a
+      containsZipCodes: n/a
+      containsFreeText: n/a
+      containsBiometricIdentifiers: n/a
     slots:
     - indexOf
     slot_usage:
@@ -1894,6 +2045,9 @@ classes:
         equals_string: application/octet-stream
       indexOf:
         required: true
+      sensitivity:
+        range: FixedSensitivity
+        description: Notes only. The class fixes every sensitivity flag.
 
   # --- images, recordings and other files -----------------------------------
 
@@ -1901,13 +2055,12 @@ classes:
     is_a: DataFile
     close_mappings:
     - EDAM:data_3424
+    abstract: true
     description: >-
-      A medical or photographic image, such as DICOM. A photograph of a person's face
-      goes in a FacialImagingFile instead.
-    annotations:
-      structure: unstructured
-      modality: imaging
-      rai:dataCollectionType: Direct measurement
+      Base class for medical and clinical images other than facial images: a
+      DicomImageFile or, for other formats, an ImageFile. A photograph or 3D model of a
+      person's face goes in a FacialImagingFile, which is not a subclass of this one:
+      rules for images must not apply to it.
     slots:
     - measurementTechnique
     slot_usage:
@@ -1918,22 +2071,76 @@ classes:
           The imaging technique that produced the image, e.g. ct, mri or photography.
           Analysis depends on it, so every image states it.
 
-  FacialImagingFile:
+  DicomImageFile:
     is_a: ImagingFile
+    close_mappings:
+    - EDAM:format_3548
+    description: >-
+      A DICOM image or series, such as a CT or MRI. DICOM headers carry study dates,
+      patient details and comments, and images can carry burned-in text, so the
+      sensitivity flags apply as the batch declares them.
+    annotations:
+      structure: unstructured
+      modality: imaging
+      rai:dataCollectionType: Direct measurement
+    slot_usage:
+      encodingFormat:
+        range: string  # equals_string needs a string range; the fixed value is a valid MediaType
+        equals_string: application/dicom
+
+  ImageFile:
+    is_a: ImagingFile
+    close_mappings:
+    - EDAM:format_3591
+    - EDAM:format_3727
+    - EDAM:format_3603
+    - EDAM:format_3579
+    - EDAM:format_4001
+    description: >-
+      An image in a format other than DICOM: TIFF or OME-TIFF, PNG, JPEG, JPEG 2000, or
+      a whole-slide, microscopy or NIfTI volume format with no registered media type
+      (application/octet-stream). These formats have no field for an address, so a
+      file contains no postal codes unless it says so; burned-in text counts as free
+      text.
+    annotations:
+      structure: unstructured
+      modality: imaging
+      rai:dataCollectionType: Direct measurement
+      containsZipCodes: "false"
+    slot_usage:
+      encodingFormat:
+        any_of:
+        - equals_string: image/tiff
+        - equals_string: image/png
+        - equals_string: image/jpeg
+        - equals_string: image/jp2
+        - equals_string: application/octet-stream
+        description: >-
+          Media type of the image. Whole-slide (SVS, NDPI, CZI) and NIfTI files have no
+          registered media type, so they are application/octet-stream.
+
+  FacialImagingFile:
+    is_a: DataFile
     broad_mappings:
     - EDAM:data_3424
     description: >-
       An image or 3D surface model of a person's face, such as those taken for
-      dysmorphology assessment or facial phenotyping. measurementTechnique says how it was captured: a
-      photograph, a 3D surface scan, or a CT or MRI. A face is a biometric identifier, so
-      the file always counts as containing biometric identifiers.
+      dysmorphology assessment or facial phenotyping. measurementTechnique says how it
+      was captured: a photograph, a 3D surface scan, or a CT or MRI. A face is a
+      biometric identifier, so the file always counts as containing biometric
+      identifiers. Not a subclass of ImagingFile: facial images are processed by their
+      own tools and never leave INTAKE.
     annotations:
       structure: unstructured
       modality: imaging
       rai:dataCollectionType: Direct measurement
       biometric: "true"
+    slots:
+    - measurementTechnique
     slot_usage:
       measurementTechnique:
+        required: true
+        range: ImagingAssayEnum
         any_of:
         - equals_string: photography
         - equals_string: surface_scan_3d
@@ -1971,10 +2178,13 @@ classes:
     is_a: DataFile
     description: >-
       An audio recording. A recording of a person's voice contains biometric
-      identifiers, so set sensitivity.containsBiometricIdentifiers to true.
+      identifiers, so set sensitivity.containsBiometricIdentifiers to true. Audio
+      formats have no field for an address, so a file contains no postal codes unless
+      it says so; speech counts as free text.
     annotations:
       structure: unstructured
       modality: audio
+      containsZipCodes: "false"
     slot_usage:
       encodingFormat:
         pattern: "^audio/[A-Za-z0-9.+_-]+$"
@@ -1983,24 +2193,32 @@ classes:
   VideoFile:
     is_a: DataFile
     description: >-
-      A video recording. A recording that shows a person's face or voice contains
+      A video recording. A recording containing a person's face or voice contains
       biometric identifiers, so set sensitivity.containsBiometricIdentifiers to true.
+      Video formats have no field for an address, so a file contains no postal codes
+      unless it says so; speech and on-screen text count as free text.
     annotations:
       structure: unstructured
       modality: video
+      containsZipCodes: "false"
     slot_usage:
       encodingFormat:
         pattern: "^video/[A-Za-z0-9.+_-]+$"
         description: A video media type, such as video/mp4.
+
+  # --- sensor data ----------------------------------------------------------
+  # A raw signal's format is its class, since the readers differ by format.
 
   SensorDataFile:
     is_a: DataFile
     abstract: true
     description: >-
       Base class for data recorded by a wearable or other sensor device. A raw signal
-      goes in a SensorSignalFile and measures derived from it in a SensorMeasureFile,
-      since they need different processing. Sensor data already in FHIR form, such as
-      device Observations, goes in a FHIR file instead.
+      goes in one of the SensorSignalFile classes and measures derived from it in a
+      SensorMeasureFile, since they need different processing. Sensor data already in
+      FHIR form, such as device Observations, goes in a FHIR file instead. Sensor data
+      carries timestamps, which count as dates; it is not a biometric identifier under
+      HIPAA Safe Harbor, and its formats have no field for an address.
     slots:
     - measurementTechnique
     - platform
@@ -2019,28 +2237,104 @@ classes:
 
   SensorSignalFile:
     is_a: SensorDataFile
+    abstract: true
     description: >-
-      A raw sensor signal, such as 100 Hz accelerometry or an ECG waveform, before any
-      aggregation. Common formats are EDF/EDF+, WFDB, DICOM waveform and device or
-      vendor formats; EDF, WFDB and vendor formats have no registered media type, so they
-      are application/octet-stream.
-    annotations:
-      structure: structured
-      modality: wearable
-      rai:dataCollectionType: Direct measurement
+      Base class for a raw sensor signal, such as 100 Hz accelerometry or an ECG
+      waveform, before any aggregation. The class names the format: EdfSignalFile,
+      WfdbSignalFile, DicomWaveformFile or, for a device maker's own format,
+      VendorSignalFile.
     slots:
     - samplingRate
+
+  EdfSignalFile:
+    is_a: SensorSignalFile
+    description: >-
+      A signal in EDF or EDF+ (European Data Format), the usual format for
+      polysomnography and EEG. Its header has fields for the patient's identification
+      and the recording start date, and EDF+ annotation channels hold free text, so
+      those flags apply as the batch declares them. EDF has no registered media type,
+      so it is application/octet-stream.
+    annotations:
+      structure: structured
+      modality: sensor
+      rai:dataCollectionType: Direct measurement
+      containsZipCodes: "false"
+      containsBiometricIdentifiers: "false"
+    slot_usage:
+      encodingFormat:
+        range: string  # equals_string needs a string range; the fixed value is a valid MediaType
+        equals_string: application/octet-stream
+
+  WfdbSignalFile:
+    is_a: SensorSignalFile
+    description: >-
+      One file of a WFDB (PhysioNet WaveForm DataBase) record: the header (.hea,
+      text/plain) or a signal file (.dat, application/octet-stream). The files of one
+      record are kept together in a file set, and the header names the signal files.
+      Header comments can hold free text.
+    annotations:
+      structure: structured
+      modality: sensor
+      rai:dataCollectionType: Direct measurement
+      containsZipCodes: "false"
+      containsBiometricIdentifiers: "false"
+    slot_usage:
+      encodingFormat:
+        any_of:
+        - equals_string: text/plain
+        - equals_string: application/octet-stream
+
+  DicomWaveformFile:
+    is_a: SensorSignalFile
+    close_mappings:
+    - EDAM:format_3548
+    description: >-
+      A DICOM waveform object, such as a 12-lead ECG. Its headers carry the same
+      patient details as a DICOM image, including an address, so every flag except
+      biometric identifiers applies as the batch declares it.
+    annotations:
+      structure: structured
+      modality: sensor
+      rai:dataCollectionType: Direct measurement
+      containsBiometricIdentifiers: "false"
+    slot_usage:
+      encodingFormat:
+        range: string  # equals_string needs a string range; the fixed value is a valid MediaType
+        equals_string: application/dicom
+
+  VendorSignalFile:
+    is_a: SensorSignalFile
+    description: >-
+      A signal in a device maker's own format, such as ActiGraph .gt3x or Garmin FIT.
+      platform, the device, is required, since it decides how the file is read. Such
+      formats have no registered media type, so the file is application/octet-stream.
+    annotations:
+      structure: structured
+      modality: sensor
+      rai:dataCollectionType: Direct measurement
+      containsZipCodes: "false"
+      containsBiometricIdentifiers: "false"
+    slot_usage:
+      platform:
+        required: true
+      encodingFormat:
+        range: string  # equals_string needs a string range; the fixed value is a valid MediaType
+        equals_string: application/octet-stream
 
   SensorMeasureFile:
     is_a: SensorDataFile
     description: >-
       Measures derived from sensor data, such as per-minute step counts, sleep stages or
-      daily heart rate summaries. IEEE 1752.1 (Open mHealth) defines JSON schemas for
-      sleep and physical activity measures.
+      daily heart rate summaries, as a table or JSON. IEEE 1752.1 (Open mHealth) defines
+      JSON schemas for sleep and physical activity measures. Measures are structured
+      values with timestamps, so a file contains no free text unless it says so.
     annotations:
       structure: structured
-      modality: wearable
+      modality: sensor
       rai:dataCollectionType: Direct measurement
+      containsZipCodes: "false"
+      containsFreeText: "false"
+      containsBiometricIdentifiers: "false"
     slot_usage:
       encodingFormat:
         any_of:
@@ -2052,7 +2346,9 @@ classes:
 
   GenericFile:
     is_a: DataFile
-    description: "Any other data file. A curator decides how to process it."
+    description: >-
+      Any other data file. GenericFile is strongly discouraged. A dedicated data
+      class is required; using GenericFile triggers lengthy manual review.
     annotations:
       structure: mixed
       modality: other
@@ -2085,11 +2381,10 @@ slots:
 
   # --- OMOP (OmopTableFile) -------------------------------------------------
   cdmTable:
-    description: OMOP CDM table in the file, e.g. person.
+    description: >-
+      OMOP CDM table in the file, e.g. person. It must exist in the CDM version the
+      file's OmopCdmInstance declares in conformsTo.
     range: OmopCdmTableEnum
-  omopCdmVersion:
-    description: OMOP CDM version of the table, as major.minor, e.g. "5.4".
-    range: OmopCdmVersionEnum
 
   # --- intake forms (IntakeFormFile) ----------------------------------------
   formDefinition:
@@ -2150,8 +2445,8 @@ slots:
     description: The files or record sets this file documents.
 
   # --- assays and instruments -----------------------------------------------
-  # measurementTechnique: GenomicsFile, ImagingFile, SensorDataFile and their
-  # subclasses.
+  # measurementTechnique: GenomicsFile, ImagingFile, FacialImagingFile,
+  # SensorDataFile and their subclasses.
   measurementTechnique:
     slot_uri: sc:measurementTechnique
     description: >-
@@ -2169,7 +2464,7 @@ slots:
   platform:
     description: "The instrument, sequencing platform or device that produced the data."
 
-  # --- sensor data (SensorSignalFile) ----------------------------------------
+  # --- sensor data (SensorSignalFile and its subclasses) ---------------------
   samplingRate:
     slot_uri: cr:samplingRate
     description: >-

@@ -17,6 +17,8 @@ from linkml_runtime.utils.schemaview import SchemaView
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ROOT_CLASS = "DataFile"
+FLAGS = ("containsDates", "containsZipCodes", "containsFreeText", "containsBiometricIdentifiers")
+FLAG_WORDS = {"always": "always true", "n/a": "not applicable, so false", "false": "false unless set"}
 COMPACT_ENUM = 20  # enums with more values are listed inline, without descriptions
 
 
@@ -227,6 +229,12 @@ class Page:
         modality = cls.annotations.get("modality")
         if modality:
             facts.append(f"Modality: `{modality.value}`.")
+        set_class = cls.annotations.get("fileSetClass")
+        if set_class:
+            facts.append(f"Belongs to a `{set_class.value}` file set, whose `conformsTo` gives its standard and version.")
+        fixed = [f"`{f}` {FLAG_WORDS[cls.annotations[f].value]}" for f in FLAGS if cls.annotations.get(f)]
+        if fixed:
+            facts.append("Sensitivity flags: " + "; ".join(fixed) + ".")
         collection = cls.annotations.get("rai:dataCollectionType")
         if collection:
             facts.append(f"Data collection (`rai:dataCollectionType`): {collection.value}.")
@@ -309,8 +317,9 @@ class Page:
         out = []
         for line in (text or "").split("\n"):
             indent = len(line) - len(line.lstrip())
-            if indent == 2 and ":" in line:
-                term, rest = line.strip().split(":", 1)
+            if indent == 2 and ": " in line:
+                term, rest = line.strip().split(": ", 1)  # a term may be a CURIE (rai:dataCollectionType)
+                rest = " " + rest
                 out.append(f"- **{term}**:{rest}")
             elif indent > 2 and out:
                 out[-1] += " " + line.strip()
