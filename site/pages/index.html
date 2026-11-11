@@ -22,15 +22,16 @@
 </div>
 
 <div class="paths">
-  <a href="data-overview.html"><b>Data classes</b><span>What kinds of data the RDDC accepts, how each is classified, and which files identify a person.</span></a>
-  <a href="describing-files.html"><b>Describing a file</b><span>Media types, compression, assays and the other fields a data file carries.</span></a>
-  <a href="concepts.html"><b>The sidecar</b><span>Batches, subjects, file sets and sensitivity: how a deposit lists its files.</span></a>
+  <a class="sec-data" href="data-overview.html"><b><span class="part" aria-hidden="true">1</span>Data classes</b><span>What kinds of data the RDDC accepts, how each is classified, and which files identify a person.</span></a>
+  <a class="sec-data" href="describing-files.html"><b><span class="part" aria-hidden="true">1</span>Describing a file</b><span>Media types, compression, assays and the other fields a data file carries.</span></a>
+  <a class="sec-sidecar" href="concepts.html"><b><span class="part" aria-hidden="true">2</span>The sidecar</b><span>Batches, subjects, file sets and sensitivity: how a deposit lists its files.</span></a>
 </div>
 
 <h2>Two parts</h2>
-<dl class="glossary">
-  <dt>Data classes</dt><dd>One class per kind of file. A file names its class in <code>additionalType</code>, and the class fixes the accepted media types, the required fields and the file's modality. The data classes are documented first, by family: <a href="data-clinical.html">clinical</a>, <a href="data-genomics.html">genomics</a>, <a href="data-imaging.html">imaging, audio and video</a>, <a href="data-sensor.html">sensor</a> and <a href="data-other.html">documentation and other files</a>.</dd>
-  <dt>The sidecar</dt><dd>One document per batch that lists every file, the subjects in the batch, and sensitivity facts for de-identification. It builds on the data classes: each entry in its <code>distribution</code> is a file of one class, or a set of such files.</dd>
+<p>The documentation follows the same order, and each page shows which part it belongs to.</p>
+<dl class="glossary parts">
+  <dt class="sec-data"><span class="part" aria-hidden="true">1</span>Data classes</dt><dd>One class per kind of file. A file names its class in <code>additionalType</code>, and the class fixes the accepted media types, the required fields and the file's modality. The data classes are documented first, by family: <a href="data-clinical.html">clinical</a>, <a href="data-genomics.html">genomics</a>, <a href="data-imaging.html">imaging, audio and video</a>, <a href="data-sensor.html">sensor</a> and <a href="data-other.html">documentation and other files</a>.</dd>
+  <dt class="sec-sidecar"><span class="part" aria-hidden="true">2</span>The sidecar</dt><dd>One document per batch that lists every file, the subjects in the batch, and sensitivity facts for de-identification. It builds on the data classes: each entry in its <code>distribution</code> is a file of one class, or a set of such files.</dd>
 </dl>
 
 <h2>What the sidecar is for</h2>

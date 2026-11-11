@@ -149,6 +149,19 @@ NAV = [
 ]
 PAGES = [p for _, items in NAV for p in items]
 
+# The two parts of the docs, told apart by a numbered label and an accent colour
+# (style.css: .sec-data, .sec-sidecar). Groups map to a part; pages in other groups
+# can belong to one too.
+SECTIONS = {"data": (1, "Data classes"), "sidecar": (2, "The sidecar")}
+GROUP_SECTION = {"Data classes": "data", "The sidecar": "sidecar", "Sidecar examples": "sidecar"}
+PAGE_SECTION = {f: GROUP_SECTION[g] for g, items in NAV if g in GROUP_SECTION for f, _ in items}
+PAGE_SECTION.update({"reference.html": "sidecar", "vocabularies.html": "sidecar"})
+
+
+def part_label(section):
+    number, name = SECTIONS[section]
+    return f"<span class='part' aria-hidden='true'>{number}</span>{name}"
+
 ORIGIN_LABEL = {
     "sc": "schema.org",
     "cr": "Croissant",
@@ -1134,10 +1147,18 @@ def page_toc(body):
 def sidebar(current):
     out = []
     for group, items in NAV:
+        section = GROUP_SECTION.get(group)
         links = "".join(
-            f"<li><a href='{f}'{' aria-current=\"page\"' if f == current else ''}>{t}</a></li>" for f, t in items
+            f"<li{'' if section or f not in PAGE_SECTION else f' class=sec-{PAGE_SECTION[f]}'}>"
+            f"<a href='{f}'{' aria-current=\"page\"' if f == current else ''}>{t}</a></li>" for f, t in items
         )
-        out.append(f"<div class='group'><p>{group}</p><ul>{links}</ul></div>")
+        label = group
+        if section and group == SECTIONS[section][1]:
+            label = part_label(section)
+        elif section:  # a further group of the same part, e.g. Sidecar examples
+            label = f"<span class='part sub' aria-hidden='true'>{SECTIONS[section][0]}</span>{group}"
+        cls = f"group sec-{section}" if section else "group"
+        out.append(f"<div class='{cls}'><p>{label}</p><ul>{links}</ul></div>")
     return "".join(out)
 
 
@@ -1151,7 +1172,11 @@ def prev_next(current):
         parts.append("<span></span>")
     if idx < len(PAGES) - 1:
         f, t = PAGES[idx + 1]
-        parts.append(f"<a class='next' href='{f}'><span>Next</span>{t}</a>")
+        section = PAGE_SECTION.get(f)
+        label = "Next"
+        if section and section != PAGE_SECTION.get(current):  # entering the other part
+            label = f"Next: part {SECTIONS[section][0]}, {SECTIONS[section][1]}"
+        parts.append(f"<a class='next{f' sec-{section}' if section else ''}' href='{f}'><span>{label}</span>{t}</a>")
     return "<nav class='pager' aria-label='Pages'>" + "".join(parts) + "</nav>"
 
 
@@ -1173,6 +1198,9 @@ def search_entries(fname, title, body):
 
 def render(fname, title, body, template, home=False):
     body = add_heading_ids(expand_directives(body))
+    section = PAGE_SECTION.get(fname)
+    if section:  # the part this page belongs to, above its title
+        body = body.replace("<h1", f"<p class='kicker'>{part_label(section)}</p><h1", 1)
     toc = "" if home else page_toc(body)
     pager = "" if home else prev_next(fname)
     out = (
@@ -1181,6 +1209,7 @@ def render(fname, title, body, template, home=False):
         .replace("{{sidebar}}", sidebar(fname))
         .replace("{{toc}}", toc)
         .replace("{{layout}}", "home" if home else "doc")
+        .replace("{{section}}", f"sec-{section}" if section else "")
         .replace("{{pager}}", pager)
         .replace("{{content}}", body)
     )
