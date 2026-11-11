@@ -13,7 +13,7 @@
 <tr><td><a href="data-clinical.html#c-cda">C-CDA documents</a></td><td><code>CcdaDocumentFile</code></td><td><code>CcdaDocumentSet</code></td><td><a href="examples.html#c-cda-document-set">Example sidecar</a></td></tr>
 <tr><td><a href="data-clinical.html#other-clinical-tables">Registry, PRO, claims tables</a></td><td><code>TabularFile</code>, <code>DocumentationFile</code></td><td><code>TabularDataset</code></td><td><a href="#registry-with-a-data-dictionary">Below</a></td></tr>
 <tr><td><a href="data-clinical.html#clinical-documents">Clinical notes and reports</a></td><td><code>ClinicalDocumentFile</code></td><td><code>DocumentSet</code></td><td><a href="#clinical-notes">Below</a></td></tr>
-<tr><td><a href="data-genomics.html">Sequencing, alignments, variants</a></td><td><code>FastqFile</code>, <code>UnalignedBamFile</code>, <code>BamFile</code>, <code>CramFile</code>, <code>VcfFile</code>, <code>BcfFile</code>, <code>IndexFile</code></td><td><code>FileCollection</code></td><td><a href="#genomics">Below</a></td></tr>
+<tr><td><a href="data-genomics.html">Sequencing, alignments, variants</a></td><td><code>FastqFile</code>, <code>UnalignedBamFile</code>, <code>BamFile</code>, <code>CramFile</code>, <code>GermlineVariantFile</code>, <code>SomaticVariantFile</code>, <code>GeneExpressionFile</code>, <code>IndexFile</code></td><td><code>FileCollection</code></td><td><a href="#genomics">Below</a></td></tr>
 <tr><td><a href="data-imaging.html">Images, video, audio</a></td><td><code>DicomImageFile</code>, <code>ImageFile</code>, <code>FacialImagingFile</code>, <code>VideoFile</code>, <code>AudioFile</code></td><td><code>FileCollection</code></td><td><a href="#images-and-video">Below</a></td></tr>
 <tr><td><a href="data-clinical.html#consent">Consent</a></td><td><code>ConsentFile</code></td><td><span class="muted">optional</span></td><td><a href="#consent">Below</a></td></tr>
 <tr><td>Restriction or withdrawal</td><td><span class="muted">no files</span></td><td><span class="muted">none</span></td><td><a href="#restriction">Below</a></td></tr>
@@ -57,7 +57,7 @@
 <li>Every genomics file states its <a href="data-genomics.html#assay-and-platform">assay and sequencing platform</a>, here <code>wgs</code> on <code>illumina</code>, and the instrument model in <code>platform</code>. Alignments and variants also give <code>referenceGenome</code>.</li>
 <li>Read pairs point to each other with <code>pairedWith</code>; the index points to its alignment with <code>indexOf</code>. Both must resolve to files in the same sidecar.</li>
 <li>The files are grouped in a <code>FileCollection</code> file set, and every file lists the proband in <code>subjectIds</code>.</li>
-<li>The class names the format: <code>FastqFile</code>, <code>CramFile</code>, <code>VcfFile</code>. The VCF is delivered with its index, so it is <code>bgzf</code>-compressed.</li>
+<li>Reads and alignments name their format, <code>FastqFile</code> and <code>CramFile</code>; the variant calls are a <code>GermlineVariantFile</code>, a VCF by its media type. It is delivered with its index, so it is <code>bgzf</code>-compressed.</li>
 </ul>
 <rddc-json src="site/recipes/genomics.json" keys="distribution" title="genomics.json (distribution)"></rddc-json>
 <p>The <a href="data-genomics.html#media-types">genomics media types</a> are <code>text/plain</code> and <code>application/octet-stream</code>, since these formats have none registered. The batch sets every flag to <code>false</code>, which the genomics classes fix anyway: none of them applies to sequence data.</p>
