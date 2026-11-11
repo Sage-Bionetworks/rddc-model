@@ -3,6 +3,7 @@ name: Validate LinkML
 on:
   push:
     branches: [main]
+    tags: ["v*"]
   pull_request:
   workflow_dispatch:
 
@@ -67,8 +68,7 @@ jobs:
       - name: Generate the schemas (JSON Schema, SHACL, JSON-LD context) and check the committed ones are current
         run: |
           make schema
-          # The metamodel version line depends on the installed linkml-runtime.
-          git diff --exit-code -I '"metamodel_version"' -- schema/generated examples
+          git diff --exit-code -- schema/generated examples
 
       - name: Check the example sidecars and source descriptor against the schemas, and as Croissant
         run: |
