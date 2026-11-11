@@ -23,7 +23,7 @@
 <tr><td><code>modalities</code></td><td><span class="req">required</span></td><td>Modalities this source may deposit.</td></tr>
 <tr><td><code>registerVersion</code></td><td><span class="req">required</span></td><td>Version of the register the descriptor was issued from. Copy into the sidecar's <code>registerVersion</code>.</td></tr>
 <tr><td><code>issuedAt</code>, <code>issuedBy</code></td><td><span class="req">required</span></td><td>When and by whom the descriptor was issued.</td></tr>
-<tr><td><code>region</code>, <code>deliveryRole</code>, <code>description</code></td><td><span class="opt">optional</span></td><td>AWS region; the delivery role identifier (informational; the platform enforces it); a note.</td></tr>
+<tr><td><code>region</code>, <code>description</code></td><td><span class="opt">optional</span></td><td>AWS region; a note. Neither reaches the sidecar.</td></tr>
 </tbody></table></div>
 <p>The full definition is in the <a href="reference.html#SourceDescriptor">schema reference</a>, and the JSON Schema is <a href="downloads/rddc_source_descriptor.schema.json"><code>rddc_source_descriptor.schema.json</code></a>.</p>
 
