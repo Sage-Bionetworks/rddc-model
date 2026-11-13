@@ -223,8 +223,6 @@ classes:
         required: true
       encodingFormat:
         required: true
-      sha256:
-        required: true
       md5:
         required: true
 
@@ -273,7 +271,7 @@ slots:
     range: MediaType
     description: Media type of the content (after decompression when compression is set).
   sha256:
-    description: "SHA-256 checksum of the file, as lowercase hexadecimal."
+    description: "Optional SHA-256 checksum of the file, as lowercase hexadecimal."
     slot_uri: sc:sha256
     pattern: "^[0-9a-f]{64}$"
   md5:

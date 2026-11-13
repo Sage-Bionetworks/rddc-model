@@ -162,9 +162,12 @@
                     "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -205,7 +208,6 @@
                 "sequencingPlatform",
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -334,9 +336,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -374,7 +379,6 @@
             "required": [
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -510,9 +514,12 @@
                     "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -553,7 +560,6 @@
                 "sequencingPlatform",
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -714,9 +720,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -752,7 +761,6 @@
                 "subjectIds",
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -1114,9 +1122,12 @@
                     "description": "Per-file sensitivity overrides. containsFreeText is left out: the class already says the file is free text."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -1152,7 +1163,6 @@
                 "subjectIds",
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -1295,9 +1305,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -1333,7 +1346,6 @@
                 "subjectIds",
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -1469,9 +1481,12 @@
                     "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -1512,7 +1527,6 @@
                 "sequencingPlatform",
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -1629,9 +1643,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -1669,7 +1686,6 @@
             "required": [
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -1805,9 +1821,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -1846,7 +1865,6 @@
                 "measurementTechnique",
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -1986,9 +2004,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -2027,7 +2048,6 @@
                 "measurementTechnique",
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -2172,9 +2192,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "software": {
                     "description": "The tool that produced the candidates, e.g. \"Face2Gene\" or \"Exomiser\", when they come from a known tool. The ranking depends on the tool.",
@@ -2224,7 +2247,6 @@
                 "subjectIds",
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -2649,9 +2671,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -2689,7 +2714,6 @@
             "required": [
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -2829,9 +2853,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -2870,7 +2897,6 @@
                 "measurementTechnique",
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -3115,9 +3141,12 @@
                     "description": "Per-file sensitivity overrides. containsBiometricIdentifiers is left out: the class already says the file contains biometric identifiers."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -3154,7 +3183,6 @@
                 "subjectIds",
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -3308,9 +3336,12 @@
                     "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -3350,7 +3381,6 @@
                 "sequencingPlatform",
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -3815,9 +3845,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -3854,7 +3887,6 @@
                 "subjectIds",
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -3984,9 +4016,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -4024,7 +4059,6 @@
             "required": [
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -4145,9 +4179,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -4186,7 +4223,6 @@
                 "resourceType",
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -4636,9 +4672,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -4677,7 +4716,6 @@
                 "resourceType",
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -4951,9 +4989,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -4992,7 +5033,6 @@
                 "resourceType",
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -5321,9 +5361,12 @@
                     "type": "string"
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "valueOrigins": {
                     "description": "How tools populated this node's values.",
@@ -5339,7 +5382,6 @@
             "required": [
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -5722,9 +5764,12 @@
                     "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -5764,7 +5809,6 @@
                 "sequencingPlatform",
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -5881,9 +5925,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -5921,7 +5968,6 @@
             "required": [
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -6076,9 +6122,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -6114,7 +6163,6 @@
                 "subjectIds",
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -6259,9 +6307,12 @@
                     "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -6301,7 +6352,6 @@
                 "sequencingPlatform",
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -6459,9 +6509,12 @@
                     "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -6502,7 +6555,6 @@
                 "sequencingPlatform",
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -6653,9 +6705,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -6694,7 +6749,6 @@
                 "measurementTechnique",
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -6831,9 +6885,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -6872,7 +6929,6 @@
                 "measurementTechnique",
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -6993,9 +7049,12 @@
                     "description": "Notes only. The class fixes every sensitivity flag."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -7034,7 +7093,6 @@
                 "indexOf",
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -7179,9 +7237,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -7218,7 +7279,6 @@
                 "subjectIds",
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -7670,9 +7730,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -7711,7 +7774,6 @@
                 "cdmTable",
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -8068,9 +8130,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -8109,7 +8174,6 @@
                 "measurementTechnique",
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -8258,9 +8322,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -8299,7 +8366,6 @@
                 "measurementTechnique",
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -8439,9 +8505,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -8480,7 +8549,6 @@
                 "measurementTechnique",
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -8623,9 +8691,12 @@
                     "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -8665,7 +8736,6 @@
                 "sequencingPlatform",
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -9142,9 +9212,12 @@
                     "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -9185,7 +9258,6 @@
                 "sequencingPlatform",
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -9634,9 +9706,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -9674,7 +9749,6 @@
             "required": [
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -9817,9 +9891,12 @@
                     "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -9859,7 +9936,6 @@
                 "sequencingPlatform",
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -10070,9 +10146,12 @@
                     "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -10113,7 +10192,6 @@
                 "sequencingPlatform",
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -10250,9 +10328,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -10292,7 +10373,6 @@
                 "platform",
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -10409,9 +10489,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -10449,7 +10532,6 @@
             "required": [
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
@@ -10597,9 +10679,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -10638,7 +10723,6 @@
                 "measurementTechnique",
                 "contentUrl",
                 "contentSize",
-                "sha256",
                 "md5",
                 "@id",
                 "@type",
