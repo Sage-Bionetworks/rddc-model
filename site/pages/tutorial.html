@@ -66,10 +66,10 @@
 
 <li>
 <h3 id="step-file">Describe the file</h3>
-<p>Every data file needs a UUID, its path, size, media type, SHA-256 checksum and class. Get the size and checksum from the shell:</p>
+<p>Every data file needs a UUID, its path, size, media type, MD5 checksum and class. A SHA-256 checksum is optional. Get the size and checksums from the shell:</p>
 <rddc-code lang="shell" title="size and checksums">stat -c %s registry/patients.csv        # 4096       (macOS: stat -f %z)
-sha256sum registry/patients.csv         # fe839da3…  (macOS: shasum -a 256)
-md5sum registry/patients.csv            # optional</rddc-code>
+md5sum registry/patients.csv            # 4dd68b0c…  (macOS: md5 -q)
+sha256sum registry/patients.csv         # optional   (macOS: shasum -a 256)</rddc-code>
 <p>A registry table is a <code>rddc:TabularFile</code>. The class sets the modality, <code>clinical_tabular</code>, so the sidecar does not state it, and the file's <code>name</code> identifies the table.</p>
 <rddc-json src="site/recipes/minimal.json" keys="distribution" title="_sidecar.json (5 of 5)"></rddc-json>
 <ul>

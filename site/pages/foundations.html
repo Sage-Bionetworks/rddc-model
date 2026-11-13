@@ -55,7 +55,8 @@
 <tr><td><code class="k o-sc">url</code></td><td>Location</td><td>The batch's S3 prefix</td></tr>
 <tr><td><code class="k o-sc">dateCreated</code></td><td>Creation timestamp</td><td>When the sidecar was written</td></tr>
 <tr><td><code class="k o-sc">distribution</code></td><td>The downloadable parts of a dataset</td><td>The list of every file and file set</td></tr>
-<tr><td><code class="k o-sc">contentUrl</code>, <code class="k o-sc">contentSize</code>, <code class="k o-sc">encodingFormat</code>, <code class="k o-sc">sha256</code></td><td>File location, size, media type and checksum</td><td>Every file</td></tr>
+<tr><td><code class="k o-sc">contentUrl</code>, <code class="k o-sc">contentSize</code>, <code class="k o-sc">encodingFormat</code></td><td>File location, size and media type</td><td>Every file</td></tr>
+<tr><td><code class="k o-sc">sha256</code></td><td>SHA-256 checksum</td><td>Optional; Croissant's <code>md5</code> is the required checksum</td></tr>
 <tr><td><code class="k o-sc">hasPart</code></td><td>Membership</td><td>A file set's member files</td></tr>
 <tr><td><code class="k o-sc">additionalType</code></td><td>A more specific type alongside <code>@type</code></td><td>The RDDC class of a file or file set</td></tr>
 <tr><td><code class="k o-sc">additionalProperty</code>, <code class="k o-sc">identifier</code></td><td>Extra key-value pairs, external IDs</td><td>Extensions, contributor-supplied IDs</td></tr>
