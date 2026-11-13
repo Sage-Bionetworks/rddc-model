@@ -16,8 +16,8 @@ RDDC fields use camelCase in the `rddc:` namespace.
 | Path | What |
 | --- | --- |
 | `schema/rddc_sidecar.yaml` | LinkML module for the sidecar and the per-source descriptor (schema version 0.1.0) |
-| `schema/data.yaml` | LinkML module with the data file classes (`DataFile` and subclasses) and their class annotations: `modality`, `structure`, `fileSetClass`, `biometric`, `identifying` and the sensitivity flags the class fixes |
-| `schema/core.yaml` | LinkML module with the shared types, base classes (`FileObject`) and slots, imported by the other two |
+| `schema/data.yaml` | LinkML module with the file classes: `FileObject`, with the fields every file has (`contentUrl`, `contentSize`, `encodingFormat`, `md5`), and the data file classes (`DataFile` and subclasses) with their class annotations: `modality`, `structure`, `fileSetClass`, `biometric`, `identifying` and the sensitivity flags the class fixes |
+| `schema/core.yaml` | LinkML module with the shared identifier types, small supporting classes (references, external identifiers, extensions, sensitivity flags, value origins) and their slots, imported by the other two |
 | `schema/croissant-1.1-context.json` | Croissant 1.1 JSON-LD context, vendored from mlcroissant 1.1.1 |
 | `schema/generated/rddc_sidecar.context.jsonld` | Sidecar JSON-LD context: Croissant's plus the RDDC terms |
 | `schema/generated/rddc_sidecar.schema.json` | Closed JSON Schema for the sidecar document |

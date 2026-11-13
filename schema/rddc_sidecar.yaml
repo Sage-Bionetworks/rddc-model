@@ -21,9 +21,10 @@ description: >-
 
 
   The schema has three modules. This one defines the sidecar document, file sets,
-  record sets and the source descriptor. data.yaml defines the data file classes
-  (DataFile and its subclasses). core.yaml defines the types, base classes and slots
-  that both use.
+  record sets and the source descriptor. data.yaml defines the file classes:
+  FileObject, with the fields every file has, and the data file classes (DataFile and
+  its subclasses) that extend it. core.yaml defines the identifier types, small
+  supporting classes and slots that both use.
 license: https://creativecommons.org/publicdomain/zero/1.0/
 
 prefixes:
@@ -258,8 +259,7 @@ classes:
             required: true
 
   # --- distribution: file sets ----------------------------------------------
-  # DistributionItem and FileObject are in core.yaml; DataFile and its subclasses
-  # are in data.yaml.
+  # DistributionItem, FileObject, DataFile and its subclasses are in data.yaml.
 
   FileSet:
     is_a: DistributionItem

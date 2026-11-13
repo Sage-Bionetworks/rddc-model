@@ -3,11 +3,11 @@ name: rddc-core
 title: RDDC Core
 version: 0.1.0
 description: >-
-  Shared building blocks of the RDDC schema modules: types, the Croissant file classes
-  (DistributionItem and FileObject), small supporting classes such as references,
-  identifiers, extensions and value origins, and the slots they use. The data module
-  (data.yaml) and the sidecar module (rddc_sidecar.yaml) import it. It does not import
-  either of them.
+  Shared building blocks of the RDDC schema modules: identifier types, small supporting
+  classes such as references, identifiers, extensions, sensitivity flags and value
+  origins, and the slots they use. The file classes (DistributionItem, FileObject) are
+  in data.yaml. The data module (data.yaml) and the sidecar module (rddc_sidecar.yaml)
+  import this one. It does not import either of them.
 license: https://creativecommons.org/publicdomain/zero/1.0/
 
 prefixes:
@@ -33,51 +33,16 @@ types:
     typeof: uriorcurie
     description: "A UUID in the form urn:uuid:<uuid>, using lowercase hexadecimal."
     pattern: "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
-  RelativePath:
-    uri: xsd:string
-    typeof: string
-    description: >-
-      An object key relative to the batch prefix. Segments are separated by single
-      forward slashes, with no leading or trailing slash, no backslashes and no '.' or
-      '..' segments.
-    pattern: "^(?!(.*/)?\\.\\.?(/|$))[^/\\\\]+(/[^/\\\\]+)*$"
   Identifier:
     uri: xsd:string
     typeof: string
     description: "A coded identifier. Letters, digits, and the characters . _ - : only."
     pattern: "^[A-Za-z0-9._:-]+$"
-  MediaType:
-    uri: xsd:string
-    typeof: string
-    description: An IANA media type, without parameters.
-    pattern: "^[a-z]+/[A-Za-z0-9.+_-]+$"
-  ByteSize:
-    uri: xsd:string
-    typeof: string
-    description: A Croissant contentSize in bytes, written "<integer> B".
-    pattern: "^[0-9]+ B$"
 
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
 enums:
-
-  CompressionEnum:
-    description: >-
-      Compression applied to the file's bytes. encodingFormat names the media
-      type of the content after decompression. Croissant has no compression
-      property; generic Croissant tools ignore this term.
-    permissible_values:
-      gzip:
-        description: gzip (RFC 1952).
-      bgzf:
-        description: >-
-          Blocked GNU Zip Format, the gzip-compatible block compression of htslib. A
-          BGZF file reads as gzip, but only BGZF can carry a tabix or CSI index, so a
-          .vcf.gz written by bgzip declares bgzf and one written by gzip declares gzip.
-      bzip2:
-      xz:
-      zstd:
 
   ValueOriginEnum:
     description: Source of an auto-filled value.
@@ -170,62 +135,6 @@ classes:
       origin:
         required: true
 
-  # --- distribution items ---------------------------------------------------
-
-  DistributionItem:
-    abstract: true
-    description: >-
-      A FileObject or FileSet in distribution. Its additionalType names the RDDC class
-      and determines the required fields.
-    slots:
-    - id
-    - type
-    - additionalType
-    - name
-    - description
-    - encodingFormat
-    - valueOrigins
-    - additionalProperty
-    slot_usage:
-      id:
-        required: true
-      type:
-        required: true
-      additionalType:
-        required: true
-      name:
-        required: true
-
-  FileObject:
-    is_a: DistributionItem
-    abstract: true
-    class_uri: cr:FileObject
-    description: One object under the batch prefix.
-    slots:
-    - contentUrl
-    - contentSize
-    - sha256
-    - md5
-    - compression
-    slot_usage:
-      id:
-        range: UuidUrn
-        description: >-
-          The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the
-          file. Changed content gets a new ID. IDs must be unique within the sidecar.
-      type:
-        equals_string: cr:FileObject
-      name:
-        description: File name, by convention the contentUrl.
-      contentUrl:
-        required: true
-      contentSize:
-        required: true
-      encodingFormat:
-        required: true
-      md5:
-        required: true
-
 # ---------------------------------------------------------------------------
 # Slots
 # ---------------------------------------------------------------------------
@@ -258,28 +167,6 @@ slots:
   description:
     description: "Free-text description."
     slot_uri: sc:description
-  contentUrl:
-    slot_uri: sc:contentUrl
-    range: RelativePath
-    description: Object key relative to the batch prefix; Croissant resolves it against the sidecar's location.
-  contentSize:
-    description: "Size of the file in bytes."
-    slot_uri: sc:contentSize
-    range: ByteSize
-  encodingFormat:
-    slot_uri: sc:encodingFormat
-    range: MediaType
-    description: Media type of the content (after decompression when compression is set).
-  sha256:
-    description: "Optional SHA-256 checksum of the file, as lowercase hexadecimal."
-    slot_uri: sc:sha256
-    pattern: "^[0-9a-f]{64}$"
-  md5:
-    slot_uri: cr:md5
-    pattern: "^[0-9a-f]{32}$"
-    description: >-
-      MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check
-      for corruption in transfer against Synapse file handles and single-part S3 ETags.
   identifier:
     description: "IDs assigned to the file by other systems."
     slot_uri: sc:identifier
@@ -348,16 +235,6 @@ slots:
     - pd:Picture
   notes:
     description: "Free-text notes on the sensitivity values."
-
-  # --- RDDC: files -----------------------------------------------------------
-  subjectIds:
-    description: Subject IDs the file contains. Each must appear in the subject table.
-    range: Identifier
-    multivalued: true
-    minimum_cardinality: 1
-  compression:
-    description: "Compression applied to the file's bytes, if any."
-    range: CompressionEnum
 
   # --- RDDC: value origins ---------------------------------------------------
   valueOrigins:
