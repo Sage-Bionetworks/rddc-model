@@ -67,6 +67,8 @@ INVALID = {
     "implementation guides on a FHIR file": put(FHIR + ["implementationGuides"], ["hl7.fhir.us.core#6.1.0"]),
     "contentSize without unit": put(FHIR + ["contentSize"], "1010"),
     "sha256 too short": put(FHIR + ["sha256"], "abc"),
+    "md5 missing": drop(FHIR + ["md5"]),
+    "md5 in uppercase": put(FHIR + ["md5"], "E047DB5FA705C1CD516E0939BA1E0722"),
     "unknown compression": put(FHIR + ["compression"], "rar"),
     "file @id not a UUID URN": put(FHIR + ["@id"], "patient-file"),
     "synthetic set per file": put(FHIR + ["sensitivity"], {"synthetic": True}),

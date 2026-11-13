@@ -225,6 +225,8 @@ classes:
         required: true
       sha256:
         required: true
+      md5:
+        required: true
 
 # ---------------------------------------------------------------------------
 # Slots
@@ -277,7 +279,9 @@ slots:
   md5:
     slot_uri: cr:md5
     pattern: "^[0-9a-f]{32}$"
-    description: Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.
+    description: >-
+      MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check
+      for corruption in transfer against Synapse file handles and single-part S3 ETags.
   identifier:
     description: "IDs assigned to the file by other systems."
     slot_uri: sc:identifier

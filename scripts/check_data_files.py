@@ -66,6 +66,7 @@ INVALID = {
     "OMOP table not in CDM 5.4": put("omop_table", ["cdmTable"], "attribute_definition"),
     "OMOP CDM version on a table file": put("omop_table", ["omopCdmVersion"], "5.4"),
     "clinical document flags no free text": put("scanned_report", ["sensitivity"], {"containsFreeText": False}),
+    "file without md5": drop("generic", ["md5"]),
     "contentUrl with empty segment": put("generic", ["contentUrl"], "a//b"),
     "contentUrl with trailing slash": put("generic", ["contentUrl"], "a/b/"),
     "contentUrl with backslash": put("generic", ["contentUrl"], "a\\b"),

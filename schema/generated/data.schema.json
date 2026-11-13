@@ -68,12 +68,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "$ref": "#/$defs/GenomicsAssayEnum",
@@ -172,6 +169,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -249,12 +247,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -331,6 +326,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -408,12 +404,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "$ref": "#/$defs/GenomicsAssayEnum",
@@ -512,6 +505,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -633,12 +627,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -713,6 +704,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -814,12 +806,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -894,6 +883,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -997,12 +987,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -1077,6 +1064,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -1154,12 +1142,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "$ref": "#/$defs/GenomicsAssayEnum",
@@ -1258,6 +1243,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -1335,12 +1321,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -1417,6 +1400,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -1509,12 +1493,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "$ref": "#/$defs/ImagingAssayEnum",
@@ -1596,6 +1577,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -1673,12 +1655,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "description": "The sensing techniques that produced the data, e.g. accelerometry or ecg. A list, since one recording or summary can combine several, such as a sleep study's EEG and ECG channels.",
@@ -1779,6 +1758,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -1884,12 +1864,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -1978,6 +1955,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -2192,12 +2170,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -2274,6 +2249,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -2351,12 +2327,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "description": "The sensing techniques that produced the data, e.g. accelerometry or ecg. A list, since one recording or summary can combine several, such as a sleep study's EEG and ECG channels.",
@@ -2457,6 +2430,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -2626,12 +2600,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "$ref": "#/$defs/ImagingAssayEnum",
@@ -2728,6 +2699,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -2816,12 +2788,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "$ref": "#/$defs/GenomicsAssayEnum",
@@ -2926,6 +2895,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -3007,12 +2977,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -3088,6 +3055,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -3178,12 +3146,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -3260,6 +3225,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -3337,12 +3303,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -3424,6 +3387,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -3654,12 +3618,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -3748,6 +3709,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -3978,12 +3940,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -4065,6 +4024,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -4132,12 +4092,9 @@
                     "type": "string"
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -4163,6 +4120,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -4312,12 +4270,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "$ref": "#/$defs/GenomicsAssayEnum",
@@ -4419,6 +4374,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -4496,12 +4452,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -4578,6 +4531,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -4678,12 +4632,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -4773,6 +4724,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -4863,12 +4815,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "$ref": "#/$defs/GenomicsAssayEnum",
@@ -4962,6 +4911,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -5061,12 +5011,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "$ref": "#/$defs/GenomicsAssayEnum",
@@ -5165,6 +5112,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -5259,12 +5207,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "$ref": "#/$defs/ImagingAssayEnum",
@@ -5346,6 +5291,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -5439,12 +5385,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "$ref": "#/$defs/ImagingAssayEnum",
@@ -5526,6 +5469,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -5607,12 +5551,9 @@
                     "description": "The file this file indexes."
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -5690,6 +5631,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -5795,12 +5737,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -5876,6 +5815,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -6098,12 +6038,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -6181,6 +6118,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -6316,12 +6254,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "description": "The sensing techniques that produced the data, e.g. accelerometry or ecg. A list, since one recording or summary can combine several, such as a sleep study's EEG and ECG channels.",
@@ -6414,6 +6349,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -6508,12 +6444,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "description": "The sensing techniques that produced the data, e.g. accelerometry or ecg. A list, since one recording or summary can combine several, such as a sleep study's EEG and ECG channels.",
@@ -6606,6 +6539,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -6683,12 +6617,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "description": "The sensing techniques that produced the data, e.g. accelerometry or ecg. A list, since one recording or summary can combine several, such as a sleep study's EEG and ECG channels.",
@@ -6789,6 +6720,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -6866,12 +6798,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "$ref": "#/$defs/GenomicsAssayEnum",
@@ -6976,6 +6905,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -7090,12 +7020,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "$ref": "#/$defs/GenomicsAssayEnum",
@@ -7194,6 +7121,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -7288,12 +7216,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -7370,6 +7295,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -7447,12 +7373,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "$ref": "#/$defs/GenomicsAssayEnum",
@@ -7557,6 +7480,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -7709,12 +7633,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "$ref": "#/$defs/GenomicsAssayEnum",
@@ -7813,6 +7734,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -7890,12 +7812,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "description": "The sensing techniques that produced the data, e.g. accelerometry or ecg. A list, since one recording or summary can combine several, such as a sleep study's EEG and ECG channels.",
@@ -7994,6 +7913,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -8071,12 +7991,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -8153,6 +8070,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -8238,12 +8156,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "description": "The sensing techniques that produced the data, e.g. accelerometry or ecg. A list, since one recording or summary can combine several, such as a sleep study's EEG and ECG channels.",
@@ -8344,6 +8259,7 @@
                 "contentUrl",
                 "contentSize",
                 "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
