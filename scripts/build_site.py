@@ -273,8 +273,7 @@ def slide_example():
     header["subjects"] = header["subjects"][:2] + [MORE]
     header["distribution"] = [MORE]
     by_id = {node["@id"]: node for node in doc["distribution"]}
-    file_node = {k: v for k, v in by_id["urn:uuid:0000000b-0000-4000-8000-00000000000b"].items()
-                 if k != "md5"}
+    file_node = by_id["urn:uuid:0000000b-0000-4000-8000-00000000000b"]
     file_set = dict(by_id["fhir_export"])
     return {
         "header": compact_json(header),

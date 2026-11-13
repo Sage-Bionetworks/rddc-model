@@ -338,7 +338,7 @@
         <tr><th scope="row">Identifiers</th><td>String <code>@id</code></td><td>UUID URNs for files and sidecar; local IDs for other nodes</td></tr>
         <tr><th scope="row">File location</th><td>Usually absolute URLs</td><td>Paths relative to the batch prefix</td></tr>
         <tr><th scope="row">Size</th><td>Optional</td><td>Required, in bytes: <code>"1010 B"</code></td></tr>
-        <tr><th scope="row">Checksums</th><td><code>sha256</code> or <code>md5</code></td><td>Lowercase <code>sha256</code> required; <code>md5</code> optional</td></tr>
+        <tr><th scope="row">Checksums</th><td><code>sha256</code> or <code>md5</code></td><td>Lowercase <code>md5</code> required; <code>sha256</code> optional</td></tr>
         <tr><th scope="row">Compression</th><td>Wrapper media type</td><td>Content media type + <code>compression</code></td></tr>
         <tr><th scope="row">Record sets</th><td>Describe data structure</td><td>Optional dictionaries and joins for non-standard tables</td></tr>
         <tr><th scope="row">License, creator, citation</th><td>Recommended</td><td>Omitted; use terms and access tiers live in the source register</td></tr>
@@ -415,6 +415,7 @@
     <span class="k o-sc" title="schema.org: https://schema.org/contentSize">&quot;contentSize&quot;</span>: <span class="s">&quot;1011 B&quot;</span><span class="p">,</span>
     <span class="k o-sc" title="schema.org: https://schema.org/encodingFormat">&quot;encodingFormat&quot;</span>: <span class="s">&quot;application/fhir+ndjson&quot;</span><span class="p">,</span>
     <span class="k o-sc" title="schema.org: https://schema.org/sha256">&quot;sha256&quot;</span>: <span class="s">&quot;e047db5fa705c1cd516e0939ba1e07221c45573f06accfe3c5f8a5a4bdc112f4&quot;</span><span class="p">,</span>
+    <span class="k o-cr" title="Croissant: http://mlcommons.org/croissant/md5">&quot;md5&quot;</span>: <span class="s">&quot;e047db5fa705c1cd516e0939ba1e0722&quot;</span><span class="p">,</span>
     <span class="k o-rddc" title="RDDC: https://w3id.org/rddc/vocab/resourceType">&quot;resourceType&quot;</span>: <span class="s">&quot;Observation&quot;</span><span class="p">,</span>
     <span class="k o-rddc" title="RDDC: https://w3id.org/rddc/vocab/compression">&quot;compression&quot;</span>: <span class="s">&quot;gzip&quot;</span><span class="p">,</span>
     <span class="k o-rddc" title="RDDC: https://w3id.org/rddc/vocab/recordCount">&quot;recordCount&quot;</span>: <span class="n">240</span><span class="p">,</span>
@@ -454,7 +455,7 @@
       <span class="yk">required</span>: <span class="s">true</span>
     <span class="k o-sc" title="schema.org: https://schema.org/encodingFormat">encodingFormat</span>:
       <span class="yk">required</span>: <span class="s">true</span>
-    <span class="k o-sc" title="schema.org: https://schema.org/sha256">sha256</span>:
+    <span class="k o-cr" title="Croissant: http://mlcommons.org/croissant/md5">md5</span>:
       <span class="yk">required</span>: <span class="s">true</span><!-- /slide-linkml --></code></pre></figure>
       <figure><figcaption>Every data file, then FHIR NDJSON</figcaption><pre><code><!-- slide-linkml:fhir --><span class="cls">DataFile</span>:
   <span class="yk">is_a</span>: <span class="cls">FileObject</span>

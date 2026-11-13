@@ -46,9 +46,9 @@
 <rddc-code lang="text" title="A finding in the planned rddc-sidecar JSON report">{
   "severity": "error",
   "rule": "integrity.checksum_mismatch",
-  "path": "/distribution/12/sha256",
+  "path": "/distribution/12/md5",
   "contentUrl": "omop/person.csv",
-  "message": "sha256 does not match the file"
+  "message": "md5 does not match the file"
 }</rddc-code>
 <p><code>path</code> is a JSON pointer into the sidecar; <code>contentUrl</code> is present when the finding concerns a file. The command exits with 0 when there are no errors, 1 when there are, and 2 when the sidecar or directory can't be read.</p>
 

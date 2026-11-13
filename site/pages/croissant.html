@@ -31,7 +31,7 @@
 <li><code>@id</code> is a UUID URN that identifies this file across every batch of the source, not a local label.</li>
 <li><code>additionalType</code> names the RDDC class. Because it is <code>rddc:FhirNdjsonFile</code>, <code>resourceType</code> is required and <code>encodingFormat</code> must be <code>application/fhir+ndjson</code>.</li>
 <li><code>contentUrl</code> is relative to the batch prefix, so the sidecar stays valid wherever the batch is stored.</li>
-<li><code>contentSize</code> and <code>sha256</code> are required, so receipt can verify the upload.</li>
+<li><code>contentSize</code> and <code>md5</code> are required, so receipt can verify the upload.</li>
 <li><code>encodingFormat</code> describes the content after decompression; <code>compression</code> specifies the compression method.</li>
 <li><code>recordCount</code>, <code>subjectIds</code> and the per-file <code>sensitivity</code> override are RDDC additions for routing and de-identification. The file's modality comes from its <code>additionalType</code> class.</li>
 </ul>
@@ -72,7 +72,7 @@
 <tr><td>Identifiers</td><td>Any string <code>@id</code>.</td><td><code>urn:uuid:…</code> for the sidecar and files, short local IDs for file sets, record sets and fields.</td></tr>
 <tr><td>File location</td><td>Usually absolute URLs.</td><td>A path relative to the batch prefix, with no leading slash and no <code>..</code>.</td></tr>
 <tr><td>Size</td><td>Optional, free-form.</td><td>Required, written <code>"1010 B"</code>.</td></tr>
-<tr><td>Checksums</td><td><code>sha256</code> or <code>md5</code>.</td><td><code>sha256</code> required (lowercase hex), <code>md5</code> optional.</td></tr>
+<tr><td>Checksums</td><td><code>sha256</code> or <code>md5</code>.</td><td><code>md5</code> required, <code>sha256</code> optional (lowercase hex).</td></tr>
 <tr><td>Compressed files</td><td><code>encodingFormat</code> of the archive, e.g. <code>application/gzip</code>.</td><td><code>encodingFormat</code> of the content plus <code>compression</code> (<code>gzip</code>, <code>bzip2</code>, <code>xz</code>, <code>zstd</code>).</td></tr>
 <tr><td>Record sets</td><td>The main way to describe data structure.</td><td>Optional. Only for tables no standard defines: data dictionaries and joins between registry CSVs. Never for OMOP or FHIR.</td></tr>
 <tr><td>License, creator, citation</td><td>Recommended.</td><td>Not present. Use terms and access tiers live in the RDDC source register.</td></tr>
