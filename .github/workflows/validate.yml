@@ -3,6 +3,7 @@ name: Validate LinkML
 on:
   push:
     branches: [main]
+    tags: ["v*"]
   pull_request:
   workflow_dispatch:
 
@@ -42,14 +43,55 @@ jobs:
         run: |
           for f in ${{ steps.files.outputs.list }}; do
             echo "::group::linkml-lint $f"
-            linkml-lint "$f"
+            linkml-lint --config .linkml-lint.yaml "$f"
             echo "::endgroup::"
           done
 
       - name: Check schemas load and generate
         run: |
           for f in ${{ steps.files.outputs.list }}; do
-            echo "::group::gen-yaml $f"
-            gen-yaml "$f" > /dev/null
+            echo "::group::gen-json-schema $f"
+            gen-json-schema --closed "$f" > /dev/null
+            echo "::endgroup::"
+            echo "::group::gen-jsonld $f"
+            gen-jsonld "$f" > /dev/null
             echo "::endgroup::"
           done
+
+      - name: Check the structure, modality and biometric annotations on data file classes
+        run: python scripts/check_structure.py schema/data.yaml
+
+      - name: Check example data file objects against the schema
+        run: python scripts/check_data_files.py schema/data.yaml
+
+      - name: Generate the data class schemas (JSON Schema, SHACL) and check the JSON Schema is committed
+        run: |
+          make schema
+          # The metamodel version line depends on the installed linkml-runtime.
+          git diff --exit-code -I '"metamodel_version"' -- schema/generated/data.schema.json
+
+      - name: Publish the generated schemas as a workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: data-class-schemas
+          path: schema/generated/
+
+  release:
+    needs: validate
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: data-class-schemas
+          path: schema/generated
+
+      - name: Attach the generated schemas to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 \
+            || gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --title "$GITHUB_REF_NAME" --notes "Data model release $GITHUB_REF_NAME"
+          gh release upload "$GITHUB_REF_NAME" schema/generated/data.schema.json schema/generated/data.shacl.ttl --repo "$GITHUB_REPOSITORY" --clobber

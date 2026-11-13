@@ -1,0 +1,2490 @@
+id: https://w3id.org/rddc/data
+name: rddc-data
+title: RDDC Data File Classes
+version: 0.1.0
+description: >-
+  Data file classes for RDDC: the FileObject subclasses that describe the
+  data in a batch, the enums that classify them, and the slots only they use. A file's
+  additionalType names one of these classes.
+
+
+  DataFile extends FileObject from core.yaml, the only module this one imports. The
+  sidecar module (rddc_sidecar.yaml) imports this one and lists data files in
+  distribution.
+
+
+  A concrete class is what one processing pipeline consumes. Where the pipeline
+  depends on the format and a media type cannot tell the formats apart (BAM and CRAM,
+  EDF and other sensor formats) or the pipelines differ by format (FASTQ and unaligned
+  BAM, DICOM and other image formats), the format is the class, and the class maps to
+  its EDAM format term. Elsewhere one class covers the formats and encodingFormat and
+  compression say which: FHIR JSON and NDJSON, CSV and Parquet, and the variant call
+  formats VCF, BCF and MAF, whose classes are decided by what they contain, germline or
+  somatic variants.
+
+
+  Processing rules match a class together with all its subclasses, so a subclass must
+  be processable as its parent; what differs between siblings, such as whether they
+  identify a person, is in their annotations, which the rules read per concrete class.
+  A facial image is not a subclass of ImagingFile for that reason: the header
+  de-identification and analysis of medical images do not apply to it.
+
+
+  Class annotations state facts that hold for every file of the class. They are
+  properties of the class, so sidecars do not include them, and processing rules read
+  them rather than class names:
+    modality: a ModalityEnum value, the kind of data a source registers to deposit.
+      The platform checks a file's modality against the source register. Each
+      concrete class has exactly one; a new kind of data gets a new class rather than
+      a new value on an existing one.
+    structure: whether software can read the content without content analysis.
+      "structured": records with defined fields (FHIR, OMOP and other tables, C-CDA,
+      VCF, FASTQ, BAM); free text inside such a file is declared with
+      containsFreeText. "unstructured": content without defined fields (notes,
+      scanned documents, images, audio, video), where any identifier can only be
+      found by NLP, OCR or image or audio analysis. "mixed": the class admits either
+      kind, so the file's content decides (DocumentationFile,
+      DifferentialDiagnosisFile, GenericFile).
+    fileSetClass: the file set class every file of this class belongs to
+      (OmopTableFile in an OmopCdmInstance). The set's conformsTo gives the standard
+      and version the files follow, so the files do not repeat it. The RDDC validator
+      checks membership.
+    rai:dataCollectionType: how the data is always collected, the Croissant
+      Responsible AI term with one of its recommended values: "Direct measurement"
+      for genomics, imaging and sensor data. A release can copy it into the dataset's
+      Croissant metadata.
+    biometric: "true" on a class whose content is a biometric identifier under HIPAA
+      Safe Harbor (FacialImagingFile). Its files always count as containing biometric
+      identifiers, so they cannot set containsBiometricIdentifiers, and they never
+      leave INTAKE: they are not loaded into the normalized store or released.
+    identifying: "true" on a class whose content can identify a person on its
+      own, though it is not a biometric identifier: sequencing reads and alignments
+      of any assay, DNA or RNA, and germline variant calls, which DPV classes as
+      genetic data (pd:Genetic). RNA-seq and methylation reads carry the germline
+      variants of the sequenced regions, so they identify a person as DNA reads do.
+      Germline-filtered somatic variant calls and gene expression quantifications are
+      not identifying on their own, so their classes leave the annotation out.
+      Removing direct identifiers does not make files of an identifying class
+      de-identified, whatever the sensitivity flags say. "biometric" implies
+      "identifying", so a biometric class does not carry both.
+    embedsFiles: "true" on a class whose files can carry other files inside them:
+      FHIR files, whose DocumentReference, Media and Binary resources can hold
+      documents and images as base64 data, and C-CDA documents, whose body can be a
+      non-XML document and whose entries can hold media. Each embedded file can be a
+      note, a scan or a face photograph, whatever the outer file's class, so its
+      content is not covered by the class's annotations or the sensitivity flags. The
+      annotation says what the content can hold, not how to process it: the processing
+      rules decide which files are scanned for embedded files.
+    containsDates, containsZipCodes, containsFreeText, containsBiometricIdentifiers:
+      what the class says about a sensitivity flag. "always": every file has it, so a
+      file cannot set the flag (a ClinicalDocumentFile has free text). "n/a": the
+      format cannot carry it, so the flag is false and a file cannot set it (a FASTQ
+      holds no dates). "false": the value when neither the file nor the batch sets
+      the flag, replacing the usual unknown. A biometric class counts as
+      containsBiometricIdentifiers "always" and does not repeat it. A flag's value
+      for a file is, in order: what the class fixes; what the file sets; what the
+      batch sets; the class default; else unknown, treated as true.
+
+
+  These annotations tell the model to treat every file in the class alike. Their
+  absence does not mean a file is de-identified. Other classes, including FHIR, may
+  contain identifying information and require de-identification checks based on their
+  content.
+license: https://creativecommons.org/publicdomain/zero/1.0/
+
+prefixes:
+  rddc: https://w3id.org/rddc/vocab/
+  linkml: https://w3id.org/linkml/
+  sc: https://schema.org/
+  cr: http://mlcommons.org/croissant/
+  dct: http://purl.org/dc/terms/
+  prov: http://www.w3.org/ns/prov#
+  fhir: http://hl7.org/fhir/
+  EDAM: http://edamontology.org/
+  OBI: http://purl.obolibrary.org/obo/OBI_
+  NCIT: http://purl.obolibrary.org/obo/NCIT_
+  SNOMEDCT: http://identifiers.org/snomedct/
+  rai: http://mlcommons.org/croissant/RAI/
+  LOINC: https://loinc.org/
+default_prefix: rddc
+default_range: string
+
+imports:
+- linkml:types
+- core
+
+# ---------------------------------------------------------------------------
+# Enumerations
+# ---------------------------------------------------------------------------
+enums:
+
+  ModalityEnum:
+    description: >-
+      The kinds of data a source registers to deposit: the values of the "modality"
+      class annotation. Each concrete data file class has exactly one, so a sidecar does
+      not state it; the platform reads it from the file's class and checks it against
+      the source register. How a file is processed follows from its class, not from
+      its modality.
+    permissible_values:
+      clinical_fhir:
+        description: HL7 FHIR resources.
+      clinical_omop:
+        description: OMOP CDM tables.
+      clinical_ccda:
+        description: HL7 C-CDA documents.
+      clinical_tabular:
+        description: Registry, patient-reported, claims or mortality tables not in OMOP or FHIR form (TabularFile).
+      clinical_text:
+        description: Unstructured clinical text such as notes. De-identified before use.
+      consent:
+        description: Consent elements for subjects (ConsentFile).
+      intake_form:
+        description: Responses to patient intake forms, read with the form's definition (IntakeFormFile).
+      genetic_testing:
+        description: >-
+          Results of clinical genetic tests and molecular pathology, as reported to the
+          clinician (GeneticTestResultFile).
+      diagnosis_support:
+        description: >-
+          Candidate diagnoses ranked by a decision support tool, not confirmed diagnoses
+          (DifferentialDiagnosisFile).
+      genomics:
+        description: >-
+          Sequencing reads, alignments, variant calls, gene expression quantifications
+          and related indexes.
+      imaging:
+        description: Medical images such as DICOM.
+      video:
+        description: Video recordings (VideoFile).
+      audio:
+        description: Audio recordings, including voice (AudioFile).
+      sensor:
+        description: >-
+          Data from wearables and other sensor devices: raw signals (the
+          SensorSignalFile classes) and measures derived from them (SensorMeasureFile).
+      metadata:
+        description: Files that describe other files, such as data dictionaries or acquisition metadata (DocumentationFile).
+      other:
+        description: >-
+          Other data (GenericFile). Strongly discouraged: a dedicated data class
+          is required; using GenericFile triggers lengthy manual review.
+
+  FhirBundleTypeEnum:
+    description: FHIR Bundle.type values accepted in a deposit.
+    permissible_values:
+      collection:
+      transaction:
+      batch:
+      document:
+      searchset:
+      message:
+
+  FhirResourceTypeEnum:
+    description: >-
+      FHIR resource types of every accepted FHIR version, the range of resourceType.
+      A file's FHIR version is declared by its file set, so the RDDC validator, not this
+      schema, checks resourceType against that version's types. The descriptions are in
+      the per-version enums, such as FhirR4ResourceTypeEnum.
+    permissible_values:
+      # BEGIN generated by scripts/gen_enums.py fhir-all
+      Account:
+      ActivityDefinition:
+      AdverseEvent:
+      AllergyIntolerance:
+      Appointment:
+      AppointmentResponse:
+      AuditEvent:
+      Basic:
+      Binary:
+      BiologicallyDerivedProduct:
+      BodyStructure:
+      Bundle:
+      CapabilityStatement:
+      CarePlan:
+      CareTeam:
+      CatalogEntry:
+      ChargeItem:
+      ChargeItemDefinition:
+      Claim:
+      ClaimResponse:
+      ClinicalImpression:
+      CodeSystem:
+      Communication:
+      CommunicationRequest:
+      CompartmentDefinition:
+      Composition:
+      ConceptMap:
+      Condition:
+      Consent:
+      Contract:
+      Coverage:
+      CoverageEligibilityRequest:
+      CoverageEligibilityResponse:
+      DetectedIssue:
+      Device:
+      DeviceDefinition:
+      DeviceMetric:
+      DeviceRequest:
+      DeviceUseStatement:
+      DiagnosticReport:
+      DocumentManifest:
+      DocumentReference:
+      EffectEvidenceSynthesis:
+      Encounter:
+      Endpoint:
+      EnrollmentRequest:
+      EnrollmentResponse:
+      EpisodeOfCare:
+      EventDefinition:
+      Evidence:
+      EvidenceVariable:
+      ExampleScenario:
+      ExplanationOfBenefit:
+      FamilyMemberHistory:
+      Flag:
+      Goal:
+      GraphDefinition:
+      Group:
+      GuidanceResponse:
+      HealthcareService:
+      ImagingStudy:
+      Immunization:
+      ImmunizationEvaluation:
+      ImmunizationRecommendation:
+      ImplementationGuide:
+      InsurancePlan:
+      Invoice:
+      Library:
+      Linkage:
+      List:
+      Location:
+      Measure:
+      MeasureReport:
+      Media:
+      Medication:
+      MedicationAdministration:
+      MedicationDispense:
+      MedicationKnowledge:
+      MedicationRequest:
+      MedicationStatement:
+      MedicinalProduct:
+      MedicinalProductAuthorization:
+      MedicinalProductContraindication:
+      MedicinalProductIndication:
+      MedicinalProductIngredient:
+      MedicinalProductInteraction:
+      MedicinalProductManufactured:
+      MedicinalProductPackaged:
+      MedicinalProductPharmaceutical:
+      MedicinalProductUndesirableEffect:
+      MessageDefinition:
+      MessageHeader:
+      MolecularSequence:
+      NamingSystem:
+      NutritionOrder:
+      Observation:
+      ObservationDefinition:
+      OperationDefinition:
+      OperationOutcome:
+      Organization:
+      OrganizationAffiliation:
+      Parameters:
+      Patient:
+      PaymentNotice:
+      PaymentReconciliation:
+      Person:
+      PlanDefinition:
+      Practitioner:
+      PractitionerRole:
+      Procedure:
+      Provenance:
+      Questionnaire:
+      QuestionnaireResponse:
+      RelatedPerson:
+      RequestGroup:
+      ResearchDefinition:
+      ResearchElementDefinition:
+      ResearchStudy:
+      ResearchSubject:
+      RiskAssessment:
+      RiskEvidenceSynthesis:
+      Schedule:
+      SearchParameter:
+      ServiceRequest:
+      Slot:
+      Specimen:
+      SpecimenDefinition:
+      StructureDefinition:
+      StructureMap:
+      Subscription:
+      Substance:
+      SubstanceNucleicAcid:
+      SubstancePolymer:
+      SubstanceProtein:
+      SubstanceReferenceInformation:
+      SubstanceSourceMaterial:
+      SubstanceSpecification:
+      SupplyDelivery:
+      SupplyRequest:
+      Task:
+      TerminologyCapabilities:
+      TestReport:
+      TestScript:
+      ValueSet:
+      VerificationResult:
+      VisionPrescription:
+      # END generated by scripts/gen_enums.py fhir-all
+
+  FhirR4ResourceTypeEnum:
+    description: >-
+      FHIR R4 (4.0.1) resource types, from the resource-types code system
+      (http://hl7.org/fhir/R4/codesystem-resource-types.html). The abstract types
+      Resource and DomainResource are left out because no instance has them. Each
+      value means the FHIR RDF type of the same name.
+    permissible_values:
+      # BEGIN generated by scripts/gen_enums.py fhir-r4
+      Account:
+        meaning: fhir:Account
+        description: "A financial tool for tracking value accrued for a particular purpose. In the healthcare field, used to track charges for a patient, cost centers, etc."
+      ActivityDefinition:
+        meaning: fhir:ActivityDefinition
+        description: "Defines an activity, independent of a particular patient, practitioner, or other performance context."
+      AdverseEvent:
+        meaning: fhir:AdverseEvent
+        description: "Actual or potential/avoided event causing unintended physical injury resulting from or contributed to by medical care, a research study or other healthcare setting factors that requires additional monitoring, treatment, or hospitalization, or that results in death."
+      AllergyIntolerance:
+        meaning: fhir:AllergyIntolerance
+        description: "Risk of harmful or undesirable, physiological response which is unique to an individual and associated with exposure to a substance."
+      Appointment:
+        meaning: fhir:Appointment
+        description: "A booking of a healthcare event among patient(s), practitioner(s), related person(s) and/or device(s) for a specific date/time. This may result in one or more Encounter(s)."
+      AppointmentResponse:
+        meaning: fhir:AppointmentResponse
+        description: "A reply to an appointment request for a patient and/or practitioner(s), such as a confirmation or rejection."
+      AuditEvent:
+        meaning: fhir:AuditEvent
+        description: "An event record for a security log. Typical uses include detection of intrusion attempts and monitoring for inappropriate usage."
+      Basic:
+        meaning: fhir:Basic
+        description: "Basic is used for handling concepts not yet defined in FHIR, narrative-only resources that don't map to an existing resource, and custom resources not appropriate for inclusion in the FHIR specification."
+      Binary:
+        meaning: fhir:Binary
+        description: "A resource that represents the data of a single raw artifact as digital content accessible in its native format. A Binary resource can contain any content, whether text, image, pdf, zip archive, etc."
+      BiologicallyDerivedProduct:
+        meaning: fhir:BiologicallyDerivedProduct
+        description: "A material substance originating from a biological entity intended to be transplanted or infused into another (possibly the same) biological entity."
+      BodyStructure:
+        meaning: fhir:BodyStructure
+        description: "Record details about an anatomical structure. This resource may be used when a coded concept does not provide the detail required for the use case."
+      Bundle:
+        meaning: fhir:Bundle
+        description: "A container for a collection of resources."
+      CapabilityStatement:
+        meaning: fhir:CapabilityStatement
+        description: "A Capability Statement documents a set of capabilities (behaviors) of a FHIR Server for a particular version of FHIR that may be used as a statement of actual server functionality or a statement of required or desired server implementation."
+      CarePlan:
+        meaning: fhir:CarePlan
+        description: "Describes how one or more practitioners plan to deliver care for a particular patient, group or community for a period of time, possibly limited to care for a specific condition or set of conditions."
+      CareTeam:
+        meaning: fhir:CareTeam
+        description: "The Care Team includes all the people and organizations who plan to participate in the coordination and delivery of care for a patient."
+      CatalogEntry:
+        meaning: fhir:CatalogEntry
+        description: "Catalog entries are wrappers that contextualize items included in a catalog."
+      ChargeItem:
+        meaning: fhir:ChargeItem
+        description: "The resource ChargeItem describes the provision of healthcare provider products for a certain patient, therefore referring not only to the product, but containing in addition details of the provision, like date, time, amounts and participating organizations and persons. Main Usage of the ChargeItem is to enable the billing process and internal cost allocation."
+      ChargeItemDefinition:
+        meaning: fhir:ChargeItemDefinition
+        description: "The ChargeItemDefinition resource provides the properties that apply to the (billing) codes necessary to calculate costs and prices. The properties may differ largely depending on type and realm, therefore this resource gives only a rough structure and requires profiling for each type of billing code system."
+      Claim:
+        meaning: fhir:Claim
+        description: "A provider issued list of professional services and products which have been provided, or are to be provided, to a patient which is sent to an insurer for reimbursement."
+      ClaimResponse:
+        meaning: fhir:ClaimResponse
+        description: "This resource provides the adjudication details from the processing of a Claim resource."
+      ClinicalImpression:
+        meaning: fhir:ClinicalImpression
+        description: "A record of a clinical assessment performed to determine what problem(s) may affect the patient and before planning the treatments or management strategies that are best to manage a patient's condition. Assessments are often 1:1 with a clinical consultation / encounter, but this varies greatly depending on the clinical workflow. This resource is called \"ClinicalImpression\" rather than \"ClinicalAssessment\" to avoid confusion with the recording of assessment tools such as Apgar score."
+      CodeSystem:
+        meaning: fhir:CodeSystem
+        description: "The CodeSystem resource is used to declare the existence of and describe a code system or code system supplement and its key properties, and optionally define a part or all of its content."
+      Communication:
+        meaning: fhir:Communication
+        description: "An instance of information exchange; e.g. an alert that was sent to a responsible provider, a public health agency that was notified about a reportable condition."
+      CommunicationRequest:
+        meaning: fhir:CommunicationRequest
+        description: "A request to convey information; e.g. the CDS system proposes that an alert be sent to a responsible provider, the CDS system proposes that the public health agency be notified about a reportable condition."
+      CompartmentDefinition:
+        meaning: fhir:CompartmentDefinition
+        description: "A compartment definition that defines how resources are accessed on a server."
+      Composition:
+        meaning: fhir:Composition
+        description: "A set of healthcare-related information that is assembled into one logical package that provides a single coherent statement of meaning, establishes its own context and that has clinical attestation with regard to who is making the statement. A Composition defines the structure and narrative content necessary for a document. However, a Composition alone does not constitute a document. Rather, the Composition must be the first entry in a Bundle where Bundle.type=document, and any other resources referenced from Composition must be included as subsequent entries in the Bundle (for example Patient, Practitioner, Encounter, etc.)."
+      ConceptMap:
+        meaning: fhir:ConceptMap
+        description: "A statement of relationships from one set of concepts to one or more other concepts - either concepts in code systems, or data element/data element concepts, or classes in class models."
+      Condition:
+        meaning: fhir:Condition
+        description: "A clinical condition, problem, diagnosis, or other event, situation, issue, or clinical concept that has risen to a level of concern."
+      Consent:
+        meaning: fhir:Consent
+        description: "A record of a healthcare consumer’s choices, which permits or denies identified recipient(s) or recipient role(s) to perform one or more actions within a given policy context, for specific purposes and periods of time."
+      Contract:
+        meaning: fhir:Contract
+        description: "Legally enforceable, formally recorded unilateral or bilateral directive i.e., a policy or agreement."
+      Coverage:
+        meaning: fhir:Coverage
+        description: "Financial instrument which may be used to reimburse or pay for health care products and services. Includes both insurance and self-payment."
+      CoverageEligibilityRequest:
+        meaning: fhir:CoverageEligibilityRequest
+        description: "The CoverageEligibilityRequest provides patient and insurance coverage information to an insurer for them to respond, in the form of an CoverageEligibilityResponse, with information regarding whether the stated coverage is valid and in-force and optionally to provide the insurance details of the policy."
+      CoverageEligibilityResponse:
+        meaning: fhir:CoverageEligibilityResponse
+        description: "This resource provides eligibility and plan details from the processing of an CoverageEligibilityRequest resource."
+      DetectedIssue:
+        meaning: fhir:DetectedIssue
+        description: "Indicates an actual or potential clinical issue with or between one or more active or proposed clinical actions for a patient; e.g. Drug-drug interaction, Ineffective treatment frequency, Procedure-condition conflict, etc."
+      Device:
+        meaning: fhir:Device
+        description: "A type of a manufactured item that is used in the provision of healthcare without being substantially changed through that activity. The device may be a medical or non-medical device."
+      DeviceDefinition:
+        meaning: fhir:DeviceDefinition
+        description: "The characteristics, operational status and capabilities of a medical-related component of a medical device."
+      DeviceMetric:
+        meaning: fhir:DeviceMetric
+        description: "Describes a measurement, calculation or setting capability of a medical device."
+      DeviceRequest:
+        meaning: fhir:DeviceRequest
+        description: "Represents a request for a patient to employ a medical device. The device may be an implantable device, or an external assistive device, such as a walker."
+      DeviceUseStatement:
+        meaning: fhir:DeviceUseStatement
+        description: "A record of a device being used by a patient where the record is the result of a report from the patient or another clinician."
+      DiagnosticReport:
+        meaning: fhir:DiagnosticReport
+        description: "The findings and interpretation of diagnostic tests performed on patients, groups of patients, devices, and locations, and/or specimens derived from these. The report includes clinical context such as requesting and provider information, and some mix of atomic results, images, textual and coded interpretations, and formatted representation of diagnostic reports."
+      DocumentManifest:
+        meaning: fhir:DocumentManifest
+        description: "A collection of documents compiled for a purpose together with metadata that applies to the collection."
+      DocumentReference:
+        meaning: fhir:DocumentReference
+        description: "A reference to a document of any kind for any purpose. Provides metadata about the document so that the document can be discovered and managed. The scope of a document is any seralized object with a mime-type, so includes formal patient centric documents (CDA), cliical notes, scanned paper, and non-patient specific documents like policy text."
+      EffectEvidenceSynthesis:
+        meaning: fhir:EffectEvidenceSynthesis
+        description: "The EffectEvidenceSynthesis resource describes the difference in an outcome between exposures states in a population where the effect estimate is derived from a combination of research studies."
+      Encounter:
+        meaning: fhir:Encounter
+        description: "An interaction between a patient and healthcare provider(s) to provide healthcare or assess the patient's health."
+      Endpoint:
+        meaning: fhir:Endpoint
+        description: "The technical details of an endpoint that can be used for electronic services, such as for web services providing XDS.b or a REST endpoint for another FHIR server. This may include any security context information."
+      EnrollmentRequest:
+        meaning: fhir:EnrollmentRequest
+        description: "This resource provides the insurance enrollment details to the insurer regarding a specified coverage."
+      EnrollmentResponse:
+        meaning: fhir:EnrollmentResponse
+        description: "This resource provides enrollment and plan details from the processing of an EnrollmentRequest resource."
+      EpisodeOfCare:
+        meaning: fhir:EpisodeOfCare
+        description: "An association between a patient and an organization / healthcare provider(s) during which time encounters may occur. The managing organization assumes a level of responsibility for the patient during this time."
+      EventDefinition:
+        meaning: fhir:EventDefinition
+        description: "The EventDefinition resource provides a reusable description of when a particular event can occur."
+      Evidence:
+        meaning: fhir:Evidence
+        description: "The Evidence resource describes the conditional state (population and any exposures being compared within the population) and outcome (if specified) that the knowledge (evidence, assertion, recommendation) is about."
+      EvidenceVariable:
+        meaning: fhir:EvidenceVariable
+        description: "The EvidenceVariable resource describes a \"PICO\" element that knowledge (evidence, assertion, recommendation) is about."
+      ExampleScenario:
+        meaning: fhir:ExampleScenario
+        description: "Example of workflow instance."
+      ExplanationOfBenefit:
+        meaning: fhir:ExplanationOfBenefit
+        description: "This resource provides: the claim details; adjudication details from the processing of a Claim; and optionally account balance information, for informing the subscriber of the benefits provided."
+      FamilyMemberHistory:
+        meaning: fhir:FamilyMemberHistory
+        description: "Significant health conditions for a person related to the patient relevant in the context of care for the patient."
+      Flag:
+        meaning: fhir:Flag
+        description: "Prospective warnings of potential issues when providing care to the patient."
+      Goal:
+        meaning: fhir:Goal
+        description: "Describes the intended objective(s) for a patient, group or organization care, for example, weight loss, restoring an activity of daily living, obtaining herd immunity via immunization, meeting a process improvement objective, etc."
+      GraphDefinition:
+        meaning: fhir:GraphDefinition
+        description: "A formal computable definition of a graph of resources - that is, a coherent set of resources that form a graph by following references. The Graph Definition resource defines a set and makes rules about the set."
+      Group:
+        meaning: fhir:Group
+        description: "Represents a defined collection of entities that may be discussed or acted upon collectively but which are not expected to act collectively, and are not formally or legally recognized; i.e. a collection of entities that isn't an Organization."
+      GuidanceResponse:
+        meaning: fhir:GuidanceResponse
+        description: "A guidance response is the formal response to a guidance request, including any output parameters returned by the evaluation, as well as the description of any proposed actions to be taken."
+      HealthcareService:
+        meaning: fhir:HealthcareService
+        description: "The details of a healthcare service available at a location."
+      ImagingStudy:
+        meaning: fhir:ImagingStudy
+        description: "Representation of the content produced in a DICOM imaging study. A study comprises a set of series, each of which includes a set of Service-Object Pair Instances (SOP Instances - images or other data) acquired or produced in a common context. A series is of only one modality (e.g. X-ray, CT, MR, ultrasound), but a study may have multiple series of different modalities."
+      Immunization:
+        meaning: fhir:Immunization
+        description: "Describes the event of a patient being administered a vaccine or a record of an immunization as reported by a patient, a clinician or another party."
+      ImmunizationEvaluation:
+        meaning: fhir:ImmunizationEvaluation
+        description: "Describes a comparison of an immunization event against published recommendations to determine if the administration is \"valid\" in relation to those recommendations."
+      ImmunizationRecommendation:
+        meaning: fhir:ImmunizationRecommendation
+        description: "A patient's point-in-time set of recommendations (i.e. forecasting) according to a published schedule with optional supporting justification."
+      ImplementationGuide:
+        meaning: fhir:ImplementationGuide
+        description: "A set of rules of how a particular interoperability or standards problem is solved - typically through the use of FHIR resources. This resource is used to gather all the parts of an implementation guide into a logical whole and to publish a computable definition of all the parts."
+      InsurancePlan:
+        meaning: fhir:InsurancePlan
+        description: "Details of a Health Insurance product/plan provided by an organization."
+      Invoice:
+        meaning: fhir:Invoice
+        description: "Invoice containing collected ChargeItems from an Account with calculated individual and total price for Billing purpose."
+      Library:
+        meaning: fhir:Library
+        description: "The Library resource is a general-purpose container for knowledge asset definitions. It can be used to describe and expose existing knowledge assets such as logic libraries and information model descriptions, as well as to describe a collection of knowledge assets."
+      Linkage:
+        meaning: fhir:Linkage
+        description: "Identifies two or more records (resource instances) that refer to the same real-world \"occurrence\"."
+      List:
+        meaning: fhir:List
+        description: "A list is a curated collection of resources."
+      Location:
+        meaning: fhir:Location
+        description: "Details and position information for a physical place where services are provided and resources and participants may be stored, found, contained, or accommodated."
+      Measure:
+        meaning: fhir:Measure
+        description: "Defines a quality measure."
+      MeasureReport:
+        meaning: fhir:MeasureReport
+        description: "The MeasureReport resource contains the results of the calculation of a measure; and optionally a reference to the resources involved in that calculation."
+      Media:
+        meaning: fhir:Media
+        description: "A photo, video, or audio recording acquired or used in healthcare. The actual content may be inline or provided by direct reference."
+      Medication:
+        meaning: fhir:Medication
+        description: "This resource is primarily used for the identification and definition of a medication for the purposes of prescribing, dispensing, and administering a medication as well as for making statements about medication use."
+      MedicationAdministration:
+        meaning: fhir:MedicationAdministration
+        description: "Describes the event of a patient consuming or otherwise being administered a medication. This may be as simple as swallowing a tablet or it may be a long running infusion. Related resources tie this event to the authorizing prescription, and the specific encounter between patient and health care practitioner."
+      MedicationDispense:
+        meaning: fhir:MedicationDispense
+        description: "Indicates that a medication product is to be or has been dispensed for a named person/patient. This includes a description of the medication product (supply) provided and the instructions for administering the medication. The medication dispense is the result of a pharmacy system responding to a medication order."
+      MedicationKnowledge:
+        meaning: fhir:MedicationKnowledge
+        description: "Information about a medication that is used to support knowledge."
+      MedicationRequest:
+        meaning: fhir:MedicationRequest
+        description: "An order or request for both supply of the medication and the instructions for administration of the medication to a patient. The resource is called \"MedicationRequest\" rather than \"MedicationPrescription\" or \"MedicationOrder\" to generalize the use across inpatient and outpatient settings, including care plans, etc., and to harmonize with workflow patterns."
+      MedicationStatement:
+        meaning: fhir:MedicationStatement
+        description: "A record of a medication that is being consumed by a patient. A MedicationStatement may indicate that the patient may be taking the medication now or has taken the medication in the past or will be taking the medication in the future. The source of this information can be the patient, significant other (such as a family member or spouse), or a clinician. A common scenario where this information is captured is during the history taking process during a patient visit or stay. The medication information may come from sources such as the patient's memory, from a prescription bottle, or from a list of medications the patient, clinician or other party maintains. The primary difference between a medication statement and a medication administration is that the medication administration has complete administration information and is based on actual administration information from the person who administered the medication. A medication statement is often, if not always, less specific. There is no required date/time when the medication was administered, in fact we only know that a source has reported the patient is taking this medication, where details such as time, quantity, or rate or even medication product may be incomplete or missing or less precise. As stated earlier, the medication statement information may come from the patient's memory, from a prescription bottle or from a list of medications the patient, clinician or other party maintains. Medication administration is more formal and is not missing detailed information."
+      MedicinalProduct:
+        meaning: fhir:MedicinalProduct
+        description: "Detailed definition of a medicinal product, typically for uses other than direct patient care (e.g. regulatory use)."
+      MedicinalProductAuthorization:
+        meaning: fhir:MedicinalProductAuthorization
+        description: "The regulatory authorization of a medicinal product."
+      MedicinalProductContraindication:
+        meaning: fhir:MedicinalProductContraindication
+        description: "The clinical particulars - indications, contraindications etc. of a medicinal product, including for regulatory purposes."
+      MedicinalProductIndication:
+        meaning: fhir:MedicinalProductIndication
+        description: "Indication for the Medicinal Product."
+      MedicinalProductIngredient:
+        meaning: fhir:MedicinalProductIngredient
+        description: "An ingredient of a manufactured item or pharmaceutical product."
+      MedicinalProductInteraction:
+        meaning: fhir:MedicinalProductInteraction
+        description: "The interactions of the medicinal product with other medicinal products, or other forms of interactions."
+      MedicinalProductManufactured:
+        meaning: fhir:MedicinalProductManufactured
+        description: "The manufactured item as contained in the packaged medicinal product."
+      MedicinalProductPackaged:
+        meaning: fhir:MedicinalProductPackaged
+        description: "A medicinal product in a container or package."
+      MedicinalProductPharmaceutical:
+        meaning: fhir:MedicinalProductPharmaceutical
+        description: "A pharmaceutical product described in terms of its composition and dose form."
+      MedicinalProductUndesirableEffect:
+        meaning: fhir:MedicinalProductUndesirableEffect
+        description: "Describe the undesirable effects of the medicinal product."
+      MessageDefinition:
+        meaning: fhir:MessageDefinition
+        description: "Defines the characteristics of a message that can be shared between systems, including the type of event that initiates the message, the content to be transmitted and what response(s), if any, are permitted."
+      MessageHeader:
+        meaning: fhir:MessageHeader
+        description: "The header for a message exchange that is either requesting or responding to an action. The reference(s) that are the subject of the action as well as other information related to the action are typically transmitted in a bundle in which the MessageHeader resource instance is the first resource in the bundle."
+      MolecularSequence:
+        meaning: fhir:MolecularSequence
+        description: "Raw data describing a biological sequence."
+      NamingSystem:
+        meaning: fhir:NamingSystem
+        description: "A curated namespace that issues unique symbols within that namespace for the identification of concepts, people, devices, etc. Represents a \"System\" used within the Identifier and Coding data types."
+      NutritionOrder:
+        meaning: fhir:NutritionOrder
+        description: "A request to supply a diet, formula feeding (enteral) or oral nutritional supplement to a patient/resident."
+      Observation:
+        meaning: fhir:Observation
+        description: "Measurements and simple assertions made about a patient, device or other subject."
+      ObservationDefinition:
+        meaning: fhir:ObservationDefinition
+        description: "Set of definitional characteristics for a kind of observation or measurement produced or consumed by an orderable health care service."
+      OperationDefinition:
+        meaning: fhir:OperationDefinition
+        description: "A formal computable definition of an operation (on the RESTful interface) or a named query (using the search interaction)."
+      OperationOutcome:
+        meaning: fhir:OperationOutcome
+        description: "A collection of error, warning, or information messages that result from a system action."
+      Organization:
+        meaning: fhir:Organization
+        description: "A formally or informally recognized grouping of people or organizations formed to act collectively. Includes companies, institutions, corporations, departments, community groups, healthcare practice groups, payer/insurer, etc."
+      OrganizationAffiliation:
+        meaning: fhir:OrganizationAffiliation
+        description: "Defines an affiliation/assotiation/relationship between 2 distinct oganizations, that is not a part-of relationship/sub-division relationship."
+      Parameters:
+        meaning: fhir:Parameters
+        description: "This resource is a non-persisted resource used to pass information into and back from an [operation](operations.html). It has no other use, and there is no RESTful endpoint associated with it."
+      Patient:
+        meaning: fhir:Patient
+        description: "Demographics and other administrative information about an individual or animal receiving care or other health-related services."
+      PaymentNotice:
+        meaning: fhir:PaymentNotice
+        description: "This resource provides the status of the payment for goods and services rendered, and the request and response resource references."
+      PaymentReconciliation:
+        meaning: fhir:PaymentReconciliation
+        description: "This resource provides the details including amount of a payment and allocates the payment items being paid."
+      Person:
+        meaning: fhir:Person
+        description: "Demographics and administrative information about a person independent of a specific health-related context."
+      PlanDefinition:
+        meaning: fhir:PlanDefinition
+        description: "This resource allows for the definition of various types of plans as a sharable, consumable, and executable artifact. The resource is general enough to support the description of a broad range of clinical artifacts such as clinical decision support rules, order sets and protocols."
+      Practitioner:
+        meaning: fhir:Practitioner
+        description: "A person who is directly or indirectly involved in providing healthcare."
+      PractitionerRole:
+        meaning: fhir:PractitionerRole
+        description: "A specific set of Roles/Locations/specialties/services that a practitioner may perform at an organization for a period of time."
+      Procedure:
+        meaning: fhir:Procedure
+        description: "An action that is or was performed on or for a patient. This can be a physical intervention like an operation, or less invasive like long term services, counseling, or hypnotherapy."
+      Provenance:
+        meaning: fhir:Provenance
+        description: "Provenance of a resource is a record that describes entities and processes involved in producing and delivering or otherwise influencing that resource. Provenance provides a critical foundation for assessing authenticity, enabling trust, and allowing reproducibility. Provenance assertions are a form of contextual metadata and can themselves become important records with their own provenance. Provenance statement indicates clinical significance in terms of confidence in authenticity, reliability, and trustworthiness, integrity, and stage in lifecycle (e.g. Document Completion - has the artifact been legally authenticated), all of which may impact security, privacy, and trust policies."
+      Questionnaire:
+        meaning: fhir:Questionnaire
+        description: "A structured set of questions intended to guide the collection of answers from end-users. Questionnaires provide detailed control over order, presentation, phraseology and grouping to allow coherent, consistent data collection."
+      QuestionnaireResponse:
+        meaning: fhir:QuestionnaireResponse
+        description: "A structured set of questions and their answers. The questions are ordered and grouped into coherent subsets, corresponding to the structure of the grouping of the questionnaire being responded to."
+      RelatedPerson:
+        meaning: fhir:RelatedPerson
+        description: "Information about a person that is involved in the care for a patient, but who is not the target of healthcare, nor has a formal responsibility in the care process."
+      RequestGroup:
+        meaning: fhir:RequestGroup
+        description: "A group of related requests that can be used to capture intended activities that have inter-dependencies such as \"give this medication after that one\"."
+      ResearchDefinition:
+        meaning: fhir:ResearchDefinition
+        description: "The ResearchDefinition resource describes the conditional state (population and any exposures being compared within the population) and outcome (if specified) that the knowledge (evidence, assertion, recommendation) is about."
+      ResearchElementDefinition:
+        meaning: fhir:ResearchElementDefinition
+        description: "The ResearchElementDefinition resource describes a \"PICO\" element that knowledge (evidence, assertion, recommendation) is about."
+      ResearchStudy:
+        meaning: fhir:ResearchStudy
+        description: "A process where a researcher or organization plans and then executes a series of steps intended to increase the field of healthcare-related knowledge. This includes studies of safety, efficacy, comparative effectiveness and other information about medications, devices, therapies and other interventional and investigative techniques. A ResearchStudy involves the gathering of information about human or animal subjects."
+      ResearchSubject:
+        meaning: fhir:ResearchSubject
+        description: "A physical entity which is the primary unit of operational and/or administrative interest in a study."
+      RiskAssessment:
+        meaning: fhir:RiskAssessment
+        description: "An assessment of the likely outcome(s) for a patient or other subject as well as the likelihood of each outcome."
+      RiskEvidenceSynthesis:
+        meaning: fhir:RiskEvidenceSynthesis
+        description: "The RiskEvidenceSynthesis resource describes the likelihood of an outcome in a population plus exposure state where the risk estimate is derived from a combination of research studies."
+      Schedule:
+        meaning: fhir:Schedule
+        description: "A container for slots of time that may be available for booking appointments."
+      SearchParameter:
+        meaning: fhir:SearchParameter
+        description: "A search parameter that defines a named search item that can be used to search/filter on a resource."
+      ServiceRequest:
+        meaning: fhir:ServiceRequest
+        description: "A record of a request for service such as diagnostic investigations, treatments, or operations to be performed."
+      Slot:
+        meaning: fhir:Slot
+        description: "A slot of time on a schedule that may be available for booking appointments."
+      Specimen:
+        meaning: fhir:Specimen
+        description: "A sample to be used for analysis."
+      SpecimenDefinition:
+        meaning: fhir:SpecimenDefinition
+        description: "A kind of specimen with associated set of requirements."
+      StructureDefinition:
+        meaning: fhir:StructureDefinition
+        description: "A definition of a FHIR structure. This resource is used to describe the underlying resources, data types defined in FHIR, and also for describing extensions and constraints on resources and data types."
+      StructureMap:
+        meaning: fhir:StructureMap
+        description: "A Map of relationships between 2 structures that can be used to transform data."
+      Subscription:
+        meaning: fhir:Subscription
+        description: "The subscription resource is used to define a push-based subscription from a server to another system. Once a subscription is registered with the server, the server checks every resource that is created or updated, and if the resource matches the given criteria, it sends a message on the defined \"channel\" so that another system can take an appropriate action."
+      Substance:
+        meaning: fhir:Substance
+        description: "A homogeneous material with a definite composition."
+      SubstanceNucleicAcid:
+        meaning: fhir:SubstanceNucleicAcid
+        description: "Nucleic acids are defined by three distinct elements: the base, sugar and linkage. Individual substance/moiety IDs will be created for each of these elements. The nucleotide sequence will be always entered in the 5’-3’ direction."
+      SubstancePolymer:
+        meaning: fhir:SubstancePolymer
+        description: "Todo."
+      SubstanceProtein:
+        meaning: fhir:SubstanceProtein
+        description: "A SubstanceProtein is defined as a single unit of a linear amino acid sequence, or a combination of subunits that are either covalently linked or have a defined invariant stoichiometric relationship. This includes all synthetic, recombinant and purified SubstanceProteins of defined sequence, whether the use is therapeutic or prophylactic. This set of elements will be used to describe albumins, coagulation factors, cytokines, growth factors, peptide/SubstanceProtein hormones, enzymes, toxins, toxoids, recombinant vaccines, and immunomodulators."
+      SubstanceReferenceInformation:
+        meaning: fhir:SubstanceReferenceInformation
+        description: "Todo."
+      SubstanceSourceMaterial:
+        meaning: fhir:SubstanceSourceMaterial
+        description: "Source material shall capture information on the taxonomic and anatomical origins as well as the fraction of a material that can result in or can be modified to form a substance. This set of data elements shall be used to define polymer substances isolated from biological matrices. Taxonomic and anatomical origins shall be described using a controlled vocabulary as required. This information is captured for naturally derived polymers ( . starch) and structurally diverse substances. For Organisms belonging to the Kingdom Plantae the Substance level defines the fresh material of a single species or infraspecies, the Herbal Drug and the Herbal preparation. For Herbal preparations, the fraction information will be captured at the Substance information level and additional information for herbal extracts will be captured at the Specified Substance Group 1 information level. See for further explanation the Substance Class: Structurally Diverse and the herbal annex."
+      SubstanceSpecification:
+        meaning: fhir:SubstanceSpecification
+        description: "The detailed description of a substance, typically at a level beyond what is used for prescribing."
+      SupplyDelivery:
+        meaning: fhir:SupplyDelivery
+        description: "Record of delivery of what is supplied."
+      SupplyRequest:
+        meaning: fhir:SupplyRequest
+        description: "A record of a request for a medication, substance or device used in the healthcare setting."
+      Task:
+        meaning: fhir:Task
+        description: "A task to be performed."
+      TerminologyCapabilities:
+        meaning: fhir:TerminologyCapabilities
+        description: "A TerminologyCapabilities resource documents a set of capabilities (behaviors) of a FHIR Terminology Server that may be used as a statement of actual server functionality or a statement of required or desired server implementation."
+      TestReport:
+        meaning: fhir:TestReport
+        description: "A summary of TestScript execution results."
+      TestScript:
+        meaning: fhir:TestScript
+        description: "A structured set of tests against a FHIR server or client implementation to determine compliance against the FHIR specification."
+      ValueSet:
+        meaning: fhir:ValueSet
+        description: "A ValueSet resource instance specifies a set of codes drawn from one or more code systems, intended for use in a particular context. Value sets link between [[[CodeSystem]]] definitions and their use in [coded elements](terminologies.html)."
+      VerificationResult:
+        meaning: fhir:VerificationResult
+        description: "Describes validation requirements, source(s), status and dates for one or more elements."
+      VisionPrescription:
+        meaning: fhir:VisionPrescription
+        description: "An authorization for the provision of glasses and/or contact lenses to a patient."
+      # END generated by scripts/gen_enums.py fhir-r4
+
+  ReferenceGenomeEnum:
+    description: >-
+      Human reference assemblies accepted in a deposit. UCSC builds use the matching
+      GRC assembly: hg19 is GRCh37 and hg38 is GRCh38.
+    permissible_values:
+      GRCh37:
+        description: Genome Reference Consortium human build 37 (hg19).
+      GRCh38:
+        description: Genome Reference Consortium human build 38 (hg38).
+      T2T-CHM13v2.0:
+        description: Telomere-to-Telomere CHM13 assembly, version 2.0 (hs1).
+
+  GenomicsAssayEnum:
+    description: >-
+      Sequencing assays accepted for genomics files. Meanings are OBI assay terms (OBI
+      release 2026-07-27). OBI has no term for targeted gene panels, so that value has no
+      meaning. The sequencing platform (short-read, long-read) goes in sequencingPlatform,
+      not here.
+    permissible_values:
+      wgs:
+        title: Whole genome sequencing
+        description: Sequencing of the complete genome.
+        meaning: OBI:0002117
+        aliases:
+        - WGS
+      wes:
+        title: Exome sequencing
+        description: Sequencing of the protein-coding regions of the genome.
+        meaning: OBI:0002118
+        aliases:
+        - WES
+        - Whole exome sequencing
+      targeted_panel:
+        title: Targeted gene panel sequencing
+        description: >-
+          Sequencing of a selected set of genes or regions, such as a clinical gene
+          panel, by hybrid capture or amplicons. OBI has no term covering both; its
+          nearest is DNA sequencing assay (OBI:0000626).
+      rna_seq:
+        title: RNA-Seq
+        description: Sequencing of RNA (cDNA) to measure the transcriptome of a sample.
+        meaning: OBI:0001271
+        aliases:
+        - RNA sequencing
+      methylation_seq:
+        title: Methylation sequencing
+        description: >-
+          Sequencing that determines the methylation state of DNA, such as whole-genome
+          bisulfite sequencing.
+        meaning: OBI:0001266
+        aliases:
+        - WGBS
+        - Bisulfite sequencing
+      other:
+        title: Other sequencing assay
+        description: >-
+          A sequencing assay not listed here. Name it in the file's description; a
+          curator decides whether it needs its own value.
+
+  SequencingPlatformEnum:
+    description: >-
+      Sequencing technologies, from the INSDC platform types that ENA and SRA use for
+      submissions (PlatformType in the SRA schema; values lower-cased). Each value is
+      annotated with the read length it produces: short reads of a few hundred bases, or
+      long reads of thousands of bases or more. Long reads need different processing. The
+      instrument model, such as "Illumina NovaSeq X", goes in platform.
+    permissible_values:
+      illumina:
+        title: Illumina
+        description: Illumina sequencing by synthesis, e.g. NovaSeq, NextSeq, MiSeq.
+        aliases:
+        - ILLUMINA
+        annotations: {readLength: short}
+      element:
+        title: Element Biosciences
+        description: Element Biosciences avidity sequencing, e.g. AVITI.
+        aliases:
+        - ELEMENT
+        - AVITI
+        annotations: {readLength: short}
+      dnbseq:
+        title: DNBSEQ (MGI, BGI)
+        description: DNA nanoball sequencing by MGI and BGI, e.g. DNBSEQ-G400, BGISEQ-500.
+        aliases:
+        - DNBSEQ
+        - BGISEQ
+        annotations: {readLength: short}
+      ion_torrent:
+        title: Ion Torrent
+        description: Ion Torrent semiconductor sequencing, e.g. Ion GeneStudio S5.
+        aliases:
+        - ION_TORRENT
+        annotations: {readLength: short}
+      ultima:
+        title: Ultima Genomics
+        description: Ultima Genomics sequencing, e.g. UG 100.
+        aliases:
+        - ULTIMA
+        annotations: {readLength: short}
+      pacbio_smrt:
+        title: PacBio SMRT
+        description: Pacific Biosciences single-molecule real-time sequencing, e.g. Revio, Sequel II (HiFi reads).
+        aliases:
+        - PACBIO_SMRT
+        - PacBio
+        annotations: {readLength: long}
+      oxford_nanopore:
+        title: Oxford Nanopore
+        description: Oxford Nanopore sequencing, e.g. PromethION, GridION, MinION.
+        aliases:
+        - OXFORD_NANOPORE
+        - ONT
+        annotations: {readLength: long}
+      other:
+        title: Other sequencing platform
+        description: >-
+          A platform not listed here. Name it in platform and the file's description; a
+          curator decides whether it needs its own value.
+
+  ImagingAssayEnum:
+    description: >-
+      Imaging techniques accepted for imaging files. Meanings are OBI assay terms
+      (release 2026-07-27) where OBI has one, and NCIT (26.02d) or SNOMED CT terms where
+      it does not: OBI has no terms for X-ray radiography, ultrasound or photography. 3D
+      surface scanning has no exact term in any of them, so it has mappings only.
+    permissible_values:
+      photography:
+        title: Photography
+        description: >-
+          Two-dimensional clinical photographs taken with a camera. Facial photographs use
+          FacialImagingFile.
+        meaning: SNOMEDCT:169283005
+        close_mappings:
+        - NCIT:C94527
+      surface_scan_3d:
+        title: 3D surface scanning
+        description: >-
+          A three-dimensional model of a body surface, such as the face, captured by
+          stereophotogrammetry, structured light or laser scanning. No term covers these
+          methods together: NCIT's Laser Surface Scan names one of them, and its
+          Three-Dimensional Imaging also covers 3D CT and MRI.
+        close_mappings:
+        - NCIT:C190554
+        broad_mappings:
+        - NCIT:C18485
+      x_ray:
+        title: X-ray radiography
+        description: Projection images formed by X-rays passing through the body.
+        meaning: NCIT:C38101
+      ct:
+        title: Computed tomography
+        description: Cross-sectional images built from a series of X-ray images.
+        meaning: OBI:0002986
+        aliases:
+        - CT
+      mri:
+        title: Magnetic resonance imaging
+        description: Images of the body's interior made with nuclear magnetic resonance.
+        meaning: OBI:0002985
+        aliases:
+        - MRI
+      ultrasound:
+        title: Ultrasound imaging
+        description: Images made with high-frequency sound waves.
+        meaning: NCIT:C17230
+      pet:
+        title: Positron emission tomography
+        description: Images of functional processes made with positron-emitting tracers.
+        meaning: OBI:0002987
+        aliases:
+        - PET
+      microscopy:
+        title: Microscopy
+        description: Magnified images from a microscope, such as histology slides.
+        meaning: OBI:0002119
+      other:
+        title: Other imaging technique
+        description: >-
+          An imaging technique not listed here. Name it in the file's description; a
+          curator decides whether it needs its own value. The general term is imaging
+          assay (OBI:0000185).
+
+  SensorAssayEnum:
+    description: >-
+      Sensing techniques accepted for sensor data. Meanings are NCIT (26.02d) terms, OBI
+      assay terms (release 2026-07-27) where OBI has one, and SNOMED CT for continuous
+      glucose monitoring. No term describes measuring electrodermal activity, so that
+      value has only a close mapping.
+    permissible_values:
+      accelerometry:
+        title: Accelerometry
+        description: Movement measured by accelerometers, including actigraphy.
+        meaning: NCIT:C176739
+        close_mappings:
+        - NCIT:C180883
+      ecg:
+        title: Electrocardiography
+        description: Electrical activity of the heart.
+        meaning: NCIT:C38053
+        aliases:
+        - ECG
+        - EKG
+      ppg:
+        title: Photoplethysmography
+        description: >-
+          Optical measurement of blood volume changes, the usual source of heart rate on
+          wrist-worn devices.
+        meaning: NCIT:C198843
+        aliases:
+        - PPG
+      pulse_oximetry:
+        title: Pulse oximetry
+        description: Estimates of blood oxygen saturation (SpO2).
+        meaning: NCIT:C38085
+      cgm:
+        title: Continuous glucose monitoring
+        description: Interstitial glucose measured continuously by a sensor under the skin.
+        meaning: SNOMEDCT:439926003
+        aliases:
+        - CGM
+      eeg:
+        title: Electroencephalography
+        description: Electrical activity of the brain.
+        meaning: OBI:0002186
+        aliases:
+        - EEG
+      emg:
+        title: Electromyography
+        description: Electrical activity of skeletal muscle.
+        meaning: NCIT:C38056
+        aliases:
+        - EMG
+      blood_pressure:
+        title: Blood pressure measurement
+        description: Systolic and diastolic blood pressure, by cuff or continuous sensor.
+        meaning: NCIT:C167233
+      temperature:
+        title: Body temperature measurement
+        description: Skin or core body temperature.
+        meaning: OBI:0003080
+      respiration:
+        title: Respiratory monitoring
+        description: Breathing measured by a chest band or similar sensor.
+        meaning: NCIT:C176738
+      eda:
+        title: Electrodermal activity
+        description: >-
+          Changes in the skin's electrical conductance, also called galvanic skin
+          response.
+        close_mappings:
+        - NCIT:C93039
+        aliases:
+        - EDA
+        - GSR
+      other:
+        title: Other sensing technique
+        description: >-
+          A sensing technique not listed here. Name it in the file's description; a
+          curator decides whether it needs its own value.
+
+  DocumentTypeEnum:
+    description: >-
+      Kinds of clinical document, the values of documentType. Meanings are LOINC
+      Document Ontology codes, the codes OMOP uses for note_class_concept_id, checked
+      against LOINC on tx.fhir.org. Codes are LOINC's, under the LOINC license.
+    permissible_values:
+      progress_note:
+        title: Progress note
+        description: A note on a visit or a day of care, such as an outpatient visit note.
+        meaning: LOINC:11506-3
+        aliases:
+        - Visit note
+      history_and_physical:
+        title: History and physical note
+        description: The history and examination at admission or a first visit.
+        meaning: LOINC:34117-2
+        aliases:
+        - H&P
+      consult_note:
+        title: Consult note
+        description: A specialist's findings and recommendations after a consultation.
+        meaning: LOINC:11488-4
+        aliases:
+        - Specialist note
+      referral_note:
+        title: Referral note
+        description: A note referring the patient to another clinician or service.
+        meaning: LOINC:57133-1
+      discharge_summary:
+        title: Discharge summary
+        description: A summary of a hospital stay, written at discharge.
+        meaning: LOINC:18842-5
+      emergency_department_note:
+        title: Emergency department note
+        description: A note on an emergency department visit.
+        meaning: LOINC:34111-5
+        aliases:
+        - ED note
+      procedure_note:
+        title: Procedure note
+        description: A note on a procedure other than surgery.
+        meaning: LOINC:28570-0
+      operative_note:
+        title: Surgical operation note
+        description: A note on a surgical operation.
+        meaning: LOINC:11504-8
+      telephone_encounter_note:
+        title: Telephone encounter note
+        description: A note on a telephone contact with the patient.
+        meaning: LOINC:34748-4
+      patient_note:
+        title: Patient note
+        description: A note written by the patient or a caregiver.
+        meaning: LOINC:51855-5
+      pathology_report:
+        title: Pathology report
+        description: A pathology study report.
+        meaning: LOINC:11526-1
+      imaging_report:
+        title: Imaging report
+        description: A radiologist's report of a diagnostic imaging study. The images go in an ImagingFile.
+        meaning: LOINC:18748-4
+        aliases:
+        - Radiology report
+      laboratory_report:
+        title: Laboratory report
+        description: A report of laboratory test results.
+        meaning: LOINC:11502-2
+      genetic_report:
+        title: Genetic analysis report
+        description: A genetic test report. Structured results go in a GeneticTestResultFile.
+        meaning: LOINC:51969-4
+      other:
+        title: Other clinical document
+        description: >-
+          A document of another kind. Name it in the file's description; a curator
+          decides whether it needs its own value. The general LOINC term is Note
+          (LOINC:34109-9).
+
+  DiagnosisCodeSystemEnum:
+    description: >-
+      Code systems that candidate diagnoses are coded in.
+    permissible_values:
+      snomed_ct:
+        title: SNOMED CT
+        description: SNOMED CT clinical findings and disorders.
+        aliases:
+        - SNOMEDCT
+      icd10:
+        title: ICD-10
+        description: WHO International Classification of Diseases, 10th revision.
+      icd10_cm:
+        title: ICD-10-CM
+        description: The US clinical modification of ICD-10.
+      icd11:
+        title: ICD-11
+        description: WHO International Classification of Diseases, 11th revision.
+      orphanet:
+        title: Orphanet (ORDO)
+        description: Orphanet rare disease nomenclature, as the Orphanet Rare Disease Ontology.
+        aliases:
+        - ORDO
+        - ORPHA
+      omim:
+        title: OMIM
+        description: Online Mendelian Inheritance in Man phenotype entries.
+      mondo:
+        title: MONDO
+        description: Mondo Disease Ontology.
+      other:
+        title: Other code system
+        description: >-
+          A code system not listed here, or uncoded names. Name it in the file's
+          description; a curator decides whether it needs its own value.
+
+  OmopCdmTableEnum:
+    description: >-
+      OMOP CDM tables of every accepted CDM version, the range of cdmTable. The RDDC
+      validator checks that the table exists in the CDM version the file's
+      OmopCdmInstance declares in conformsTo. The descriptions and groups are in the
+      per-version enums, such as OmopCdm54TableEnum. All tables, including vocabulary
+      and results tables, may be deposited.
+    permissible_values:
+      # BEGIN generated by scripts/gen_enums.py omop-all
+      person:
+      observation_period:
+      visit_occurrence:
+      visit_detail:
+      condition_occurrence:
+      drug_exposure:
+      procedure_occurrence:
+      device_exposure:
+      measurement:
+      observation:
+      death:
+      note:
+      note_nlp:
+      specimen:
+      fact_relationship:
+      location:
+      care_site:
+      provider:
+      payer_plan_period:
+      cost:
+      drug_era:
+      dose_era:
+      condition_era:
+      episode:
+      episode_event:
+      metadata:
+      cdm_source:
+      concept:
+      vocabulary:
+      domain:
+      concept_class:
+      concept_relationship:
+      relationship:
+      concept_synonym:
+      concept_ancestor:
+      source_to_concept_map:
+      drug_strength:
+      cohort:
+      cohort_definition:
+      # END generated by scripts/gen_enums.py omop-all
+
+  OmopCdm54TableEnum:
+    description: >-
+      OMOP CDM 5.4 tables, from the OHDSI table list (CommonDataModel v5.4.3,
+      inst/csv/OMOP_CDMv5.4_Table_Level.csv). The cdm_schema annotation gives the
+      table's group: CDM for clinical and health-system tables, VOCAB for the
+      standardized vocabularies, RESULTS for cohort tables.
+    permissible_values:
+      # BEGIN generated by scripts/gen_enums.py omop-cdm54
+      person:
+        description: "This table serves as the central identity management for all Persons in the database. It contains records that uniquely identify each person or patient, and some demographic information."
+        annotations:
+          cdm_schema: CDM
+      observation_period:
+        description: "This table contains records which define spans of time during which two conditions are expected to hold: (i) Clinical Events that happened to the Person are recorded in the Event tables, and (ii) absence of records indicate such Events did not occur during this span of time."
+        annotations:
+          cdm_schema: CDM
+      visit_occurrence:
+        description: "This table contains Events where Persons engage with the healthcare system for a duration of time. They are often also called \"Encounters\". Visits are defined by a configuration of circumstances under which they occur, such as (i) whether the patient comes to a healthcare institution, the other way around, or the interaction is remote, (ii) whether and what kind of trained medical staff is delivering the service during the Visit, and (iii) whether the Visit is transient or for a longer period involving a stay in bed."
+        annotations:
+          cdm_schema: CDM
+      visit_detail:
+        description: "The VISIT_DETAIL table is an optional table used to represents details of each record in the parent VISIT_OCCURRENCE table. Examples include the movement between units in a hospital during an inpatient stay or claim lines associated with a one insurance claim. For every record in the VISIT_OCCURRENCE table there may be 0 or more records in the VISIT_DETAIL table with a 1:n relationship where n may be 0. The VISIT_DETAIL table is structurally very similar to VISIT_OCCURRENCE table and belongs to the visit domain."
+        annotations:
+          cdm_schema: CDM
+      condition_occurrence:
+        description: "This table contains records of Events of a Person suggesting the presence of a disease or medical condition stated as a diagnosis, a sign, or a symptom, which is either observed by a Provider or reported by the patient."
+        annotations:
+          cdm_schema: CDM
+      drug_exposure:
+        description: "This table captures records about the exposure to a Drug ingested or otherwise introduced into the body. A Drug is a biochemical substance formulated in such a way that when administered to a Person it will exert a certain biochemical effect on the metabolism. Drugs include prescription and over-the-counter medicines, vaccines, and large-molecule biologic therapies. Radiological devices ingested or applied locally do not count as Drugs."
+        annotations:
+          cdm_schema: CDM
+      procedure_occurrence:
+        description: "This table contains records of activities or processes ordered by, or carried out by, a healthcare provider on the patient with a diagnostic or therapeutic purpose."
+        annotations:
+          cdm_schema: CDM
+      device_exposure:
+        description: "The Device domain captures information about a person's exposure to a foreign physical object or instrument which is used for diagnostic or therapeutic purposes through a mechanism beyond chemical action. Devices include implantable objects (e.g. pacemakers, stents, artificial joints), medical equipment and supplies (e.g. bandages, crutches, syringes), other instruments used in medical procedures (e.g. sutures, defibrillators) and material used in clinical care (e.g. adhesives, body material, dental material, surgical material)."
+        annotations:
+          cdm_schema: CDM
+      measurement:
+        description: "The MEASUREMENT table contains records of Measurements, i.e. structured values (numerical or categorical) obtained through systematic and standardized examination or testing of a Person or Person's sample. The MEASUREMENT table contains both orders and results of such Measurements as laboratory tests, vital signs, quantitative findings from pathology reports, etc. Measurements are stored as attribute value pairs, with the attribute as the Measurement Concept and the value representing the result. The value can be a Concept (stored in VALUE_AS_CONCEPT), or a numerical value (VALUE_AS_NUMBER) with a Unit (UNIT_CONCEPT_ID). The Procedure for obtaining the sample is housed in the PROCEDURE_OCCURRENCE table, though it is unnecessary to create a PROCEDURE_OCCURRENCE record for each measurement if one does not exist in the source data. Measurements differ from Observations in that they require a standardized test or some other activity to generate a quantitative or qualitative result. If there is no result, it is assumed that the lab test was conducted but the result was not captured."
+        annotations:
+          cdm_schema: CDM
+      observation:
+        description: "The OBSERVATION table captures clinical facts about a Person obtained in the context of examination, questioning or a procedure. Any data that cannot be represented by any other domains, such as social and lifestyle facts, medical history, family history, etc. are recorded here."
+        annotations:
+          cdm_schema: CDM
+      death:
+        description: "The death domain contains the clinical event for how and when a Person dies. A person can have up to one record if the source system contains evidence about the Death, such as: Condition in an administrative claim, status of enrollment into a health plan, or explicit record in EHR data."
+        annotations:
+          cdm_schema: CDM
+      note:
+        description: "The NOTE table captures unstructured information that was recorded by a provider about a patient in free text (in ASCII, or preferably in UTF8 format) notes on a given date. The type of note_text is CLOB or varchar(MAX) depending on RDBMS."
+        annotations:
+          cdm_schema: CDM
+      note_nlp:
+        description: "The NOTE_NLP table encodes all output of NLP on clinical notes. Each row represents a single extracted term from a note."
+        annotations:
+          cdm_schema: CDM
+      specimen:
+        description: "The specimen domain contains the records identifying biological samples from a person."
+        annotations:
+          cdm_schema: CDM
+      fact_relationship:
+        description: "The FACT_RELATIONSHIP table contains records about the relationships between facts stored as records in any table of the CDM. Relationships can be defined between facts from the same domain, or different domains. Examples of Fact Relationships include: [Person relationships](https://athena.ohdsi.org/search-terms/terms?domain=Relationship&standardConcept=Standard&page=2&pageSize=15&query=) (parent-child), care site relationships (hierarchical organizational structure of facilities within a health system), indication relationship (between drug exposures and associated conditions), usage relationships (of devices during the course of an associated procedure), or facts derived from one another (measurements derived from an associated specimen)."
+        annotations:
+          cdm_schema: CDM
+      location:
+        description: "The LOCATION table stores physical location or address information of Persons and Care Sites."
+        annotations:
+          cdm_schema: CDM
+      care_site:
+        description: "The CARE_SITE table contains a list of uniquely identified institutional (physical or organizational) units where healthcare delivery is practiced (offices, wards, hospitals, clinics, etc.)."
+        annotations:
+          cdm_schema: CDM
+      provider:
+        description: "The PROVIDER table contains a list of uniquely identified healthcare providers; duplication is not allowed. These are individuals providing hands-on healthcare to patients, such as physicians, nurses, midwives, physical therapists etc."
+        annotations:
+          cdm_schema: CDM
+      payer_plan_period:
+        description: "The PAYER_PLAN_PERIOD table captures details of the period of time that a Person is continuously enrolled under a specific health Plan benefit structure from a given Payer. Each Person receiving healthcare is typically covered by a health benefit plan, which pays for (fully or partially), or directly provides, the care. These benefit plans are provided by payers, such as health insurances or state or government agencies. In each plan the details of the health benefits are defined for the Person or her family, and the health benefit Plan might change over time typically with increasing utilization (reaching certain cost thresholds such as deductibles), plan availability and purchasing choices of the Person. The unique combinations of Payer organizations, health benefit Plans and time periods in which they are valid for a Person are recorded in this table."
+        annotations:
+          cdm_schema: CDM
+      cost:
+        description: "The COST table captures records containing the cost of any medical event recorded in one of the OMOP clinical event tables such as DRUG_EXPOSURE, PROCEDURE_OCCURRENCE, VISIT_OCCURRENCE, VISIT_DETAIL, DEVICE_OCCURRENCE, OBSERVATION or MEASUREMENT. Each record in the cost table account for the amount of money transacted for the clinical event. So, the COST table may be used to represent both receivables (charges) and payments (paid), each transaction type represented by its COST_CONCEPT_ID. The COST_TYPE_CONCEPT_ID field will use concepts in the Standardized Vocabularies to designate the source (provenance) of the cost data. A reference to the health plan information in the PAYER_PLAN_PERIOD table is stored in the record for information used for the adjudication system to determine the persons benefit for the clinical event."
+        annotations:
+          cdm_schema: CDM
+      drug_era:
+        description: "A Drug Era is a period when the Person is assumed to be exposed to a particular active ingredient. A Drug Era is not the same as a Drug Exposure: Exposures are individual records corresponding to the source when Drug was delivered to the Person, while successive periods of Drug Exposures are combined under certain rules to produce continuous Drug Eras. Every record in the DRUG_EXPOSURE table should be part of a drug era based on the dates of exposure."
+        annotations:
+          cdm_schema: CDM
+      dose_era:
+        description: "A Dose Era is a period when the Person is assumed to be exposed to a constant dose of a specific active ingredient."
+        annotations:
+          cdm_schema: CDM
+      condition_era:
+        description: "A Condition Era is a period when the Person is assumed to have a given condition. Similar to Drug Eras, Condition Eras are chronological periods of Condition Occurrence and every Condition Occurrence record should be part of a Condition Era. Combining individual Condition Occurrences into a single Condition Era serves two purposes: - It allows aggregation of chronic conditions that require frequent ongoing care, instead of treating each Condition Occurrence as an independent event. - It allows aggregation of multiple, closely timed doctor visits for the same Condition to avoid double-counting the Condition Occurrences. For example, consider a Person who visits her Primary Care Physician (PCP) and who is referred to a specialist. At a later time, the Person visits the specialist, who confirms the PCP's original diagnosis and provides the appropriate treatment to resolve the condition. These two independent doctor visits should be aggregated into one Condition Era."
+        annotations:
+          cdm_schema: CDM
+      episode:
+        description: "The EPISODE table aggregates lower-level clinical events (VISIT_OCCURRENCE, DRUG_EXPOSURE, PROCEDURE_OCCURRENCE, DEVICE_EXPOSURE) into a higher-level abstraction representing clinically and analytically relevant disease phases,outcomes and treatments. The EPISODE_EVENT table connects qualifying clinical events (VISIT_OCCURRENCE, DRUG_EXPOSURE, PROCEDURE_OCCURRENCE, DEVICE_EXPOSURE) to the appropriate EPISODE entry. For example cancers including their development over time, their treatment, and final resolution."
+        annotations:
+          cdm_schema: CDM
+      episode_event:
+        description: "The EPISODE_EVENT table connects qualifying clinical events (such as CONDITION_OCCURRENCE, DRUG_EXPOSURE, PROCEDURE_OCCURRENCE, MEASUREMENT) to the appropriate EPISODE entry. For example, linking the precise location of the metastasis (cancer modifier in MEASUREMENT) to the disease episode."
+        annotations:
+          cdm_schema: CDM
+      metadata:
+        description: "The METADATA table contains metadata about a dataset that has been transformed to the OMOP Common Data Model."
+        annotations:
+          cdm_schema: CDM
+      cdm_source:
+        description: "The CDM_SOURCE table contains detail about the source database and the process used to transform the data into the OMOP Common Data Model."
+        annotations:
+          cdm_schema: CDM
+      concept:
+        description: "The Standardized Vocabularies contains records, or Concepts, that uniquely identify each fundamental unit of meaning used to express clinical information in all domain tables of the CDM. Concepts are derived from vocabularies, which represent clinical information across a domain (e.g. conditions, drugs, procedures) through the use of codes and associated descriptions. Some Concepts are designated Standard Concepts, meaning these Concepts can be used as normative expressions of a clinical entity within the OMOP Common Data Model and standardized analytics. Each Standard Concept belongs to one Domain, which defines the location where the Concept would be expected to occur within the data tables of the CDM. Concepts can represent broad categories ('Cardiovascular disease'), detailed clinical elements ('Myocardial infarction of the anterolateral wall'), or modifying characteristics and attributes that define Concepts at various levels of detail (severity of a disease, associated morphology, etc.). Records in the Standardized Vocabularies tables are derived from national or international vocabularies such as SNOMED-CT, RxNorm, and LOINC, or custom OMOP Concepts defined to cover various aspects of observational data analysis."
+        annotations:
+          cdm_schema: VOCAB
+      vocabulary:
+        description: "The VOCABULARY table includes a list of the Vocabularies integrated from various sources or created de novo in OMOP CDM. This reference table contains a single record for each Vocabulary and includes a descriptive name and other associated attributes for the Vocabulary."
+        annotations:
+          cdm_schema: VOCAB
+      domain:
+        description: "The DOMAIN table includes a list of OMOP-defined Domains to which the Concepts of the Standardized Vocabularies can belong. A Domain represents a clinical definition whereby we assign matching Concepts for the standardized fields in the CDM tables. For example, the Condition Domain contains Concepts that describe a patient condition, and these Concepts can only be used in the condition_concept_id field of the CONDITION_OCCURRENCE and CONDITION_ERA tables. This reference table is populated with a single record for each Domain, including a Domain ID and a descriptive name for every Domain."
+        annotations:
+          cdm_schema: VOCAB
+      concept_class:
+        description: "The CONCEPT_CLASS table includes semantic categories that reference the source structure of each Vocabulary. Concept Classes represent so-called horizontal (e.g. MedDRA, RxNorm) or vertical levels (e.g. SNOMED) of the vocabulary structure. Vocabularies without any Concept Classes, such as HCPCS, use the vocabulary_id as the Concept Class. This reference table is populated with a single record for each Concept Class, which includes a Concept Class ID and a fully specified Concept Class name."
+        annotations:
+          cdm_schema: VOCAB
+      concept_relationship:
+        description: "The CONCEPT_RELATIONSHIP table contains records that define relationships between any two Concepts and the nature or type of the relationship. This table captures various types of relationships, including hierarchical, associative, and other semantic connections, enabling comprehensive analysis and interpretation of clinical concepts. Every kind of relationship is defined in the RELATIONSHIP table."
+        annotations:
+          cdm_schema: VOCAB
+      relationship:
+        description: "The RELATIONSHIP table provides a reference list of all types of relationships that can be used to associate any two Concepts in the CONCEPT_RELATIONSHIP table, the respective reverse relationships, and their hierarchical characteristics. Note, that Concepts representing relationships between the clinical facts, used for filling in the FACT_RELATIONSHIP table are stored in the CONCEPT table and belong to the Relationship Domain."
+        annotations:
+          cdm_schema: VOCAB
+      concept_synonym:
+        description: "The CONCEPT_SYNONYM table captures alternative terms, synonyms, and translations of Concept Name into various languages linked to specific concepts."
+        annotations:
+          cdm_schema: VOCAB
+      concept_ancestor:
+        description: "The CONCEPT_ANCESTOR table is designed to simplify observational analysis by providing the complete hierarchical relationships between Concepts. Only direct parent-child relationships between Concepts are stored in the CONCEPT_RELATIONSHIP table. To determine higher-level ancestry connections, all individual direct relationships would have to be navigated at analysis time. The CONCEPT_ANCESTOR table includes records for all parent-child relationships, as well as grandparent-grandchild relationships and those of any other level of lineage for Standard or Classification concepts. Using the CONCEPT_ANCESTOR table allows for querying for all descendants of a hierarchical concept, and the other way around. For example, drug ingredients and drug products, beneath them in the hierarchy, are all descendants of a drug class ancestor. This table is entirely derived from the CONCEPT, CONCEPT_RELATIONSHIP, and RELATIONSHIP tables."
+        annotations:
+          cdm_schema: VOCAB
+      source_to_concept_map:
+        description: "The source to concept map table is recommended for use in ETL processes to maintain local source codes which are not available as Concepts in the Standardized Vocabularies, and to establish mappings for each source code into a Standard Concept as target_concept_ids that can be used to populate the Common Data Model tables. The SOURCE_TO_CONCEPT_MAP table is no longer populated with content within the Standardized Vocabularies published to the OMOP community. **There are OHDSI tools to help you populate this table; [Usagi](https://github.com/OHDSI/Usagi) and [Perseus](https://github.com/ohdsi/Perseus). You can read more about OMOP vocabulary mapping in [The Book of OHDSI Chapter 6.3](https://ohdsi.github.io/TheBookOfOhdsi/ExtractTransformLoad.html#step-2-create-the-code-mappings).**"
+        annotations:
+          cdm_schema: VOCAB
+      drug_strength:
+        description: "The DRUG_STRENGTH table contains structured content about the amount or concentration and associated units of a specific ingredient contained within a particular drug product. This table is supplemental information to support standardized analysis of drug utilization."
+        annotations:
+          cdm_schema: VOCAB
+      cohort:
+        description: "The subject of a cohort can have multiple, discrete records in the cohort table per cohort_definition_id, subject_id, and non-overlapping time periods. The definition of the cohort is contained within the COHORT_DEFINITION table. It is listed as part of the RESULTS schema because it is a table that users of the database as well as tools such as ATLAS need to be able to write to. The CDM and Vocabulary tables are all read-only so it is suggested that the COHORT and COHORT_DEFINTION tables are kept in a separate schema to alleviate confusion."
+        annotations:
+          cdm_schema: RESULTS
+      cohort_definition:
+        description: "The COHORT_DEFINITION table contains records defining a Cohort derived from the data through the associated description and syntax and upon instantiation (execution of the algorithm) placed into the COHORT table. Cohorts are a set of subjects that satisfy a given combination of inclusion criteria for a duration of time. The COHORT_DEFINITION table provides a standardized structure for maintaining the rules governing the inclusion of a subject into a cohort, and can store operational programming code to instantiate the cohort within the OMOP Common Data Model."
+        annotations:
+          cdm_schema: RESULTS
+      # END generated by scripts/gen_enums.py omop-cdm54
+
+# ---------------------------------------------------------------------------
+# Classes
+# ---------------------------------------------------------------------------
+classes:
+
+  DataFile:
+    is_a: FileObject
+    abstract: true
+    description: >-
+      A data object of the batch, with subjects, sensitivity and provenance. Its class
+      determines its modality and how it is processed (see the class annotations).
+    slots:
+    - subjectIds
+    - recordCount
+    - identifier
+    - sensitivity
+    - processingHints
+    - wasDerivedFrom
+    slot_usage:
+      wasDerivedFrom:
+        description: "References to input files in this sidecar, such as the alignment used to call variants."
+
+  ProcessingHint:
+    class_uri: sc:PropertyValue
+    description: >-
+      An informational key-value pair for a pipeline. Any value used to make a pipeline
+      decision must be a defined schema field.
+    slots:
+    - type
+    - propertyID
+    - value
+    slot_usage:
+      type:
+        equals_string: sc:PropertyValue
+      propertyID:
+        required: true
+        pattern: "^[a-z][a-z0-9_]*:[A-Za-z][A-Za-z0-9_.]*$"
+        description: 'Namespaced key, "<namespace>:<key>", e.g. "fhir_to_omop:source_vocabulary".'
+      value:
+        required: true
+
+  # --- per-file sensitivity for classes that fix a flag ----------------------
+  # FileSensitivity (core.yaml) has every flag. A class that fixes a flag ("always"
+  # or "n/a") uses a variant without it, so a file cannot contradict its class.
+
+  BiometricFileSensitivity:
+    description: >-
+      Per-file sensitivity overrides for a biometric class (FacialImagingFile). It has
+      no containsBiometricIdentifiers flag: the class already says every file contains
+      biometric identifiers.
+    slots:
+    - containsDates
+    - containsZipCodes
+    - containsFreeText
+    - notes
+
+  DocumentFileSensitivity:
+    description: >-
+      Per-file sensitivity overrides for an unstructured document class
+      (ClinicalDocumentFile). It has no containsFreeText flag: the class already says
+      every file is free text.
+    slots:
+    - containsDates
+    - containsZipCodes
+    - containsBiometricIdentifiers
+    - notes
+
+  FixedSensitivity:
+    description: >-
+      Per-file sensitivity for a class whose format can carry none of the flagged
+      content (the genomics classes and IndexFile). Notes only.
+    slots:
+    - notes
+
+  # --- clinical -------------------------------------------------------------
+
+  FhirFile:
+    is_a: DataFile
+    broad_mappings:
+    - EDAM:data_3861
+    abstract: true
+    description: >-
+      Base class for FHIR JSON files. The FHIR version and the implementation guides the
+      resources follow, such as US Core, are declared once in the conformsTo of the file
+      set the file belongs to (its fileSetClass), not per file.
+
+  FhirBundleFile:
+    is_a: FhirFile
+    description: One FHIR Bundle JSON document, in a FhirBundleCollection.
+    annotations:
+      structure: structured
+      modality: clinical_fhir
+      fileSetClass: FhirBundleCollection
+      embedsFiles: "true"
+    slots:
+    - bundleType
+    slot_usage:
+      encodingFormat:
+        range: string  # equals_string needs a string range; the fixed value is a valid MediaType
+        equals_string: application/fhir+json
+      bundleType:
+        required: true
+      subjectIds:
+        required: true
+
+  FhirSingleTypeFile:
+    is_a: FhirFile
+    abstract: true
+    description: >-
+      Base class for FHIR files that hold one resource type.
+    slots:
+    - resourceType
+    slot_usage:
+      resourceType:
+        required: true
+
+  FhirResourceFile:
+    is_a: FhirSingleTypeFile
+    description: One FHIR resource JSON document that is not a Bundle, in a FhirResourceCollection.
+    annotations:
+      structure: structured
+      modality: clinical_fhir
+      fileSetClass: FhirResourceCollection
+      embedsFiles: "true"
+    slot_usage:
+      encodingFormat:
+        range: string  # equals_string needs a string range; the fixed value is a valid MediaType
+        equals_string: application/fhir+json
+      resourceType:
+        none_of:
+        - equals_string: Bundle
+        description: The resource type. A Bundle goes in a FhirBundleFile instead.
+
+  FhirNdjsonFile:
+    is_a: FhirSingleTypeFile
+    description: FHIR Bulk Data NDJSON, one resource type per file, in a FhirBulkExport.
+    annotations:
+      structure: structured
+      modality: clinical_fhir
+      fileSetClass: FhirBulkExport
+      embedsFiles: "true"
+    slot_usage:
+      encodingFormat:
+        range: string  # equals_string needs a string range; the fixed value is a valid MediaType
+        equals_string: application/fhir+ndjson
+
+  OmopTableFile:
+    is_a: DataFile
+    broad_mappings:
+    - EDAM:data_3861
+    description: >-
+      One OMOP CDM table, in an OmopCdmInstance. The instance's conformsTo gives the
+      CDM version, and the RDDC validator checks that cdmTable exists in that version.
+      CDM tables have no column for images or recordings, so a file contains no
+      biometric identifiers unless it says so.
+    annotations:
+      structure: structured
+      modality: clinical_omop
+      fileSetClass: OmopCdmInstance
+      containsBiometricIdentifiers: "false"
+    slots:
+    - cdmTable
+    slot_usage:
+      encodingFormat:
+        any_of:
+        - equals_string: text/csv
+        - equals_string: text/tab-separated-values
+        - equals_string: application/vnd.apache.parquet
+      cdmTable:
+        required: true
+
+  CcdaDocumentFile:
+    is_a: DataFile
+    broad_mappings:
+    - EDAM:data_3861
+    description: >-
+      One HL7 C-CDA document, in a CcdaDocumentSet. Its template IDs are in the document
+      header and its C-CDA release is in the conformsTo of the set, so neither is
+      repeated per file.
+    annotations:
+      structure: structured
+      modality: clinical_ccda
+      fileSetClass: CcdaDocumentSet
+      embedsFiles: "true"
+    slot_usage:
+      encodingFormat:
+        any_of:
+        - equals_string: application/xml
+        - equals_string: text/xml
+      subjectIds:
+        required: true
+
+  TabularFile:
+    is_a: DataFile
+    broad_mappings:
+    - EDAM:data_3861
+    description: >-
+      A clinical table that is not OMOP or FHIR, such as registry, patient-reported
+      outcome, claims or mortality data. Consent tables go in a ConsentFile, intake form
+      responses in an IntakeFormFile, sensor data in a SensorMeasureFile, and tables
+      that describe other files in a DocumentationFile.
+      Its name and contentUrl identify the table; record sets describe its columns and
+      joins to other tables.
+    annotations:
+      structure: structured
+      modality: clinical_tabular
+    slot_usage:
+      encodingFormat:
+        any_of:
+        - equals_string: text/csv
+        - equals_string: text/tab-separated-values
+        - equals_string: application/vnd.apache.parquet
+        - equals_string: application/json
+        - equals_string: application/jsonlines
+
+  ConsentFile:
+    is_a: DataFile
+    description: >-
+      Permitted data uses for each listed subject. The platform applies them to access
+      decisions rather than processing them as clinical data. A consent elements table
+      holds coded uses and dates, so postal codes, free text and biometric identifiers
+      are absent unless the file says otherwise.
+    annotations:
+      structure: structured
+      modality: consent
+      containsZipCodes: "false"
+      containsFreeText: "false"
+      containsBiometricIdentifiers: "false"
+    slot_usage:
+      encodingFormat:
+        any_of:
+        - equals_string: text/csv
+        - equals_string: text/tab-separated-values
+        - equals_string: application/json
+        - equals_string: application/jsonlines
+      subjectIds:
+        required: true
+
+  IntakeFormFile:
+    is_a: DataFile
+    close_mappings:
+    - fhir:QuestionnaireResponse
+    description: >-
+      Responses to a patient intake form, exported as a table, such as from REDCap or a
+      clinic portal: one row per completed form, or one per answer. Its columns are the
+      form's questions and its values are coded answers, so it is read with the form's
+      definition, named in formDefinition, rather than as a generic table. Intake forms
+      in FHIR form, QuestionnaireResponse resources, go in a FHIR file, and scanned
+      paper forms in a ClinicalDocumentFile. Free-text answers make the file contain
+      free text (containsFreeText). A table of coded answers holds no biometric
+      identifiers unless the file says so.
+    annotations:
+      structure: structured
+      modality: intake_form
+      containsBiometricIdentifiers: "false"
+    slots:
+    - formDefinition
+    - formVersion
+    slot_usage:
+      encodingFormat:
+        any_of:
+        - equals_string: text/csv
+        - equals_string: text/tab-separated-values
+        - equals_string: application/vnd.apache.parquet
+        - equals_string: application/json
+        - equals_string: application/jsonlines
+      formDefinition:
+        required: true
+      subjectIds:
+        required: true
+
+  GeneticTestResultFile:
+    is_a: DataFile
+    close_mappings:
+    - fhir:DiagnosticReport
+    description: >-
+      Results of clinical genetic tests or molecular pathology, exported as records: for
+      each test, its name, method, date and status, and its findings, such as genes,
+      variants in HGVS notation, zygosity and classification (for example ACMG/AMP), with
+      the laboratory's interpretation as text. The interpretation makes the file
+      contain free text (containsFreeText). Report documents (PDFs) go in
+      ClinicalDocumentFiles that reportDocuments points to; sequencing data and variant
+      calls go in the genomics classes. A report lists few variants, not a genome, so
+      the class is not identifying, although a rare variant can single a person out
+      within a small cohort. Results records hold no address or image, so postal codes
+      and biometric identifiers are absent unless the file says otherwise.
+    annotations:
+      structure: structured
+      modality: genetic_testing
+      containsZipCodes: "false"
+      containsBiometricIdentifiers: "false"
+    slots:
+    - referenceGenome
+    - reportDocuments
+    slot_usage:
+      encodingFormat:
+        any_of:
+        - equals_string: text/csv
+        - equals_string: text/tab-separated-values
+        - equals_string: application/vnd.apache.parquet
+        - equals_string: application/json
+        - equals_string: application/jsonlines
+        - equals_string: application/xml
+        - equals_string: text/xml
+      referenceGenome:
+        description: >-
+          Reference assembly of the genomic coordinates in the results, when they have
+          any. Variants given only in transcript HGVS notation need none.
+      subjectIds:
+        required: true
+
+  DifferentialDiagnosisFile:
+    is_a: DataFile
+    close_mappings:
+    - fhir:RiskAssessment
+    description: >-
+      Candidate diagnoses ranked by a diagnosis support tool, such as a facial
+      phenotyping or phenotype-matching tool, or by another method: for each subject, the top candidates with
+      their rank, score and code. The candidates are suggestions, not diagnoses, so they
+      are kept apart from confirmed conditions; in FHIR they are Conditions with
+      verificationStatus "differential". A tool's export is structured; a report in PDF
+      is unstructured and needs text extraction. wasDerivedFrom points to the files in
+      the sidecar the tool analysed, such as facial images. Candidates hold no address
+      or image, so postal codes and biometric identifiers are absent unless the file
+      says otherwise.
+    annotations:
+      structure: mixed
+      modality: diagnosis_support
+      containsZipCodes: "false"
+      containsBiometricIdentifiers: "false"
+    slots:
+    - software
+    - softwareVersion
+    - diagnosisCodeSystems
+    slot_usage:
+      encodingFormat:
+        any_of:
+        - equals_string: text/csv
+        - equals_string: text/tab-separated-values
+        - equals_string: application/json
+        - equals_string: application/jsonlines
+        - equals_string: application/pdf
+      subjectIds:
+        required: true
+
+  ClinicalDocumentFile:
+    is_a: DataFile
+    broad_mappings:
+    - EDAM:data_3861
+    description: >-
+      An unstructured clinical document, such as a note, a scanned report or a genetic
+      test report. A scan is a PDF or an image (TIFF, JPEG or PNG). The whole document
+      is free text, so every file counts as containing free text and cannot set
+      containsFreeText.
+    annotations:
+      structure: unstructured
+      modality: clinical_text
+      containsFreeText: always
+    slots:
+    - documentType
+    slot_usage:
+      encodingFormat:
+        any_of:
+        - equals_string: text/plain
+        - equals_string: application/pdf
+        - equals_string: application/rtf
+        - equals_string: image/tiff
+        - equals_string: image/jpeg
+        - equals_string: image/png
+      subjectIds:
+        required: true
+      sensitivity:
+        range: DocumentFileSensitivity
+        description: >-
+          Per-file sensitivity overrides. containsFreeText is left out: the class
+          already says the file is free text.
+
+  DocumentationFile:
+    is_a: DataFile
+    broad_mappings:
+    - EDAM:data_2337
+    description: >-
+      A file that documents other files, such as a data dictionary, the codebook of an
+      intake form, or a README. When it documents particular files or record sets,
+      about points to them; a README for the whole batch leaves about out.
+      Documentation describes the data and holds no
+      subject-level content, so every flag is false unless the file says otherwise.
+    annotations:
+      structure: mixed
+      modality: metadata
+      containsDates: "false"
+      containsZipCodes: "false"
+      containsFreeText: "false"
+      containsBiometricIdentifiers: "false"
+    slots:
+    - about
+
+  # --- omics ----------------------------------------------------------------
+  # The format is the class: FASTQ, BAM, CRAM, VCF and BCF have no registered media
+  # type, and the pipelines differ by format.
+
+  GenomicsFile:
+    is_a: DataFile
+    abstract: true
+    description: >-
+      Base class for genomic sequencing data. For reads and alignments the class names
+      the format and maps to its EDAM format term; for variant calls the media type and
+      compression do. encodingFormat names only the container for formats with no
+      registered media type: text/plain for text formats (FASTQ, VCF) and
+      application/octet-stream for binary ones (BAM, CRAM, BCF). A gzip or
+      BGZF-compressed text file (.fastq.gz, .vcf.gz) says so in compression. BAM, CRAM
+      and BCF compress internally as part of the format, so they leave compression
+      unset. The formats hold sequence data, run metadata and expression values, not
+      subject-level dates, addresses, narrative or biometric identifiers, so the
+      sensitivity flags do not apply: what identifies the person, where the class
+      says so, is the sequence itself (the identifying annotation).
+    slots:
+    - measurementTechnique
+    - sequencingPlatform
+    - platform
+    slot_usage:
+      measurementTechnique:
+        required: true
+        range: GenomicsAssayEnum
+        description: >-
+          The sequencing assay that produced the data, e.g. wgs or wes. Downstream
+          analysis depends on it, so every genomics file states it.
+      sequencingPlatform:
+        required: true
+      platform:
+        description: The sequencing instrument model, e.g. "Illumina NovaSeq X".
+      sensitivity:
+        range: FixedSensitivity
+        description: Notes only. The class fixes every sensitivity flag.
+
+  SequenceReadsFile:
+    is_a: GenomicsFile
+    close_mappings:
+    - EDAM:data_2977
+    abstract: true
+    description: >-
+      Base class for sequencing reads before alignment: a FastqFile or an
+      UnalignedBamFile. Paired-end files reference each other through pairedWith.
+    annotations:
+      identifying: "true"
+    slots:
+    - pairedWith
+
+  FastqFile:
+    is_a: SequenceReadsFile
+    close_mappings:
+    - EDAM:format_1930
+    description: >-
+      Sequencing reads in FASTQ, usually gzip or BGZF-compressed (.fastq.gz).
+    annotations:
+      structure: structured
+      modality: genomics
+      rai:dataCollectionType: Direct measurement
+      identifying: "true"
+      containsDates: n/a
+      containsZipCodes: n/a
+      containsFreeText: n/a
+      containsBiometricIdentifiers: n/a
+    slot_usage:
+      encodingFormat:
+        range: string  # equals_string needs a string range; the fixed value is a valid MediaType
+        equals_string: text/plain
+      compression:
+        any_of:
+        - equals_string: gzip
+        - equals_string: bgzf
+
+  UnalignedBamFile:
+    is_a: SequenceReadsFile
+    close_mappings:
+    - EDAM:format_2572
+    description: >-
+      Sequencing reads in an unaligned BAM (uBAM), such as the output of a PacBio or
+      Oxford Nanopore basecaller.
+    annotations:
+      structure: structured
+      modality: genomics
+      rai:dataCollectionType: Direct measurement
+      identifying: "true"
+      containsDates: n/a
+      containsZipCodes: n/a
+      containsFreeText: n/a
+      containsBiometricIdentifiers: n/a
+    slot_usage:
+      encodingFormat:
+        range: string  # equals_string needs a string range; the fixed value is a valid MediaType
+        equals_string: application/octet-stream
+
+  AlignmentFile:
+    is_a: GenomicsFile
+    close_mappings:
+    - EDAM:data_1383
+    abstract: true
+    description: >-
+      Base class for aligned reads: a BamFile or a CramFile. SAM, the text form, is
+      not accepted; convert it to BAM.
+    annotations:
+      identifying: "true"
+    slots:
+    - referenceGenome
+    slot_usage:
+      referenceGenome:
+        required: true
+
+  BamFile:
+    is_a: AlignmentFile
+    close_mappings:
+    - EDAM:format_2572
+    description: Aligned reads in BAM. Its index (.bai) is an IndexFile.
+    annotations:
+      structure: structured
+      modality: genomics
+      rai:dataCollectionType: Direct measurement
+      identifying: "true"
+      containsDates: n/a
+      containsZipCodes: n/a
+      containsFreeText: n/a
+      containsBiometricIdentifiers: n/a
+    slot_usage:
+      encodingFormat:
+        range: string  # equals_string needs a string range; the fixed value is a valid MediaType
+        equals_string: application/octet-stream
+
+  CramFile:
+    is_a: AlignmentFile
+    close_mappings:
+    - EDAM:format_3462
+    description: >-
+      Aligned reads in CRAM, which needs the assembly named in referenceGenome to be
+      read. Its index (.crai) is an IndexFile.
+    annotations:
+      structure: structured
+      modality: genomics
+      rai:dataCollectionType: Direct measurement
+      identifying: "true"
+      containsDates: n/a
+      containsZipCodes: n/a
+      containsFreeText: n/a
+      containsBiometricIdentifiers: n/a
+    slot_usage:
+      encodingFormat:
+        range: string  # equals_string needs a string range; the fixed value is a valid MediaType
+        equals_string: application/octet-stream
+
+  VariantFile:
+    is_a: GenomicsFile
+    close_mappings:
+    - EDAM:data_3498
+    abstract: true
+    description: >-
+      Base class for variant calls. Germline variants identify a person and somatic
+      variants alone do not, so a file goes in GermlineVariantFile or
+      SomaticVariantFile depending on which it can contain. The format is told by the
+      media type and compression, not the class: a VCF is text/plain and, when it has a
+      tabix or CSI index (an IndexFile), BGZF-compressed (compression bgzf; a plain
+      gzipped VCF sets gzip); a BCF is application/octet-stream; a MAF, a tab-separated
+      table, is text/tab-separated-values.
+    slots:
+    - referenceGenome
+    slot_usage:
+      referenceGenome:
+        required: true
+      encodingFormat:
+        any_of:
+        - equals_string: text/plain
+        - equals_string: application/octet-stream
+        - equals_string: text/tab-separated-values
+        description: text/plain for VCF, application/octet-stream for BCF, text/tab-separated-values for MAF.
+      compression:
+        any_of:
+        - equals_string: gzip
+        - equals_string: bgzf
+
+  GermlineVariantFile:
+    is_a: VariantFile
+    description: >-
+      Variant calls that contain or may contain germline variants: germline calls, joint
+      genotypes, and somatic calls that still include germline variants, such as
+      unfiltered tumor-only calls. Germline variants identify a person.
+    annotations:
+      structure: structured
+      modality: genomics
+      rai:dataCollectionType: Direct measurement
+      identifying: "true"
+      containsDates: n/a
+      containsZipCodes: n/a
+      containsFreeText: n/a
+      containsBiometricIdentifiers: n/a
+
+  SomaticVariantFile:
+    is_a: VariantFile
+    description: >-
+      Somatic variant calls from tumor or other somatic tissue with germline variants
+      removed, typically by calling against a matched normal sample and filtering
+      against population variant databases, as in the GDC's masked somatic mutation
+      files. Calls that may still include germline variants go in a GermlineVariantFile.
+    annotations:
+      structure: structured
+      modality: genomics
+      rai:dataCollectionType: Direct measurement
+      containsDates: n/a
+      containsZipCodes: n/a
+      containsFreeText: n/a
+      containsBiometricIdentifiers: n/a
+
+  GeneExpressionFile:
+    is_a: GenomicsFile
+    broad_mappings:
+    - EDAM:data_2603
+    close_mappings:
+    - EDAM:data_3917
+    description: >-
+      Gene or transcript expression quantified from RNA-seq, such as a matrix of counts
+      or TPM per gene and sample. It holds no sequence, so it is not identifying the way
+      the reads and alignments it came from are. Expression values can still be linked
+      to a person's genotype through expression quantitative trait loci (eQTLs), so
+      the file is still personal data.
+    annotations:
+      structure: structured
+      modality: genomics
+      rai:dataCollectionType: Direct measurement
+      containsDates: n/a
+      containsZipCodes: n/a
+      containsFreeText: n/a
+      containsBiometricIdentifiers: n/a
+    slot_usage:
+      measurementTechnique:
+        any_of:
+        - equals_string: rna_seq
+        - equals_string: other
+        description: The assay the expression was quantified from, rna_seq or other.
+      encodingFormat:
+        any_of:
+        - equals_string: text/csv
+        - equals_string: text/tab-separated-values
+        - equals_string: application/vnd.apache.parquet
+        - equals_string: application/octet-stream
+        description: >-
+          Media type of the matrix. Formats with no registered media type, such as
+          AnnData (.h5ad), are application/octet-stream.
+
+  IndexFile:
+    is_a: DataFile
+    broad_mappings:
+    - EDAM:data_0955
+    description: >-
+      An index of another file in the sidecar. The index format follows the indexed
+      file: .bai for a BamFile, .crai for a CramFile, .tbi or .csi for a VCF and .csi
+      for a BCF (a variant file). Indexes are binary, so encodingFormat is
+      application/octet-stream, and they hold offsets, not content, so the sensitivity
+      flags do not apply.
+    annotations:
+      structure: structured
+      modality: genomics
+      containsDates: n/a
+      containsZipCodes: n/a
+      containsFreeText: n/a
+      containsBiometricIdentifiers: n/a
+    slots:
+    - indexOf
+    slot_usage:
+      encodingFormat:
+        range: string  # equals_string needs a string range; the fixed value is a valid MediaType
+        equals_string: application/octet-stream
+      indexOf:
+        required: true
+      sensitivity:
+        range: FixedSensitivity
+        description: Notes only. The class fixes every sensitivity flag.
+
+  # --- images, recordings and other files -----------------------------------
+
+  ImagingFile:
+    is_a: DataFile
+    close_mappings:
+    - EDAM:data_3424
+    abstract: true
+    description: >-
+      Base class for medical and clinical images other than facial images: a
+      DicomImageFile or, for other formats, an ImageFile. A photograph or 3D model of a
+      person's face goes in a FacialImagingFile, which is not a subclass of this one:
+      rules for images must not apply to it.
+    slots:
+    - measurementTechnique
+    slot_usage:
+      measurementTechnique:
+        required: true
+        range: ImagingAssayEnum
+        description: >-
+          The imaging technique that produced the image, e.g. ct, mri or photography.
+          Analysis depends on it, so every image states it.
+
+  DicomImageFile:
+    is_a: ImagingFile
+    close_mappings:
+    - EDAM:format_3548
+    description: >-
+      A DICOM image or series, such as a CT or MRI. DICOM headers carry study dates,
+      patient details and comments, and images can carry burned-in text, so the
+      sensitivity flags apply as the batch declares them.
+    annotations:
+      structure: unstructured
+      modality: imaging
+      rai:dataCollectionType: Direct measurement
+    slot_usage:
+      encodingFormat:
+        range: string  # equals_string needs a string range; the fixed value is a valid MediaType
+        equals_string: application/dicom
+
+  ImageFile:
+    is_a: ImagingFile
+    close_mappings:
+    - EDAM:format_3591
+    - EDAM:format_3727
+    - EDAM:format_3603
+    - EDAM:format_3579
+    - EDAM:format_4001
+    description: >-
+      An image in a format other than DICOM: TIFF or OME-TIFF, PNG, JPEG, JPEG 2000, or
+      a whole-slide, microscopy or NIfTI volume format with no registered media type
+      (application/octet-stream). These formats have no field for an address, so a
+      file contains no postal codes unless it says so; burned-in text counts as free
+      text.
+    annotations:
+      structure: unstructured
+      modality: imaging
+      rai:dataCollectionType: Direct measurement
+      containsZipCodes: "false"
+    slot_usage:
+      encodingFormat:
+        any_of:
+        - equals_string: image/tiff
+        - equals_string: image/png
+        - equals_string: image/jpeg
+        - equals_string: image/jp2
+        - equals_string: application/octet-stream
+        description: >-
+          Media type of the image. Whole-slide (SVS, NDPI, CZI) and NIfTI files have no
+          registered media type, so they are application/octet-stream.
+
+  FacialImagingFile:
+    is_a: DataFile
+    broad_mappings:
+    - EDAM:data_3424
+    description: >-
+      An image or 3D surface model of a person's face, such as those taken for
+      dysmorphology assessment or facial phenotyping. measurementTechnique says how it
+      was captured: a photograph, a 3D surface scan, or a CT or MRI. A face is a
+      biometric identifier, so the file always counts as containing biometric
+      identifiers. Not a subclass of ImagingFile: facial images are processed by their
+      own tools and never leave INTAKE.
+    annotations:
+      structure: unstructured
+      modality: imaging
+      rai:dataCollectionType: Direct measurement
+      biometric: "true"
+    slots:
+    - measurementTechnique
+    slot_usage:
+      measurementTechnique:
+        required: true
+        range: ImagingAssayEnum
+        any_of:
+        - equals_string: photography
+        - equals_string: surface_scan_3d
+        - equals_string: ct
+        - equals_string: mri
+        - equals_string: other
+        description: >-
+          How the face was captured. Processing differs: 2D photographs and 3D surface
+          models go to different facial analysis tools.
+      sensitivity:
+        range: BiometricFileSensitivity
+        description: >-
+          Per-file sensitivity overrides. containsBiometricIdentifiers is left out: the
+          class already says the file contains biometric identifiers.
+      encodingFormat:
+        any_of:
+        - equals_string: image/jpeg
+        - equals_string: image/png
+        - equals_string: image/tiff
+        - equals_string: image/heic
+        - equals_string: application/dicom
+        - equals_string: model/obj
+        - equals_string: model/stl
+        - equals_string: model/gltf-binary
+        - equals_string: model/gltf+json
+        - equals_string: model/mtl
+        - equals_string: application/octet-stream
+        description: >-
+          Media type of the image or 3D model. An OBJ model's material file is model/mtl.
+          PLY has no registered media type, so a PLY model is application/octet-stream.
+      subjectIds:
+        required: true
+
+  AudioFile:
+    is_a: DataFile
+    description: >-
+      An audio recording. A recording of a person's voice contains biometric
+      identifiers, so set sensitivity.containsBiometricIdentifiers to true. Audio
+      formats have no field for an address, so a file contains no postal codes unless
+      it says so; speech counts as free text.
+    annotations:
+      structure: unstructured
+      modality: audio
+      containsZipCodes: "false"
+    slot_usage:
+      encodingFormat:
+        pattern: "^audio/[A-Za-z0-9.+_-]+$"
+        description: An audio media type, such as audio/wav or audio/mpeg.
+
+  VideoFile:
+    is_a: DataFile
+    description: >-
+      A video recording. A recording containing a person's face or voice contains
+      biometric identifiers, so set sensitivity.containsBiometricIdentifiers to true.
+      Video formats have no field for an address, so a file contains no postal codes
+      unless it says so; speech and on-screen text count as free text.
+    annotations:
+      structure: unstructured
+      modality: video
+      containsZipCodes: "false"
+    slot_usage:
+      encodingFormat:
+        pattern: "^video/[A-Za-z0-9.+_-]+$"
+        description: A video media type, such as video/mp4.
+
+  # --- sensor data ----------------------------------------------------------
+  # A raw signal's format is its class, since the readers differ by format.
+
+  SensorDataFile:
+    is_a: DataFile
+    abstract: true
+    description: >-
+      Base class for data recorded by a wearable or other sensor device. A raw signal
+      goes in one of the SensorSignalFile classes and measures derived from it in a
+      SensorMeasureFile, since they need different processing. Sensor data already in
+      FHIR form, such as device Observations, goes in a FHIR file instead. Sensor data
+      carries timestamps, which count as dates; it is not a biometric identifier under
+      HIPAA Safe Harbor, and its formats have no field for an address.
+    slots:
+    - measurementTechnique
+    - platform
+    slot_usage:
+      measurementTechnique:
+        required: true
+        multivalued: true
+        minimum_cardinality: 1
+        range: SensorAssayEnum
+        description: >-
+          The sensing techniques that produced the data, e.g. accelerometry or ecg. A list,
+          since one recording or summary can combine several, such as a sleep study's EEG
+          and ECG channels.
+      platform:
+        description: The device that recorded the data, e.g. "ActiGraph GT9X".
+
+  SensorSignalFile:
+    is_a: SensorDataFile
+    abstract: true
+    description: >-
+      Base class for a raw sensor signal, such as 100 Hz accelerometry or an ECG
+      waveform, before any aggregation. The class names the format: EdfSignalFile,
+      WfdbSignalFile, DicomWaveformFile or, for a device maker's own format,
+      VendorSignalFile.
+    slots:
+    - samplingRate
+
+  EdfSignalFile:
+    is_a: SensorSignalFile
+    description: >-
+      A signal in EDF or EDF+ (European Data Format), the usual format for
+      polysomnography and EEG. Its header has fields for the patient's identification
+      and the recording start date, and EDF+ annotation channels hold free text, so
+      those flags apply as the batch declares them. EDF has no registered media type,
+      so it is application/octet-stream.
+    annotations:
+      structure: structured
+      modality: sensor
+      rai:dataCollectionType: Direct measurement
+      containsZipCodes: "false"
+      containsBiometricIdentifiers: "false"
+    slot_usage:
+      encodingFormat:
+        range: string  # equals_string needs a string range; the fixed value is a valid MediaType
+        equals_string: application/octet-stream
+
+  WfdbSignalFile:
+    is_a: SensorSignalFile
+    description: >-
+      One file of a WFDB (PhysioNet WaveForm DataBase) record: the header (.hea,
+      text/plain) or a signal file (.dat, application/octet-stream). The files of one
+      record are kept together in a file set, and the header names the signal files.
+      Header comments can hold free text.
+    annotations:
+      structure: structured
+      modality: sensor
+      rai:dataCollectionType: Direct measurement
+      containsZipCodes: "false"
+      containsBiometricIdentifiers: "false"
+    slot_usage:
+      encodingFormat:
+        any_of:
+        - equals_string: text/plain
+        - equals_string: application/octet-stream
+
+  DicomWaveformFile:
+    is_a: SensorSignalFile
+    close_mappings:
+    - EDAM:format_3548
+    description: >-
+      A DICOM waveform object, such as a 12-lead ECG. Its headers carry the same
+      patient details as a DICOM image, including an address, so every flag except
+      biometric identifiers applies as the batch declares it.
+    annotations:
+      structure: structured
+      modality: sensor
+      rai:dataCollectionType: Direct measurement
+      containsBiometricIdentifiers: "false"
+    slot_usage:
+      encodingFormat:
+        range: string  # equals_string needs a string range; the fixed value is a valid MediaType
+        equals_string: application/dicom
+
+  VendorSignalFile:
+    is_a: SensorSignalFile
+    description: >-
+      A signal in a device maker's own format, such as ActiGraph .gt3x or Garmin FIT.
+      platform, the device, is required, since it decides how the file is read. Such
+      formats have no registered media type, so the file is application/octet-stream.
+    annotations:
+      structure: structured
+      modality: sensor
+      rai:dataCollectionType: Direct measurement
+      containsZipCodes: "false"
+      containsBiometricIdentifiers: "false"
+    slot_usage:
+      platform:
+        required: true
+      encodingFormat:
+        range: string  # equals_string needs a string range; the fixed value is a valid MediaType
+        equals_string: application/octet-stream
+
+  SensorMeasureFile:
+    is_a: SensorDataFile
+    description: >-
+      Measures derived from sensor data, such as per-minute step counts, sleep stages or
+      daily heart rate summaries, as a table or JSON. IEEE 1752.1 (Open mHealth) defines
+      JSON schemas for sleep and physical activity measures. Measures are structured
+      values with timestamps, so a file contains no free text unless it says so.
+    annotations:
+      structure: structured
+      modality: sensor
+      rai:dataCollectionType: Direct measurement
+      containsZipCodes: "false"
+      containsFreeText: "false"
+      containsBiometricIdentifiers: "false"
+    slot_usage:
+      encodingFormat:
+        any_of:
+        - equals_string: text/csv
+        - equals_string: text/tab-separated-values
+        - equals_string: application/vnd.apache.parquet
+        - equals_string: application/json
+        - equals_string: application/jsonlines
+
+  GenericFile:
+    is_a: DataFile
+    description: >-
+      Any other data file. GenericFile is strongly discouraged. A dedicated data
+      class is required; using GenericFile triggers lengthy manual review.
+    annotations:
+      structure: mixed
+      modality: other
+
+# ---------------------------------------------------------------------------
+# Slots
+# ---------------------------------------------------------------------------
+slots:
+
+  # --- all data files (DataFile) --------------------------------------------
+  recordCount:
+    description: Rows, resources or documents in the file, when counted.
+    range: integer
+    minimum_value: 0
+  processingHints:
+    description: "Informational key-value pairs for downstream pipelines."
+    range: ProcessingHint
+    multivalued: true
+    inlined_as_list: true
+
+  # --- FHIR (FhirFile and its subclasses) -----------------------------------
+  # resourceType: single-type files (FhirResourceFile, FhirNdjsonFile).
+  resourceType:
+    description: FHIR resource type of the resources in the file, e.g. Patient.
+    range: FhirResourceTypeEnum
+  # bundleType: FhirBundleFile.
+  bundleType:
+    description: "The FHIR Bundle.type of the bundle in the file."
+    range: FhirBundleTypeEnum
+
+  # --- OMOP (OmopTableFile) -------------------------------------------------
+  cdmTable:
+    description: >-
+      OMOP CDM table in the file, e.g. person. It must exist in the CDM version the
+      file's OmopCdmInstance declares in conformsTo.
+    range: OmopCdmTableEnum
+
+  # --- intake forms (IntakeFormFile) ----------------------------------------
+  formDefinition:
+    range: NodeRef
+    inlined: true
+    description: >-
+      The definition of the form the responses answer: its questions, answer codes and
+      skip logic. Either the @id of a DocumentationFile in this sidecar that holds it,
+      such as a REDCap data dictionary, or the canonical URL or CURIE of a published
+      definition, such as a FHIR Questionnaire or a LOINC panel.
+  formVersion:
+    description: >-
+      The version of the form the responses answer, as the form's owner numbers it.
+      Answer codes can change between versions.
+
+  # --- clinical documents (ClinicalDocumentFile) ----------------------------
+  documentType:
+    range: DocumentTypeEnum
+    description: >-
+      The kind of document, e.g. progress_note or referral_note, when the source
+      records it. Text processing and the OMOP note class depend on it. A file holds
+      documents of one kind; documents of several kinds go in separate files, or leave
+      documentType out.
+
+  # --- genetic test results (GeneticTestResultFile) --------------------------
+  reportDocuments:
+    range: NodeRef
+    multivalued: true
+    inlined_as_list: true
+    minimum_cardinality: 1
+    description: >-
+      The report documents of the results, ClinicalDocumentFiles in this sidecar, such
+      as the laboratory's signed PDF reports.
+
+  # --- diagnosis support (DifferentialDiagnosisFile) -------------------------
+  software:
+    description: >-
+      The tool that produced the candidates, e.g. "Face2Gene" or "Exomiser", when they
+      come from a known tool. The ranking depends on the tool.
+  softwareVersion:
+    slot_uri: sc:softwareVersion
+    description: The version of the tool, or of its model, that produced the candidates.
+  diagnosisCodeSystems:
+    range: DiagnosisCodeSystemEnum
+    multivalued: true
+    minimum_cardinality: 1
+    description: >-
+      The code systems the candidate diagnoses are coded in, e.g. orphanet and omim,
+      when they are coded. A list, since tools often give several codes per candidate.
+
+  # --- documentation (DocumentationFile) ------------------------------------
+  about:
+    slot_uri: sc:about
+    range: NodeRef
+    multivalued: true
+    inlined_as_list: true
+    minimum_cardinality: 1
+    description: The files or record sets this file documents.
+
+  # --- assays and instruments -----------------------------------------------
+  # measurementTechnique: GenomicsFile, ImagingFile, FacialImagingFile,
+  # SensorDataFile and their subclasses.
+  measurementTechnique:
+    slot_uri: sc:measurementTechnique
+    description: >-
+      The assay or technique that produced the data, schema.org's measurementTechnique.
+      Each class that uses it sets the allowed values, from an enum whose values map to
+      ontology terms.
+  # sequencingPlatform: GenomicsFile and its subclasses.
+  sequencingPlatform:
+    range: SequencingPlatformEnum
+    description: >-
+      The sequencing technology that produced the data, e.g. illumina or
+      oxford_nanopore. It tells short reads from long reads, which need different
+      processing.
+  # platform: GenomicsFile, SensorDataFile and their subclasses.
+  platform:
+    description: "The instrument, sequencing platform or device that produced the data."
+
+  # --- sensor data (SensorSignalFile and its subclasses) ---------------------
+  samplingRate:
+    slot_uri: cr:samplingRate
+    description: >-
+      Samples per second of the recorded signal, in hertz. When channels differ, the
+      highest rate. Croissant's term, which Croissant sets on audio fields.
+    range: float
+    minimum_value: 0
+
+  # --- genomics (GenomicsFile and its subclasses, IndexFile) ----------------
+  # referenceGenome: aligned or called data (AlignmentFile, VariantFile).
+  referenceGenome:
+    description: Reference assembly the coordinates refer to, e.g. GRCh38.
+    range: ReferenceGenomeEnum
+  # pairedWith: SequenceReadsFile.
+  pairedWith:
+    description: The mate file of paired-end reads.
+    range: NodeRef
+    inlined: true
+  # indexOf: IndexFile.
+  indexOf:
+    description: The file this file indexes.
+    range: NodeRef
+    inlined: true
