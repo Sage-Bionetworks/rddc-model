@@ -20,8 +20,9 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install LinkML
-        run: pip install "linkml==1.11.1"
+      - name: Install LinkML and mlcroissant
+        # mlcroissant 1.1.1 is the version schema/croissant-1.1-context.json is vendored from.
+        run: pip install "linkml==1.11.1" "mlcroissant==1.1.1"
 
       - name: Collect schema files
         id: files
@@ -69,6 +70,12 @@ jobs:
           make schema
           # The metamodel version line depends on the installed linkml-runtime.
           git diff --exit-code -I '"metamodel_version"' -- schema/generated examples
+
+      - name: Check the example sidecars and source descriptor against the schemas, and as Croissant
+        run: |
+          # check_examples.py skips the Croissant half when mlcroissant is missing; fail instead.
+          python -c "import mlcroissant"
+          python scripts/check_examples.py
 
       - name: Publish the generated schemas as a workflow artifact
         uses: actions/upload-artifact@v4
