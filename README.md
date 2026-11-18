@@ -16,3 +16,7 @@ LinkML data model for the Rare Disease Data Commons (RDDC).
 | `scripts/gen_enums.py` | Regenerates the versioned FHIR resource type and OMOP table enums from HL7 and OHDSI sources (`make enums`) |
 
 Run `make lint` to lint the schemas with `.linkml-lint.yaml` and check the class annotations, `make check` to validate the example data file objects, and `make schema` to regenerate the published JSON Schema and SHACL shapes. CI publishes both as a workflow artifact on every run and attaches them to the GitHub release of a `v<major>.<minor>.<patch>` tag.
+
+## Funding
+
+This research was, in part, funded by the Advanced Research Projects Agency for Health (ARPA-H). The views and conclusions contained in this document are those of the authors and should not be interpreted as representing the official policies, either expressed or implied, of the United States Government.
