@@ -23,7 +23,7 @@
   "sensitivity": {
     "directIdentifiersRemoved": true,
     "containsDates": false,
-    "containsZipCodes": false,
+    "containsSubStateGeography": false,
     "containsFreeText": false,
     "containsBiometricIdentifiers": false
   },

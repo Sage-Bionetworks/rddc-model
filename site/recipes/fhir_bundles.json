@@ -24,7 +24,7 @@
     "directIdentifiersRemoved": true,
     "synthetic": true,
     "containsDates": true,
-    "containsZipCodes": true,
+    "containsSubStateGeography": true,
     "containsFreeText": true,
     "containsBiometricIdentifiers": false
   },

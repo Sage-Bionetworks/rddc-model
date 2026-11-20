@@ -1075,7 +1075,7 @@ def gen_enum(attrs):
             + enum_table(name))
 
 
-FLAGS = ("containsDates", "containsZipCodes", "containsFreeText", "containsBiometricIdentifiers")
+FLAGS = ("containsDates", "containsSubStateGeography", "containsFreeText", "containsBiometricIdentifiers")
 FLAG_WORDS = {"always": "always true", "n/a": "not applicable, so false", "false": "false unless set"}
 
 
