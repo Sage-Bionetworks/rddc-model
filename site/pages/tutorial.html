@@ -6,7 +6,7 @@
 
 <h2 id="what-you-need">Prerequisites</h2>
 <ul>
-<li>A <strong>source descriptor</strong>, <code>rddc_source.json</code>, issued by the RDDC at source registration. It contains the <code>contributorId</code>, <code>sourceId</code>, bucket and prefix pattern. See <a href="source-descriptor.html">Source descriptor</a>.</li>
+<li>A <strong>source descriptor</strong>, <code>rddc_source.json</code>, issued by the RDDC at source registration. It contains the <code>contributorId</code>, <code>contributorContact</code>, <code>sourceId</code>, bucket and prefix pattern. See <a href="source-descriptor.html">Source descriptor</a>.</li>
 <li>The <strong>JSON-LD context</strong> file, <a href="downloads/rddc_sidecar.context.jsonld"><code>rddc_sidecar.context.jsonld</code></a>.</li>
 <li>A batch ID not previously used for this source, such as <code>2026-11-reg01</code>.</li>
 </ul>
@@ -41,12 +41,13 @@
 
 <li>
 <h3 id="step-batch">Describe the batch</h3>
-<p>Add the contributor, source, batch, upload location and interaction. Copy <code>contributorId</code>, <code>sourceId</code> and the bucket from the source descriptor.</p>
-<rddc-json src="site/recipes/minimal.json" keys="name,description,url,dateCreated,wasAttributedTo,contributorId,sourceId,batchId,interaction,registerVersion" title="_sidecar.json (2 of 5)"></rddc-json>
+<p>Add the contributor, source, batch, upload location and interaction. Copy <code>contributorId</code>, <code>contributorContact</code>, <code>sourceId</code> and the bucket from the source descriptor.</p>
+<rddc-json src="site/recipes/minimal.json" keys="name,description,url,dateCreated,wasAttributedTo,contributorId,contributorContact,sourceId,batchId,interaction,registerVersion" title="_sidecar.json (2 of 5)"></rddc-json>
 <ul>
 <li><code>url</code> is the S3 batch prefix and must end with <code>/</code>. With the prefix pattern <code>{sourceId}/{batchId}/</code> from the descriptor, that gives <code>s3://rddc-deposit-ta2/src-ta2-01/2026-11-reg01/</code>.</li>
 <li><code>wasAttributedTo</code> names the software that wrote the sidecar. For a hand-written sidecar, <code>"@type"</code> can be <code>"sc:Person"</code> or <code>"sc:Organization"</code>, with the author or team name.</li>
-<li><code>interaction</code> is <code>add</code> for new data.</li>
+<li><code>contributorContact</code> is the email address of the contributor's contact.</li>
+<li><code>interaction</code> is <code>add</code> for new data. It is optional for now, but withdraw and restrict batches need it.</li>
 <li><code>registerVersion</code> is optional; copy it from the descriptor so a mismatch can be traced.</li>
 </ul>
 </li>

@@ -268,7 +268,7 @@ def slide_example():
     """Excerpts of examples/deposit_fhir_omop.json for the example slide."""
     doc = json.load(open(os.path.join(ROOT, "examples", "deposit_fhir_omop.json")))
     header_keys = ["@context", "@id", "@type", "conformsTo", "name", "wasAttributedTo",
-                   "contributorId", "sourceId", "batchId", "interaction", "sensitivity", "subjects"]
+                   "contributorId", "contributorContact", "sourceId", "batchId", "interaction", "sensitivity", "subjects"]
     header = {k: (ELIDED if k == "@context" else doc[k]) for k in header_keys}
     header["subjects"] = header["subjects"][:2] + [MORE]
     header["distribution"] = [MORE]

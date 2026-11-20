@@ -17,6 +17,7 @@
 <tbody>
 <tr><td><code>conformsTo</code></td><td><span class="req">required</span></td><td>Must include <code>https://w3id.org/rddc/source-descriptor/{{version}}</code>.</td></tr>
 <tr><td><code>contributorId</code></td><td><span class="req">required</span></td><td>Copy into the sidecar's <code>contributorId</code>.</td></tr>
+<tr><td><code>contributorContact</code></td><td><span class="req">required</span></td><td>Contact email, filled in by the ACT. The contributor may replace it with their own contact. Copy into the sidecar's <code>contributorContact</code>.</td></tr>
 <tr><td><code>sourceId</code></td><td><span class="req">required</span></td><td>Copy into the sidecar's <code>sourceId</code>.</td></tr>
 <tr><td><code>bucket</code></td><td><span class="req">required</span></td><td>The S3 bucket, used to build the sidecar's <code>url</code>.</td></tr>
 <tr><td><code>prefixPattern</code></td><td><span class="req">required</span></td><td>Template for batch prefixes with <code>{sourceId}</code> and <code>{batchId}</code> placeholders, ending with a slash.</td></tr>
@@ -33,6 +34,7 @@
 <thead><tr><th>Sidecar field</th><th>Value</th><th>From</th></tr></thead>
 <tbody>
 <tr><td><code>contributorId</code></td><td><code>ta2-site-a</code></td><td><code>contributorId</code></td></tr>
+<tr><td><code>contributorContact</code></td><td><code>data-steward@ta2-site-a.example.org</code></td><td><code>contributorContact</code></td></tr>
 <tr><td><code>sourceId</code></td><td><code>src-ta2-01</code></td><td><code>sourceId</code></td></tr>
 <tr><td><code>url</code></td><td><code>s3://rddc-deposit-ta2/src-ta2-01/2026-11-reg01/</code></td><td><code>bucket</code> + <code>prefixPattern</code> with placeholders filled</td></tr>
 <tr><td><code>name</code></td><td><code>src-ta2-01/2026-11-reg01</code></td><td>Convention: <code>sourceId/batchId</code></td></tr>

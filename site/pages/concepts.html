@@ -29,7 +29,7 @@
   <div class="row"><code>name</code>, <code>url</code>, <code>dateCreated</code>, <code>wasAttributedTo</code></div>
   <div class="row nested"><span class="muted">description</span><span>Batch label (by convention <code>sourceId/batchId</code>), S3 prefix, timestamp and the tool that wrote it. <span class="req">required</span></span></div>
   <div class="row"><code>contributorId</code> … <code>interaction</code></div>
-  <div class="row nested"><span class="muted">batch</span><span>Who sent it, for which source, which batch, and what to do with it. <span class="req">required</span> Plus <code>noticeRef</code> and <code>registerVersion</code> when they apply.</span></div>
+  <div class="row nested"><span class="muted">batch</span><span>Who sent it, a contact email, for which source and batch, and what to do with it. <span class="req">required</span> except <code>interaction</code>, which is optional for now. Plus <code>noticeRef</code> and <code>registerVersion</code> when they apply.</span></div>
   <div class="row"><code>sensitivity</code></div>
   <div class="row nested"><span class="muted">facts</span><span>De-identification facts that apply to every file unless a file overrides them. <span class="req">required</span></span></div>
   <div class="row"><code>subjects</code></div>
@@ -43,7 +43,7 @@
 </div>
 
 <h2>Interactions</h2>
-<p><code>interaction</code> specifies the batch action. It is required on every sidecar.</p>
+<p><code>interaction</code> specifies the batch action. It is optional for now; a withdraw or restrict batch must still give it, with <code>noticeRef</code>.</p>
 <div class="table-wrap"><table>
 <thead><tr><th>Value</th><th>Meaning</th><th>Data files</th><th>Subject table</th><th>Also requires</th></tr></thead>
 <tbody>
