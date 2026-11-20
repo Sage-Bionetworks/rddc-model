@@ -73,6 +73,8 @@ INVALID = {
     "file @id not a UUID URN": put(FHIR + ["@id"], "patient-file"),
     "synthetic set per file": put(FHIR + ["sensitivity"], {"synthetic": True}),
     "header without directIdentifiersRemoved": drop(["sensitivity", "directIdentifiersRemoved"]),
+    "contributorContact missing": drop(["contributorContact"]),
+    "contributorContact not an email": put(["contributorContact"], "data steward"),
     "removed sidecarType": put(["sidecarType"], "deposit"),
     "removed wasGeneratedBy": put(FHIR + ["wasGeneratedBy"], {"@type": "prov:Activity", "name": "x"}),
     "no conformsTo": drop(["conformsTo"]),

@@ -8819,6 +8819,11 @@
                     },
                     "type": "array"
                 },
+                "contributorContact": {
+                    "description": "Email address of the contributor's contact for the batch or source.",
+                    "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+                    "type": "string"
+                },
                 "contributorId": {
                     "description": "The contributor's registered ID.",
                     "pattern": "^[A-Za-z0-9._:-]+$",
@@ -9047,6 +9052,7 @@
                 "dateCreated",
                 "wasAttributedTo",
                 "contributorId",
+                "contributorContact",
                 "sourceId",
                 "batchId",
                 "sensitivity",
@@ -9283,6 +9289,11 @@
                     },
                     "type": "array"
                 },
+                "contributorContact": {
+                    "description": "Email address of the contributor's contact. The ACT fills it in at registration; the contributor may replace it with their own contact before generating sidecars, which copy it unchanged.",
+                    "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+                    "type": "string"
+                },
                 "contributorId": {
                     "description": "The contributor's registered ID.",
                     "pattern": "^[A-Za-z0-9._:-]+$",
@@ -9336,6 +9347,7 @@
             "required": [
                 "conformsTo",
                 "contributorId",
+                "contributorContact",
                 "sourceId",
                 "bucket",
                 "prefixPattern",
@@ -10751,6 +10763,11 @@
             },
             "type": "array"
         },
+        "contributorContact": {
+            "description": "Email address of the contributor's contact. The ACT fills it in at registration; the contributor may replace it with their own contact before generating sidecars, which copy it unchanged.",
+            "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+            "type": "string"
+        },
         "contributorId": {
             "description": "The contributor's registered ID.",
             "pattern": "^[A-Za-z0-9._:-]+$",
@@ -10804,6 +10821,7 @@
     "required": [
         "conformsTo",
         "contributorId",
+        "contributorContact",
         "sourceId",
         "bucket",
         "prefixPattern",

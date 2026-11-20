@@ -122,6 +122,7 @@ classes:
     - temporalCoverage
     - wasAttributedTo
     - contributorId
+    - contributorContact
     - sourceId
     - batchId
     - interaction
@@ -162,6 +163,8 @@ classes:
         required: true
         description: The tool or pipeline that wrote the sidecar, with its version.
       contributorId:
+        required: true
+      contributorContact:
         required: true
       sourceId:
         required: true
@@ -491,8 +494,10 @@ classes:
       is separate from the sidecar.
     notes:
     - >-
-      The sidecar header copies contributorId, sourceId and registerVersion unchanged,
-      recording the source and register version used. bucket and prefixPattern, with
+      The sidecar header copies contributorId, contributorContact, sourceId and
+      registerVersion unchanged, recording the source and register version used. The
+      ACT fills in contributorContact at registration; the contributor may replace it
+      in their copy of the descriptor. bucket and prefixPattern, with
       {sourceId} and {batchId} filled in, form url (the batch prefix). sourceId and the
       batch ID form name. modalities is not copied; it limits allowed data classes to
       those whose modality annotation matches a listed value. conformsTo, issuedAt,
@@ -500,6 +505,7 @@ classes:
     slots:
     - conformsTo
     - contributorId
+    - contributorContact
     - sourceId
     - bucket
     - prefixPattern
@@ -515,6 +521,12 @@ classes:
         description: Must include https://w3id.org/rddc/source-descriptor/<schema version>.
       contributorId:
         required: true
+      contributorContact:
+        required: true
+        description: >-
+          Email address of the contributor's contact. The ACT fills it in at registration;
+          the contributor may replace it with their own contact before generating sidecars,
+          which copy it unchanged.
       sourceId:
         required: true
       bucket:
@@ -647,6 +659,9 @@ slots:
   contributorId:
     description: The contributor's registered ID.
     range: Identifier
+  contributorContact:
+    description: Email address of the contributor's contact for the batch or source.
+    pattern: "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"
   sourceId:
     description: The source register ID. Must match the source the upload's delivery role is registered for.
     range: Identifier

@@ -78,6 +78,7 @@
     "containsDates": "rddc:containsDates",
     "containsFreeText": "rddc:containsFreeText",
     "containsZipCodes": "rddc:containsZipCodes",
+    "contributorContact": "rddc:contributorContact",
     "contributorId": "rddc:contributorId",
     "diagnosisCodeSystems": "rddc:diagnosisCodeSystems",
     "directIdentifiersRemoved": "rddc:directIdentifiersRemoved",
@@ -138,6 +139,7 @@
     "softwareVersion": "0.1.0"
   },
   "contributorId": "ta2-site-a",
+  "contributorContact": "data-steward@ta2-site-a.example.org",
   "sourceId": "src-ta2-01",
   "batchId": "2026-11-w01",
   "interaction": "withdraw",

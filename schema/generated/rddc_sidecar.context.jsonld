@@ -78,6 +78,7 @@
     "containsDates": "rddc:containsDates",
     "containsFreeText": "rddc:containsFreeText",
     "containsZipCodes": "rddc:containsZipCodes",
+    "contributorContact": "rddc:contributorContact",
     "contributorId": "rddc:contributorId",
     "diagnosisCodeSystems": "rddc:diagnosisCodeSystems",
     "directIdentifiersRemoved": "rddc:directIdentifiersRemoved",

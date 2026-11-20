@@ -3,6 +3,7 @@
     "https://w3id.org/rddc/source-descriptor/0.1.0"
   ],
   "contributorId": "ta2-site-a",
+  "contributorContact": "data-steward@ta2-site-a.example.org",
   "sourceId": "src-ta2-01",
   "bucket": "rddc-deposit-ta2",
   "prefixPattern": "{sourceId}/{batchId}/",
