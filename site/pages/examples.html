@@ -12,7 +12,7 @@
 
 <h2>Mixed deposit: FHIR, OMOP and registry</h2>
 <p>Site A's batch for <code>src-ta2-01</code> contains a FHIR Bulk Data export, an OMOP CDM 5.4 snapshot built from it, and two registry CSVs.</p>
-<rddc-json src="examples/deposit_fhir_omop.json" keys="@context,@id,@type,conformsTo,name,description,url,dateCreated,wasAttributedTo,contributorId,sourceId,batchId,interaction,sensitivity" title="Header"></rddc-json>
+<rddc-json src="examples/deposit_fhir_omop.json" keys="@context,@id,@type,conformsTo,name,description,url,dateCreated,wasAttributedTo,contributorId,contributorContact,sourceId,batchId,interaction,sensitivity" title="Header"></rddc-json>
 
 <h3 id="the-fhir-bulk-export">FHIR bulk export</h3>
 <p>Two NDJSON files, one per resource type, grouped in a <code>FhirBulkExport</code> set. The Observation file is gzipped, so <code>compression</code> is set while <code>encodingFormat</code> stays <code>application/fhir+ndjson</code>. It also contains free-text notes, so it overrides the batch's <code>containsFreeText</code>.</p>
