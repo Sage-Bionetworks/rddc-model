@@ -9049,7 +9049,6 @@
                 "contributorId",
                 "sourceId",
                 "batchId",
-                "interaction",
                 "sensitivity",
                 "subjects",
                 "distribution"
@@ -11024,7 +11023,6 @@
         "contributorId",
         "sourceId",
         "batchId",
-        "interaction",
         "sensitivity",
         "subjects",
         "distribution"

@@ -168,7 +168,7 @@ classes:
       batchId:
         required: true
       interaction:
-        required: true
+        required: false  # Not required for now, after 11/18 discussion
       sensitivity:
         required: true
         range: SensitivityDeclaration
