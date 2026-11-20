@@ -77,7 +77,7 @@
     "containsBiometricIdentifiers": "rddc:containsBiometricIdentifiers",
     "containsDates": "rddc:containsDates",
     "containsFreeText": "rddc:containsFreeText",
-    "containsZipCodes": "rddc:containsZipCodes",
+    "containsSubStateGeography": "rddc:containsSubStateGeography",
     "contributorContact": "rddc:contributorContact",
     "contributorId": "rddc:contributorId",
     "diagnosisCodeSystems": "rddc:diagnosisCodeSystems",

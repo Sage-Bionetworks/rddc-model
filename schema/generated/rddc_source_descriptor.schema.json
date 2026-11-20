@@ -232,7 +232,7 @@
         },
         "AudioFile": {
             "additionalProperties": false,
-            "description": "An audio recording. A recording of a person's voice contains biometric identifiers, so set sensitivity.containsBiometricIdentifiers to true. Audio formats have no field for an address, so a file contains no postal codes unless it says so; speech counts as free text.",
+            "description": "An audio recording. A recording of a person's voice contains biometric identifiers, so set sensitivity.containsBiometricIdentifiers to true. Audio formats have no field for an address, so a file contains no sub-state geography unless it says so; speech counts as free text.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -588,8 +588,8 @@
                         "null"
                     ]
                 },
-                "containsZipCodes": {
-                    "description": "The data includes postal codes. These are accepted at deposit and masked at release. Part of HIPAA Safe Harbor identifier (B), 45 CFR 164.514(b)(2)(i)(B), which covers all geographic subdivisions smaller than a state; this flag covers postal codes only.",
+                "containsSubStateGeography": {
+                    "description": "The data includes geographic subdivisions smaller than a state, such as street addresses, cities, counties, precincts, ZIP codes and their geocodes. These are accepted at deposit and masked at release. HIPAA Safe Harbor identifier (B), 45 CFR 164.514(b)(2)(i)(B).",
                     "type": [
                         "boolean",
                         "null"
@@ -1187,7 +1187,7 @@
         },
         "ConsentFile": {
             "additionalProperties": false,
-            "description": "Permitted data uses for each listed subject. The platform applies them to access decisions rather than processing them as clinical data. A consent elements table holds coded uses and dates, so postal codes, free text and biometric identifiers are absent unless the file says otherwise.",
+            "description": "Permitted data uses for each listed subject. The platform applies them to access decisions rather than processing them as clinical data. A consent elements table holds coded uses and dates, so sub-state geography, free text and biometric identifiers are absent unless the file says otherwise.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -2060,7 +2060,7 @@
         },
         "DifferentialDiagnosisFile": {
             "additionalProperties": false,
-            "description": "Candidate diagnoses ranked by a diagnosis support tool, such as a facial phenotyping or phenotype-matching tool, or by another method: for each subject, the top candidates with their rank, score and code. The candidates are suggestions, not diagnoses, so they are kept apart from confirmed conditions; in FHIR they are Conditions with verificationStatus \"differential\". A tool's export is structured; a report in PDF is unstructured and needs text extraction. wasDerivedFrom points to the files in the sidecar the tool analysed, such as facial images. Candidates hold no address or image, so postal codes and biometric identifiers are absent unless the file says otherwise.",
+            "description": "Candidate diagnoses ranked by a diagnosis support tool, such as a facial phenotyping or phenotype-matching tool, or by another method: for each subject, the top candidates with their rank, score and code. The candidates are suggestions, not diagnoses, so they are kept apart from confirmed conditions; in FHIR they are Conditions with verificationStatus \"differential\". A tool's export is structured; a report in PDF is unstructured and needs text extraction. wasDerivedFrom points to the files in the sidecar the tool analysed, such as facial images. Candidates hold no address or image, so sub-state geography and biometric identifiers are absent unless the file says otherwise.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -2343,8 +2343,8 @@
                         "null"
                     ]
                 },
-                "containsZipCodes": {
-                    "description": "The data includes postal codes. These are accepted at deposit and masked at release. Part of HIPAA Safe Harbor identifier (B), 45 CFR 164.514(b)(2)(i)(B), which covers all geographic subdivisions smaller than a state; this flag covers postal codes only.",
+                "containsSubStateGeography": {
+                    "description": "The data includes geographic subdivisions smaller than a state, such as street addresses, cities, counties, precincts, ZIP codes and their geocodes. These are accepted at deposit and masked at release. HIPAA Safe Harbor identifier (B), 45 CFR 164.514(b)(2)(i)(B).",
                     "type": [
                         "boolean",
                         "null"
@@ -5417,8 +5417,8 @@
                         "null"
                     ]
                 },
-                "containsZipCodes": {
-                    "description": "The data includes postal codes. These are accepted at deposit and masked at release. Part of HIPAA Safe Harbor identifier (B), 45 CFR 164.514(b)(2)(i)(B), which covers all geographic subdivisions smaller than a state; this flag covers postal codes only.",
+                "containsSubStateGeography": {
+                    "description": "The data includes geographic subdivisions smaller than a state, such as street addresses, cities, counties, precincts, ZIP codes and their geocodes. These are accepted at deposit and masked at release. HIPAA Safe Harbor identifier (B), 45 CFR 164.514(b)(2)(i)(B).",
                     "type": [
                         "boolean",
                         "null"
@@ -5980,7 +5980,7 @@
         },
         "GeneticTestResultFile": {
             "additionalProperties": false,
-            "description": "Results of clinical genetic tests or molecular pathology, exported as records: for each test, its name, method, date and status, and its findings, such as genes, variants in HGVS notation, zygosity and classification (for example ACMG/AMP), with the laboratory's interpretation as text. The interpretation makes the file contain free text (containsFreeText). Report documents (PDFs) go in ClinicalDocumentFiles that reportDocuments points to; sequencing data and variant calls go in the genomics classes. A report lists few variants, not a genome, so the class is not identifying, although a rare variant can single a person out within a small cohort. Results records hold no address or image, so postal codes and biometric identifiers are absent unless the file says otherwise.",
+            "description": "Results of clinical genetic tests or molecular pathology, exported as records: for each test, its name, method, date and status, and its findings, such as genes, variants in HGVS notation, zygosity and classification (for example ACMG/AMP), with the laboratory's interpretation as text. The interpretation makes the file contain free text (containsFreeText). Report documents (PDFs) go in ClinicalDocumentFiles that reportDocuments points to; sequencing data and variant calls go in the genomics classes. A report lists few variants, not a genome, so the class is not identifying, although a rare variant can single a person out within a small cohort. Results records hold no address or image, so sub-state geography and biometric identifiers are absent unless the file says otherwise.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -6580,7 +6580,7 @@
         },
         "ImageFile": {
             "additionalProperties": false,
-            "description": "An image in a format other than DICOM: TIFF or OME-TIFF, PNG, JPEG, JPEG 2000, or a whole-slide, microscopy or NIfTI volume format with no registered media type (application/octet-stream). These formats have no field for an address, so a file contains no postal codes unless it says so; burned-in text counts as free text.",
+            "description": "An image in a format other than DICOM: TIFF or OME-TIFF, PNG, JPEG, JPEG 2000, or a whole-slide, microscopy or NIfTI volume format with no registered media type (application/octet-stream). These formats have no field for an address, so a file contains no sub-state geography unless it says so; burned-in text counts as free text.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -7958,15 +7958,15 @@
                         "null"
                     ]
                 },
-                "containsZipCodes": {
-                    "description": "The data includes postal codes. These are accepted at deposit and masked at release. Part of HIPAA Safe Harbor identifier (B), 45 CFR 164.514(b)(2)(i)(B), which covers all geographic subdivisions smaller than a state; this flag covers postal codes only.",
+                "containsSubStateGeography": {
+                    "description": "The data includes geographic subdivisions smaller than a state, such as street addresses, cities, counties, precincts, ZIP codes and their geocodes. These are accepted at deposit and masked at release. HIPAA Safe Harbor identifier (B), 45 CFR 164.514(b)(2)(i)(B).",
                     "type": [
                         "boolean",
                         "null"
                     ]
                 },
                 "directIdentifiersRemoved": {
-                    "description": "The contributor confirms that the HIPAA Safe Harbor identifiers the contains* flags do not declare were removed before upload: (A) and (D) to (O), such as names, contact details, record, account and device numbers, and (R), any other unique identifying number, characteristic or code (45 CFR 164.514(b)(2)(i)). Dates (C), postal codes (B), biometric identifiers (P) and full-face images (Q) are declared with the flags instead. Must be true for non-synthetic data.",
+                    "description": "The contributor confirms that the HIPAA Safe Harbor identifiers the contains* flags do not declare were removed before upload: (A) and (D) to (O), such as names, contact details, record, account and device numbers, and (R), any other unique identifying number, characteristic or code (45 CFR 164.514(b)(2)(i)). Dates (C), geographic subdivisions smaller than a state (B), biometric identifiers (P) and full-face images (Q) are declared with the flags instead. Must be true for non-synthetic data.",
                     "type": "boolean"
                 },
                 "notes": {
@@ -10396,7 +10396,7 @@
         },
         "VideoFile": {
             "additionalProperties": false,
-            "description": "A video recording. A recording containing a person's face or voice contains biometric identifiers, so set sensitivity.containsBiometricIdentifiers to true. Video formats have no field for an address, so a file contains no postal codes unless it says so; speech and on-screen text count as free text.",
+            "description": "A video recording. A recording containing a person's face or voice contains biometric identifiers, so set sensitivity.containsBiometricIdentifiers to true. Video formats have no field for an address, so a file contains no sub-state geography unless it says so; speech and on-screen text count as free text.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",

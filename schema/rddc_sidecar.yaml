@@ -226,7 +226,7 @@ classes:
     - directIdentifiersRemoved
     - synthetic
     - containsDates
-    - containsZipCodes
+    - containsSubStateGeography
     - containsFreeText
     - containsBiometricIdentifiers
     - notes
@@ -688,7 +688,7 @@ slots:
       flags do not declare were removed before upload: (A) and (D) to (O), such as
       names, contact details, record, account and device numbers, and (R), any other
       unique identifying number, characteristic or code (45 CFR 164.514(b)(2)(i)).
-      Dates (C), postal codes (B), biometric identifiers (P) and full-face images (Q)
+      Dates (C), geographic subdivisions smaller than a state (B), biometric identifiers (P) and full-face images (Q)
       are declared with the flags instead. Must be true for non-synthetic data.
     range: boolean
   synthetic:
