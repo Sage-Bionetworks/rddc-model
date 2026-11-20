@@ -41,6 +41,10 @@ The `rddc-sidecar` validator checks rules beyond JSON Schema: unique `@id`s
 and subject identities, valid references, required subjects, no data files in
 withdrawal or restriction batches, and the allowed `conformsTo` values.
 
+CI publishes the generated JSON Schemas, SHACL shapes and JSON-LD context as a
+workflow artifact on every run and attaches them to the GitHub release of a
+`v<major>.<minor>.<patch>` tag.
+
 ## Versioning
 
 The schema follows semantic versioning from 1.0. It is still a draft and may
@@ -53,3 +57,7 @@ never from the default branch.
 
 - `rddc-sidecar`: generator and validator for deposit sidecars. Vendors the
   JSON Schema and Pydantic classes generated from `schema/rddc_sidecar.yaml`.
+
+## Funding
+
+This research was, in part, funded by the Advanced Research Projects Agency for Health (ARPA-H). The views and conclusions contained in this document are those of the authors and should not be interpreted as representing the official policies, either expressed or implied, of the United States Government.
