@@ -10,7 +10,7 @@
 <tr><td>Did every file arrive intact?</td><td>Each file is listed with its path, size and SHA-256 checksum.</td></tr>
 <tr><td>How should each file be processed?</td><td>Each file has a <a href="data-overview.html">data class</a> such as <code>rddc:FhirNdjsonFile</code>, which sets its modality. Genomics, imaging and sensor files also state the assay that produced them in <code>measurementTechnique</code>. Collections declare the standard they follow.</td></tr>
 <tr><td>Whose data is this?</td><td>A subject table lists every coded subject ID in the batch.</td></tr>
-<tr><td>Which sensitive content needs checking?</td><td>Sensitivity flags: dates, ZIP codes, free text, biometric identifiers. Some classes identify a person whatever the flags say: genomic data, and facial images. See <a href="data-overview.html#files-that-identify-a-person">Identifying files</a>.</td></tr>
+<tr><td>Which sensitive content needs checking?</td><td>Sensitivity flags: dates, sub-state geography, free text, biometric identifiers. Some classes identify a person whatever the flags say: genomic data, and facial images. See <a href="data-overview.html#files-that-identify-a-person">Identifying files</a>.</td></tr>
 <tr><td>Is this a data, withdrawal, restriction or consent batch?</td><td>The <code>interaction</code> field.</td></tr>
 </tbody></table></div>
 

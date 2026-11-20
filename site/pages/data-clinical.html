@@ -33,7 +33,7 @@
 <rddc-example key="tabular_jsonlines" title="A patient-reported outcome table in JSON Lines"></rddc-example>
 
 <h2>Consent</h2>
-<p>A <code>ConsentFile</code> records permitted data uses for each listed subject. The platform applies them to access decisions rather than processing them as clinical data. A consent elements table holds coded uses and dates, so postal codes, free text and biometric identifiers are <code>false</code> unless the file or batch says otherwise.</p>
+<p>A <code>ConsentFile</code> records permitted data uses for each listed subject. The platform applies them to access decisions rather than processing them as clinical data. A consent elements table holds coded uses and dates, so sub-state geography, free text and biometric identifiers are <code>false</code> unless the file or batch says otherwise.</p>
 <rddc-example key="consent"></rddc-example>
 
 <h2>Intake forms</h2>
@@ -58,7 +58,7 @@
 <h2>Sensitivity</h2>
 <p>Clinical classes, including FHIR, are not automatically classified as identifying. Their files may still contain identifying information and require de-identification checks.</p>
 <ul>
-<li>Clinical data usually contains dates more precise than a year and may contain postal codes. Both are accepted at deposit and masked at release. Declare them with <code>containsDates</code> and <code>containsZipCodes</code>, or set them to <code>false</code> when the data has none.</li>
+<li>Clinical data usually contains dates more precise than a year and may contain addresses, ZIP codes or other geography smaller than a state. Both are accepted at deposit and masked at release. Declare them with <code>containsDates</code> and <code>containsSubStateGeography</code>, or set them to <code>false</code> when the data has none.</li>
 <li>Free text, in notes or in free-text fields of a structured table, needs a de-identification scan. Declare it with <code>containsFreeText</code> on the files that have it.</li>
 <li>Direct identifiers such as names and medical record numbers must be removed before upload.</li>
 </ul>
