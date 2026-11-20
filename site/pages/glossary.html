@@ -1,0 +1,59 @@
+<h1>Glossary and FAQ</h1>
+<p class="lede">Definitions and answers to common questions about metadata sidecars.</p>
+
+<h2>Glossary</h2>
+<dl class="glossary">
+<dt>ACT</dt><dd>The RDDC team that registers sources and issues <a href="source-descriptor.html">source descriptors</a>.</dd>
+<dt>additionalType</dt><dd>A schema.org property that gives a more specific type alongside <code>@type</code>. In a sidecar it names the RDDC class of a file or file set, such as <code>rddc:OmopTableFile</code>.</dd>
+<dt>Batch</dt><dd>One delivery of files for one source, under one S3 prefix, with one sidecar. Also called a deposit.</dd>
+<dt>C-CDA</dt><dd>Consolidated Clinical Document Architecture, an HL7 standard for XML clinical documents. The sidecar pins release 2.1.</dd>
+<dt>Contributor</dt><dd>An organization that sends data to the RDDC. It has one bucket and one or more sources.</dd>
+<dt>Croissant</dt><dd>An MLCommons metadata format for datasets, built on schema.org. The sidecar is a Croissant 1.1 dataset. See <a href="foundations.html#croissant">Foundations</a>.</dd>
+<dt>CURIE</dt><dd>A compact IRI such as <code>cr:FileObject</code>, where the prefix <code>cr</code> stands for <code>http://mlcommons.org/croissant/</code>.</dd>
+<dt>Data class</dt><dd>The RDDC class of a data file, named in its <code>additionalType</code>, such as <code>rddc:FastqFile</code>. It fixes the format and accepted media types, the required fields, the modality and the sensitivity flags the format decides. See <a href="data-overview.html">How data is classified</a>.</dd>
+<dt>Deposit sidecar</dt><dd>A contributor-authored sidecar for a delivered batch.</dd>
+<dt>Distribution</dt><dd>The list of every file and file set in a sidecar (schema.org <code>distribution</code>).</dd>
+<dt>FHIR</dt><dd>Fast Healthcare Interoperability Resources, the HL7 standard for exchanging clinical data. The sidecar pins FHIR R4 (4.0.1) and US Core 6.1.0.</dd>
+<dt>FileObject, FileSet</dt><dd>Croissant's classes for one file and for a group of files.</dd>
+<dt>GOVERN</dt><dd>The RDDC governance service that registers withdrawal and restriction notices and consent.</dd>
+<dt>Interaction</dt><dd>Requested batch action: <code>add</code>, <code>withdraw</code>, <code>restrict</code> or <code>consent</code>.</dd>
+<dt>IRI</dt><dd>Internationalized Resource Identifier: a web address used as a globally unique name for a term or thing.</dd>
+<dt>JSON-LD</dt><dd>JSON for Linked Data. JSON plus <code>@context</code>, <code>@id</code> and <code>@type</code>, which tie keys and objects to IRIs.</dd>
+<dt>Lane</dt><dd>A NORMALIZE processing path for one input format, such as OMOP, FHIR, C-CDA or other clinical tables.</dd>
+<dt>LinkML</dt><dd>The modelling language the schema is written in. JSON Schema and the JSON-LD context are generated from it.</dd>
+<dt>Modality</dt><dd>The kind of data a source registers to deposit, such as <code>clinical_fhir</code> or <code>genomics</code>. Each data file class has one, so the sidecar does not state it; the platform checks it against the source register. See <a href="data-overview.html">How data is classified</a>.</dd>
+<dt>NORMALIZE</dt><dd>The RDDC stage that converts accepted data into common models, by lane.</dd>
+<dt>OMOP CDM</dt><dd>The OHDSI Observational Medical Outcomes Partnership Common Data Model. The sidecar pins version 5.4.</dd>
+<dt>PROV</dt><dd>The W3C vocabulary for provenance. The sidecar uses it to name its author and link files or file sets to their inputs in the same batch.</dd>
+<dt>Record set</dt><dd>Croissant's description of a table's columns (<code>cr:RecordSet</code> with <code>cr:Field</code>s).</dd>
+<dt>schema.org</dt><dd>A shared vocabulary for structured data on the web. Croissant and the sidecar build on its <code>Dataset</code> type.</dd>
+<dt>Sidecar</dt><dd>A metadata file that travels alongside data. Here, <code>_sidecar.json</code>.</dd>
+<dt>Source</dt><dd>A contributor's data set with one set of use terms, registered before its first deposit.</dd>
+<dt>Source register</dt><dd>The RDDC's record of every source, its use terms, access tier and delivery role.</dd>
+<dt>Subject ID</dt><dd>The contributor's coded ID for a person. Never a name, MRN or other direct identifier, and never in a release.</dd>
+<dt>Subject table</dt><dd>The sidecar's list of every subject in the batch (<code>subjects</code>).</dd>
+</dl>
+
+<h2>Frequently asked questions</h2>
+<details class="faq"><summary>Do I need to know JSON-LD?</summary>
+<p>No. Paste in the context file unchanged and treat the rest as ordinary JSON. The validator checks it with JSON Schema.</p></details>
+<details class="faq"><summary>Why is the context so large, and why embed it?</summary>
+<p>It contains the Croissant 1.1 context and RDDC terms. Embedding it keeps the sidecar self-contained and supports <code>mlcroissant</code>, which does not fetch remote contexts. Copy the <code>@context</code> object from <code>rddc_sidecar.context.jsonld</code> unchanged.</p></details>
+<details class="faq"><summary>Are project-specific fields allowed?</summary>
+<p>Not at the top level of any object: unknown properties fail validation. Put project-specific values in <code>additionalProperty</code> with a key like <code>ext:your_project:your_key</code>. If a pipeline needs to make decisions on a value, propose it as a schema field instead.</p></details>
+<details class="faq"><summary>Where are license and access terms recorded?</summary>
+<p>Not in the sidecar. Use terms, access tier, de-identification class and date policy belong to the source and live in the source register, set by the ACT.</p></details>
+<details class="faq"><summary>How are file IDs created?</summary>
+<p>Any lowercase UUID in the form <code>urn:uuid:…</code>. Keep a file's ID when the platform moves or re-registers it; give changed content a new ID. The RDDC tool can carry IDs forward when a previous sidecar is supplied.</p></details>
+<details class="faq"><summary>Can one JSON sidecar describe 100,000 files?</summary>
+<p>A measured 120,000-file C-CDA batch produced about 93 MB of JSON. On an 8-core laptop with an SSD, generation took about 2.5 seconds and validation about 1.5 seconds, including checksums. Performance depends on the files and hardware. Large file sets can use globs instead of listing every member in <code>hasPart</code>; each file still appears in <code>distribution</code>.</p></details>
+<details class="faq"><summary>How are upload errors corrected?</summary>
+<p>The correction and resubmission workflow is still being designed. The current sidecar model has no correction fields.</p></details>
+<details class="faq"><summary>Are OMOP foreign keys and FHIR references included?</summary>
+<p>No. The standards define them, and the declared <code>conformsTo</code> tells pipelines which version to apply. Use record sets only for joins between non-standard tables.</p></details>
+<details class="faq"><summary>How are unknown sensitivity flags handled?</summary>
+<p>Leave the flag out. An unset <code>contains*</code> flag is read as <code>true</code>, so de-identification checks for it.</p></details>
+<details class="faq"><summary>Which class covers other file types?</summary>
+<p><code>rddc:GenericFile</code> is strongly discouraged. A dedicated data class is required; using <code>GenericFile</code> triggers lengthy manual review. See <a href="data-other.html">Documentation and other files</a>.</p></details>
+<details class="faq"><summary>Where can I find and propose schema changes?</summary>
+<p><code>schema/rddc_sidecar.yaml</code> in the <code>rddc-model</code> repository. Open a pull request against it; JSON Schema, the context and this site are regenerated from it.</p></details>

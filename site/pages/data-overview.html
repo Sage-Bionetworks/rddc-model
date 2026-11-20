@@ -1,0 +1,78 @@
+<h1>How data is classified</h1>
+<p class="lede">Every data file the RDDC accepts belongs to one data class. The class defines the file's content and format, its metadata fields, and what processing and de-identification it needs.</p>
+
+<h2>One class per file</h2>
+<p>Each file specifies its path, size, media type, checksum and any class-specific fields. One of them, <code>additionalType</code>, names the file's RDDC data class, such as <code>rddc:FhirNdjsonFile</code> or <code>rddc:FastqFile</code>. The class decides:</p>
+<ul>
+<li>which media types the file may have in <code>encodingFormat</code>;</li>
+<li>its required and optional fields, such as a FHIR resource type, a sequencing assay or a reference genome;</li>
+<li>annotations shared by all files in the class, described below.</li>
+</ul>
+<rddc-example key="fhir_ndjson" title="A FHIR NDJSON file: the class makes resourceType required and fixes the media type"></rddc-example>
+<p>The examples in this part show a file's fields as YAML, to keep the focus on the data; a field that points to another file, such as <code>pairedWith</code>, just gives that file's ID. <a href="foundations.html">Part 2</a> shows how the same fields are written for a deposit.</p>
+<p>The classes form a hierarchy under <code>DataFile</code>, shown in full on the <a href="data-classes.html#hierarchy">Data class reference</a>. Abstract classes such as <code>GenomicsFile</code> group shared fields; a file always names a concrete class.</p>
+
+<h2 id="one-class-per-pipeline">Class and format</h2>
+<p>A concrete class is what one processing pipeline consumes. Where the pipeline depends on the format and a media type cannot tell the formats apart (BAM and CRAM, EDF and other sensor formats), or the pipelines differ by format (FASTQ and unaligned BAM, DICOM and other image formats), the format is the class, and the class maps to its EDAM format term. Elsewhere one class covers the formats and <code>encodingFormat</code> and <code>compression</code> say which: FHIR JSON and NDJSON, CSV and Parquet, and the variant call formats VCF, BCF and MAF, whose classes are decided by what they contain, germline or somatic variants.</p>
+<p>Processing rules match a class together with all its subclasses, so a subclass must be processable as its parent; what differs between siblings, such as whether they identify a person, is in their annotations, which the rules read per concrete class. A facial image is not a subclass of the image classes, since the header de-identification and analysis of medical images do not apply to it.</p>
+
+<h2 id="what-the-class-says-about-the-data">Class annotations</h2>
+<p>Class annotations define shared characteristics. These class characteristics are defined by our model and are not fields to be filled in.</p>
+<dl class="glossary">
+<dt>Modality</dt><dd>The kind of data a source registers to deposit, such as <code>clinical_fhir</code>, <code>genomics</code> or <code>sensor</code>. The platform checks a file's modality against the source register; how the file is processed follows from its class. Each class has exactly one modality, so a new kind of data gets a new class rather than a new modality on an existing one.</dd>
+<dt>Structure</dt><dd><code>structured</code> data has defined fields that software can read without content analysis: FHIR, OMOP and other tables, C-CDA, VCF, FASTQ. Free text inside such a file is declared with <code>containsFreeText</code>. <code>unstructured</code> data, such as notes, scans, images and recordings, has no fields: any identifier in it can only be found by NLP, OCR or image or audio analysis. <code>mixed</code> classes allow either structure, depending on the file's content.</dd>
+<dt>File set class</dt><dd>The file set every file of the class belongs to: an <code>OmopTableFile</code> in an <code>OmopCdmInstance</code>, a <code>FhirNdjsonFile</code> in a <code>FhirBulkExport</code>. The set's <code>conformsTo</code> gives the standard and version the files follow, so the files do not repeat it.</dd>
+<dt>Collection type</dt><dd>How the data was collected, using the Croissant Responsible AI (RAI) term <code>rai:dataCollectionType</code>. Classes whose data always comes from an instrument (genomics, imaging and sensor data) are <code>Direct measurement</code>. Other classes leave it open, since a table or a document can come from many sources.</dd>
+<dt>Biometric and identifying</dt><dd>Whether our model automatically treats every file in the class as identifying, regardless of sensitivity flags. See <a href="#files-that-identify-a-person">below</a>.</dd>
+<dt>Sensitivity flags</dt><dd>What the class says about each <code>contains*</code> flag: fixed for every file, a default, or left to the batch. See <a href="#sensitivity-flags-by-class">below</a>.</dd>
+</dl>
+<rddc-classification></rddc-classification>
+<p><strong>Depends on content</strong> means the class alone does not determine whether a file is identifying. FHIR files, for example, may contain identifying information and still require de-identification checks. The absence of a class annotation does not mean a file is de-identified.</p>
+
+<h2 id="the-modalities">Modalities</h2>
+<rddc-enum name="ModalityEnum"></rddc-enum>
+
+<h2 id="files-that-identify-a-person">Identifying files</h2>
+<p>Removing names, record numbers and other direct identifiers is not enough to de-identify some kinds of data. Two class annotations mark them:</p>
+<dl class="glossary">
+<dt>Identifying</dt><dd>Our model automatically treats files in these classes as identifying, even after direct identifiers are removed. Genome sequences, alignments and variant calls are identifying: W3C DPV classes them as genetic data (<code>pd:Genetic</code>). A file of an identifying class never counts as de-identified, regardless of sensitivity flags.</dd>
+<dt>Biometric</dt><dd>The content is a biometric identifier under HIPAA Safe Harbor, such as a full-face image. Every file of a biometric class counts as containing biometric identifiers and never leaves INTAKE: it is not loaded into the normalized store or released. Biometric implies identifying. Since the class already says so, a facial image file cannot set <code>containsBiometricIdentifiers</code> itself; the schema rejects it.</dd>
+</dl>
+<p>Other files can contain biometric identifiers too, depending on their content. A voice recording, or a video that shows a face, sets <code>containsBiometricIdentifiers</code> to <code>true</code> in the file's <code>sensitivity</code>. The <a href="data-standards.html#sensitivity-flags">sensitivity flags</a> list what each flag covers and the HIPAA Safe Harbor identifiers it corresponds to.</p>
+
+<h2 id="sensitivity-flags-by-class">Sensitivity flags by class</h2>
+<p>A flag that nothing sets is unknown and treated as <code>true</code>, which would hold every file for review. The class narrows that where the format decides:</p>
+<ul>
+<li><strong>always</strong>: every file of the class has it, so a file cannot set the flag. A clinical document is free text.</li>
+<li><strong>n/a</strong>: the format cannot carry it, so the flag is <code>false</code> and a file cannot set it. A FASTQ holds no dates.</li>
+<li><strong><code>false</code> unless set</strong>: the value when neither the file nor the batch sets the flag. An OMOP table has no column for a photograph.</li>
+<li><strong>batch value</strong>: the file's own setting, else the batch's, else unknown.</li>
+</ul>
+<p>In order, a flag's value for a file is what its class fixes, what the file sets, what the batch sets, the class default, else unknown.</p>
+<rddc-flag-defaults></rddc-flag-defaults>
+
+<h2 id="what-a-file-does-not-state">Excluded file fields</h2>
+<p>A file declares only file-specific information. Anything known from elsewhere is left out, so it cannot contradict its source. The schema rejects these on a data file:</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Excluded field</th><th>Source</th></tr></thead>
+<tbody>
+<tr><td>Modality, structure, collection type, biometric or identifying, and any sensitivity flag the class fixes</td><td>The file's class</td></tr>
+<tr><td>The format of a FASTQ, BAM, CRAM, VCF, BCF, EDF or DICOM file</td><td>The file's class</td></tr>
+<tr><td>FHIR version and implementation guides (such as US Core)</td><td>The FHIR export, bundle collection or resource collection the file belongs to</td></tr>
+<tr><td>OMOP CDM version</td><td>The OMOP CDM instance the file belongs to</td></tr>
+<tr><td>C-CDA release and template IDs</td><td>The document set the file belongs to, and the document header</td></tr>
+<tr><td>A table name for a registry table</td><td>The file's <code>name</code> and <code>contentUrl</code></td></tr>
+</tbody></table></div>
+
+<h2>Choosing a class</h2>
+<p>Pick the most specific class that fits. In particular:</p>
+<ul>
+<li>Data in a clinical standard (FHIR, OMOP CDM, C-CDA) uses that standard's class, even when it holds device data or patient-reported outcomes.</li>
+<li>Consent tables are <code>ConsentFile</code>s and data dictionaries are <code>DocumentationFile</code>s, not <code>TabularFile</code>s: the platform handles them differently.</li>
+<li>Reads, alignments, raw sensor signals and images name their format: <code>CramFile</code>, not a generic alignment class; <code>EdfSignalFile</code>; <code>DicomImageFile</code> or <code>ImageFile</code>. Variant calls name their content, <code>GermlineVariantFile</code> or <code>SomaticVariantFile</code>.</li>
+<li>Intake form responses are <code>IntakeFormFile</code>s read with the form's definition, structured genetic test results are <code>GeneticTestResultFile</code>s, and a diagnosis support tool's ranked candidates are a <code>DifferentialDiagnosisFile</code>, not <code>TabularFile</code>s.</li>
+<li>A photograph or 3D scan of a person's face is a <code>FacialImagingFile</code>, not an image class.</li>
+<li>Raw sensor signals and measures derived from them are different classes: one of the signal classes, or <code>SensorMeasureFile</code>.</li>
+<li><code>GenericFile</code> is strongly discouraged. A dedicated data class is required; using <code>GenericFile</code> triggers lengthy manual review.</li>
+</ul>
+<p>Class descriptions and examples: <a href="data-clinical.html">Clinical data</a>, <a href="data-genomics.html">Genomics</a>, <a href="data-imaging.html">Imaging, audio and video</a>, <a href="data-sensor.html">Sensor data</a>, and <a href="data-other.html">Documentation and other files</a>.</p>

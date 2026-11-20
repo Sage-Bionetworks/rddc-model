@@ -1,0 +1,110 @@
+<h1>Metadata sidecar tutorial</h1>
+<p class="lede">This tutorial builds a sidecar for a small registry deposit: one CSV file about three patients. Each step explains part of the document.</p>
+
+<div class="note rddc"><strong>Tool-generated sidecars</strong>
+<p>The planned <code>rddc-sidecar</code> tool will generate and validate a sidecar from a batch directory and source descriptor. The draft command is <code>rddc-sidecar generate ./batch --source rddc_source.json --batch-id 2026-11-reg01 --attest-direct-identifiers-removed</code>. Generated and hand-written sidecars must pass the same checks.</p></div>
+
+<h2 id="what-you-need">Prerequisites</h2>
+<ul>
+<li>A <strong>source descriptor</strong>, <code>rddc_source.json</code>, issued by the RDDC at source registration. It contains the <code>contributorId</code>, <code>contributorContact</code>, <code>sourceId</code>, bucket and prefix pattern. See <a href="source-descriptor.html">Source descriptor</a>.</li>
+<li>The <strong>JSON-LD context</strong> file, <a href="downloads/rddc_sidecar.context.jsonld"><code>rddc_sidecar.context.jsonld</code></a>.</li>
+<li>A batch ID not previously used for this source, such as <code>2026-11-reg01</code>.</li>
+</ul>
+
+<h2 id="build-it-step-by-step">Build the sidecar</h2>
+<ol class="steps">
+<li>
+<h3 id="step-lay-out">Arrange the batch files</h3>
+<p>Arrange the files as they will appear under the S3 batch prefix. Use paths relative to this directory in the sidecar.</p>
+<rddc-code lang="text" title="batch directory">2026-11-reg01/
+└── registry/
+    └── patients.csv</rddc-code>
+<p>Check that no file or folder name contains a name, MRN or other identifier. Names like <code>Jane_Doe_123.json</code> are rejected at receipt.</p>
+</li>
+
+<li>
+<h3 id="step-identity">Set the document identity</h3>
+<p>Create <code>_sidecar.json</code> in the batch directory. Copy the <code>@context</code> object from the downloaded context file into the sidecar. Give the document a new UUID and list the two specifications it follows.</p>
+<rddc-code title="_sidecar.json (1 of 5)">{
+  "@context": "__ELIDED_CONTEXT__",
+  "@id": "urn:uuid:0000a001-0000-4000-8000-00000000a001",
+  "@type": "sc:Dataset",
+  "conformsTo": [
+    "http://mlcommons.org/croissant/1.1",
+    "https://w3id.org/rddc/sidecar/{{version}}"
+  ]
+}</rddc-code>
+<p>Generate a UUID with <code>python3 -c "import uuid; print(uuid.uuid4())"</code> or <code>uuidgen | tr A-Z a-z</code>. It must be lowercase.</p>
+<div class="note"><strong>Why embed the context?</strong>
+<p>Copy the context unchanged. Embedding it keeps the sidecar self-contained and lets <code>mlcroissant</code> read it without fetching a remote context.</p></div>
+</li>
+
+<li>
+<h3 id="step-batch">Describe the batch</h3>
+<p>Add the contributor, source, batch, upload location and interaction. Copy <code>contributorId</code>, <code>contributorContact</code>, <code>sourceId</code> and the bucket from the source descriptor.</p>
+<rddc-json src="site/recipes/minimal.json" keys="name,description,url,dateCreated,wasAttributedTo,contributorId,contributorContact,sourceId,batchId,interaction,registerVersion" title="_sidecar.json (2 of 5)"></rddc-json>
+<ul>
+<li><code>url</code> is the S3 batch prefix and must end with <code>/</code>. With the prefix pattern <code>{sourceId}/{batchId}/</code> from the descriptor, that gives <code>s3://rddc-deposit-ta2/src-ta2-01/2026-11-reg01/</code>.</li>
+<li><code>wasAttributedTo</code> names the software that wrote the sidecar. For a hand-written sidecar, <code>"@type"</code> can be <code>"sc:Person"</code> or <code>"sc:Organization"</code>, with the author or team name.</li>
+<li><code>contributorContact</code> is the email address of the contributor's contact.</li>
+<li><code>interaction</code> is <code>add</code> for new data. It is optional for now, but withdraw and restrict batches need it.</li>
+<li><code>registerVersion</code> is optional; copy it from the descriptor so a mismatch can be traced.</li>
+</ul>
+</li>
+
+<li>
+<h3 id="step-sensitivity">Set sensitivity flags</h3>
+<p>Set <code>directIdentifiersRemoved</code> to confirm that direct identifiers were removed before upload. Set <code>contains*</code> flags whose values are known; missing flags are treated as <code>true</code>.</p>
+<rddc-json src="site/recipes/minimal.json" keys="sensitivity" title="_sidecar.json (3 of 5)"></rddc-json>
+<p>This registry has visit dates, so <code>containsDates</code> is <code>true</code>. Dates are accepted and masked at release.</p>
+</li>
+
+<li>
+<h3 id="step-subjects">List the subjects</h3>
+<p>Add one row per person, using their coded patient ID from the data. <code>idSystem</code> identifies the source of the ID; contributor-defined registry IDs use <code>contributor</code>.</p>
+<rddc-json src="site/recipes/minimal.json" keys="subjects" title="_sidecar.json (4 of 5)"></rddc-json>
+</li>
+
+<li>
+<h3 id="step-file">Describe the file</h3>
+<p>Every data file needs a UUID, its path, size, media type, MD5 checksum and class. A SHA-256 checksum is optional. Get the size and checksums from the shell:</p>
+<rddc-code lang="shell" title="size and checksums">stat -c %s registry/patients.csv        # 4096       (macOS: stat -f %z)
+md5sum registry/patients.csv            # 4dd68b0c…  (macOS: md5 -q)
+sha256sum registry/patients.csv         # optional   (macOS: shasum -a 256)</rddc-code>
+<p>A registry table is a <code>rddc:TabularFile</code>. The class sets the modality, <code>clinical_tabular</code>, so the sidecar does not state it, and the file's <code>name</code> identifies the table.</p>
+<rddc-json src="site/recipes/minimal.json" keys="distribution" title="_sidecar.json (5 of 5)"></rddc-json>
+<ul>
+<li><code>@type</code> is always <code>cr:FileObject</code> for a file. The RDDC class goes in <code>additionalType</code>.</li>
+<li><code>contentSize</code> is a string ending in <code>" B"</code>.</li>
+<li><code>name</code> is by convention the same as <code>contentUrl</code>.</li>
+<li><code>recordCount</code> is optional: the number of rows, when known.</li>
+</ul>
+</li>
+
+<li>
+<h3 id="step-validate">Validate the sidecar</h3>
+<p>Check the structure against the generated JSON Schema. Any JSON Schema validator works; for example:</p>
+<rddc-code lang="shell" title="structural check">pip install check-jsonschema
+check-jsonschema --schemafile rddc_sidecar.schema.json 2026-11-reg01/_sidecar.json</rddc-code>
+<p>JSON Schema checks types, required fields, allowed values and conditional rules. The RDDC validator also checks file contents against checksums, missing or unlisted files, duplicate IDs and broken references. See <a href="lifecycle.html#what-gets-checked">validation checks</a>.</p>
+</li>
+
+<li>
+<h3 id="step-upload">Upload, sidecar last</h3>
+<p>Upload the data files first, then the sidecar. Uploading the sidecar signals batch completion and starts receipt.</p>
+<rddc-code lang="shell" title="upload">PREFIX=s3://rddc-deposit-ta2/src-ta2-01/2026-11-reg01/
+aws s3 sync 2026-11-reg01/ "$PREFIX" --exclude _sidecar.json
+aws s3 cp 2026-11-reg01/_sidecar.json "$PREFIX"</rddc-code>
+<p>Correction and resubmission workflows remain to be defined.</p>
+</li>
+</ol>
+
+<h2 id="the-finished-sidecar">Complete sidecar</h2>
+<rddc-json src="site/recipes/minimal.json" title="2026-11-reg01/_sidecar.json"></rddc-json>
+
+<h2 id="where-to-go-next">Next steps</h2>
+<ul>
+<li>Group files into a collection and describe a data dictionary: <a href="recipes.html#registry-with-a-data-dictionary">registry recipe</a>.</li>
+<li>Send FHIR, OMOP or C-CDA data: <a href="examples.html">example sidecars</a> and <a href="recipes.html">recipes</a>.</li>
+<li><a href="mistakes.html">Review common mistakes</a>.</li>
+</ul>

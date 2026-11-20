@@ -1,0 +1,90 @@
+{
+  "@id": "urn:uuid:0000a006-0000-4000-8000-00000000a006",
+  "@type": "sc:Dataset",
+  "conformsTo": [
+    "http://mlcommons.org/croissant/1.1",
+    "https://w3id.org/rddc/sidecar/0.1.0"
+  ],
+  "name": "src-ta2-01/2026-12-dysmorph",
+  "description": "Facial photographs and gait videos for phenotyping.",
+  "url": "s3://rddc-deposit-ta2/src-ta2-01/2026-12-dysmorph/",
+  "dateCreated": "2026-10-28T12:00:00Z",
+  "wasAttributedTo": {
+    "@type": "sc:SoftwareApplication",
+    "name": "rddc-sidecar",
+    "softwareVersion": "0.1.0"
+  },
+  "contributorId": "ta2-site-a",
+  "contributorContact": "data-steward@ta2-site-a.example.org",
+  "sourceId": "src-ta2-01",
+  "batchId": "2026-12-dysmorph",
+  "interaction": "add",
+  "registerVersion": "2026-10-20",
+  "sensitivity": {
+    "directIdentifiersRemoved": true,
+    "containsDates": true,
+    "containsSubStateGeography": false,
+    "containsFreeText": false,
+    "containsBiometricIdentifiers": false
+  },
+  "subjects": [
+    {
+      "subjectId": "P0002",
+      "idSystem": "contributor"
+    }
+  ],
+  "distribution": [
+    {
+      "@id": "urn:uuid:0000a601-0000-4000-8000-00000000a601",
+      "@type": "cr:FileObject",
+      "additionalType": "rddc:FacialImagingFile",
+      "name": "photos/P0002_frontal.dcm",
+      "contentUrl": "photos/P0002_frontal.dcm",
+      "contentSize": "2400000 B",
+      "encodingFormat": "application/dicom",
+      "sha256": "788e4bc36221d709dc3aa6a69f2f66886b8824f885c201516073ed15df93df93",
+      "md5": "8aff8ec69b45840538059f89005322e8",
+      "measurementTechnique": "photography",
+      "subjectIds": [
+        "P0002"
+      ]
+    },
+    {
+      "@id": "urn:uuid:0000a602-0000-4000-8000-00000000a602",
+      "@type": "cr:FileObject",
+      "additionalType": "rddc:VideoFile",
+      "name": "video/P0002_gait.mp4",
+      "contentUrl": "video/P0002_gait.mp4",
+      "contentSize": "85000000 B",
+      "encodingFormat": "video/mp4",
+      "sha256": "c1740c9c0a89d0b75f6f206307f9bd6dca585f6aa11bd8fa65281c849a5e638c",
+      "md5": "fa3a794d6515eb0ce97e971f89371628",
+      "subjectIds": [
+        "P0002"
+      ],
+      "sensitivity": {
+        "containsBiometricIdentifiers": true,
+        "notes": "Face visible in the first 20 seconds."
+      }
+    },
+    {
+      "@id": "urn:uuid:0000a603-0000-4000-8000-00000000a603",
+      "@type": "cr:FileObject",
+      "additionalType": "rddc:DocumentationFile",
+      "name": "photos/acquisition.csv",
+      "contentUrl": "photos/acquisition.csv",
+      "contentSize": "900 B",
+      "encodingFormat": "text/csv",
+      "sha256": "9cc20bdf4c747d286700132b4f78c30a3b71f8fc918fcf1b665fdcc05ddf4d5b",
+      "md5": "71d04862723227f75ec91992f44ecb1a",
+      "about": [
+        {
+          "@id": "urn:uuid:0000a601-0000-4000-8000-00000000a601"
+        }
+      ],
+      "sensitivity": {
+        "containsDates": false
+      }
+    }
+  ]
+}

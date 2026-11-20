@@ -1,0 +1,67 @@
+<h1>Lifecycle and validation</h1>
+<p class="lede">Metadata sidecar preparation, upload, validation and processing.</p>
+
+<h2 id="from-draft-to-processing">Processing lifecycle</h2>
+<ol class="steps">
+<li><h3 id="draft">Draft</h3><p>The contributor runs the generator on the batch directory. It identifies file types, computes checksums, extracts subject IDs, proposes file sets and assigns file IDs, recording the origin of every value it fills in.</p></li>
+<li><h3 id="validate-locally">Validate locally</h3><p>The validator checks the sidecar against the schema and the files on disk, offline. The contributor confirms or corrects any inferred values. This matters because delivery credentials are write-only: once uploaded, nothing can be changed.</p></li>
+<li><h3 id="upload">Upload</h3><p>Data files first, then <code>_sidecar.json</code>, all under one batch prefix in the contributor's bucket.</p></li>
+<li><h3 id="receive">Receive</h3><p>The sidecar's arrival starts one receipt workflow for the batch. It checks the delivery role and <code>sourceId</code>, waits for every listed file, verifies checksums, reports objects missing from either side, checks subjects against the participants table, and registers the files in Synapse with sidecar fields as annotations.</p></li>
+<li><h3 id="screen">Screen</h3><p>De-identification and QC tasks pick their checks from each file's format and sensitivity flags. Exceptions go to curators with the file and subject context from the sidecar.</p></li>
+<li><h3 id="process">Process</h3><p>The NORMALIZE stage selects a processing path from each file's modality (set by its class) and the file set's <code>conformsTo</code>, reads task parameters from the file and file-set fields, and verifies inputs by checksum.</p></li>
+<li><h3 id="register-outputs">Register outputs</h3><p>Synapse registers pipeline outputs with the provenance recorded in Cirro, in W3C PROV form. Outputs do not get sidecars; the sidecar describes the deposit only.</p></li>
+</ol>
+
+<h2>Validation gates</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Gate</th><th>Who runs it</th><th>When</th><th>On failure</th></tr></thead>
+<tbody>
+<tr><td>Local</td><td>Contributor, with the CLI</td><td>Before upload</td><td>Error report; don't upload. Registry values are checked against the source descriptor if one is supplied.</td></tr>
+<tr><td>Receipt</td><td>RDDC intake workflow</td><td>When the sidecar arrives</td><td>The batch is stopped; the report names failing files and fields.</td></tr>
+<tr><td>Screening hand-off</td><td>De-id and QC tasks</td><td>Before tests run</td><td>Tasks stop if format or sensitivity information is missing.</td></tr>
+<tr><td>Pre-processing</td><td>NORMALIZE lane</td><td>When a task reads a file or file set</td><td>The task fails, naming the field.</td></tr>
+</tbody></table></div>
+
+<h2 id="what-gets-checked">Validation checks</h2>
+<p><strong>Intrinsic</strong> checks use the sidecar, files and schema and give the same result wherever they run. <strong>Registry</strong> checks compare source details with the local source descriptor or the live source register. Participant checks run at receipt.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Check</th><th>Failure examples</th><th>Kind</th></tr></thead>
+<tbody>
+<tr><td>Syntax</td><td>Invalid UTF-8 or JSON</td><td>Intrinsic</td></tr>
+<tr><td>Schema</td><td>Missing required field, wrong type, unknown property, value not in an enumeration, a conditional rule broken (such as <code>withdraw</code> without <code>noticeRef</code>)</td><td>Intrinsic</td></tr>
+<tr><td>Vocabulary</td><td>An enumeration value not defined in the schema version the sidecar declares</td><td>Intrinsic</td></tr>
+<tr><td>Identity</td><td>Two files with the same <code>@id</code> or path; a subject listed twice</td><td>Intrinsic</td></tr>
+<tr><td>Reconciliation</td><td>A file on disk with no entry, or an entry with no file</td><td>Intrinsic</td></tr>
+<tr><td>Integrity</td><td>Checksum mismatch; a <code>hasPart</code> or <code>about</code> reference that doesn't resolve</td><td>Intrinsic</td></tr>
+<tr><td>Subjects</td><td>A file's <code>subjectIds</code> not in the subject table; an empty table on a withdrawal; name-like subject IDs</td><td>Intrinsic</td></tr>
+<tr><td>Sensitivity</td><td><code>directIdentifiersRemoved</code> false on real data; column headers or paths that look like names, SSNs, MRNs, addresses, phone numbers or emails</td><td>Intrinsic</td></tr>
+<tr><td>Conformance</td><td>An OMOP instance without <code>person</code> and <code>observation_period</code>; a FHIR bulk export without <code>Patient</code>; a <code>conformsTo</code> value outside the pinned list</td><td>Intrinsic</td></tr>
+<tr><td>Confirmation</td><td>An <code>inferred</code> value not yet confirmed</td><td>Intrinsic</td></tr>
+<tr><td>Registry</td><td><code>contributorId</code>, <code>sourceId</code> or bucket not matching the register; prefix not matching the source's pattern; a file class whose modality the source isn't registered for; subject IDs not in the participants table; references to earlier sidecars that don't resolve</td><td>Registry</td></tr>
+</tbody></table></div>
+<p>The JSON Schema generated from the model covers the schema and vocabulary checks. The RDDC validator handles the remaining checks; the <a href="reference.html#rules-beyond-json-schema">reference</a> lists the rules JSON Schema can't express.</p>
+
+<h3>Reading a validation report</h3>
+<p>Each finding includes a severity, rule ID, JSON pointer, file and message. Tools can read the report to suggest fixes. Errors block processing; warnings do not.</p>
+<rddc-code lang="text" title="A finding in the planned rddc-sidecar JSON report">{
+  "severity": "error",
+  "rule": "integrity.checksum_mismatch",
+  "path": "/distribution/12/md5",
+  "contentUrl": "omop/person.csv",
+  "message": "md5 does not match the file"
+}</rddc-code>
+<p><code>path</code> is a JSON pointer into the sidecar; <code>contentUrl</code> is present when the finding concerns a file. The command exits with 0 when there are no errors, 1 when there are, and 2 when the sidecar or directory can't be read.</p>
+
+<h2>Immutability</h2>
+<p>Once received, a sidecar cannot be edited. The platform stores identifiers such as Synapse IDs in its own metadata. Correction and resubmission workflows are still being designed.</p>
+
+<h2>Schema versioning</h2>
+<ul>
+<li>The schema follows semantic versioning. Minor versions only add optional fields or enumeration values. Adding a required field, removing a field or value, or changing a type needs a major version.</li>
+<li>Each sidecar declares its schema version in <code>conformsTo</code>, such as <code>https://w3id.org/rddc/sidecar/{{version}}</code>, and is validated against that version. A value deprecated later stays valid for sidecars that declare an earlier version.</li>
+<li>Within a major version, a sidecar valid under x.y is valid under every later x.z.</li>
+<li>Validators accept the current and previous major version for a deprecation window, proposed as two quarters.</li>
+<li>Releases are git tags named <code>v&lt;major&gt;.&lt;minor&gt;.&lt;patch&gt;</code>. Tools pin a tag, never the default branch.</li>
+</ul>
+<div class="note warn"><strong>Pre-1.0</strong>
+<p>Version {{version}} is a draft. Until 1.0, any release may change the model.</p></div>

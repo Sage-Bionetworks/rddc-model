@@ -1,0 +1,68 @@
+<h1>Genomics</h1>
+<p class="lede">Sequencing reads, alignments, variant calls, expression quantifications and their indexes. Reads and alignments name their format; variant calls name whether they hold germline variants, which identify a person.</p>
+
+<rddc-family names="FastqFile,UnalignedBamFile,BamFile,CramFile,GermlineVariantFile,SomaticVariantFile,GeneExpressionFile,IndexFile"></rddc-family>
+
+<h2>Classes and formats</h2>
+<p>FASTQ, BAM, CRAM, VCF and BCF have no registered IANA media type: <code>encodingFormat</code> is <code>text/plain</code> for the text formats and <code>application/octet-stream</code> for the binary ones. Where the pipelines differ by format and the media type cannot tell the formats apart, the format is the class: reads are a <code>FastqFile</code> or an <code>UnalignedBamFile</code>, alignments a <code>BamFile</code> or a <code>CramFile</code>, each mapped to its <a href="data-standards.html">EDAM</a> format term. Variant calls are classed by what they contain, germline or somatic variants, and the media type and compression say whether a file is a VCF, a BCF or a MAF. Two abstract classes group the format classes, <code>SequenceReadsFile</code> and <code>AlignmentFile</code>, and <code>VariantFile</code> groups the variant classes. A file always names a concrete class.</p>
+
+<h2 id="assay-and-platform">Assay and platform</h2>
+<p>Analysis requires two fields on every genomics file:</p>
+<ul>
+<li><code>measurementTechnique</code>: the sequencing assay, such as whole genome or exome sequencing. Values map to OBI assay terms.</li>
+<li><code>sequencingPlatform</code>: the sequencing technology, based on the INSDC platform types. It distinguishes short and long reads, which require different processing.</li>
+</ul>
+<p>Optionally, set <code>platform</code> to the instrument model, such as <code>Illumina NovaSeq X</code>.</p>
+<h3>Assays</h3>
+<rddc-enum name="GenomicsAssayEnum"></rddc-enum>
+<h3>Sequencing platforms</h3>
+<rddc-enum name="SequencingPlatformEnum"></rddc-enum>
+
+<h2>Reads</h2>
+<p>Reads before alignment are a <code>FastqFile</code> or, for basecaller output such as PacBio or Nanopore reads, an <code>UnalignedBamFile</code>. Paired-end files reference each other through <code>pairedWith</code>. RNA-seq and methylation reads are reads like any other: they carry the germline variants of the sequenced regions.</p>
+<div class="tabs">
+  <div role="tablist" aria-label="Reads examples">
+    <button role="tab" id="t-r-1" aria-controls="p-r-1" aria-selected="true">FASTQ</button>
+    <button role="tab" id="t-r-2" aria-controls="p-r-2" aria-selected="false" tabindex="-1">Unaligned BAM</button>
+    <button role="tab" id="t-r-3" aria-controls="p-r-3" aria-selected="false" tabindex="-1">RNA-seq FASTQ</button>
+  </div>
+  <div role="tabpanel" id="p-r-1" aria-labelledby="t-r-1"><rddc-example key="fastq"></rddc-example></div>
+  <div role="tabpanel" id="p-r-2" aria-labelledby="t-r-2" hidden><rddc-example key="ubam"></rddc-example></div>
+  <div role="tabpanel" id="p-r-3" aria-labelledby="t-r-3" hidden><rddc-example key="rna_reads"></rddc-example></div>
+</div>
+
+<h2>Alignments</h2>
+<p>Alignments (<code>BamFile</code>, <code>CramFile</code>) specify their coordinate assembly in <code>referenceGenome</code>. UCSC build names map to the matching GRC assembly: hg19 is <code>GRCh37</code> and hg38 is <code>GRCh38</code>. SAM, the text form of an alignment, is not accepted; convert it to BAM.</p>
+<rddc-enum name="ReferenceGenomeEnum"></rddc-enum>
+<div class="pair">
+  <div><rddc-example key="bam"></rddc-example></div>
+  <div><rddc-example key="cram"></rddc-example></div>
+</div>
+
+<h2>Variant calls</h2>
+<p>Variant calls also give <code>referenceGenome</code>. Germline variants identify a person, so the class says whether a file can contain them: a <code>GermlineVariantFile</code> holds germline calls, joint genotypes, or somatic calls that still include germline variants, such as unfiltered tumor-only calls; a <code>SomaticVariantFile</code> holds somatic calls with germline variants removed, as in the GDC's masked somatic mutation files. The media type tells the format: VCF is <code>text/plain</code>, BCF is <code>application/octet-stream</code> and MAF, a tab-separated table, is <code>text/tab-separated-values</code>. A variant file can reference its source alignment through <code>wasDerivedFrom</code>.</p>
+<div class="tabs">
+  <div role="tablist" aria-label="Variant call examples">
+    <button role="tab" id="t-g-1" aria-controls="p-g-1" aria-selected="true">Germline VCF</button>
+    <button role="tab" id="t-g-2" aria-controls="p-g-2" aria-selected="false" tabindex="-1">Germline BCF</button>
+    <button role="tab" id="t-g-3" aria-controls="p-g-3" aria-selected="false" tabindex="-1">Somatic MAF</button>
+  </div>
+  <div role="tabpanel" id="p-g-1" aria-labelledby="t-g-1"><rddc-example key="variants"></rddc-example></div>
+  <div role="tabpanel" id="p-g-2" aria-labelledby="t-g-2" hidden><rddc-example key="bcf"></rddc-example></div>
+  <div role="tabpanel" id="p-g-3" aria-labelledby="t-g-3" hidden><rddc-example key="somatic_variants"></rddc-example></div>
+</div>
+
+<h2>Expression quantifications</h2>
+<p>Gene or transcript expression quantified from RNA-seq, such as a matrix of counts or TPM per gene and sample, is a <code>GeneExpressionFile</code>. It holds no sequence, so it is not identifying the way the reads it came from are, though expression values can still be linked to a genotype through eQTLs. Formats with no registered media type, such as AnnData, are <code>application/octet-stream</code>.</p>
+<rddc-example key="expression"></rddc-example>
+
+<h2>Indexes</h2>
+<p>An <code>IndexFile</code> points to the file it indexes with <code>indexOf</code>. Its format follows the indexed file: <code>.bai</code> for a BAM, <code>.crai</code> for a CRAM, <code>.tbi</code> or <code>.csi</code> for a VCF and <code>.csi</code> for a BCF. Indexes are binary.</p>
+<rddc-example key="index"></rddc-example>
+
+<h2 id="media-types">Media types and compression</h2>
+<p>Genomics files use <code>text/plain</code> for the text formats and <code>application/octet-stream</code> for the binary ones. BAM, CRAM and BCF compress internally, so they leave <code>compression</code> unset. A compressed FASTQ or VCF declares how it was compressed: <code>bgzf</code> for a file written by <code>bgzip</code>, which a tabix or CSI index requires, and <code>gzip</code> for a plain gzipped file. A VCF delivered with its index is therefore <code>bgzf</code>.</p>
+
+<h2>Sensitivity</h2>
+<p>Sequencing reads and alignments of any assay, and germline variant calls, are <a href="data-overview.html#files-that-identify-a-person">identifying</a>: they can identify a person on their own, and W3C DPV classes them as genetic data (<code>pd:Genetic</code>). Removing direct identifiers does not make them de-identified, regardless of sensitivity flags. Germline-filtered somatic calls, expression quantifications and index files are not identifying on their own.</p>
+<p>The formats hold sequence data, run metadata and expression values, not dates, sub-state geography, free text or biometric identifiers about the subject, so none of the <a href="data-overview.html#sensitivity-flags-by-class">sensitivity flags</a> applies to a genomics or index file. They are false whatever the batch says, and a file cannot set them; its <code>sensitivity</code> may hold notes only.</p>

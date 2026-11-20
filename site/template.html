@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}} | RDDC data model</title>
+<meta name="description" content="The kinds of data the Rare Disease Data Commons accepts, how to describe them, and how to list a deposit in an RDDC metadata sidecar.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" href="assets/mark.svg" type="image/svg+xml">
+<script>
+  (function () {
+    var t = localStorage.getItem("rddc-theme");
+    if (t) document.documentElement.dataset.theme = t;
+    if (localStorage.getItem("rddc-origins") === "off") document.documentElement.classList.add("no-origins");
+  })();
+</script>
+</head>
+<body class="layout-{{layout}} {{section}}">
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+  <button class="menu" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="side">
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+  </button>
+  <a class="brand" href="index.html">
+    <img src="assets/mark.svg" alt="" width="28" height="28">
+    <span>RDDC data model</span>
+  </a>
+  <span class="version" title="Schema version documented on this site">Schema {{version}} (draft)</span>
+  <div class="search" role="search">
+    <label class="visually-hidden" for="q">Search the documentation</label>
+    <input id="q" type="search" placeholder="Search  ( / )" autocomplete="off" aria-controls="results">
+    <ol id="results" class="results" hidden></ol>
+  </div>
+  <div class="toggles">
+    <button class="origins-toggle" type="button" aria-pressed="true" title="Colour JSON keys by the vocabulary they come from">
+      <span class="swatches" aria-hidden="true"><i class="o-sc"></i><i class="o-cr"></i><i class="o-rddc"></i><i class="o-prov"></i></span>
+      Term origins
+    </button>
+    <button class="theme-toggle" type="button" aria-label="Switch between light and dark theme">
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z" fill="currentColor"/></svg>
+    </button>
+  </div>
+</header>
+<div class="shell">
+  <nav id="side" class="side" aria-label="Documentation">
+    {{sidebar}}
+  </nav>
+  <main id="main" tabindex="-1">
+    <article class="doc">
+      {{content}}
+      {{pager}}
+    </article>
+  </main>
+  {{toc}}
+</div>
+<footer class="foot">
+  <p>RDDC data model, schema {{version}}. Built from <code>schema/rddc_sidecar.yaml</code> and the modules it imports. If the docs and schema disagree, follow the schema. Content licensed CC0 1.0.</p>
+</footer>
+<script src="assets/app.js" defer></script>
+</body>
+</html>

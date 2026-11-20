@@ -1,0 +1,46 @@
+<h1>Source descriptor</h1>
+<p class="lede">The RDDC issues a source descriptor when a source is registered. This small JSON file contains the source details needed to generate and check metadata sidecars offline.</p>
+
+<h2 id="why-it-exists">Purpose</h2>
+<p>The descriptor supports checks of source details before upload: contributor and source IDs, bucket, prefix pattern and allowed modalities. At receipt, the RDDC checks these against the live source register.</p>
+<ul>
+<li>The generator uses it to fill in the sidecar header.</li>
+<li>The descriptor enables local registry checks. Without it, validation warns that these checks are deferred to receipt.</li>
+</ul>
+
+<h2>Example</h2>
+<rddc-json src="examples/source_descriptor.json" title="rddc_source.json"></rddc-json>
+
+<h2>Fields</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Field</th><th>Required?</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>conformsTo</code></td><td><span class="req">required</span></td><td>Must include <code>https://w3id.org/rddc/source-descriptor/{{version}}</code>.</td></tr>
+<tr><td><code>contributorId</code></td><td><span class="req">required</span></td><td>Copy into the sidecar's <code>contributorId</code>.</td></tr>
+<tr><td><code>contributorContact</code></td><td><span class="req">required</span></td><td>Contact email, filled in by the ACT. The contributor may replace it with their own contact. Copy into the sidecar's <code>contributorContact</code>.</td></tr>
+<tr><td><code>sourceId</code></td><td><span class="req">required</span></td><td>Copy into the sidecar's <code>sourceId</code>.</td></tr>
+<tr><td><code>bucket</code></td><td><span class="req">required</span></td><td>The S3 bucket, used to build the sidecar's <code>url</code>.</td></tr>
+<tr><td><code>prefixPattern</code></td><td><span class="req">required</span></td><td>Template for batch prefixes with <code>{sourceId}</code> and <code>{batchId}</code> placeholders, ending with a slash.</td></tr>
+<tr><td><code>modalities</code></td><td><span class="req">required</span></td><td>Modalities this source may deposit.</td></tr>
+<tr><td><code>registerVersion</code></td><td><span class="req">required</span></td><td>Version of the register the descriptor was issued from. Copy into the sidecar's <code>registerVersion</code>.</td></tr>
+<tr><td><code>issuedAt</code>, <code>issuedBy</code></td><td><span class="req">required</span></td><td>When and by whom the descriptor was issued.</td></tr>
+<tr><td><code>region</code>, <code>description</code></td><td><span class="opt">optional</span></td><td>AWS region; a note. Neither reaches the sidecar.</td></tr>
+</tbody></table></div>
+<p>The full definition is in the <a href="reference.html#SourceDescriptor">schema reference</a>, and the JSON Schema is <a href="downloads/rddc_source_descriptor.schema.json"><code>rddc_source_descriptor.schema.json</code></a>.</p>
+
+<h2 id="from-descriptor-to-sidecar-header">Sidecar header mapping</h2>
+<p>The descriptor and batch ID <code>2026-11-reg01</code> produce these header values:</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Sidecar field</th><th>Value</th><th>From</th></tr></thead>
+<tbody>
+<tr><td><code>contributorId</code></td><td><code>ta2-site-a</code></td><td><code>contributorId</code></td></tr>
+<tr><td><code>contributorContact</code></td><td><code>data-steward@ta2-site-a.example.org</code></td><td><code>contributorContact</code></td></tr>
+<tr><td><code>sourceId</code></td><td><code>src-ta2-01</code></td><td><code>sourceId</code></td></tr>
+<tr><td><code>url</code></td><td><code>s3://rddc-deposit-ta2/src-ta2-01/2026-11-reg01/</code></td><td><code>bucket</code> + <code>prefixPattern</code> with placeholders filled</td></tr>
+<tr><td><code>name</code></td><td><code>src-ta2-01/2026-11-reg01</code></td><td>Convention: <code>sourceId/batchId</code></td></tr>
+<tr><td><code>registerVersion</code></td><td><code>2026-10-20</code></td><td><code>registerVersion</code></td></tr>
+<tr><td>each file's <code>additionalType</code></td><td>a class whose modality is one of the four listed</td><td><code>modalities</code></td></tr>
+</tbody></table></div>
+
+<div class="note"><strong>Plain JSON, not JSON-LD</strong>
+<p>The descriptor is a configuration file, not a dataset description. It has no <code>@context</code> and is not a Croissant document. Its values are issued per source and never written into the schema.</p></div>

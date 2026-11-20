@@ -83,6 +83,9 @@ jobs:
           name: schemas
           path: schema/generated/
 
+      - name: Build the documentation site (checks the recipes and data file examples)
+        run: python scripts/build_site.py "$RUNNER_TEMP/site"
+
   release:
     needs: validate
     if: startsWith(github.ref, 'refs/tags/v')

@@ -1,0 +1,161 @@
+{
+  "@id": "urn:uuid:0000a005-0000-4000-8000-00000000a005",
+  "@type": "sc:Dataset",
+  "conformsTo": [
+    "http://mlcommons.org/croissant/1.1",
+    "https://w3id.org/rddc/sidecar/0.1.0"
+  ],
+  "name": "src-ta2-01/2026-12-wgs01",
+  "description": "Whole-genome sequencing for one proband.",
+  "url": "s3://rddc-deposit-ta2/src-ta2-01/2026-12-wgs01/",
+  "dateCreated": "2026-10-28T12:00:00Z",
+  "wasAttributedTo": {
+    "@type": "sc:SoftwareApplication",
+    "name": "rddc-sidecar",
+    "softwareVersion": "0.1.0"
+  },
+  "contributorId": "ta2-site-a",
+  "contributorContact": "data-steward@ta2-site-a.example.org",
+  "sourceId": "src-ta2-01",
+  "batchId": "2026-12-wgs01",
+  "interaction": "add",
+  "registerVersion": "2026-10-20",
+  "sensitivity": {
+    "directIdentifiersRemoved": true,
+    "containsDates": false,
+    "containsSubStateGeography": false,
+    "containsFreeText": false,
+    "containsBiometricIdentifiers": false
+  },
+  "subjects": [
+    {
+      "subjectId": "P0001",
+      "idSystem": "contributor"
+    }
+  ],
+  "distribution": [
+    {
+      "@id": "wgs",
+      "@type": "cr:FileSet",
+      "additionalType": "rddc:FileCollection",
+      "name": "WGS for P0001",
+      "includes": [
+        "wgs/*"
+      ],
+      "hasPart": [
+        {
+          "@id": "urn:uuid:0000a501-0000-4000-8000-00000000a501"
+        },
+        {
+          "@id": "urn:uuid:0000a502-0000-4000-8000-00000000a502"
+        },
+        {
+          "@id": "urn:uuid:0000a503-0000-4000-8000-00000000a503"
+        },
+        {
+          "@id": "urn:uuid:0000a504-0000-4000-8000-00000000a504"
+        },
+        {
+          "@id": "urn:uuid:0000a505-0000-4000-8000-00000000a505"
+        }
+      ],
+      "subjectCount": 1
+    },
+    {
+      "@id": "urn:uuid:0000a503-0000-4000-8000-00000000a503",
+      "@type": "cr:FileObject",
+      "additionalType": "rddc:CramFile",
+      "name": "wgs/P0001.cram",
+      "contentUrl": "wgs/P0001.cram",
+      "contentSize": "17500000000 B",
+      "encodingFormat": "application/octet-stream",
+      "sha256": "25f7af75032f1d158c22a559258c07818417341667860d3cffac1b8c0d10c216",
+      "md5": "14dd9356e1fb20daec1d0fc959b83b19",
+      "measurementTechnique": "wgs",
+      "referenceGenome": "GRCh38",
+      "sequencingPlatform": "illumina",
+      "platform": "Illumina NovaSeq X",
+      "subjectIds": [
+        "P0001"
+      ]
+    },
+    {
+      "@id": "urn:uuid:0000a504-0000-4000-8000-00000000a504",
+      "@type": "cr:FileObject",
+      "additionalType": "rddc:IndexFile",
+      "name": "wgs/P0001.cram.crai",
+      "contentUrl": "wgs/P0001.cram.crai",
+      "contentSize": "1400000 B",
+      "encodingFormat": "application/octet-stream",
+      "sha256": "cf5ca711c509947075551af18f39f5728143edd7c5da114d7469aadf43c73b0b",
+      "md5": "b822f85547f8a344c2f839bd9388d57b",
+      "indexOf": {
+        "@id": "urn:uuid:0000a503-0000-4000-8000-00000000a503"
+      },
+      "subjectIds": [
+        "P0001"
+      ]
+    },
+    {
+      "@id": "urn:uuid:0000a505-0000-4000-8000-00000000a505",
+      "@type": "cr:FileObject",
+      "additionalType": "rddc:GermlineVariantFile",
+      "name": "wgs/P0001.vcf.gz",
+      "contentUrl": "wgs/P0001.vcf.gz",
+      "contentSize": "160000000 B",
+      "encodingFormat": "text/plain",
+      "sha256": "23f58c124ae15753d8cbf706d2854ab6f3da1f6e2bc4eac66a36cb7accd2b374",
+      "md5": "3dab0a6455df73e2e88f7b6dd9bf4a53",
+      "measurementTechnique": "wgs",
+      "compression": "bgzf",
+      "referenceGenome": "GRCh38",
+      "sequencingPlatform": "illumina",
+      "platform": "Illumina NovaSeq X",
+      "subjectIds": [
+        "P0001"
+      ]
+    },
+    {
+      "@id": "urn:uuid:0000a501-0000-4000-8000-00000000a501",
+      "@type": "cr:FileObject",
+      "additionalType": "rddc:FastqFile",
+      "name": "wgs/P0001_R1.fastq.gz",
+      "contentUrl": "wgs/P0001_R1.fastq.gz",
+      "contentSize": "48000000000 B",
+      "encodingFormat": "text/plain",
+      "sha256": "3be1876c9d7165f0f1c0531f3aa53b439eca600d16876a750c14cac63983f394",
+      "md5": "51be022faa6dbdd6cff37dc1c237add8",
+      "measurementTechnique": "wgs",
+      "compression": "gzip",
+      "pairedWith": {
+        "@id": "urn:uuid:0000a502-0000-4000-8000-00000000a502"
+      },
+      "sequencingPlatform": "illumina",
+      "platform": "Illumina NovaSeq X",
+      "subjectIds": [
+        "P0001"
+      ]
+    },
+    {
+      "@id": "urn:uuid:0000a502-0000-4000-8000-00000000a502",
+      "@type": "cr:FileObject",
+      "additionalType": "rddc:FastqFile",
+      "name": "wgs/P0001_R2.fastq.gz",
+      "contentUrl": "wgs/P0001_R2.fastq.gz",
+      "contentSize": "48200000000 B",
+      "encodingFormat": "text/plain",
+      "sha256": "f5f5674bd7bbbea8cf7e70c68fe2bf36e9120f62c3379faf7fbf4395dd1a56dc",
+      "md5": "748222296b958ecfecc64202516d68c4",
+      "measurementTechnique": "wgs",
+      "compression": "gzip",
+      "pairedWith": {
+        "@id": "urn:uuid:0000a501-0000-4000-8000-00000000a501"
+      },
+      "sequencingPlatform": "illumina",
+      "platform": "Illumina NovaSeq X",
+      "subjectIds": [
+        "P0001"
+      ]
+    }
+  ]
+}
