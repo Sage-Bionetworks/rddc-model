@@ -8812,6 +8812,9 @@
                     "type": "string"
                 },
                 "conformsTo": {
+                    "contains": {
+                        "pattern": "^https://w3id\\.org/rddc/sidecar/[0-9]+\\.[0-9]+\\.[0-9]+$"
+                    },
                     "description": "Specifications the document conforms to. Must include http://mlcommons.org/croissant/1.1 and https://w3id.org/rddc/sidecar/<schema version>.",
                     "items": {
                         "format": "uri",
@@ -9282,6 +9285,9 @@
                     "type": "string"
                 },
                 "conformsTo": {
+                    "contains": {
+                        "pattern": "^https://w3id\\.org/rddc/source-descriptor/[0-9]+\\.[0-9]+\\.[0-9]+$"
+                    },
                     "description": "Must include https://w3id.org/rddc/source-descriptor/<schema version>.",
                     "items": {
                         "format": "uri",
@@ -10798,6 +10804,9 @@
             "type": "string"
         },
         "conformsTo": {
+            "contains": {
+                "pattern": "^https://w3id\\.org/rddc/sidecar/[0-9]+\\.[0-9]+\\.[0-9]+$"
+            },
             "description": "Specifications the document conforms to. Must include http://mlcommons.org/croissant/1.1 and https://w3id.org/rddc/sidecar/<schema version>.",
             "items": {
                 "format": "uri",

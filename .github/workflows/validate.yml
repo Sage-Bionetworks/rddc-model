@@ -77,6 +77,10 @@ jobs:
           python -c "import mlcroissant"
           python scripts/check_examples.py
 
+      - name: Check the modules, examples and release tag agree on the schema version
+        # On a v* tag, GITHUB_REF_TYPE is "tag" and the tag must equal v<version>.
+        run: python scripts/check_version.py
+
       - name: Publish the generated schemas as a workflow artifact
         uses: actions/upload-artifact@v4
         with:

@@ -20,6 +20,7 @@ context:
 check:
 	python3 scripts/check_data_files.py schema/data.yaml
 	$(CROISSANT_PY) scripts/check_examples.py
+	python3 scripts/check_version.py
 
 lint:
 	linkml-lint --config .linkml-lint.yaml header.yaml

@@ -78,6 +78,8 @@ INVALID = {
     "removed sidecarType": put(["sidecarType"], "deposit"),
     "removed wasGeneratedBy": put(FHIR + ["wasGeneratedBy"], {"@type": "prov:Activity", "name": "x"}),
     "no conformsTo": drop(["conformsTo"]),
+    "conformsTo without the RDDC sidecar version": put(["conformsTo"], ["http://mlcommons.org/croissant/1.1"]),
+    "RDDC sidecar version not major.minor.patch": put(["conformsTo", 1], "https://w3id.org/rddc/sidecar/0.1"),
     "temporalCoverage not an ISO 8601 interval": put(["temporalCoverage"], "2019-2026"),
     "temporalCoverage with a time of day": put(["temporalCoverage"], "2024-03-01T10:00/2024-03-02"),
     "temporalCoverage on a file set with two open ends": put(OMOP_SET + ["temporalCoverage"], "../.."),

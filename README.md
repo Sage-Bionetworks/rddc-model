@@ -24,7 +24,7 @@ RDDC fields use camelCase in the `rddc:` namespace.
 | `schema/generated/rddc_source_descriptor.schema.json` | Closed JSON Schema for the source descriptor (plain JSON) |
 | `examples/` | Example sidecars (deposit, withdrawal, C-CDA document set) and a source descriptor |
 | `examples/data_files/valid.json` | One valid data file object per data class, checked by `make check` |
-| `scripts/` | Context builder, example and data file checkers, class annotation checker and enum generator |
+| `scripts/` | Context builder, example and data file checkers, class annotation checker, version checker and enum generator |
 
 ## Build and check
 
@@ -49,7 +49,9 @@ workflow artifact on every run and attaches them to the GitHub release of a
 
 The schema follows semantic versioning from 1.0. It is still a draft and may
 change before then. The version restarted at 0.1.0 when the model moved to
-Croissant. Releases are git tags named `v<major>.<minor>.<patch>`.
+Croissant. Releases are git tags named `v<major>.<minor>.<patch>`; CI fails a
+tag that does not match the modules' `version`, and `make check` fails if the
+modules or the examples disagree on it.
 Consumers such as [rddc-sidecar](../rddc-sidecar) fetch schema sources by tag,
 never from the default branch.
 
