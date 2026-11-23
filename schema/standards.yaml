@@ -1,21 +1,15 @@
-id: https://w3id.org/rddc/ontologies
-name: rddc-ontologies
-title: RDDC Ontologies
+id: https://w3id.org/rddc/standards
+name: rddc-standards
+title: RDDC Standards
 version: 0.1.0
 description: >-
-  Catalog of the ontologies, terminologies and exchange standards considered for
-  incoming Rare Disease Data Commons (RDDC) clinical data: where each standard
-  comes from, how it is licensed and released, and which data categories and
-  coverage domains it can represent. Converted from the "RAPID Ontology
-  Exploration" workbook. Coverage is indicative, not a verified application
-  implementation.
+  Registry of the standards (ontologies, terminologies, classifications, data
+  models and exchange schemas) considered for incoming Rare Disease Data
+  Commons (RDDC) clinical data: where each standard comes from, how it is
+  licensed and released, and which data categories and coverage domains it can
+  represent. Converted from the "RAPID Ontology Exploration" workbook. Coverage
+  is indicative, not a verified application implementation.
 
-
-  Field names are lowerCamelCase and prefixes follow the other RDDC modules
-  (core.yaml, data.yaml, rddc_sidecar.yaml), so CURIEs such as SNOMEDCT:169283005
-  expand to the same URIs here as there. StandardEntry.conformsToUrls and
-  DataCategory.dataClasses link this catalog to the sidecar's conformsTo values
-  and to the data file classes in data.yaml.
 license: https://creativecommons.org/publicdomain/zero/1.0/
 
 prefixes:
@@ -28,12 +22,12 @@ prefixes:
   dcat: http://www.w3.org/ns/dcat#
   foaf: http://xmlns.com/foaf/0.1/
   owl: http://www.w3.org/2002/07/owl#
-  # MOD (Metadata for Ontology Description), FAIR-IMPACT version 3.x.
+
+  # MOD (Metadata for Ontology Description)
   mod: https://w3id.org/mod#
   bioregistry: https://bioregistry.io/registry/
-  # Namespaces of the standards themselves, so data can use CURIEs such as
-  # HP:0001250. Names and expansions match header.yaml and data.yaml (the
-  # LinkML linter's canonical prefix map); keep them in step with those files.
+
+  # Namespaces of the standards themselves
   # Clinical terminologies
   SNOMEDCT: http://identifiers.org/snomedct/
   LOINC: https://loinc.org/
@@ -63,7 +57,7 @@ imports:
 # ---------------------------------------------------------------------------
 classes:
 
-  OntologyCatalog:
+  StandardsCatalog:
     tree_root: true
     description: >-
       Container for every collection. Each data file under src/data fills in
@@ -73,7 +67,7 @@ classes:
       - notes
     attributes:
       standards:
-        description: Catalog entries for the standards (src/data/standards.yaml).
+        description: Catalog entries for the standards (src/data/standards_registry.yaml).
         range: StandardEntry
         multivalued: true
         inlined_as_list: true
@@ -90,17 +84,17 @@ classes:
 
   NamedThing:
     abstract: true
-    description: Base class for every catalog item, giving its key, label and notes.
+    description: Base class for every catalog item, giving its key and label.
     slots:
       - id
       - name
-      - description
-      - notes
-      - comments
 
   # --- Standards ("Ontology Sources", "Ontology Allignments", "Ontology Coverage")
   StandardEntry:
     is_a: NamedThing
+    slots:
+      - notes
+      - comments
     description: >-
       Catalog entry for an ontology, terminology, database, nomenclature or
       exchange standard. Not the same as the processing rules' Standard
@@ -126,25 +120,61 @@ classes:
         range: StandardTypeEnum
         slot_uri: dct:type
         description: From the "Standard type" column of the Ontology Coverage sheet.
-      scopeToVerify:
+      # Access methods, from "Ontology Sources: Access Method". Each flag is set
+      # (true) only where the workbook lists that method; absent means not
+      # recorded, not that the method is unavailable.
+      directDownloadAccess:
         range: boolean
-        description: True where the workbook marks the scope as still to be verified.
-      homepage:
-        range: uri
-        slot_uri: foaf:homepage
-        description: "Ontology Sources: Source."
-      accessMethods:
-        multivalued: true
-        description: "Ontology Sources: Access Method."
-      accessUrls:
+        description: >-
+          Release files can be downloaded directly (file server, release page or
+          source repository), without an API.
+      downloadApiAccess:
+        range: boolean
+        description: >-
+          Release files can be fetched programmatically through a download API,
+          such as the UMLS Release and Download API.
+      # Download links, the credentials they need, and how to pick a release.
+      directDownloadUrls:
         range: uri
         multivalued: true
         slot_uri: dcat:accessURL
-        description: Download or API links attached to the Access Method cell.
+        description: >-
+          Pages or file servers where release files can be downloaded directly
+          (release pages, FTP directories, source repositories).
+      authenticationRequired:
+        range: boolean
+        description: >-
+          True where downloading the release files needs credentials or an
+          accepted license; false where they are openly downloadable. Absent
+          means not yet checked.
+      authenticationType:
+        range: AuthenticationTypeEnum
+        description: The credential needed, where authenticationRequired is true.
+      releaseApiUrls:
+        range: uri
+        multivalued: true
+        slot_uri: dcat:endpointURL
+        description: Endpoints of an API that lists the available releases.
+      downloadApiUrls:
+        range: uri
+        multivalued: true
+        slot_uri: dcat:endpointURL
+        description: Endpoints of an API that delivers release files.
+      versionSelectionMethod:
+        range: VersionSelectionMethodEnum
+        description: How to find the current (or a chosen) release.
+      # Formats, other links and licensing.
       dataFormats:
         multivalued: true
         slot_uri: mod:hasSyntax
         description: "Ontology Sources: Data Formats."
+      otherUrls:
+        range: uri
+        multivalued: true
+        slot_uri: rdfs:seeAlso
+        description: >-
+          Any other link about the standard: its homepage (listed first, from
+          "Ontology Sources: Source") and documentation pages.
       accessRequirements:
         slot_uri: dct:accessRights
         description: "Ontology Sources: Access Requirements, as written."
@@ -156,13 +186,6 @@ classes:
         range: uri
         slot_uri: dct:license
         description: License link attached to the Access Requirements cell.
-      version:
-        slot_uri: owl:versionInfo
-        description: "Ontology Sources: Last Version Verified (version label)."
-      versionDate:
-        range: date
-        slot_uri: dct:issued
-        description: Release date of the verified version, where given.
       updateFrequency:
         slot_uri: dct:accrualPeriodicity
         description: >-
@@ -194,6 +217,9 @@ classes:
   # --- "Incoming Data" sheet + the 21 alignment columns
   DataCategory:
     is_a: NamedThing
+    slots:
+      - notes
+      - comments
     description: A category of incoming RDDC data.
     slot_usage:
       name:
@@ -206,10 +232,6 @@ classes:
       categorical:
         range: boolean
         description: "Incoming Data: Categorical? (Y/N)."
-      source:
-        description: "Incoming Data: Source? (column present, not yet filled in)."
-      structure:
-        description: "Incoming Data: Structure? (column present, not yet filled in)."
       dataClasses:
         multivalued: true
         pattern: "^[A-Z][A-Za-z0-9]*File$"
@@ -253,9 +275,6 @@ slots:
   name:
     slot_uri: rdfs:label
     description: Human-readable name.
-  description:
-    slot_uri: dct:description
-    description: Free-text description.
   notes:
     multivalued: true
     slot_uri: skos:note
@@ -267,17 +286,62 @@ slots:
 # ---------------------------------------------------------------------------
 enums:
 
+  AuthenticationTypeEnum:
+    description: Credentials needed to download a standard's release files.
+    permissible_values:
+      API_KEY:
+        title: API key
+        description: A personal API key sent with each request (e.g. a UMLS UTS API key).
+      ACCOUNT_LOGIN:
+        title: Account login
+        description: A user name and password for the provider's website.
+
+  VersionSelectionMethodEnum:
+    description: How an automated downloader finds the current or a chosen release.
+    permissible_values:
+      RELEASE_API:
+        title: Release API
+        description: Query an API that lists releases (see releaseApiUrls).
+      GITHUB_RELEASES:
+        title: GitHub releases
+        description: Take the latest (or a tagged) GitHub release.
+      GITHUB_RELEASES_OR_VERSION_IRI:
+        title: GitHub releases or version IRI
+        description: >-
+          Use GitHub releases, checking the ontology's version IRI where releases
+          lag behind the ontology itself.
+      GITHUB_RELEASES_OR_XML_VERSION:
+        title: GitHub releases or XML version
+        description: Use GitHub releases, or the version stated inside the XML file.
+      GITHUB_TAGS_OR_ONTOLOGY_VERSION_IRI:
+        title: GitHub tags or ontology version IRI
+        description: Use GitHub tags, or the ontology's version IRI.
+      DIRECTORY_LISTING:
+        title: Directory listing
+        description: Pick from dated or versioned files in a download directory.
+      FTP_DIRECTORY_LISTING:
+        title: FTP directory listing
+        description: Pick from dated or versioned files in an FTP directory.
+      RELEASE_WEBPAGE:
+        title: Release web page
+        description: Read the release from a public web page that lists versioned files.
+      RELEASE_PORTAL:
+        title: Release portal
+        description: Pick the release in the provider's (usually logged-in) download portal.
+      W3C_SPEC_VERSION:
+        title: W3C specification version
+        description: Use the dated version of the W3C specification.
+      NOT_VERIFIED:
+        title: Not verified
+        description: No release source confirmed yet; do not automate downloads.
+
   StandardTypeEnum:
-    description: Kinds of standard, from the Ontology Coverage sheet.
+    description: Type of standard or structured resource.
     permissible_values:
       ONTOLOGY:
         title: Ontology
       CLINICAL_TERMINOLOGY:
         title: Clinical terminology
-      OBSERVATION_TERMINOLOGY:
-        title: Observation terminology
-      DRUG_TERMINOLOGY:
-        title: Drug terminology
       CLASSIFICATION:
         title: Classification
       NOMENCLATURE:
@@ -286,14 +350,10 @@ enums:
         title: Unit standard
       DATABASE:
         title: Database
-      DATA_EXCHANGE_STANDARD:
-        title: Data exchange standard
-      CASE_EXCHANGE_STANDARD:
-        title: Case exchange standard
       COMMON_DATA_MODEL:
         title: Common data model
-      VOCABULARY:
-        title: Vocabulary
+      EXCHANGE_SCHEMA:
+        title: Exchange schema
 
   DomainGroupEnum:
     description: The seven groups the coverage domains fall into.

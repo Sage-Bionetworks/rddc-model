@@ -1,4 +1,4 @@
-"""Merge src/data/*.yaml into one OntologyCatalog document on stdout."""
+"""Merge src/data/*.yaml into one StandardsCatalog document on stdout."""
 import sys
 from pathlib import Path
 

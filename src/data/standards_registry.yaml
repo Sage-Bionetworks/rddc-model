@@ -1,0 +1,722 @@
+standards:
+- id: SNOMEDCT
+  abbreviation: SNOMED CT
+  name: Systematized Nomenclature of Medicine – Clinical Terms
+  bioregistryPrefix: snomedct
+  standardType: CLINICAL_TERMINOLOGY
+  directDownloadAccess: false
+  downloadApiAccess: true
+  authenticationRequired: true
+  authenticationType: API_KEY
+  releaseApiUrls:
+  - https://uts-ws.nlm.nih.gov/releases?releaseType=snomed-ct-us-edition
+  downloadApiUrls:
+  - https://uts-ws.nlm.nih.gov/download
+  versionSelectionMethod: RELEASE_API
+  dataFormats:
+  - RF2
+  otherUrls:
+  - https://www.nlm.nih.gov/healthit/snomedct/index.html
+  - https://documentation.uts.nlm.nih.gov/automating-downloads.html
+  accessRequirements: UMLS license required for US access and download.
+  updateFrequency: Biannual March & September
+  alignedCategories:
+  - PATIENT_HISTORY
+  - ASSESSMENTS
+  - EHR_DATA
+  - ALLERGIES
+  - SOCIAL_HABITS_RISK_FACTORS
+  - FAMILY_HISTORY
+  - ICD_SNOMED_CODES
+  - INTAKE_FORMS
+  - MEDICATIONS
+  - PATIENT_REPORTED_OUTCOMES
+  - STRUCTURED_PATIENT_REPORTS
+  - REFERRAL_NOTES
+  - SPECIALIST_FINDINGS
+  - VISIT_NOTES
+  - DIFFERENTIAL_DIAGNOSIS_REPORT
+  coveredDomains:
+  - MEDICAL_HISTORY_AND_ENCOUNTERS
+  - SOCIAL_DETERMINANTS_AND_LIFESTYLE
+  - RISK_FACTORS_AND_EXPOSURES
+  - SIGNS_AND_SYMPTOMS
+  - ABNORMAL_PHENOTYPIC_FEATURES
+  - CONGENITAL_AND_DEVELOPMENTAL_ANOMALIES
+  - DISEASE_DIAGNOSES
+  - INFECTIOUS_DISEASES
+  - CANCER_AND_NEOPLASMS
+  - PHYSICAL_EXAMINATION_FINDINGS
+  - CLINICAL_ASSESSMENTS_AND_SCREENING
+  - CLINICAL_PROCEDURES_AND_INTERVENTIONS
+  - TREATMENT_ACTIONS_AND_MANAGEMENT
+  - ALLERGIES_AND_ADVERSE_REACTIONS
+  - VITAL_SIGNS
+  - LABORATORY_TEST_IDENTITIES
+  - DIAGNOSTIC_IMAGING_OBSERVATIONS
+  - HISTOPATHOLOGY_AND_TISSUE_FINDINGS
+  - BIOSAMPLES_AND_SPECIMEN_METADATA
+  - DRUG_AND_MEDICINAL_PRODUCT_NAMES
+  - DRUG_INGREDIENTS_AND_FORMULATIONS
+  - DOSES_ROUTES_AND_SCHEDULES
+  - CLINICAL_CODING_BILLING
+  notes:
+  - US Edition chosen as registry edition. Other SNOMED CT editions require separate releaseType endpoint.
+
+- id: HPO
+  abbreviation: HPO
+  name: Human Phenotype Ontology
+  bioregistryPrefix: hp
+  standardType: ONTOLOGY
+  directDownloadAccess: true
+  downloadApiAccess: true
+  directDownloadUrls:
+  - https://purl.obolibrary.org/obo/hp.obo
+  - https://purl.obolibrary.org/obo/hp.owl
+  - https://purl.obolibrary.org/obo/hp.json
+  authenticationRequired: false
+  releaseApiUrls:
+  - https://api.github.com/repos/obophenotype/human-phenotype-ontology/releases
+  - https://api.github.com/repos/obophenotype/human-phenotype-ontology/releases/latest
+  downloadApiUrls:
+  - https://api.github.com/repos/obophenotype/human-phenotype-ontology/releases/assets/{asset_id}
+  versionSelectionMethod: GITHUB_RELEASES
+  dataFormats:
+  - OBO
+  - OWL
+  - JSON
+  - TSV
+  - TXT
+  otherUrls:
+  - https://hpo.jax.org/
+  - https://github.com/obophenotype/human-phenotype-ontology/releases
+  - https://obofoundry.org/ontology/hp.html
+  - https://human-phenotype-ontology.github.io/license.html
+  accessRequirements: HPO license; attribution and other conditions apply (see license URL)
+  updateFrequency: Irregular (~1/mo)
+  alignedCategories:
+  - PATIENT_HISTORY
+  - ASSESSMENTS
+  - EHR_DATA
+  - ALLERGIES
+  - FAMILY_HISTORY
+  - INTAKE_FORMS
+  - PATIENT_REPORTED_OUTCOMES
+  - STRUCTURED_PATIENT_REPORTS
+  - PHENOTYPIC_DATA
+  - REFERRAL_NOTES
+  - SPECIALIST_FINDINGS
+  - SYMPTOMS
+  - VISIT_NOTES
+  - FACIAL_IMAGES
+  coveredDomains:
+  - SIGNS_AND_SYMPTOMS
+  - ABNORMAL_PHENOTYPIC_FEATURES
+  - PHENOTYPE_ONSET_AND_SEVERITY
+  - CONGENITAL_AND_DEVELOPMENTAL_ANOMALIES
+  - PHYSICAL_EXAMINATION_FINDINGS
+  - DIAGNOSTIC_IMAGING_OBSERVATIONS
+  - HISTOPATHOLOGY_AND_TISSUE_FINDINGS
+  notes: 
+
+- id: LOINC
+  abbreviation: LOINC
+  name: Logical Observation Identifiers Names and Codes
+  bioregistryPrefix: loinc
+  standardType: CLINICAL_TERMINOLOGY
+  directDownloadAccess: true
+  downloadApiAccess: true
+  directDownloadUrls:
+  - https://loinc.org/downloads
+  authenticationRequired: true
+  authenticationType: ACCOUNT_LOGIN
+  releaseApiUrls:
+  - https://loinc.regenstrief.org/api/v1/Loinc
+  - https://loinc.regenstrief.org/api/v1/Loinc/All
+  downloadApiUrls:
+  - https://loinc.regenstrief.org/api/v1/Loinc/Download
+  versionSelectionMethod: RELEASE_API
+  dataFormats:
+  - CSV
+  - ZIP
+  otherUrls:
+  - https://loinc.org/
+  - https://loinc.org/kb/api/auth
+  accessRequirements: LOINC License
+  licenseUrl: https://loinc.org/license
+  updateFrequency: Biannual, working to switch to monthly
+  alignedCategories:
+  - PATIENT_HISTORY
+  - ASSESSMENTS
+  - EHR_DATA
+  - SOCIAL_HABITS_RISK_FACTORS
+  - GENETIC_TESTING
+  - INTAKE_FORMS
+  - PATIENT_REPORTED_OUTCOMES
+  - STRUCTURED_PATIENT_REPORTS
+  - SPECIALIST_FINDINGS
+  - VITALS_MEASUREMENTS
+  coveredDomains:
+  - PATIENT_REPORTED_OUTCOMES
+  - CLINICAL_ASSESSMENTS_AND_SCREENING
+  - VITAL_SIGNS
+  - LABORATORY_TEST_IDENTITIES
+  - DIAGNOSTIC_IMAGING_OBSERVATIONS
+  - GENETIC_TEST_IDENTITY_RESULTS
+  notes: 
+
+- id: PHENOPACKETS
+  abbreviation: GA4GH Phenopackets
+  name: Global Alliance for Genomics and Health Phenopacket Schema
+  standardType: EXCHANGE_SCHEMA
+  directDownloadAccess: true
+  downloadApiAccess: true
+  authenticationRequired: false
+  directDownloadUrls:
+  - https://github.com/ga4gh/phenopacket-schema/archive/refs/heads/master.zip
+  releaseApiUrls:
+  - https://api.github.com/repos/ga4gh/phenopacket-schema/releases
+  - https://api.github.com/repos/ga4gh/phenopacket-schema/tags
+  versionSelectionMethod: GITHUB_RELEASES
+  dataFormats:
+  - Protobuf
+  - JSON
+  otherUrls:
+  - https://github.com/ga4gh/phenopacket-schema
+  - https://phenopacket-schema.readthedocs.io/en/latest/
+  - https://github.com/ga4gh/phenopacket-schema/releases
+  accessRequirements: BSD 3-Clause License
+  license: BSD-3-Clause
+  licenseUrl: https://github.com/ga4gh/phenopacket-schema/blob/master/LICENSE
+  alignedCategories:
+  - PATIENT_HISTORY
+  - FAMILY_HISTORY
+  - GENETIC_TESTING
+  - PHENOTYPIC_DATA
+  - SYMPTOMS
+  - VITALS_MEASUREMENTS
+  coveredDomains:
+  - PATIENT_IDENTITY_AND_IDENTIFIERS
+  - DEMOGRAPHICS_AND_AGE
+  - FAMILY_RELATIONSHIPS_AND_PEDIGREE
+  - MEDICAL_HISTORY_AND_ENCOUNTERS
+  - SIGNS_AND_SYMPTOMS
+  - ABNORMAL_PHENOTYPIC_FEATURES
+  - PHENOTYPE_ONSET_AND_SEVERITY
+  - CONGENITAL_AND_DEVELOPMENTAL_ANOMALIES
+  - DISEASE_DIAGNOSES
+  - RARE_AND_GENETIC_DISEASES
+  - CANCER_AND_NEOPLASMS
+  - CLINICAL_PROCEDURES_AND_INTERVENTIONS
+  - TREATMENT_ACTIONS_AND_MANAGEMENT
+  - VITAL_SIGNS
+  - LABORATORY_TEST_IDENTITIES
+  - LABORATORY_RESULTS_AND_VALUES
+  - UNITS_OF_MEASUREMENT
+  - DIAGNOSTIC_IMAGING_OBSERVATIONS
+  - HISTOPATHOLOGY_AND_TISSUE_FINDINGS
+  - BIOSAMPLES_AND_SPECIMEN_METADATA
+  - GENETIC_TEST_IDENTITY_RESULTS
+  - SEQUENCE_VARIANTS_AND_VARIANT_NOTATION
+  - GENOMIC_INTERPRETATION
+  - DRUG_AND_MEDICINAL_PRODUCT_NAMES
+  - DOSES_ROUTES_AND_SCHEDULES
+  - RECORD_LINKAGE_AND_PROVENANCE
+  - PHENOTYPE_CASE_EXCHANGE
+  notes:
+  - No Bioregistry entry for the GA4GH Phenopacket Schema.
+  - GitHub release page provides source/schema artifacts; not a terminology value set.
+
+- id: ICD10CM
+  abbreviation: ICD-10-CM
+  name: International Classification of Diseases, Tenth Revision, Clinical Modification
+  bioregistryPrefix: icd10cm
+  standardType: CLASSIFICATION
+  directDownloadAccess: true
+  downloadApiAccess: false
+  directDownloadUrls:
+  - https://ftp.cdc.gov/pub/Health_Statistics/NCHS/Publications/ICD10CM/
+  authenticationRequired: false
+  versionSelectionMethod: DIRECTORY_LISTING
+  dataFormats:
+  - PDF
+  - XML
+  otherUrls:
+  - https://www.cdc.gov/nchs/icd/icd-10-cm/
+  updateFrequency: ~Annual
+  alignedCategories:
+  - PATIENT_HISTORY
+  - EHR_DATA
+  - FAMILY_HISTORY
+  - ICD_SNOMED_CODES
+  - DIFFERENTIAL_DIAGNOSIS_REPORT
+  coveredDomains:
+  - DISEASE_DIAGNOSES
+  - RARE_AND_GENETIC_DISEASES
+  - INFECTIOUS_DISEASES
+  - CANCER_AND_NEOPLASMS
+  - DIFFERENTIAL_DIAGNOSIS_CANDIDATES
+  - CLINICAL_CODING_BILLING
+  notes:
+  - Update frequency was entered on the GA4GH Phenopackets row in the workbook and moved here during conversion.
+  - FTP is a versioned directory listing, not a structured release API.
+
+- id: DOID
+  abbreviation: DOID
+  name: Human Disease Ontology
+  bioregistryPrefix: doid
+  standardType: ONTOLOGY
+  directDownloadAccess: true
+  downloadApiAccess: true
+  directDownloadUrls:
+  - https://purl.obolibrary.org/obo/doid.owl
+  - https://purl.obolibrary.org/obo/doid.obo
+  - https://purl.obolibrary.org/obo/doid.json
+  authenticationRequired: false
+  releaseApiUrls:
+  - https://api.github.com/repos/DiseaseOntology/HumanDiseaseOntology/releases/latest
+  - https://api.github.com/repos/DiseaseOntology/HumanDiseaseOntology/releases
+  downloadApiUrls:
+  - https://api.github.com/repos/DiseaseOntology/HumanDiseaseOntology/tarball/{tag}
+  versionSelectionMethod: GITHUB_RELEASES
+  dataFormats:
+  - OWL
+  - OBO
+  - JSON
+  otherUrls:
+  - https://disease-ontology.org/
+  accessRequirements: Public Domain
+  licenseUrl: https://github.com/DiseaseOntology/HumanDiseaseOntology/blob/main/LICENSE
+  updateFrequency: ~Monthly
+  alignedCategories:
+  - PATIENT_HISTORY
+  - FAMILY_HISTORY
+  - PHENOTYPIC_DATA
+  - DIFFERENTIAL_DIAGNOSIS_REPORT
+  coveredDomains:
+  - DISEASE_DIAGNOSES
+  - RARE_AND_GENETIC_DISEASES
+  - INFECTIOUS_DISEASES
+  - CANCER_AND_NEOPLASMS
+  - DIFFERENTIAL_DIAGNOSIS_CANDIDATES
+  notes:
+
+- id: MONDO
+  abbreviation: MONDO
+  name: Mondo Disease Ontology
+  bioregistryPrefix: mondo
+  standardType: ONTOLOGY
+  directDownloadAccess: true
+  downloadApiAccess: true
+  directDownloadUrls:
+  - https://purl.obolibrary.org/obo/mondo.owl
+  - https://purl.obolibrary.org/obo/mondo.obo
+  - https://purl.obolibrary.org/obo/mondo.json
+  authenticationRequired: false
+  releaseApiUrls:
+  - https://api.github.com/repos/monarch-initiative/mondo/releases
+  downloadApiUrls:
+  - https://api.github.com/repos/monarch-initiative/mondo/releases/assets/{asset_id}
+  versionSelectionMethod: GITHUB_RELEASES
+  dataFormats:
+  - OWL
+  - OBO
+  - JSON
+  otherUrls:
+  - https://mondo.monarchinitiative.org/
+  accessRequirements: Licensed use under CC-BY-4.0; see licenseUrl
+  license: CC-BY-4.0
+  licenseUrl: https://creativecommons.org/licenses/by/4.0/
+  updateFrequency: ~Monthly
+  alignedCategories:
+  - PATIENT_HISTORY
+  - FAMILY_HISTORY
+  - PHENOTYPIC_DATA
+  - DIFFERENTIAL_DIAGNOSIS_REPORT
+  coveredDomains:
+  - DISEASE_DIAGNOSES
+  - RARE_AND_GENETIC_DISEASES
+  - INFECTIOUS_DISEASES
+  - CANCER_AND_NEOPLASMS
+  - DIFFERENTIAL_DIAGNOSIS_CANDIDATES
+  notes:
+
+- id: IDO
+  abbreviation: IDO
+  name: Infectious Disease Ontology
+  bioregistryPrefix: ido
+  standardType: ONTOLOGY
+  directDownloadAccess: true
+  downloadApiAccess: false
+  directDownloadUrls:
+  - https://purl.obolibrary.org/obo/ido.owl
+  authenticationRequired: false
+  releaseApiUrls:
+  - https://api.github.com/repos/infectious-disease-ontology/infectious-disease-ontology/tags
+  versionSelectionMethod: GITHUB_TAGS_OR_ONTOLOGY_VERSION_IRI
+  dataFormats:
+  - OWL
+  otherUrls:
+  - https://obofoundry.org/ontology/ido.html
+  - https://github.com/infectious-disease-ontology/infectious-disease-ontology
+  accessRequirements: Licensed use under CC-BY-3.0; see licenseUrl
+  license: CC-BY-3.0
+  licenseUrl: https://creativecommons.org/licenses/by/3.0/
+  alignedCategories:
+  - PATIENT_HISTORY
+  - FAMILY_HISTORY
+  - DIFFERENTIAL_DIAGNOSIS_REPORT
+  coveredDomains:
+  - DISEASE_DIAGNOSES
+  - INFECTIOUS_DISEASES
+  notes:
+  - GitHub tags endpoint provided for version discovery; release cadence and tag coverage require confirmation.
+
+- id: MAXO
+  abbreviation: MAxO
+  name: Medical Action Ontology
+  bioregistryPrefix: maxo
+  standardType: ONTOLOGY
+  directDownloadAccess: true
+  downloadApiAccess: true
+  directDownloadUrls:
+  - https://purl.obolibrary.org/obo/maxo.owl
+  - https://purl.obolibrary.org/obo/maxo.obo
+  authenticationRequired: false
+  releaseApiUrls:
+  - https://api.github.com/repos/monarch-initiative/MAxO/releases
+  downloadApiUrls:
+  - https://api.github.com/repos/monarch-initiative/MAxO/releases/assets/{asset_id}
+  versionSelectionMethod: GITHUB_RELEASES
+  dataFormats:
+  - OBO
+  - OWL
+  - JSON
+  - YAML
+  otherUrls:
+  - https://github.com/monarch-initiative/MAxO
+  accessRequirements: Public Domain
+  licenseUrl: https://github.com/monarch-initiative/MAxO/blob/master/LICENSE
+  alignedCategories:
+  - ASSESSMENTS
+  - SPECIALIST_FINDINGS
+  - VISIT_NOTES
+  coveredDomains:
+  - CLINICAL_PROCEDURES_AND_INTERVENTIONS
+  - TREATMENT_ACTIONS_AND_MANAGEMENT
+  notes:
+
+- id: ORDO
+  abbreviation: ORDO
+  name: Orphanet Rare Disease Ontology
+  bioregistryPrefix: orphanet.ordo
+  standardType: ONTOLOGY
+  directDownloadAccess: true
+  downloadApiAccess: false
+  directDownloadUrls:
+  - https://sciences.orphadata.com/ordo/
+  authenticationRequired: false
+  versionSelectionMethod: RELEASE_WEBPAGE
+  dataFormats:
+  - OWL
+  - RDF
+  - OBO
+  otherUrls:
+  - https://sciences.orphadata.com/ordo/
+  - https://www.orphadata.com/
+  accessRequirements: Licensed use under CC-BY-4.0; see licenseUrl
+  license: CC-BY-4.0
+  licenseUrl: https://creativecommons.org/licenses/by/4.0
+  updateFrequency: Biannual July/December
+  alignedCategories:
+  - PATIENT_HISTORY
+  - FAMILY_HISTORY
+  - DIFFERENTIAL_DIAGNOSIS_REPORT
+  coveredDomains:
+  - DISEASE_DIAGNOSES
+  - RARE_AND_GENETIC_DISEASES
+  - DIFFERENTIAL_DIAGNOSIS_CANDIDATES
+  notes:
+  - Multilingual
+  - Release page lists versioned OWL files; an API for bulk ORDO release discovery was not verified.
+
+- id: PJO
+  abbreviation: PJO
+  name: Patient Journey Ontology
+  standardType: ONTOLOGY
+  directDownloadAccess: false
+  downloadApiAccess: false
+  versionSelectionMethod: NOT_VERIFIED
+  otherUrls:
+  - https://arxiv.org/abs/2506.18772
+  alignedCategories:
+  - SOCIAL_HABITS_RISK_FACTORS
+  - INTAKE_FORMS
+  coveredDomains:
+  - SOCIAL_DETERMINANTS_AND_LIFESTYLE
+  - RISK_FACTORS_AND_EXPOSURES
+  - CARE_PATHWAYS_AND_REFERRALS
+  notes:
+  - No Bioregistry entry. PJO is described in arXiv:2506.18772 (2025).
+  - No verified machine-readable ontology release or download endpoint identified; do not automate downloads until the source
+    is confirmed.
+
+- id: RXNORM
+  abbreviation: RxNorm
+  name: RxNorm normalized drug nomenclature
+  bioregistryPrefix: rxnorm
+  standardType: CLINICAL_TERMINOLOGY
+  directDownloadAccess: true
+  downloadApiAccess: true
+  directDownloadUrls:
+  - https://download.nlm.nih.gov/umls/kss/rxnorm/RxNorm_full_current.zip
+  authenticationRequired: true
+  authenticationType: API_KEY
+  releaseApiUrls:
+  - https://uts-ws.nlm.nih.gov/releases?releaseType=rxnorm-full-monthly-release
+  - https://uts-ws.nlm.nih.gov/releases?releaseType=rxnorm-weekly-updates
+  downloadApiUrls:
+  - https://uts-ws.nlm.nih.gov/download
+  versionSelectionMethod: RELEASE_API
+  dataFormats:
+  - RRF
+  otherUrls:
+  - https://www.nlm.nih.gov/research/umls/rxnorm/index.html
+  accessRequirements: UMLS License
+  updateFrequency: Weekly/Monthly
+  alignedCategories:
+  - ALLERGIES
+  - MEDICATIONS
+  coveredDomains:
+  - DRUG_AND_MEDICINAL_PRODUCT_NAMES
+  - DRUG_INGREDIENTS_AND_FORMULATIONS
+  notes:
+
+- id: DRUGBANK
+  abbreviation: DrugBank
+  name: DrugBank drug knowledgebase
+  bioregistryPrefix: drugbank
+  standardType: DATABASE
+  directDownloadAccess: true
+  downloadApiAccess: false
+  directDownloadUrls:
+  - https://portal.drugbank.com/releases/latest/downloads/all-full-database
+  authenticationRequired: true
+  authenticationType: ACCOUNT_LOGIN
+  versionSelectionMethod: RELEASE_PORTAL
+  dataFormats:
+  - XML
+  - CSV
+  otherUrls:
+  - https://go.drugbank.com/
+  - https://portal.drugbank.com/releases
+  - https://portal.drugbank.com/releases/help
+  accessRequirements: DrugBank download entitlement and applicable dataset license required; not public domain
+  license: CC-BY-NC-4.0
+  licenseUrl: http://creativecommons.org/licenses/by-nc/4.0/legalcode
+  updateFrequency: Irregular
+  alignedCategories:
+  - MEDICATIONS
+  coveredDomains:
+  - GENES_AND_MOLECULAR_TARGETS
+  - DRUG_AND_MEDICINAL_PRODUCT_NAMES
+  - DRUG_INGREDIENTS_AND_FORMULATIONS
+  - DRUG_INDICATIONS_AND_INTERACTIONS
+  notes:
+  - Authenticated bulk download is subscription/entitlement dependent; portal path is not a public API.
+
+
+- id: CHEBI
+  abbreviation: ChEBI
+  name: Chemical Entities of Biological Interest
+  bioregistryPrefix: chebi
+  standardType: ONTOLOGY
+  directDownloadAccess: true
+  downloadApiAccess: false
+  directDownloadUrls:
+    - https://purl.obolibrary.org/obo/chebi.owl
+    - https://purl.obolibrary.org/obo/chebi.obo
+    - https://purl.obolibrary.org/obo/chebi.json
+  otherUrls:
+    - https://www.ebi.ac.uk/chebi/
+    - https://www.ebi.ac.uk/chebi/downloads
+    - https://ftp.ebi.ac.uk/pub/databases/chebi/ontology/
+    - https://ftp.ebi.ac.uk/pub/databases/chebi/archive/
+  authenticationRequired: false
+  versionSelectionMethod: FTP_DIRECTORY_LISTING
+  dataFormats:
+    - OWL
+    - OBO
+    - JSON
+  accessRequirements: Public Access, Attribution Required
+  license: CC-BY-4.0
+  licenseUrl: https://creativecommons.org/licenses/by/4.0/
+  updateFrequency: Monthly
+  alignedCategories:
+    - MEDICATIONS
+  coveredDomains:
+    - GENES_AND_MOLECULAR_TARGETS
+    - DRUG_AND_MEDICINAL_PRODUCT_NAMES
+    - DRUG_INGREDIENTS_AND_FORMULATIONS
+  notes:
+  - Named "ChEMBL Bioactivity Database" on the Ontology Sources sheet.
+  - Bioregistry prefix chembl is the database as a whole; compound identifiers (CHEMBL25 etc.) use chembl.compound.
+  comments:
+  - For small molecules using CHEBI (an ontology) instead of ChEMBL (primarily a data store for assay data) is a better choice
+
+- id: SO
+  abbreviation: SO
+  name: Sequence Ontology
+  bioregistryPrefix: so
+  standardType: ONTOLOGY
+  directDownloadAccess: true
+  downloadApiAccess: false
+  directDownloadUrls:
+  - https://purl.obolibrary.org/obo/so.owl
+  - https://purl.obolibrary.org/obo/so.obo
+  authenticationRequired: false
+  releaseApiUrls:
+  - https://api.github.com/repos/The-Sequence-Ontology/SO-Ontologies/releases
+  versionSelectionMethod: GITHUB_RELEASES_OR_VERSION_IRI
+  dataFormats:
+  - OBO
+  - OWL
+  - RDF
+  otherUrls:
+  - https://github.com/The-Sequence-Ontology/SO-Ontologies
+  accessRequirements: CC BY 4.0 attribution required
+  licenseUrl: https://github.com/The-Sequence-Ontology/SO-Ontologies/blob/master/LICENSE
+  updateFrequency: Irregular
+  alignedCategories:
+  - GENETIC_TESTING
+  coveredDomains:
+  - SEQUENCE_VARIANTS_AND_VARIANT_NOTATION
+  - SEQUENCE_FEATURE_TYPES
+  notes:
+  - Some GitHub releases may not track the newest ontology changes; inspect ontology version IRI.
+
+- id: HGVS
+  abbreviation: HGVS
+  name: Human Genome Variation Society variant nomenclature
+  bioregistryPrefix: hgvs
+  standardType: NOMENCLATURE
+  directDownloadAccess: false
+  downloadApiAccess: false
+  directDownloadUrls:
+  - https://github.com/HGVSnomenclature/hgvs-nomenclature
+  authenticationRequired: false
+  releaseApiUrls:
+  - https://api.github.com/repos/HGVSnomenclature/hgvs-nomenclature/releases
+  versionSelectionMethod: GITHUB_RELEASES
+  otherUrls:
+  - https://hgvs-nomenclature.org/stable/
+  - https://github.com/HGVSnomenclature/hgvs-nomenclature
+  accessRequirements: Public Domain
+  licenseUrl: https://github.com/HGVSnomenclature/hgvs-nomenclature/blob/main/LICENSE.txt
+  updateFrequency: Irregular
+  alignedCategories:
+  - GENETIC_TESTING
+  coveredDomains:
+  - SEQUENCE_VARIANTS_AND_VARIANT_NOTATION
+  notes:
+  - Versioned nomenclature documentation/source; no canonical terminology dataset download verified.
+
+- id: UCUM
+  abbreviation: UCUM
+  name: Unified Code for Units of Measure
+  bioregistryPrefix: ucum
+  standardType: UNIT_STANDARD
+  directDownloadAccess: true
+  downloadApiAccess: false
+  directDownloadUrls:
+  - https://raw.githubusercontent.com/ucum-org/ucum/main/ucum-essence.xml
+  - https://raw.githubusercontent.com/ucum-org/ucum/main/ucum.xml
+  authenticationRequired: false
+  releaseApiUrls:
+  - https://api.github.com/repos/ucum-org/ucum/releases
+  versionSelectionMethod: GITHUB_RELEASES_OR_XML_VERSION
+  dataFormats:
+  - XML
+  otherUrls:
+  - https://ucum.org/
+  - https://ucum.org/docs/artifacts
+  licenseUrl: https://ucum.org/license
+  alignedCategories:
+  - VITALS_MEASUREMENTS
+  coveredDomains:
+  - UNITS_OF_MEASUREMENT
+  notes:
+  - Access Requirements recorded as "???" in the workbook.
+
+- id: OMOP
+  abbreviation: OMOP
+  name: Observational Medical Outcomes Partnership Common Data Model
+  bioregistryPrefix: omop
+  standardType: COMMON_DATA_MODEL
+  directDownloadAccess: false
+  downloadApiAccess: false
+  authenticationRequired: false
+  releaseApiUrls:
+  - https://api.github.com/repos/OHDSI/CommonDataModel/releases
+  versionSelectionMethod: GITHUB_RELEASES
+  otherUrls:
+  - https://ohdsi.github.io/CommonDataModel/download.html
+  - https://github.com/OHDSI/CommonDataModel/releases
+  conformsToUrls:
+  - https://ohdsi.github.io/CommonDataModel/cdm54.html
+  notes:
+
+- id: DUO
+  abbreviation: DUO
+  name: Data Use Ontology
+  bioregistryPrefix: duo
+  standardType: ONTOLOGY
+  directDownloadAccess: true
+  downloadApiAccess: true
+  directDownloadUrls:
+  - https://purl.obolibrary.org/obo/duo.owl
+  authenticationRequired: false
+  releaseApiUrls:
+  - https://api.github.com/repos/EBISPOT/DUO/releases
+  downloadApiUrls:
+  - https://api.github.com/repos/EBISPOT/DUO/releases/assets/{asset_id}
+  versionSelectionMethod: GITHUB_RELEASES
+  otherUrls:
+  - https://github.com/EBISPOT/DUO
+  notes:
+
+- id: ODRL
+  abbreviation: ODRL
+  name: Open Digital Rights Language
+  bioregistryPrefix: odrl
+  standardType: ONTOLOGY
+  directDownloadAccess: true
+  downloadApiAccess: false
+  directDownloadUrls:
+  - https://www.w3.org/ns/odrl.jsonld
+  authenticationRequired: false
+  versionSelectionMethod: W3C_SPEC_VERSION
+  otherUrls:
+  - https://www.w3.org/TR/odrl-vocab/
+  notes:
+  - W3C recommendation publishes versioned specification; no rolling release API.
+
+- id: DPV
+  abbreviation: DPV
+  name: Data Privacy Vocabulary
+  bioregistryPrefix: dpvocab
+  standardType: ONTOLOGY
+  directDownloadAccess: true
+  downloadApiAccess: true
+  directDownloadUrls:
+  - https://w3id.org/dpv
+  authenticationRequired: false
+  releaseApiUrls:
+  - https://api.github.com/repos/w3c-cg/dpv/releases
+  downloadApiUrls:
+  - https://api.github.com/repos/w3c-cg/dpv/releases/assets/{asset_id}
+  versionSelectionMethod: GITHUB_RELEASES
+  otherUrls:
+  - https://github.com/w3c-cg/dpv
+  - https://w3id.org/dpv
+  notes:
