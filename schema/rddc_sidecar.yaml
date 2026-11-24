@@ -1,0 +1,765 @@
+id: https://w3id.org/rddc/sidecar
+name: rddc-sidecar
+title: RDDC Metadata Sidecar
+version: 0.1.0
+description: >-
+  Schema for _sidecar.json, the metadata file included with each deposit to the Rare
+  Disease Data Commons. The file sits at the root of the batch prefix. It describes the
+  batch, requested interaction, subjects, sensitivity, files and file sets.
+
+
+  A sidecar is a Croissant 1.1 dataset (http://mlcommons.org/croissant/1.1) in JSON-LD.
+  Files use @type cr:FileObject and file sets use cr:FileSet. Their RDDC class goes in
+  additionalType and determines the extra required fields. Existing Croissant property
+  names are kept; RDDC fields use camelCase in the rddc namespace. The generated context
+  combines Croissant 1.1's context with RDDC terms.
+
+
+  This module also defines SourceDescriptor, the plain JSON file the ACT gives each
+  source at registration. It contains the source register values contributors need and
+  is separate from the sidecar.
+
+
+  The schema has three modules. This one defines the sidecar document, file sets,
+  record sets and the source descriptor. data.yaml defines the file classes:
+  FileObject, with the fields every file has, and the data file classes (DataFile and
+  its subclasses) that extend it. core.yaml defines the identifier types, small
+  supporting classes and slots that both use.
+license: https://creativecommons.org/publicdomain/zero/1.0/
+
+prefixes:
+  rddc: https://w3id.org/rddc/vocab/
+  linkml: https://w3id.org/linkml/
+  sc: https://schema.org/
+  cr: http://mlcommons.org/croissant/
+  dct: http://purl.org/dc/terms/
+  prov: http://www.w3.org/ns/prov#
+default_prefix: rddc
+default_range: string
+
+imports:
+- linkml:types
+- core
+- data
+
+# ---------------------------------------------------------------------------
+# Types
+# ---------------------------------------------------------------------------
+types:
+  LocalId:
+    uri: xsd:string
+    typeof: string
+    description: "A local ID for a file set, record set or field. Use letters, digits or . _ - /."
+    pattern: "^[A-Za-z0-9._/-]+$"
+
+# ---------------------------------------------------------------------------
+# Enumerations
+# ---------------------------------------------------------------------------
+enums:
+  InteractionEnum:
+    description: "Requested batch action (plan sections 3.2 and 7.5)."
+    permissible_values:
+      add:
+        description: >-
+          Add data files. A replacement file gets a new @id. The correction workflow
+          will decide how it replaces earlier data. The Infrastructure Plan calls this
+          "upsert" (section 3.2); the schema uses "add" because batches do not update
+          files in place.
+        aliases:
+        - upsert
+      withdraw:
+        description: "Remove the listed subjects' data as directed by noticeRef. No data files."
+      restrict:
+        description: "Restrict use of the listed subjects' data as directed by noticeRef. No data files."
+      consent:
+        description: "Provide consent information. Each subject row needs a consentRef. The batch may include ConsentFiles."
+
+  IdSystemEnum:
+    description: Subject ID system. Part of the subject's identity.
+    permissible_values:
+      contributor:
+        description: The contributor's own subject identifier scheme.
+      fhir_patient_id:
+        description: FHIR Patient.id (logical id).
+      fhir_patient_identifier:
+        description: A FHIR Patient.identifier value; identifierSystemUri names the system.
+      omop_person_source_value:
+        description: OMOP person.person_source_value.
+      omop_person_id:
+        description: OMOP person.person_id.
+      ccda_record_target:
+        description: C-CDA recordTarget/patientRole/id.
+
+  AgentTypeEnum:
+    description: schema.org type of the agent that wrote a document.
+    permissible_values:
+      sc:SoftwareApplication:
+      sc:Organization:
+      sc:Person:
+
+# ---------------------------------------------------------------------------
+# Classes
+# ---------------------------------------------------------------------------
+classes:
+
+  AnyValue:
+    class_uri: linkml:Any
+    description: Any JSON value. Used for the JSON-LD @context.
+
+  Sidecar:
+    tree_root: true
+    class_uri: sc:Dataset
+    description: "A Croissant dataset describing one batch, saved as _sidecar.json."
+    slots:
+    - jsonldContext
+    - id
+    - type
+    - conformsTo
+    - name
+    - description
+    - url
+    - dateCreated
+    - temporalCoverage
+    - wasAttributedTo
+    - contributorId
+    - contributorContact
+    - sourceId
+    - batchId
+    - interaction
+    - noticeRef
+    - registerVersion
+    - sensitivity
+    - subjects
+    - distribution
+    - recordSet
+    - valueOrigins
+    - additionalProperty
+    slot_usage:
+      jsonldContext:
+        required: true
+      id:
+        required: true
+        range: UuidUrn
+        description: The sidecar ID, urn:uuid:<uuid>.
+      type:
+        required: true
+        equals_string: sc:Dataset
+      conformsTo:
+        required: true
+        description: >-
+          Specifications the document conforms to. Must include
+          http://mlcommons.org/croissant/1.1 and
+          https://w3id.org/rddc/sidecar/<schema version>.
+        has_member:
+          pattern: "^https://w3id\\.org/rddc/sidecar/[0-9]+\\.[0-9]+\\.[0-9]+$"
+      name:
+        required: true
+        description: Human-readable batch name, by convention "<sourceId>/<batchId>".
+      url:
+        required: true
+        description: S3 URL of the batch prefix, ending with a slash. The sidecar sits directly under it.
+        pattern: "^s3://[a-z0-9][a-z0-9.-]*[a-z0-9]/(.*/)?$"
+      dateCreated:
+        required: true
+      wasAttributedTo:
+        required: true
+        description: The tool or pipeline that wrote the sidecar, with its version.
+      contributorId:
+        required: true
+      contributorContact:
+        required: true
+      sourceId:
+        required: true
+      batchId:
+        required: true
+      interaction:
+        required: false  # Not required for now, after 11/18 discussion
+      sensitivity:
+        required: true
+        range: SensitivityDeclaration
+      distribution:
+        required: true
+        description: >-
+          All files and file sets in the batch, listed inline. Large batches still use
+          one document, which consumers can stream. A measured 120,000-file C-CDA batch
+          produced about 93 MB of JSON.
+      subjects:
+        required: true
+        description: >-
+          The subject table, listed inline. It may be empty only for an add batch whose
+          data files are all DocumentationFiles (modality metadata). The RDDC validator
+          checks this rule.
+    rules:
+    - description: Withdraw and restrict batches name the GOVERN notice they carry out.
+      preconditions:
+        slot_conditions:
+          interaction:
+            any_of:
+            - equals_string: withdraw
+            - equals_string: restrict
+      postconditions:
+        slot_conditions:
+          noticeRef:
+            required: true
+
+  Agent:
+    description: The software, pipeline, organization or person that wrote a document.
+    slots:
+    - type
+    - name
+    - softwareVersion
+    slot_usage:
+      type:
+        required: true
+        range: AgentTypeEnum
+      name:
+        required: true
+      softwareVersion:
+        description: Version of the software that wrote the document (the slot is defined in the data module).
+
+  SensitivityDeclaration:
+    description: >-
+      Sensitivity information used for de-identification and routing. Use terms, access
+      tier and date policy come from the source register. The contains* flags apply to
+      every file unless the file overrides them or its class fixes the flag or gives a
+      default (the class annotations in data.yaml). A contains* flag that nothing sets
+      is unknown and treated as true. A missing synthetic flag is treated as false.
+    slots:
+    - directIdentifiersRemoved
+    - synthetic
+    - containsDates
+    - containsSubStateGeography
+    - containsFreeText
+    - containsBiometricIdentifiers
+    - notes
+    slot_usage:
+      directIdentifiersRemoved:
+        required: true
+
+  SubjectEntry:
+    description: >-
+      One subject table row. The combination (idSystem, identifierSystemUri, subjectId)
+      identifies a subject. It must be unique in the table and identify the same person
+      across the source's batches. The RDDC validator checks uniqueness.
+    slots:
+    - subjectId
+    - idSystem
+    - identifierSystemUri
+    - consentRef
+    - additionalProperty
+    slot_usage:
+      subjectId:
+        required: true
+      idSystem:
+        required: true
+    rules:
+    - description: A Patient.identifier value needs its identifier system URI.
+      preconditions:
+        slot_conditions:
+          idSystem:
+            equals_string: fhir_patient_identifier
+      postconditions:
+        slot_conditions:
+          identifierSystemUri:
+            required: true
+
+  # --- distribution: file sets ----------------------------------------------
+  # DistributionItem, FileObject, DataFile and its subclasses are in data.yaml.
+
+  FileSet:
+    is_a: DistributionItem
+    abstract: true
+    class_uri: cr:FileSet
+    description: >-
+      A collection of files. List members by @id in hasPart, select them with
+      includes/excludes globs relative to the batch prefix, or both. Every member must
+      also appear in distribution. Large sets can use globs alone. Include a glob so
+      generic Croissant loaders can find the files.
+    slots:
+    - hasPart
+    - includes
+    - excludes
+    - conformsTo
+    - subjectCount
+    - temporalCoverage
+    - wasDerivedFrom
+    slot_usage:
+      id:
+        range: LocalId
+      type:
+        equals_string: cr:FileSet
+      conformsTo:
+        description: >-
+          Standards the collection follows, as versioned URLs. A data class with a
+          fileSetClass annotation (FHIR, OMOP and C-CDA files) takes its standard and
+          version from here. Pinned values:
+          http://hl7.org/fhir/R4 (FHIR 4.0.1), http://hl7.org/fhir/us/core/STU6.1
+          (US Core 6.1.0), http://hl7.org/fhir/uv/phd/STU2 (HL7 Personal Health
+          Device IG 2.0.0, for device data in FHIR),
+          https://ohdsi.github.io/CommonDataModel/cdm54.html (OMOP CDM 5.4),
+          http://hl7.org/cda/us/ccda/2.1 (C-CDA 2.1),
+          https://standards.ieee.org/ieee/1752.1/6982/ (IEEE 1752.1-2021, for sleep
+          and physical activity measures). The validator checks values against the
+          pinned list.
+      wasDerivedFrom:
+        description: "References to input file sets in this sidecar."
+    rules:
+    - description: A file set lists its members, selects them by glob, or both.
+      preconditions:
+        slot_conditions:
+          name:
+            required: true
+      postconditions:
+        any_of:
+        - slot_conditions:
+            hasPart:
+              required: true
+        - slot_conditions:
+            includes:
+              required: true
+
+  FhirBulkExport:
+    is_a: FileSet
+    description: A FHIR Bulk Data export, one NDJSON file per resource type.
+    slots:
+    - exportTime
+    slot_usage:
+      conformsTo:
+        required: true
+      exportTime:
+        required: true
+
+  FhirBundleCollection:
+    is_a: FileSet
+    description: A set of FHIR Bundle documents (FhirBundleFiles), typically one per subject.
+    slot_usage:
+      conformsTo:
+        required: true
+
+  FhirResourceCollection:
+    is_a: FileSet
+    description: A set of single-resource FHIR JSON documents (FhirResourceFiles).
+    slot_usage:
+      conformsTo:
+        required: true
+
+  OmopCdmInstance:
+    is_a: FileSet
+    description: One OMOP CDM instance, one file per table.
+    slots:
+    - vocabularyVersion
+    - cdmSource
+    slot_usage:
+      conformsTo:
+        required: true
+      vocabularyVersion:
+        required: true
+      cdmSource:
+        required: true
+
+  CcdaDocumentSet:
+    is_a: FileSet
+    description: A set of C-CDA documents.
+    slot_usage:
+      conformsTo:
+        required: true
+
+  TabularDataset:
+    is_a: FileSet
+    description: Related tables that are not OMOP. Joins and data dictionaries are declared as record sets.
+
+  DocumentSet:
+    is_a: FileSet
+    description: Unstructured documents such as clinical notes.
+
+  FileCollection:
+    is_a: FileSet
+    description: "Related files whose collection is not defined by a standard."
+
+  CdmSource:
+    description: >-
+      Fields of the OMOP cdm_source table that the OMOP load needs. cdm_version is
+      left out: the instance's conformsTo gives the CDM version.
+    slots:
+    - cdmSourceName
+    - cdmSourceAbbreviation
+    - cdmHolder
+    - cdmEtlReference
+    - sourceReleaseDate
+    - cdmReleaseDate
+    slot_usage:
+      cdmSourceName:
+        required: true
+
+  # --- Croissant record sets (joins and data dictionaries) -------------------
+
+  RecordSet:
+    class_uri: cr:RecordSet
+    description: >-
+      A table description with typed fields. Use it for data dictionaries and joins
+      between tables that have no standard definition. OMOP and FHIR already define
+      their structure and do not use record sets here.
+    slots:
+    - id
+    - type
+    - name
+    - description
+    - key
+    - field
+    slot_usage:
+      id:
+        required: true
+        range: LocalId
+      type:
+        required: true
+        equals_string: cr:RecordSet
+      name:
+        required: true
+      field:
+        required: true
+
+  RecordSetField:
+    class_uri: cr:Field
+    description: >-
+      One table column (Croissant cr:Field). The class is named RecordSetField to avoid
+      a conflict with pydantic.Field in generated code.
+    slots:
+    - id
+    - type
+    - name
+    - description
+    - dataType
+    - source
+    - references
+    slot_usage:
+      id:
+        required: true
+        range: LocalId
+      type:
+        required: true
+        equals_string: cr:Field
+      name:
+        required: true
+      dataType:
+        required: true
+      source:
+        required: true
+
+  FieldSource:
+    description: Source of a field's values.
+    slots:
+    - fileObject
+    - fileSet
+    - extract
+    slot_usage:
+      extract:
+        required: true
+    rules:
+    - description: A field reads from one file or one file set.
+      preconditions:
+        slot_conditions:
+          extract:
+            required: true
+      postconditions:
+        exactly_one_of:
+        - slot_conditions:
+            fileObject:
+              required: true
+        - slot_conditions:
+            fileSet:
+              required: true
+
+  Extract:
+    description: How to extract a field's values from the source.
+    slots:
+    - column
+    slot_usage:
+      column:
+        required: true
+
+  FieldReference:
+    description: Target field of a foreign-key reference.
+    slots:
+    - field
+    slot_usage:
+      field:
+        required: true
+        multivalued: false
+        range: NodeRef
+
+  # --- Source descriptor (separate document) --------------------------------
+
+  SourceDescriptor:
+    description: >-
+      The ACT issues rddc_source.json at registration. This plain JSON file contains the
+      source's registration details and is used by the generator and local validator. It
+      is separate from the sidecar.
+    notes:
+    - >-
+      The sidecar header copies contributorId, contributorContact, sourceId and
+      registerVersion unchanged, recording the source and register version used. The
+      ACT fills in contributorContact at registration; the contributor may replace it
+      in their copy of the descriptor. bucket and prefixPattern, with
+      {sourceId} and {batchId} filled in, form url (the batch prefix). sourceId and the
+      batch ID form name. modalities is not copied; it limits allowed data classes to
+      those whose modality annotation matches a listed value. conformsTo, issuedAt,
+      issuedBy, region and description stay in the source descriptor.
+    slots:
+    - conformsTo
+    - contributorId
+    - contributorContact
+    - sourceId
+    - bucket
+    - prefixPattern
+    - region
+    - modalities
+    - registerVersion
+    - issuedAt
+    - issuedBy
+    - description
+    slot_usage:
+      conformsTo:
+        required: true
+        description: Must include https://w3id.org/rddc/source-descriptor/<schema version>.
+        has_member:
+          pattern: "^https://w3id\\.org/rddc/source-descriptor/[0-9]+\\.[0-9]+\\.[0-9]+$"
+      contributorId:
+        required: true
+      contributorContact:
+        required: true
+        description: >-
+          Email address of the contributor's contact. The ACT fills it in at registration;
+          the contributor may replace it with their own contact before generating sidecars,
+          which copy it unchanged.
+      sourceId:
+        required: true
+      bucket:
+        required: true
+      prefixPattern:
+        required: true
+      modalities:
+        required: true
+      registerVersion:
+        required: true
+      issuedAt:
+        required: true
+      issuedBy:
+        required: true
+
+# ---------------------------------------------------------------------------
+# Slots
+# ---------------------------------------------------------------------------
+slots:
+
+  # --- JSON-LD keywords -------------------------------------------------------
+  jsonldContext:
+    alias: "@context"
+    description: >-
+      The JSON-LD context: Croissant 1.1's context plus the RDDC terms, embedded
+      as an object (schema/generated/rddc_sidecar.context.jsonld).
+    range: AnyValue
+
+  # --- schema.org / Croissant terms -------------------------------------------
+  conformsTo:
+    description: "Specifications or standards the node conforms to, as versioned URIs."
+    slot_uri: dct:conformsTo
+    range: uri
+    multivalued: true
+  url:
+    description: "URL of the resource."
+    slot_uri: sc:url
+  dateCreated:
+    description: "When the sidecar was created."
+    slot_uri: sc:dateCreated
+    range: datetime
+  temporalCoverage:
+    slot_uri: sc:temporalCoverage
+    description: >-
+      The period the data covers, as an ISO 8601 date or interval "start/end", e.g.
+      "2019/2024" or "2024-03/2024-06"; ".." leaves one end open, e.g. "2021/..". Use
+      year or month precision unless the batch declares containsDates: day-precision
+      dates for a set about one subject can identify them.
+    pattern: "^([0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?(/([0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?|\\.\\.))?|\\.\\./[0-9]{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12][0-9]|3[01]))?)?)$"
+  includes:
+    slot_uri: cr:includes
+    multivalued: true
+    description: Glob patterns relative to the batch prefix.
+  excludes:
+    description: "Glob patterns relative to the batch prefix for files to leave out of the set."
+    slot_uri: cr:excludes
+    multivalued: true
+  hasPart:
+    slot_uri: sc:hasPart
+    range: NodeRef
+    multivalued: true
+    inlined_as_list: true
+    description: Member files, by @id.
+  distribution:
+    description: "The files and file sets in the batch."
+    slot_uri: sc:distribution
+    range: DistributionItem
+    multivalued: true
+    inlined_as_list: true
+  recordSet:
+    description: "Record sets describing the records in the batch's files."
+    slot_uri: cr:recordSet
+    range: RecordSet
+    multivalued: true
+    inlined_as_list: true
+  key:
+    slot_uri: cr:key
+    range: NodeRef
+    multivalued: true
+    inlined_as_list: true
+    description: Fields that together identify a record.
+  field:
+    description: "The fields (columns) of a record set."
+    slot_uri: cr:field
+    range: RecordSetField
+    multivalued: true
+    inlined_as_list: true
+  dataType:
+    slot_uri: cr:dataType
+    range: uriorcurie
+    multivalued: true
+    description: Field type, e.g. sc:Text, sc:Integer, sc:Date.
+  source:
+    description: "Where the field's values come from."
+    slot_uri: cr:source
+    range: FieldSource
+    inlined: true
+  fileObject:
+    description: "The file the values come from, by @id."
+    slot_uri: cr:fileObject
+    range: NodeRef
+    inlined: true
+  fileSet:
+    description: "The file set the values come from, by @id."
+    slot_uri: cr:fileSet
+    range: NodeRef
+    inlined: true
+  extract:
+    description: "How to extract the field's values from the source."
+    slot_uri: cr:extract
+    range: Extract
+    inlined: true
+  column:
+    description: "Source column name."
+    slot_uri: cr:column
+  references:
+    description: "Referenced field for this foreign key."
+    slot_uri: cr:references
+    range: FieldReference
+    inlined: true
+
+  # --- PROV-O -----------------------------------------------------------------
+  wasAttributedTo:
+    description: "The agent responsible for the document."
+    slot_uri: prov:wasAttributedTo
+    range: Agent
+    inlined: true
+
+  # --- RDDC: batch -----------------------------------------------------------
+  contributorId:
+    description: The contributor's registered ID.
+    range: Identifier
+  contributorContact:
+    description: Email address of the contributor's contact for the batch or source.
+    pattern: "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"
+  sourceId:
+    description: The source register ID. Must match the source the upload's delivery role is registered for.
+    range: Identifier
+  batchId:
+    description: Contributor-assigned batch ID, unique within the source.
+    range: Identifier
+  interaction:
+    description: "Requested batch action."
+    range: InteractionEnum
+  noticeRef:
+    description: "Reference to a GOVERN withdrawal or restriction notice. The notice holds the terms and legal details."
+  registerVersion:
+    description: "The source register version used to issue the descriptor or draft the sidecar."
+  subjects:
+    description: "The subject table: one entry per person the batch refers to."
+    range: SubjectEntry
+    multivalued: true
+    inlined_as_list: true
+
+  # --- RDDC: sensitivity -----------------------------------------------------
+  directIdentifiersRemoved:
+    description: >-
+      The contributor confirms that the HIPAA Safe Harbor identifiers the contains*
+      flags do not declare were removed before upload: (A) and (D) to (O), such as
+      names, contact details, record, account and device numbers, and (R), any other
+      unique identifying number, characteristic or code (45 CFR 164.514(b)(2)(i)).
+      Dates (C), geographic subdivisions smaller than a state (B), biometric identifiers (P) and full-face images (Q)
+      are declared with the flags instead. Must be true for non-synthetic data.
+    range: boolean
+  synthetic:
+    description: "The batch contains synthetic data with no real people. Identifier checks become warnings."
+    range: boolean
+
+  # --- RDDC: subjects --------------------------------------------------------
+  subjectId:
+    description: The contributor's coded ID for one person.
+    range: Identifier
+  idSystem:
+    description: "Where the subject ID comes from. Part of the subject's identity."
+    range: IdSystemEnum
+  identifierSystemUri:
+    description: For fhir_patient_identifier, the identifier system URI.
+    range: uri
+  consentRef:
+    description: Reference to a consent record or version for this subject.
+  subjectCount:
+    description: "Number of distinct subjects in the file set."
+    range: integer
+    minimum_value: 0
+
+  # --- RDDC: file sets -------------------------------------------------------
+  exportTime:
+    description: For FHIR bulk exports, the transactionTime of the export.
+    range: datetime
+  vocabularyVersion:
+    description: OHDSI vocabulary release, e.g. "v5.0 25-AUG-2026".
+  cdmSource:
+    description: "Values from the OMOP cdm_source table."
+    range: CdmSource
+    inlined: true
+  cdmSourceName:
+    description: "OMOP cdm_source_name: the name of the CDM instance."
+  cdmSourceAbbreviation:
+    description: "OMOP cdm_source_abbreviation: a short name for the CDM instance."
+  cdmHolder:
+    description: "OMOP cdm_holder: the organization that holds the CDM instance."
+  cdmEtlReference:
+    description: "OMOP cdm_etl_reference: a reference to the ETL code or its documentation."
+  sourceReleaseDate:
+    description: "OMOP source_release_date: when the data was extracted from the source system."
+    range: date
+  cdmReleaseDate:
+    description: "OMOP cdm_release_date: when the CDM instance was produced."
+    range: date
+
+  # --- Source descriptor -----------------------------------------------------
+  bucket:
+    description: S3 bucket name.
+  prefixPattern:
+    description: 'Template for batch prefixes, with {sourceId} and {batchId} placeholders, ending with a slash. Example: "{sourceId}/{batchId}/".'
+    pattern: ^(|.*/)$
+  region:
+    description: "AWS region of the bucket."
+  modalities:
+    description: >-
+      Modalities the source is registered to deposit. A file's modality is the modality
+      annotation of its class; a file of a modality the source is not registered for is
+      held for a curator.
+    range: ModalityEnum
+    multivalued: true
+  issuedAt:
+    description: "When the descriptor was issued."
+    range: datetime
+  issuedBy:
+    description: "The agent that issued the descriptor."
+    range: Agent
+    inlined: true

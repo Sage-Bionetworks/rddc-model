@@ -12,7 +12,7 @@ so this script does. Exits non-zero if any concrete DataFile subclass:
 - has both: "biometric" implies "identifying", so a biometric class leaves it out;
 - has an "rai:dataCollectionType" annotation that is not one of the Croissant
   Responsible AI recommended values (the annotation is optional);
-- has a sensitivity flag annotation (containsDates, containsZipCodes,
+- has a sensitivity flag annotation (containsDates, containsSubStateGeography,
   containsFreeText, containsBiometricIdentifiers) other than "always", "n/a" or
   "false", or annotates containsBiometricIdentifiers while being biometric;
 - fixes a flag ("always" or "n/a", or biometric) but its sensitivity range still
@@ -29,7 +29,7 @@ from linkml_runtime.utils.schemaview import SchemaView
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STRUCTURES = {"structured", "unstructured", "mixed"}
 TRUE = {"true"}
-FLAGS = ("containsDates", "containsZipCodes", "containsFreeText", "containsBiometricIdentifiers")
+FLAGS = ("containsDates", "containsSubStateGeography", "containsFreeText", "containsBiometricIdentifiers")
 FLAG_VALUES = {"always", "n/a", "false"}
 # Recommended values of rai:dataCollectionType (Croissant RAI vocabulary, croissant_rai.ttl).
 COLLECTION_TYPES = {

@@ -68,12 +68,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "$ref": "#/$defs/GenomicsAssayEnum",
@@ -128,9 +125,12 @@
                     "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -171,7 +171,7 @@
                 "sequencingPlatform",
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -183,7 +183,7 @@
         },
         "AudioFile": {
             "additionalProperties": false,
-            "description": "An audio recording. A recording of a person's voice contains biometric identifiers, so set sensitivity.containsBiometricIdentifiers to true. Audio formats have no field for an address, so a file contains no postal codes unless it says so; speech counts as free text.",
+            "description": "An audio recording. A recording of a person's voice contains biometric identifiers, so set sensitivity.containsBiometricIdentifiers to true. Audio formats have no field for an address, so a file contains no sub-state geography unless it says so; speech counts as free text.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -249,12 +249,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -290,9 +287,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -330,7 +330,7 @@
             "required": [
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -408,12 +408,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "$ref": "#/$defs/GenomicsAssayEnum",
@@ -468,9 +465,12 @@
                     "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -511,7 +511,7 @@
                 "sequencingPlatform",
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -539,8 +539,8 @@
                         "null"
                     ]
                 },
-                "containsZipCodes": {
-                    "description": "The data includes postal codes. These are accepted at deposit and masked at release. Part of HIPAA Safe Harbor identifier (B), 45 CFR 164.514(b)(2)(i)(B), which covers all geographic subdivisions smaller than a state; this flag covers postal codes only.",
+                "containsSubStateGeography": {
+                    "description": "The data includes geographic subdivisions smaller than a state, such as street addresses, cities, counties, precincts, ZIP codes and their geocodes. These are accepted at deposit and masked at release. HIPAA Safe Harbor identifier (B), 45 CFR 164.514(b)(2)(i)(B).",
                     "type": [
                         "boolean",
                         "null"
@@ -633,12 +633,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -674,9 +671,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -712,7 +712,7 @@
                 "subjectIds",
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -814,12 +814,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -855,9 +852,12 @@
                     "description": "Per-file sensitivity overrides. containsFreeText is left out: the class already says the file is free text."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -893,7 +893,7 @@
                 "subjectIds",
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -917,7 +917,7 @@
         },
         "ConsentFile": {
             "additionalProperties": false,
-            "description": "Permitted data uses for each listed subject. The platform applies them to access decisions rather than processing them as clinical data. A consent elements table holds coded uses and dates, so postal codes, free text and biometric identifiers are absent unless the file says otherwise.",
+            "description": "Permitted data uses for each listed subject. The platform applies them to access decisions rather than processing them as clinical data. A consent elements table holds coded uses and dates, so sub-state geography, free text and biometric identifiers are absent unless the file says otherwise.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -997,12 +997,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -1038,9 +1035,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -1076,7 +1076,7 @@
                 "subjectIds",
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -1154,12 +1154,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "$ref": "#/$defs/GenomicsAssayEnum",
@@ -1214,9 +1211,12 @@
                     "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -1257,7 +1257,7 @@
                 "sequencingPlatform",
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -1335,12 +1335,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -1376,9 +1373,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -1416,7 +1416,7 @@
             "required": [
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -1509,12 +1509,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "$ref": "#/$defs/ImagingAssayEnum",
@@ -1554,9 +1551,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -1595,7 +1595,7 @@
                 "measurementTechnique",
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -1673,12 +1673,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "description": "The sensing techniques that produced the data, e.g. accelerometry or ecg. A list, since one recording or summary can combine several, such as a sleep study's EEG and ECG channels.",
@@ -1737,9 +1734,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -1778,7 +1778,7 @@
                 "measurementTechnique",
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -1790,7 +1790,7 @@
         },
         "DifferentialDiagnosisFile": {
             "additionalProperties": false,
-            "description": "Candidate diagnoses ranked by a diagnosis support tool, such as a facial phenotyping or phenotype-matching tool, or by another method: for each subject, the top candidates with their rank, score and code. The candidates are suggestions, not diagnoses, so they are kept apart from confirmed conditions; in FHIR they are Conditions with verificationStatus \"differential\". A tool's export is structured; a report in PDF is unstructured and needs text extraction. wasDerivedFrom points to the files in the sidecar the tool analysed, such as facial images. Candidates hold no address or image, so postal codes and biometric identifiers are absent unless the file says otherwise.",
+            "description": "Candidate diagnoses ranked by a diagnosis support tool, such as a facial phenotyping or phenotype-matching tool, or by another method: for each subject, the top candidates with their rank, score and code. The candidates are suggestions, not diagnoses, so they are kept apart from confirmed conditions; in FHIR they are Conditions with verificationStatus \"differential\". A tool's export is structured; a report in PDF is unstructured and needs text extraction. wasDerivedFrom points to the files in the sidecar the tool analysed, such as facial images. Candidates hold no address or image, so sub-state geography and biometric identifiers are absent unless the file says otherwise.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -1884,12 +1884,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -1925,9 +1922,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "software": {
                     "description": "The tool that produced the candidates, e.g. \"Face2Gene\" or \"Exomiser\", when they come from a known tool. The ranking depends on the tool.",
@@ -1977,7 +1977,7 @@
                 "subjectIds",
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -2073,8 +2073,8 @@
                         "null"
                     ]
                 },
-                "containsZipCodes": {
-                    "description": "The data includes postal codes. These are accepted at deposit and masked at release. Part of HIPAA Safe Harbor identifier (B), 45 CFR 164.514(b)(2)(i)(B), which covers all geographic subdivisions smaller than a state; this flag covers postal codes only.",
+                "containsSubStateGeography": {
+                    "description": "The data includes geographic subdivisions smaller than a state, such as street addresses, cities, counties, precincts, ZIP codes and their geocodes. These are accepted at deposit and masked at release. HIPAA Safe Harbor identifier (B), 45 CFR 164.514(b)(2)(i)(B).",
                     "type": [
                         "boolean",
                         "null"
@@ -2192,12 +2192,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -2233,9 +2230,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -2273,7 +2273,7 @@
             "required": [
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -2351,12 +2351,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "description": "The sensing techniques that produced the data, e.g. accelerometry or ecg. A list, since one recording or summary can combine several, such as a sleep study's EEG and ECG channels.",
@@ -2415,9 +2412,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -2456,7 +2456,7 @@
                 "measurementTechnique",
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -2626,12 +2626,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "$ref": "#/$defs/ImagingAssayEnum",
@@ -2688,9 +2685,12 @@
                     "description": "Per-file sensitivity overrides. containsBiometricIdentifiers is left out: the class already says the file contains biometric identifiers."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -2727,7 +2727,7 @@
                 "subjectIds",
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -2816,12 +2816,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "$ref": "#/$defs/GenomicsAssayEnum",
@@ -2883,9 +2880,12 @@
                     "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -2925,7 +2925,7 @@
                 "sequencingPlatform",
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -3007,12 +3007,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -3048,9 +3045,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -3087,7 +3087,7 @@
                 "subjectIds",
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -3178,12 +3178,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -3219,9 +3216,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -3259,7 +3259,7 @@
             "required": [
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -3337,12 +3337,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -3382,9 +3379,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -3423,7 +3423,7 @@
                 "resourceType",
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -3654,12 +3654,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -3706,9 +3703,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -3747,7 +3747,7 @@
                 "resourceType",
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -3978,12 +3978,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -4023,9 +4020,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -4064,7 +4064,7 @@
                 "resourceType",
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -4132,21 +4132,21 @@
                     "type": "string"
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
                     "type": "string"
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "valueOrigins": {
                     "description": "How tools populated this node's values.",
@@ -4162,7 +4162,7 @@
             "required": [
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -4197,8 +4197,8 @@
                         "null"
                     ]
                 },
-                "containsZipCodes": {
-                    "description": "The data includes postal codes. These are accepted at deposit and masked at release. Part of HIPAA Safe Harbor identifier (B), 45 CFR 164.514(b)(2)(i)(B), which covers all geographic subdivisions smaller than a state; this flag covers postal codes only.",
+                "containsSubStateGeography": {
+                    "description": "The data includes geographic subdivisions smaller than a state, such as street addresses, cities, counties, precincts, ZIP codes and their geocodes. These are accepted at deposit and masked at release. HIPAA Safe Harbor identifier (B), 45 CFR 164.514(b)(2)(i)(B).",
                     "type": [
                         "boolean",
                         "null"
@@ -4312,12 +4312,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "$ref": "#/$defs/GenomicsAssayEnum",
@@ -4376,9 +4373,12 @@
                     "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -4418,7 +4418,7 @@
                 "sequencingPlatform",
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -4496,12 +4496,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -4537,9 +4534,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -4577,7 +4577,7 @@
             "required": [
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -4589,7 +4589,7 @@
         },
         "GeneticTestResultFile": {
             "additionalProperties": false,
-            "description": "Results of clinical genetic tests or molecular pathology, exported as records: for each test, its name, method, date and status, and its findings, such as genes, variants in HGVS notation, zygosity and classification (for example ACMG/AMP), with the laboratory's interpretation as text. The interpretation makes the file contain free text (containsFreeText). Report documents (PDFs) go in ClinicalDocumentFiles that reportDocuments points to; sequencing data and variant calls go in the genomics classes. A report lists few variants, not a genome, so the class is not identifying, although a rare variant can single a person out within a small cohort. Results records hold no address or image, so postal codes and biometric identifiers are absent unless the file says otherwise.",
+            "description": "Results of clinical genetic tests or molecular pathology, exported as records: for each test, its name, method, date and status, and its findings, such as genes, variants in HGVS notation, zygosity and classification (for example ACMG/AMP), with the laboratory's interpretation as text. The interpretation makes the file contain free text (containsFreeText). Report documents (PDFs) go in ClinicalDocumentFiles that reportDocuments points to; sequencing data and variant calls go in the genomics classes. A report lists few variants, not a genome, so the class is not identifying, although a rare variant can single a person out within a small cohort. Results records hold no address or image, so sub-state geography and biometric identifiers are absent unless the file says otherwise.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -4678,12 +4678,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -4734,9 +4731,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -4772,7 +4772,7 @@
                 "subjectIds",
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -4863,12 +4863,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "$ref": "#/$defs/GenomicsAssayEnum",
@@ -4919,9 +4916,12 @@
                     "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -4961,7 +4961,7 @@
                 "sequencingPlatform",
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -5061,12 +5061,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "$ref": "#/$defs/GenomicsAssayEnum",
@@ -5121,9 +5118,12 @@
                     "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -5164,7 +5164,7 @@
                 "sequencingPlatform",
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -5176,7 +5176,7 @@
         },
         "ImageFile": {
             "additionalProperties": false,
-            "description": "An image in a format other than DICOM: TIFF or OME-TIFF, PNG, JPEG, JPEG 2000, or a whole-slide, microscopy or NIfTI volume format with no registered media type (application/octet-stream). These formats have no field for an address, so a file contains no postal codes unless it says so; burned-in text counts as free text.",
+            "description": "An image in a format other than DICOM: TIFF or OME-TIFF, PNG, JPEG, JPEG 2000, or a whole-slide, microscopy or NIfTI volume format with no registered media type (application/octet-stream). These formats have no field for an address, so a file contains no sub-state geography unless it says so; burned-in text counts as free text.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -5259,12 +5259,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "$ref": "#/$defs/ImagingAssayEnum",
@@ -5304,9 +5301,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -5345,7 +5345,7 @@
                 "measurementTechnique",
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -5439,12 +5439,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "$ref": "#/$defs/ImagingAssayEnum",
@@ -5484,9 +5481,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -5525,7 +5525,7 @@
                 "measurementTechnique",
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -5607,12 +5607,9 @@
                     "description": "The file this file indexes."
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -5648,9 +5645,12 @@
                     "description": "Notes only. The class fixes every sensitivity flag."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -5689,7 +5689,7 @@
                 "indexOf",
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -5795,12 +5795,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -5836,9 +5833,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -5875,7 +5875,7 @@
                 "subjectIds",
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -6098,12 +6098,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -6139,9 +6136,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -6180,7 +6180,7 @@
                 "cdmTable",
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -6316,12 +6316,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "description": "The sensing techniques that produced the data, e.g. accelerometry or ecg. A list, since one recording or summary can combine several, such as a sleep study's EEG and ECG channels.",
@@ -6372,9 +6369,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -6413,7 +6413,7 @@
                 "measurementTechnique",
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -6508,12 +6508,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "description": "The sensing techniques that produced the data, e.g. accelerometry or ecg. A list, since one recording or summary can combine several, such as a sleep study's EEG and ECG channels.",
@@ -6564,9 +6561,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -6605,7 +6605,7 @@
                 "measurementTechnique",
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -6683,12 +6683,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "description": "The sensing techniques that produced the data, e.g. accelerometry or ecg. A list, since one recording or summary can combine several, such as a sleep study's EEG and ECG channels.",
@@ -6747,9 +6744,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -6788,7 +6788,7 @@
                 "measurementTechnique",
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -6866,12 +6866,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "$ref": "#/$defs/GenomicsAssayEnum",
@@ -6933,9 +6930,12 @@
                     "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -6975,7 +6975,7 @@
                 "sequencingPlatform",
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -7090,12 +7090,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "$ref": "#/$defs/GenomicsAssayEnum",
@@ -7150,9 +7147,12 @@
                     "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -7193,7 +7193,7 @@
                 "sequencingPlatform",
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -7288,12 +7288,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -7329,9 +7326,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -7369,7 +7369,7 @@
             "required": [
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -7447,12 +7447,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "$ref": "#/$defs/GenomicsAssayEnum",
@@ -7514,9 +7511,12 @@
                     "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -7556,7 +7556,7 @@
                 "sequencingPlatform",
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -7709,12 +7709,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "$ref": "#/$defs/GenomicsAssayEnum",
@@ -7769,9 +7766,12 @@
                     "description": "The sequencing technology that produced the data, e.g. illumina or oxford_nanopore. It tells short reads from long reads, which need different processing."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -7812,7 +7812,7 @@
                 "sequencingPlatform",
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -7890,12 +7890,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "description": "The sensing techniques that produced the data, e.g. accelerometry or ecg. A list, since one recording or summary can combine several, such as a sleep study's EEG and ECG channels.",
@@ -7951,9 +7948,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -7993,7 +7993,7 @@
                 "platform",
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -8005,7 +8005,7 @@
         },
         "VideoFile": {
             "additionalProperties": false,
-            "description": "A video recording. A recording containing a person's face or voice contains biometric identifiers, so set sensitivity.containsBiometricIdentifiers to true. Video formats have no field for an address, so a file contains no postal codes unless it says so; speech and on-screen text count as free text.",
+            "description": "A video recording. A recording containing a person's face or voice contains biometric identifiers, so set sensitivity.containsBiometricIdentifiers to true. Video formats have no field for an address, so a file contains no sub-state geography unless it says so; speech and on-screen text count as free text.",
             "properties": {
                 "@id": {
                     "description": "The file ID, urn:uuid:<file_id>. Keep it when moving or re-registering the file. Changed content gets a new ID. IDs must be unique within the sidecar.",
@@ -8071,12 +8071,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "name": {
                     "description": "File name, by convention the contentUrl.",
@@ -8112,9 +8109,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -8152,7 +8152,7 @@
             "required": [
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
@@ -8238,12 +8238,9 @@
                     ]
                 },
                 "md5": {
-                    "description": "Optional; lets the platform compare with Synapse file handles and single-part S3 ETags.",
+                    "description": "MD5 checksum of the file, as lowercase hexadecimal. Lets the platform check for corruption in transfer against Synapse file handles and single-part S3 ETags.",
                     "pattern": "^[0-9a-f]{32}$",
-                    "type": [
-                        "string",
-                        "null"
-                    ]
+                    "type": "string"
                 },
                 "measurementTechnique": {
                     "description": "The sensing techniques that produced the data, e.g. accelerometry or ecg. A list, since one recording or summary can combine several, such as a sleep study's EEG and ECG channels.",
@@ -8302,9 +8299,12 @@
                     "description": "Sensitivity information for the batch or file. File-level contains* flags override the batch values."
                 },
                 "sha256": {
-                    "description": "SHA-256 checksum of the file, as lowercase hexadecimal.",
+                    "description": "Optional SHA-256 checksum of the file, as lowercase hexadecimal.",
                     "pattern": "^[0-9a-f]{64}$",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "subjectIds": {
                     "description": "Subject IDs the file contains. Each must appear in the subject table.",
@@ -8343,7 +8343,7 @@
                 "measurementTechnique",
                 "contentUrl",
                 "contentSize",
-                "sha256",
+                "md5",
                 "@id",
                 "@type",
                 "additionalType",
