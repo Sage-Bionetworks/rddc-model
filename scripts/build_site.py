@@ -428,7 +428,10 @@ def render_json_directive(m):
     attrs = dict(re.findall(r'(\w+)="([^"]*)"', m.group(1)))
     src = attrs["src"]
     doc = json.load(open(os.path.join(ROOT, src)))
-    node = resolve_pointer(doc, attrs.get("pointer", ""))
+    try:
+        node = resolve_pointer(doc, attrs.get("pointer", ""))
+    except (KeyError, IndexError, ValueError, TypeError):
+        raise SystemExit(f"{_current_page[0]}: rddc-json {src} has no node at pointer {attrs['pointer']!r}")
     if "keys" in attrs and isinstance(node, dict):
         keys = [k.strip() for k in attrs["keys"].split(",")]
         node = {k: node[k] for k in keys if k in node}
@@ -825,7 +828,15 @@ def term_link(curie):
     """An ontology term (CURIE) as a link to its IRI; empty when there is none."""
     if not curie:
         return ""
-    return f'<a href="{html.escape(sv.expand_curie(curie))}"><code>{html.escape(curie)}</code></a>'
+    href = sv.expand_curie(curie)
+    if curie.startswith("fhir:"):
+        # fhir: IRIs redirect to the current FHIR release (R5), where R4-only types 404.
+        # The resource type enum is R4; take the version from the enum once there are two.
+        href = f"https://hl7.org/fhir/R4/{curie[5:].lower()}.html"
+    elif curie.startswith("rai:"):
+        # The RAI namespace IRIs do not resolve; the spec's property table describes them.
+        href = "https://docs.mlcommons.org/croissant/docs/croissant-rai-spec.html#rai-property-information"
+    return f'<a href="{html.escape(href)}"><code>{html.escape(curie)}</code></a>'
 
 
 def value_terms(pv):
@@ -1071,6 +1082,8 @@ def gen_technique(attrs):
 
 def gen_enum(attrs):
     name = attrs["name"]
+    if sv.get_enum(name) is None:
+        raise SystemExit(f"{_current_page[0]}: rddc-enum names {name}, which is not an enum in the schema")
     return (f"<p class='meta'><span>{range_link(name)}: {esc(sv.get_enum(name).description)}</span></p>"
             + enum_table(name))
 
@@ -1315,6 +1328,7 @@ def search_entries(fname, title, body):
 
 
 def render(fname, title, body, template, home=False):
+    _current_page[0] = fname
     body = add_heading_ids(expand_directives(body))
     body = qualify_first_sidecar(body)
     section = PAGE_SECTION.get(fname)
@@ -1361,6 +1375,26 @@ def check_recipes():
             problems.append(f"{DATA_EXAMPLES_SRC} {key} should be a valid {cls}: {errors[0].json_path}: {errors[0].message[:200]}")
     if problems:
         raise SystemExit("recipe check failed:\n  " + "\n  ".join(problems))
+
+
+def check_links(out):
+    """Every internal link in the built pages points at a file that exists, and its
+    #anchor, if any, at an id on that page."""
+    pages = {os.path.basename(f): open(f).read() for f in glob.glob(os.path.join(out, "*.html"))}
+    ids = {name: set(re.findall(r'\bid=["\']([^"\']+)["\']', text)) for name, text in pages.items()}
+    problems = []
+    for name, text in sorted(pages.items()):
+        for href in sorted(set(re.findall(r'\bhref=["\']([^"\']+)["\']', text))):
+            if re.match(r"^[a-z][a-z0-9+.-]*:", href, re.I):  # http:, https:, mailto:, ...
+                continue
+            path, _, anchor = html.unescape(href).partition("#")
+            target = path or name
+            if path and not os.path.exists(os.path.join(out, path)):
+                problems.append(f"{name}: link to missing file {href}")
+            elif anchor and target in ids and anchor not in ids[target]:
+                problems.append(f"{name}: link to missing anchor {href}")
+    if problems:
+        raise SystemExit("link check failed:\n  " + "\n  ".join(problems))
 
 
 def main():
@@ -1432,6 +1466,7 @@ def main():
     with open(os.path.join(out, "slides.html"), "w") as target:
         target.write(slides)
     open(os.path.join(out, ".nojekyll"), "w").close()
+    check_links(out)
     print(f"built {len(PAGES)} pages and slide deck into {os.path.relpath(out, ROOT)}")
 
 

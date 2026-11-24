@@ -375,11 +375,13 @@ table.compare td:nth-child(3) { box-shadow: inset 2px 0 0 var(--o-rddc-bg); padd
 
 /* tabs */
 .tabs { margin: 20px 0; }
-.tabs [role="tablist"] { display: flex; gap: 2px; border-bottom: 1px solid var(--rule); }
+/* The rule is an inset shadow, not a border, so the selected tab's underline can cover it
+   without a negative margin, which would overflow the scrolling strip. */
+.tabs [role="tablist"] { display: flex; gap: 2px; box-shadow: inset 0 -1px 0 var(--rule); overflow-x: auto; scrollbar-width: thin; }
 .tabs [role="tab"] {
   font: 500 0.88rem var(--sans); color: var(--ink-3);
   background: none; border: 0; border-bottom: 2px solid transparent;
-  padding: 8px 12px; margin-bottom: -1px; cursor: pointer;
+  padding: 8px 12px; cursor: pointer; flex-shrink: 0; white-space: nowrap;
 }
 .tabs [role="tab"]:hover { color: var(--ink); }
 .tabs [role="tab"][aria-selected="true"] { color: var(--ink); border-bottom-color: var(--ink); }

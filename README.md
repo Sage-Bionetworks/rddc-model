@@ -25,7 +25,7 @@ RDDC fields use camelCase in the `rddc:` namespace.
 | `examples/` | Example sidecars (deposit, withdrawal, C-CDA document set) and a source descriptor |
 | `examples/data_files/valid.json` | One valid data file object per data class, checked by `make check` and shown on the site |
 | `site/` | Documentation site sources: pages, recipe sidecars, template and assets. The data classes are documented here, generated from the schema |
-| `site/slides.html` | Standalone four-slide presentation on Croissant and the RDDC sidecar |
+| `site/slides.html` | Standalone ten-slide presentation on Croissant and the RDDC sidecar |
 | `scripts/` | Context builder, example and data file checkers, class annotation checker, version checker, enum generator and site builder |
 
 ## Build and check
@@ -42,7 +42,7 @@ make site       # documentation and slides into site/dist (checks the recipes an
 
 The presentation is built at `site/dist/slides.html` and linked from the docs.
 It includes its styles and script, so the downloaded HTML works offline.
-Arrow keys navigate, F toggles fullscreen, and Print / PDF prints all four slides.
+Arrow keys navigate, F toggles fullscreen, and Print / PDF prints all ten slides.
 
 The `rddc-sidecar` validator checks rules beyond JSON Schema: unique `@id`s
 and subject identities, valid references, required subjects, no data files in
