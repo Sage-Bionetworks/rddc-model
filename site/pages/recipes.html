@@ -1,0 +1,88 @@
+<h1>Recipes by data type</h1>
+<p class="lede">Complete metadata sidecars for each supported data type. The <a href="data-overview.html">data class pages</a> explain each class and show a valid file object; these recipes show complete sidecars, with their file sets, subjects and sensitivity. Their IDs, paths, sizes and checksums are placeholders for actual batch values. The site build validates every download against JSON Schema. Completed sidecars also need validation against the batch files before upload.</p>
+
+<div class="note"><strong>Complete downloads</strong>
+<p>Most snippets show only recipe-specific sections. The downloads are complete sidecars, including the embedded context and the standard header from <a href="tutorial.html">Sidecar tutorial</a>.</p></div>
+
+<div class="table-wrap"><table>
+<thead><tr><th>Data</th><th>File class</th><th>File set class</th><th>Recipe</th></tr></thead>
+<tbody>
+<tr><td><a href="data-clinical.html#fhir">FHIR Bulk Data (NDJSON)</a></td><td><code>FhirNdjsonFile</code></td><td><code>FhirBulkExport</code></td><td><a href="examples.html#the-fhir-bulk-export">Example sidecar</a></td></tr>
+<tr><td><a href="data-clinical.html#fhir">FHIR Bundles</a></td><td><code>FhirBundleFile</code></td><td><code>FhirBundleCollection</code></td><td><a href="#fhir-bundles-from-synthetic-data">Below</a></td></tr>
+<tr><td><a href="data-clinical.html#omop-cdm">OMOP CDM tables</a></td><td><code>OmopTableFile</code></td><td><code>OmopCdmInstance</code></td><td><a href="examples.html#the-omop-snapshot">Example sidecar</a></td></tr>
+<tr><td><a href="data-clinical.html#c-cda">C-CDA documents</a></td><td><code>CcdaDocumentFile</code></td><td><code>CcdaDocumentSet</code></td><td><a href="examples.html#c-cda-document-set">Example sidecar</a></td></tr>
+<tr><td><a href="data-clinical.html#other-clinical-tables">Registry, PRO, claims tables</a></td><td><code>TabularFile</code>, <code>DocumentationFile</code></td><td><code>TabularDataset</code></td><td><a href="#registry-with-a-data-dictionary">Below</a></td></tr>
+<tr><td><a href="data-clinical.html#clinical-documents">Clinical notes and reports</a></td><td><code>ClinicalDocumentFile</code></td><td><code>DocumentSet</code></td><td><a href="#clinical-notes">Below</a></td></tr>
+<tr><td><a href="data-genomics.html">Sequencing, alignments, variants</a></td><td><code>FastqFile</code>, <code>UnalignedBamFile</code>, <code>BamFile</code>, <code>CramFile</code>, <code>GermlineVariantFile</code>, <code>SomaticVariantFile</code>, <code>GeneExpressionFile</code>, <code>IndexFile</code></td><td><code>FileCollection</code></td><td><a href="#genomics">Below</a></td></tr>
+<tr><td><a href="data-imaging.html">Images, video, audio</a></td><td><code>DicomImageFile</code>, <code>ImageFile</code>, <code>FacialImagingFile</code>, <code>VideoFile</code>, <code>AudioFile</code></td><td><code>FileCollection</code></td><td><a href="#images-and-video">Below</a></td></tr>
+<tr><td><a href="data-clinical.html#consent">Consent</a></td><td><code>ConsentFile</code></td><td><span class="muted">optional</span></td><td><a href="#consent">Below</a></td></tr>
+<tr><td>Restriction or withdrawal</td><td><span class="muted">no files</span></td><td><span class="muted">none</span></td><td><a href="#restriction">Below</a></td></tr>
+</tbody></table></div>
+
+<h2>FHIR bundles from synthetic data</h2>
+<p>Synthea test patients, exported as one FHIR <code>collection</code> Bundle per patient. Key points:</p>
+<ul>
+<li><code>synthetic: true</code> on the batch tells validators there are no real people, which relaxes identifier checks to warnings.</li>
+<li>The subject IDs are FHIR <code>Patient.identifier</code> values, so each row needs <code>identifierSystemUri</code>.</li>
+<li>A <code>FhirBundleFile</code> must list its <code>subjectIds</code> and <code>bundleType</code>.</li>
+</ul>
+<rddc-json src="site/recipes/fhir_bundles.json" keys="sensitivity,subjects,distribution" title="fhir_bundles.json (excerpt)"></rddc-json>
+
+<h2>Registry with a data dictionary</h2>
+<p>A natural history registry with two tables, a data dictionary, a join, and a project-specific extension.</p>
+<ul>
+<li>Tables may be CSV, TSV, Parquet, JSON or JSON Lines.</li>
+<li>The data dictionary is a <code>DocumentationFile</code>. Its <code>about</code> points to the record sets it documents.</li>
+<li>Record sets give the columns typed fields, a <code>key</code>, and a <code>references</code> link from <code>visits.patient_id</code> to <code>patients.patient_id</code>.</li>
+<li><code>additionalProperty</code> carries a namespaced extension, <code>ext:ta2_site_a:cohort</code>.</li>
+</ul>
+<div class="tabs">
+  <div role="tablist" aria-label="Registry recipe parts">
+    <button role="tab" id="t-r-1" aria-controls="p-r-1" aria-selected="true">Files</button>
+    <button role="tab" id="t-r-2" aria-controls="p-r-2" aria-selected="false" tabindex="-1">Record sets</button>
+    <button role="tab" id="t-r-3" aria-controls="p-r-3" aria-selected="false" tabindex="-1">Extension</button>
+  </div>
+  <div role="tabpanel" id="p-r-1" aria-labelledby="t-r-1"><rddc-json src="site/recipes/registry_dictionary.json" keys="distribution" title="registry_dictionary.json (distribution)"></rddc-json></div>
+  <div role="tabpanel" id="p-r-2" aria-labelledby="t-r-2" hidden><rddc-json src="site/recipes/registry_dictionary.json" keys="recordSet" title="registry_dictionary.json (recordSet)"></rddc-json></div>
+  <div role="tabpanel" id="p-r-3" aria-labelledby="t-r-3" hidden><rddc-json src="site/recipes/registry_dictionary.json" keys="additionalProperty" title="registry_dictionary.json (additionalProperty)"></rddc-json></div>
+</div>
+
+<h2>Clinical notes</h2>
+<p>Clinical notes undergo text de-identification before further processing. A <code>ClinicalDocumentFile</code> must list its subject. This batch sets <code>containsFreeText: true</code> to request the scan. The scanned PDF also has an informational processing hint; any value used for pipeline decisions must be a defined schema field.</p>
+<rddc-json src="site/recipes/clinical_notes.json" keys="sensitivity,distribution" title="clinical_notes.json (excerpt)"></rddc-json>
+
+<h2>Genomics</h2>
+<p>Whole-genome sequencing for one proband: paired FASTQ reads, a CRAM alignment with its index, and a VCF.</p>
+<ul>
+<li>Every genomics file states its <a href="data-genomics.html#assay-and-platform">assay and sequencing platform</a>, here <code>wgs</code> on <code>illumina</code>, and the instrument model in <code>platform</code>. Alignments and variants also give <code>referenceGenome</code>.</li>
+<li>Read pairs point to each other with <code>pairedWith</code>; the index points to its alignment with <code>indexOf</code>. Both must resolve to files in the same sidecar.</li>
+<li>The files are grouped in a <code>FileCollection</code> file set, and every file lists the proband in <code>subjectIds</code>.</li>
+<li>Reads and alignments name their format, <code>FastqFile</code> and <code>CramFile</code>; the variant calls are a <code>GermlineVariantFile</code>, a VCF by its media type. It is delivered with its index, so it is <code>bgzf</code>-compressed.</li>
+</ul>
+<rddc-json src="site/recipes/genomics.json" keys="distribution" title="genomics.json (distribution)"></rddc-json>
+<p>The <a href="data-genomics.html#media-types">genomics media types</a> are <code>text/plain</code> and <code>application/octet-stream</code>, since these formats have none registered. The batch sets every flag to <code>false</code>, which the genomics classes fix anyway: none of them applies to sequence data.</p>
+
+<h2>Images and video</h2>
+<p>Facial photographs and gait videos contain biometric identifiers. Here, the acquisition table has none, so the batch sets <code>containsBiometricIdentifiers: false</code>. The video overrides it to <code>true</code>. Files with biometric identifiers never leave INTAKE.</p>
+<p>The photograph uses <code>FacialImagingFile</code>, which always counts as biometric whatever the batch default, so it does not set the flag; the schema rejects it if it does. Its <code>measurementTechnique</code> is <code>photography</code>; a 3D facial scan uses the same class with <code>surface_scan_3d</code>, as an OBJ, STL, glTF or PLY model. The acquisition table is a <code>DocumentationFile</code> whose <code>about</code> points to the photograph.</p>
+<rddc-json src="site/recipes/imaging_media.json" keys="sensitivity,distribution" title="imaging_media.json (excerpt)"></rddc-json>
+
+<h2>Consent</h2>
+<p>A consent batch uses <code>interaction: consent</code>. Every subject row carries a <code>consentRef</code>, and the batch may include <code>ConsentFile</code>s listing the subjects they cover. Additional consent batch requirements remain undefined in the GOVERN register specification.</p>
+<rddc-json src="site/recipes/consent.json" keys="interaction,subjects,distribution" title="consent.json (excerpt)"></rddc-json>
+
+<h2>Restriction</h2>
+<p>Restrictions and <a href="examples.html#withdrawal">withdrawals</a> require no data files, a non-empty subject table and a <code>noticeRef</code>. The notice registered with GOVERN holds the restriction terms.</p>
+<rddc-json src="site/recipes/restrict.json" keys="batchId,interaction,noticeRef,subjects,distribution" title="restrict.json (excerpt)"></rddc-json>
+
+<h2>Download all recipes</h2>
+<ul>
+<li><a href="downloads/recipes/minimal.json" download>minimal.json</a></li>
+<li><a href="downloads/recipes/fhir_bundles.json" download>fhir_bundles.json</a></li>
+<li><a href="downloads/recipes/registry_dictionary.json" download>registry_dictionary.json</a></li>
+<li><a href="downloads/recipes/clinical_notes.json" download>clinical_notes.json</a></li>
+<li><a href="downloads/recipes/genomics.json" download>genomics.json</a></li>
+<li><a href="downloads/recipes/imaging_media.json" download>imaging_media.json</a></li>
+<li><a href="downloads/recipes/consent.json" download>consent.json</a></li>
+<li><a href="downloads/recipes/restrict.json" download>restrict.json</a></li>
+</ul>

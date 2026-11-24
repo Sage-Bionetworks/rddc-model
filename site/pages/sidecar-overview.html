@@ -1,0 +1,29 @@
+<h1>Metadata sidecar overview</h1>
+<p class="lede">Part 1 described single data files. A deposit sends many of them at once, and the sidecar, <code>_sidecar.json</code>, is the document that lists them: every file with its class, checksum and subjects, plus what the platform needs to check and route the delivery.</p>
+
+<h2 id="what-the-platform-needs-from-it">Platform requirements</h2>
+<p>Contributors upload each batch to one S3 prefix, with the sidecar last. Its arrival starts automated receipt. The sidecar provides file validation and routing information.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Requirement</th><th>Sidecar information</th></tr></thead>
+<tbody>
+<tr><td>Has the upload finished?</td><td>The sidecar is uploaded last. Its arrival starts receipt.</td></tr>
+<tr><td>Did every file arrive intact?</td><td>Each file is listed with its path, size and SHA-256 checksum.</td></tr>
+<tr><td>How should each file be processed?</td><td>Each file has a <a href="data-overview.html">data class</a> such as <code>rddc:FhirNdjsonFile</code>, which sets its modality. Genomics, imaging and sensor files also state the assay that produced them in <code>measurementTechnique</code>. Collections declare the standard they follow.</td></tr>
+<tr><td>Whose data is this?</td><td>A subject table lists every coded subject ID in the batch.</td></tr>
+<tr><td>Which sensitive content needs checking?</td><td>Sensitivity flags: dates, sub-state geography, free text, biometric identifiers. Some classes identify a person whatever the flags say: genomic data, and facial images. See <a href="data-overview.html#files-that-identify-a-person">Identifying files</a>.</td></tr>
+<tr><td>Is this a data, withdrawal, restriction or consent batch?</td><td>The <code>interaction</code> field.</td></tr>
+</tbody></table></div>
+
+<h2>At a glance</h2>
+<dl class="glossary">
+  <dt>File name and location</dt><dd><code>_sidecar.json</code> at the root of the batch prefix, uploaded after every data file.</dd>
+  <dt>Format</dt><dd>UTF-8 JSON-LD. A valid Croissant 1.1 dataset, so generic Croissant tools can read it.</dd>
+  <dt>Scope</dt><dd>One sidecar per batch. One batch is one delivery of files for one source.</dd>
+  <dt>Schema</dt><dd>Defined in LinkML (<code>schema/rddc_sidecar.yaml</code>, version {{version}}, with the data classes in <code>schema/data.yaml</code>). JSON Schema and the JSON-LD context are generated from it.</dd>
+  <dt>Strictness</dt><dd>The schema is closed: unknown properties fail validation. Project-specific values go in namespaced <a href="concepts.html#extensions-and-hints">extensions</a>.</dd>
+  <dt>Contents</dt><dd>No direct identifiers or protected health information (PHI). Use coded subject IDs, never names or medical record numbers (MRNs).</dd>
+</dl>
+<rddc-json src="site/recipes/minimal.json" title="A complete, valid sidecar for a one-file registry deposit"></rddc-json>
+
+<div class="note warn"><strong>Draft</strong>
+<p>Schema {{version}} is unreleased and may change before 1.0. This site is built from the schema in the repository, so the reference pages always match it.</p></div>

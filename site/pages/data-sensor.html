@@ -1,0 +1,42 @@
+<h1>Sensor data</h1>
+<p class="lede">Data recorded by wearables and other sensor devices: raw signals such as accelerometry or ECG waveforms, in the format the device or study produced, and measures derived from them such as step counts or sleep stages.</p>
+
+<rddc-family names="EdfSignalFile,WfdbSignalFile,DicomWaveformFile,VendorSignalFile,SensorMeasureFile"></rddc-family>
+
+<h2>Raw signals and derived measures</h2>
+<p>Raw signals and the measures derived from them need different processing, so they are different classes. A raw signal's format decides how it is read, so the format is the class too, under the abstract <code>SensorSignalFile</code>:</p>
+<ul>
+<li><code>EdfSignalFile</code>: EDF or EDF+, the usual format for polysomnography and EEG.</li>
+<li><code>WfdbSignalFile</code>: one file of a WFDB (PhysioNet) record, the <code>.hea</code> header or a <code>.dat</code> signal file. Keep the files of one record together in a file set.</li>
+<li><code>DicomWaveformFile</code>: a DICOM waveform object, such as a 12-lead ECG.</li>
+<li><code>VendorSignalFile</code>: a device maker's own format, such as ActiGraph <code>.gt3x</code> or Garmin FIT. <code>platform</code>, the device, is required, since it decides how the file is read.</li>
+</ul>
+<p>Every signal file can set Croissant's <code>samplingRate</code> to the highest channel sampling rate, in hertz. A <code>SensorMeasureFile</code> holds measures derived from a signal, such as per-minute step counts, sleep stages or daily heart rate summaries, as a table or JSON.</p>
+<div class="tabs">
+  <div role="tablist" aria-label="Sensor signal examples">
+    <button role="tab" id="t-s-1" aria-controls="p-s-1" aria-selected="true">EDF</button>
+    <button role="tab" id="t-s-2" aria-controls="p-s-2" aria-selected="false" tabindex="-1">WFDB header</button>
+    <button role="tab" id="t-s-3" aria-controls="p-s-3" aria-selected="false" tabindex="-1">WFDB signal</button>
+    <button role="tab" id="t-s-4" aria-controls="p-s-4" aria-selected="false" tabindex="-1">DICOM waveform</button>
+    <button role="tab" id="t-s-5" aria-controls="p-s-5" aria-selected="false" tabindex="-1">Vendor format</button>
+  </div>
+  <div role="tabpanel" id="p-s-1" aria-labelledby="t-s-1"><rddc-example key="edf" title="A sleep study recording with EEG and ECG channels"></rddc-example></div>
+  <div role="tabpanel" id="p-s-2" aria-labelledby="t-s-2" hidden><rddc-example key="wfdb_header"></rddc-example></div>
+  <div role="tabpanel" id="p-s-3" aria-labelledby="t-s-3" hidden><rddc-example key="wfdb_signal"></rddc-example></div>
+  <div role="tabpanel" id="p-s-4" aria-labelledby="t-s-4" hidden><rddc-example key="dicom_waveform"></rddc-example></div>
+  <div role="tabpanel" id="p-s-5" aria-labelledby="t-s-5" hidden><rddc-example key="vendor_signal"></rddc-example></div>
+</div>
+<rddc-example key="sensor_measure" title="Step counts derived from accelerometry"></rddc-example>
+
+<h2>Techniques and devices</h2>
+<p><code>measurementTechnique</code> lists the sensing techniques that produced the data. The list supports recordings or summaries that combine techniques. Values map to NCIT, OBI and SNOMED CT terms. Set <code>platform</code> to the recording device, such as <code>ActiGraph GT9X</code>.</p>
+<rddc-enum name="SensorAssayEnum"></rddc-enum>
+
+<h2>Standards</h2>
+<ul>
+<li><strong>IEEE 1752.1</strong> (Open mHealth) defines JSON schemas for sleep and physical activity measures. A collection of these measures can declare conformance to IEEE 1752.1.</li>
+<li>Store sensor data already in FHIR form, such as device Observations, in a <a href="data-clinical.html#fhir">FHIR file</a>, in a collection that declares the HL7 Personal Health Device IG.</li>
+</ul>
+
+<h2>Sensitivity</h2>
+<p>Sensor data usually carries timestamps more precise than a year, which count as dates. Leave <code>containsDates</code> unset or <code>true</code> unless they have been removed. Sensor formats have no field for an address, and a signal is not a biometric identifier under HIPAA Safe Harbor, so <code>containsSubStateGeography</code> and <code>containsBiometricIdentifiers</code> are <code>false</code> unless the file or the batch says otherwise. EDF+ annotation channels and WFDB header comments can hold free text; a measures table holds none unless it says so. See the <a href="data-overview.html#sensitivity-flags-by-class">flags by class</a>.</p>
