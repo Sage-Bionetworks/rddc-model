@@ -1,139 +1,185 @@
 coverageDomains:
+
 - id: PATIENT_IDENTITY_AND_IDENTIFIERS
   name: Patient identity & identifiers
   group: PATIENT_AND_CONTEXT
+
 - id: DEMOGRAPHICS_AND_AGE
   name: Demographics & age
   group: PATIENT_AND_CONTEXT
+
 - id: FAMILY_RELATIONSHIPS_AND_PEDIGREE
   name: Family relationships & pedigree
   group: PATIENT_AND_CONTEXT
+
 - id: MEDICAL_HISTORY_AND_ENCOUNTERS
   name: Medical history & encounters
   group: PATIENT_AND_CONTEXT
+
 - id: SOCIAL_DETERMINANTS_AND_LIFESTYLE
   name: Social determinants & lifestyle
   group: PATIENT_AND_CONTEXT
+
 - id: RISK_FACTORS_AND_EXPOSURES
   name: Risk factors & exposures
   group: PATIENT_AND_CONTEXT
+
 - id: PATIENT_REPORTED_OUTCOMES
   name: Patient-reported outcomes
   group: PATIENT_AND_CONTEXT
+
 - id: CARE_PATHWAYS_AND_REFERRALS
   name: Care pathways & referrals
   group: PATIENT_AND_CONTEXT
+
 - id: SIGNS_AND_SYMPTOMS
   name: Signs & symptoms
   group: PHENOTYPE_AND_DISEASE
+
 - id: ABNORMAL_PHENOTYPIC_FEATURES
   name: Abnormal phenotypic features
   group: PHENOTYPE_AND_DISEASE
+
 - id: PHENOTYPE_ONSET_AND_SEVERITY
   name: Phenotype onset & severity
   group: PHENOTYPE_AND_DISEASE
+
 - id: CONGENITAL_AND_DEVELOPMENTAL_ANOMALIES
   name: Congenital & developmental anomalies
   group: PHENOTYPE_AND_DISEASE
+
 - id: DISEASE_DIAGNOSES
   name: Disease diagnoses
   group: PHENOTYPE_AND_DISEASE
+
 - id: RARE_AND_GENETIC_DISEASES
   name: Rare & genetic diseases
   group: PHENOTYPE_AND_DISEASE
+
 - id: INFECTIOUS_DISEASES
   name: Infectious diseases
   group: PHENOTYPE_AND_DISEASE
+
 - id: CANCER_AND_NEOPLASMS
   name: Cancer & neoplasms
   group: PHENOTYPE_AND_DISEASE
+
 - id: DIFFERENTIAL_DIAGNOSIS_CANDIDATES
   name: Differential diagnosis candidates
   group: PHENOTYPE_AND_DISEASE
+
 - id: PHYSICAL_EXAMINATION_FINDINGS
   name: Physical examination findings
   group: CLINICAL_ACTIVITIES
+
 - id: CLINICAL_ASSESSMENTS_AND_SCREENING
   name: Clinical assessments & screening
   group: CLINICAL_ACTIVITIES
+
 - id: CLINICAL_PROCEDURES_AND_INTERVENTIONS
   name: Clinical procedures & interventions
   group: CLINICAL_ACTIVITIES
+
 - id: TREATMENT_ACTIONS_AND_MANAGEMENT
   name: Treatment actions & management
   group: CLINICAL_ACTIVITIES
+
 - id: CLINICAL_DOCUMENTS_AND_NOTES
   name: Clinical documents & notes
   group: CLINICAL_ACTIVITIES
+
 - id: ALLERGIES_AND_ADVERSE_REACTIONS
   name: Allergies & adverse reactions
   group: CLINICAL_ACTIVITIES
+
 - id: VITAL_SIGNS
   name: Vital signs
   group: OBSERVATIONS_AND_SPECIMENS
+
 - id: LABORATORY_TEST_IDENTITIES
   name: Laboratory test identities
   group: OBSERVATIONS_AND_SPECIMENS
+
 - id: LABORATORY_RESULTS_AND_VALUES
   name: Laboratory results & values
   group: OBSERVATIONS_AND_SPECIMENS
+
 - id: UNITS_OF_MEASUREMENT
   name: Units of measurement
   group: OBSERVATIONS_AND_SPECIMENS
+
 - id: DIAGNOSTIC_IMAGING_OBSERVATIONS
   name: Diagnostic imaging observations
   group: OBSERVATIONS_AND_SPECIMENS
+
 - id: IMAGING_FILES_MEDIA_REFERENCES
   name: Imaging files / media references
   group: OBSERVATIONS_AND_SPECIMENS
+
 - id: HISTOPATHOLOGY_AND_TISSUE_FINDINGS
   name: Histopathology & tissue findings
   group: OBSERVATIONS_AND_SPECIMENS
+
 - id: BIOSAMPLES_AND_SPECIMEN_METADATA
   name: Biosamples & specimen metadata
   group: OBSERVATIONS_AND_SPECIMENS
+
 - id: GENETIC_TEST_IDENTITY_RESULTS
   name: Genetic test identity / results
   group: GENOMIC_AND_MOLECULAR
+
 - id: SEQUENCE_VARIANTS_AND_VARIANT_NOTATION
   name: Sequence variants & variant notation
   group: GENOMIC_AND_MOLECULAR
+
 - id: SEQUENCE_FEATURE_TYPES
   name: Sequence feature types
   group: GENOMIC_AND_MOLECULAR
+
 - id: GENOMIC_INTERPRETATION
   name: Genomic interpretation
   group: GENOMIC_AND_MOLECULAR
+
 - id: GENES_AND_MOLECULAR_TARGETS
   name: Genes & molecular targets
   group: GENOMIC_AND_MOLECULAR
+
 - id: DRUG_AND_MEDICINAL_PRODUCT_NAMES
   name: Drug & medicinal product names
   group: DRUGS_AND_THERAPEUTICS
+
 - id: DRUG_INGREDIENTS_AND_FORMULATIONS
   name: Drug ingredients & formulations
   group: DRUGS_AND_THERAPEUTICS
+
 - id: DOSES_ROUTES_AND_SCHEDULES
   name: Doses, routes & schedules
   group: DRUGS_AND_THERAPEUTICS
+
 - id: DRUG_TARGET_BIOACTIVITY
   name: Drug–target bioactivity
   group: DRUGS_AND_THERAPEUTICS
+
 - id: DRUG_INDICATIONS_AND_INTERACTIONS
   name: Drug indications & interactions
   group: DRUGS_AND_THERAPEUTICS
+
 - id: PROVIDER_AND_ORGANIZATION_IDENTITY
   name: Provider & organization identity
   group: INFORMATION_AND_INTEROPERABILITY
+
 - id: RECORD_LINKAGE_AND_PROVENANCE
   name: Record linkage & provenance
   group: INFORMATION_AND_INTEROPERABILITY
+
 - id: STRUCTURED_RESOURCE_EXCHANGE
   name: Structured resource exchange
   group: INFORMATION_AND_INTEROPERABILITY
+
 - id: PHENOTYPE_CASE_EXCHANGE
   name: Phenotype / case exchange
   group: INFORMATION_AND_INTEROPERABILITY
+
 - id: CLINICAL_CODING_BILLING
   name: Clinical coding / billing
   group: INFORMATION_AND_INTEROPERABILITY

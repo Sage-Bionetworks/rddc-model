@@ -53,3 +53,6 @@ jobs:
             gen-yaml "$f" > /dev/null
             echo "::endgroup::"
           done
+
+      - name: Check standards_table.md is up to date
+        run: python scripts/build_standards_table.py --check

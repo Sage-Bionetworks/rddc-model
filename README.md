@@ -10,7 +10,8 @@ considered for incoming RDDC clinical data. For each standard it records where i
 comes from, how its files can be downloaded automatically, how it is licensed and
 released, and which data categories and coverage domains it can represent. The
 content was first converted from the "RAPID Ontology Exploration" workbook.
-Coverage is indicative, not a verified implementation.
+
+> As of November 30, 2026, this standards registry outlines the planned scope of standards to be supported through harmonization development. This repository will serve as the source of truth for the selected standards and their associated specifications. The registry will be maintained and updated as needed in response to future TA1 and TA2 data deliveries, and evolving harmonization needs.
 
 | Path                                 | What                                                                                    |
 | ------------------------------------ | --------------------------------------------------------------------------------------- |
@@ -19,6 +20,8 @@ Coverage is indicative, not a verified implementation.
 | `src/data/data_categories.yaml`    | One `DataCategory` per kind of incoming data (22), with the standards proposed for it |
 | `src/data/coverage_domains.yaml`   | The 46 `CoverageDomain`s, each in one of 7 domain groups                              |
 | `scripts/merge_data.py`            | Merges the data files into one `StandardsCatalog` document for validation             |
+| `scripts/build_standards_table.py` | Generates `standards_table.md` (name, version, purpose, status) from the registry       |
+| `standards_table.md`               | Generated summary table of the standards. Do not edit by hand                           |
 
 The YAML files under `src/data` are the source of truth. Edit them directly.
 
@@ -33,22 +36,28 @@ any field that does not apply.
 | Access methods        | `directDownloadAccess`, `downloadApiAccess`, `webBrowserAccess` (true/false)                                                              |
 | Download              | `directDownloadUrls`, `authenticationRequired`, `authenticationType`, `releaseApiUrls`, `downloadApiUrls`, `versionSelectionMethod` |
 | Formats and links     | `dataFormats`, `otherUrls` (homepage first, then documentation)                                                                             |
-| Licensing and release | `accessRequirements`, `license` (SPDX), `licenseUrl`, `updateFrequency`                                                                 |
-| Standard Relevance    | `conformsToUrls`, `alignedCategories`, `coveredDomains`                                                                                   |
+| Licensing and release | `accessRequirements`, `license` (SPDX), `licenseUrl`, `updateFrequency`, `releaseVersion`, `releaseDate` (YYYY-MM-DD)               |
+| Standard Relevance    | `selectionStatus`, `harmonizationTasks`, `conformsToUrls`, `alignedCategories`, `coveredDomains`                                                                                   |
 | Notes                 | `notes`, `comments`                                                                                                                         |
 
 `standardType` is one of `ONTOLOGY`, `CLINICAL_TERMINOLOGY`, `CLASSIFICATION`,
 `NOMENCLATURE`, `UNIT_STANDARD`, `DATABASE`, `COMMON_DATA_MODEL` or
 `EXCHANGE_SCHEMA`.
 
+`selectionStatus` is `SELECTED` or `UNDER_CONSIDERATION`. `harmonizationTasks`
+lists any of `SCHEMA_RECOMMENDATION`, `CDE_RECOMMENDATION`,
+`VALUE_STANDARDIZATION` and `SCHEMA_ALIGNMENT_AND_TRANSFORMATION`. After editing
+the registry, run `python scripts/build_standards_table.py` to regenerate
+`standards_table.md`; CI fails if the table is out of date.
+
 ### Download fields
 
 These fields let a downloader fetch a standard's release files without a person.
-Using HPO as the example:
+Using MONDO as the example:
 
 | Field                                                          | Purpose                                                                                                                         |
 | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `directDownloadUrls`                                         | Persistent URLs resolving to the latest HPO ontology files.                                                                     |
+| `directDownloadUrls`                                         | Persistent URLs resolving to the latest MONDO ontology files.                                                                   |
 | `releaseApiUrls`                                             | Discover available releases, version identifiers, publication dates, and release assets.                                        |
 | `downloadApiUrls`                                            | Retrieve a selected GitHub release asset using its dynamically discovered `asset_id`.                                         |
 | `authenticationRequired`                                     | Whether downloading needs credentials. Absent means not yet checked.                                                            |

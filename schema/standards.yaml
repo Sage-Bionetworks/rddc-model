@@ -24,29 +24,38 @@ prefixes:
   owl: http://www.w3.org/2002/07/owl#
 
   # MOD (Metadata for Ontology Description)
-  mod: https://w3id.org/mod#
-  bioregistry: https://bioregistry.io/registry/
+  mod: "https://w3id.org/mod#"
+  bioregistry: "https://bioregistry.io/registry/"
 
-  # Namespaces of the standards themselves
+  # Namespaces of the standards themselves--
+
+  # Data models and exchange standards
+  fhir: "http://hl7.org/fhir/"
+
   # Clinical terminologies
-  SNOMEDCT: http://identifiers.org/snomedct/
-  LOINC: https://loinc.org/
-  ICD10CM: https://icd.codes/icd10cm/
-  UCUM: https://units-of-measurement.org/
+  SNOMEDCT: "http://snomed.info/id/"
+  LOINC: "https://loinc.org/"
+  ICD10CM: "http://purl.bioontology.org/ontology/ICD10CM/"
+  UCUM: "http://unitsofmeasure.org/"
+
   # Phenotype, disease, medical action and data use ontologies
-  HP: http://purl.obolibrary.org/obo/HP_
-  MONDO: http://purl.obolibrary.org/obo/MONDO_
-  DOID: http://purl.obolibrary.org/obo/DOID_
-  IDO: http://purl.obolibrary.org/obo/IDO_
-  ORPHA: http://www.orpha.net/ORDO/Orphanet_
-  MAXO: http://purl.obolibrary.org/obo/MAXO_
-  DUO: http://purl.obolibrary.org/obo/DUO_
+  HP: "http://purl.obolibrary.org/obo/HP_"
+  MONDO: "http://purl.obolibrary.org/obo/MONDO_"
+  DOID: "http://purl.obolibrary.org/obo/DOID_"
+  IDO: "http://purl.obolibrary.org/obo/IDO_"
+  ORPHA: "http://www.orpha.net/ORDO/Orphanet_"
+  MAXO: "http://purl.obolibrary.org/obo/MAXO_"
+  DUO: "http://purl.obolibrary.org/obo/DUO_"
+
   # Medications
-  RXNORM: http://purl.bioontology.org/ontology/RXNORM/
-  DRUGBANK: http://identifiers.org/drugbank/
-  CHEMBL.COMPOUND: http://identifiers.org/chembl.compound/
+  RXNORM: "http://purl.bioontology.org/ontology/RXNORM/"
+  DRUGBANK: "http://identifiers.org/drugbank:"
+  CHEMBL.COMPOUND: "http://identifiers.org/chembl.compound:"
+
   # Genomic variation
-  SO: http://purl.obolibrary.org/obo/SO_
+  SO: "http://purl.obolibrary.org/obo/SO_"
+  OMIM: "https://omim.org/entry/"
+  HGNC: "https://identifiers.org/hgnc:"
 
 default_prefix: rddc
 default_range: string
@@ -120,6 +129,17 @@ classes:
         range: StandardTypeEnum
         slot_uri: dct:type
         description: From the "Standard type" column of the Ontology Coverage sheet.
+      releaseVersion:
+        slot_uri: owl:versionInfo
+        description: >-
+          Version label of the release currently catalogued (e.g. 2025-09-01,
+          v2.81, R4), as the provider writes it. Empty where not yet recorded.
+      releaseDate:
+        range: date
+        slot_uri: dct:issued
+        description: >-
+          Date the catalogued release was published, as an ISO 8601 date
+          (YYYY-MM-DD). Empty where not yet recorded.
       # Access methods, from "Ontology Sources: Access Method". Each flag is set
       # (true) only where the workbook lists that method; absent means not
       # recorded, not that the method is unavailable.
@@ -193,6 +213,16 @@ classes:
           dct:accrualPeriodicity expects a frequency term (e.g. from the
           Dublin Core collection frequency vocabulary); map these values to
           such terms if you export to RDF.
+      # Harmonization plan: whether the standard is in scope and what it is for.
+      selectionStatus:
+        range: SelectionStatusEnum
+        description: >-
+          Whether the standard has been selected for harmonization development
+          or is still under consideration. Empty where not yet decided.
+      harmonizationTasks:
+        range: HarmonizationTaskEnum
+        multivalued: true
+        description: The harmonization tasks this standard supports.
       conformsToUrls:
         range: uri
         multivalued: true
@@ -246,8 +276,6 @@ classes:
           Standards the team proposed for this category (Incoming Data:
           Ontologies). Differs from StandardEntry.alignedCategories, which
           records what each standard could cover.
-      proposedStandardsText:
-        description: The Ontologies cell exactly as written.
       proposedStandardsUncertain:
         range: StandardEntry
         multivalued: true
@@ -285,6 +313,32 @@ slots:
 
 # ---------------------------------------------------------------------------
 enums:
+
+  SelectionStatusEnum:
+    description: Where a standard stands in the harmonization plan.
+    permissible_values:
+      SELECTED:
+        title: Selected
+        description: Chosen for support through harmonization development.
+      UNDER_CONSIDERATION:
+        title: Under consideration
+        description: Being evaluated; not yet chosen.
+
+  HarmonizationTaskEnum:
+    description: The harmonization tasks a standard can support.
+    permissible_values:
+      SCHEMA_RECOMMENDATION:
+        title: Schema recommendation
+        description: Recommending a target schema or data model for incoming data.
+      CDE_RECOMMENDATION:
+        title: Entity or Common Data Element (CDE) recommendation
+        description: Recommending entities or common data elements for incoming fields.
+      VALUE_STANDARDIZATION:
+        title: Value standardization
+        description: Mapping field values to codes or terms of the standard.
+      SCHEMA_ALIGNMENT_AND_TRANSFORMATION:
+        title: Schema alignment and transformation
+        description: Aligning a source schema to a target and transforming the data.
 
   AuthenticationTypeEnum:
     description: Credentials needed to download a standard's release files.
@@ -331,6 +385,12 @@ enums:
       W3C_SPEC_VERSION:
         title: W3C specification version
         description: Use the dated version of the W3C specification.
+      CONTINUOUS_UPDATE:
+        title: Continuous update
+        description: >-
+          The resource is continuously updated without formal
+          versioned releases. Record the retrieval date for
+          reproducibility.
       NOT_VERIFIED:
         title: Not verified
         description: No release source confirmed yet; do not automate downloads.

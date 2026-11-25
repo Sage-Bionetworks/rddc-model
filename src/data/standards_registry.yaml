@@ -4,6 +4,8 @@ standards:
   name: Systematized Nomenclature of Medicine – Clinical Terms
   bioregistryPrefix: snomedct
   standardType: CLINICAL_TERMINOLOGY
+  releaseVersion: '2026-09-01'
+  releaseDate: '2026-09-01'
   directDownloadAccess: false
   downloadApiAccess: true
   authenticationRequired: true
@@ -20,6 +22,8 @@ standards:
   - https://documentation.uts.nlm.nih.gov/automating-downloads.html
   accessRequirements: UMLS license required for US access and download.
   updateFrequency: Biannual March & September
+  selectionStatus: SELECTED
+  harmonizationTasks:
   alignedCategories:
   - PATIENT_HISTORY
   - ASSESSMENTS
@@ -61,13 +65,16 @@ standards:
   - DOSES_ROUTES_AND_SCHEDULES
   - CLINICAL_CODING_BILLING
   notes:
-  - US Edition chosen as registry edition. Other SNOMED CT editions require separate releaseType endpoint.
+  - Standardizes clinical terminology for diseases, symptoms, findings, procedures, treatments, and other clinical concepts.
+  - US Edition chosen as registry edition.
 
 - id: HPO
   abbreviation: HPO
   name: Human Phenotype Ontology
   bioregistryPrefix: hp
   standardType: ONTOLOGY
+  releaseVersion: 'v2026-09-01'
+  releaseDate: '2026-09-01'
   directDownloadAccess: true
   downloadApiAccess: true
   directDownloadUrls:
@@ -94,6 +101,8 @@ standards:
   - https://human-phenotype-ontology.github.io/license.html
   accessRequirements: HPO license; attribution and other conditions apply (see license URL)
   updateFrequency: Irregular (~1/mo)
+  selectionStatus: SELECTED
+  harmonizationTasks:
   alignedCategories:
   - PATIENT_HISTORY
   - ASSESSMENTS
@@ -118,12 +127,15 @@ standards:
   - DIAGNOSTIC_IMAGING_OBSERVATIONS
   - HISTOPATHOLOGY_AND_TISSUE_FINDINGS
   notes: 
+  - Standardizes the representation of human phenotypic abnormalities, including signs, symptoms, onset, and severity.
 
 - id: LOINC
   abbreviation: LOINC
   name: Logical Observation Identifiers Names and Codes
   bioregistryPrefix: loinc
   standardType: CLINICAL_TERMINOLOGY
+  releaseVersion: '2.83'
+  releaseDate: '2026-08-19'
   directDownloadAccess: true
   downloadApiAccess: true
   directDownloadUrls:
@@ -145,6 +157,8 @@ standards:
   accessRequirements: LOINC License
   licenseUrl: https://loinc.org/license
   updateFrequency: Biannual, working to switch to monthly
+  selectionStatus: SELECTED
+  harmonizationTasks:
   alignedCategories:
   - PATIENT_HISTORY
   - ASSESSMENTS
@@ -164,11 +178,14 @@ standards:
   - DIAGNOSTIC_IMAGING_OBSERVATIONS
   - GENETIC_TEST_IDENTITY_RESULTS
   notes: 
+  - Standardizes the identification of laboratory tests, clinical observations, measurements, and assessments.
 
 - id: PHENOPACKETS
   abbreviation: GA4GH Phenopackets
   name: Global Alliance for Genomics and Health Phenopacket Schema
   standardType: EXCHANGE_SCHEMA
+  releaseVersion: '2.0.0'
+  releaseDate: '2021-10-21'
   directDownloadAccess: true
   downloadApiAccess: true
   authenticationRequired: false
@@ -188,6 +205,8 @@ standards:
   accessRequirements: BSD 3-Clause License
   license: BSD-3-Clause
   licenseUrl: https://github.com/ga4gh/phenopacket-schema/blob/master/LICENSE
+  selectionStatus: SELECTED
+  harmonizationTasks:
   alignedCategories:
   - PATIENT_HISTORY
   - FAMILY_HISTORY
@@ -224,6 +243,7 @@ standards:
   - RECORD_LINKAGE_AND_PROVENANCE
   - PHENOTYPE_CASE_EXCHANGE
   notes:
+  - Provides a standardized schema for representing and exchanging patient-level phenotypic, clinical, and genomic information.
   - No Bioregistry entry for the GA4GH Phenopacket Schema.
   - GitHub release page provides source/schema artifacts; not a terminology value set.
 
@@ -232,6 +252,8 @@ standards:
   name: International Classification of Diseases, Tenth Revision, Clinical Modification
   bioregistryPrefix: icd10cm
   standardType: CLASSIFICATION
+  releaseVersion: 'FY 2027'
+  releaseDate: '2026-10-1'
   directDownloadAccess: true
   downloadApiAccess: false
   directDownloadUrls:
@@ -244,6 +266,8 @@ standards:
   otherUrls:
   - https://www.cdc.gov/nchs/icd/icd-10-cm/
   updateFrequency: ~Annual
+  selectionStatus: UNDER_CONSIDERATION
+  harmonizationTasks:
   alignedCategories:
   - PATIENT_HISTORY
   - EHR_DATA
@@ -258,6 +282,7 @@ standards:
   - DIFFERENTIAL_DIAGNOSIS_CANDIDATES
   - CLINICAL_CODING_BILLING
   notes:
+  - Provides standardized disease and diagnosis classifications for clinical documentation, reporting, and billing.
   - Update frequency was entered on the GA4GH Phenopackets row in the workbook and moved here during conversion.
   - FTP is a versioned directory listing, not a structured release API.
 
@@ -266,6 +291,8 @@ standards:
   name: Human Disease Ontology
   bioregistryPrefix: doid
   standardType: ONTOLOGY
+  releaseVersion: 'v2026-10-29'
+  releaseDate: '2026-10-29'
   directDownloadAccess: true
   downloadApiAccess: true
   directDownloadUrls:
@@ -288,6 +315,8 @@ standards:
   accessRequirements: Public Domain
   licenseUrl: https://github.com/DiseaseOntology/HumanDiseaseOntology/blob/main/LICENSE
   updateFrequency: ~Monthly
+  selectionStatus: UNDER_CONSIDERATION
+  harmonizationTasks:
   alignedCategories:
   - PATIENT_HISTORY
   - FAMILY_HISTORY
@@ -300,12 +329,15 @@ standards:
   - CANCER_AND_NEOPLASMS
   - DIFFERENTIAL_DIAGNOSIS_CANDIDATES
   notes:
+  - Provides a structured ontology for classifying human diseases and their relationships.
 
 - id: MONDO
   abbreviation: MONDO
   name: Mondo Disease Ontology
   bioregistryPrefix: mondo
   standardType: ONTOLOGY
+  releaseVersion: 'v2026-11-03'
+  releaseDate: '2026-11-03'
   directDownloadAccess: true
   downloadApiAccess: true
   directDownloadUrls:
@@ -328,6 +360,8 @@ standards:
   license: CC-BY-4.0
   licenseUrl: https://creativecommons.org/licenses/by/4.0/
   updateFrequency: ~Monthly
+  selectionStatus: SELECTED
+  harmonizationTasks:
   alignedCategories:
   - PATIENT_HISTORY
   - FAMILY_HISTORY
@@ -340,12 +374,15 @@ standards:
   - CANCER_AND_NEOPLASMS
   - DIFFERENTIAL_DIAGNOSIS_CANDIDATES
   notes:
+  - Harmonizes disease definitions and identifiers across multiple disease ontologies and clinical terminologies.
 
 - id: IDO
   abbreviation: IDO
   name: Infectious Disease Ontology
   bioregistryPrefix: ido
   standardType: ONTOLOGY
+  releaseVersion: '2017-11-03'
+  releaseDate: '2017-11-03'
   directDownloadAccess: true
   downloadApiAccess: false
   directDownloadUrls:
@@ -362,6 +399,8 @@ standards:
   accessRequirements: Licensed use under CC-BY-3.0; see licenseUrl
   license: CC-BY-3.0
   licenseUrl: https://creativecommons.org/licenses/by/3.0/
+  selectionStatus: UNDER_CONSIDERATION
+  harmonizationTasks:
   alignedCategories:
   - PATIENT_HISTORY
   - FAMILY_HISTORY
@@ -370,6 +409,7 @@ standards:
   - DISEASE_DIAGNOSES
   - INFECTIOUS_DISEASES
   notes:
+  - Standardizes the representation of infectious diseases and associated biological processes.
   - GitHub tags endpoint provided for version discovery; release cadence and tag coverage require confirmation.
 
 - id: MAXO
@@ -377,6 +417,8 @@ standards:
   name: Medical Action Ontology
   bioregistryPrefix: maxo
   standardType: ONTOLOGY
+  releaseVersion: 'v2026-01-15'
+  releaseDate: '2026-01-15'
   directDownloadAccess: true
   downloadApiAccess: true
   directDownloadUrls:
@@ -397,6 +439,8 @@ standards:
   - https://github.com/monarch-initiative/MAxO
   accessRequirements: Public Domain
   licenseUrl: https://github.com/monarch-initiative/MAxO/blob/master/LICENSE
+  selectionStatus: SELECTED
+  harmonizationTasks:
   alignedCategories:
   - ASSESSMENTS
   - SPECIALIST_FINDINGS
@@ -405,12 +449,15 @@ standards:
   - CLINICAL_PROCEDURES_AND_INTERVENTIONS
   - TREATMENT_ACTIONS_AND_MANAGEMENT
   notes:
+  - Standardizes the representation of medical actions, including diagnostic procedures, therapeutic interventions, and disease management.
 
 - id: ORDO
   abbreviation: ORDO
   name: Orphanet Rare Disease Ontology
   bioregistryPrefix: orphanet.ordo
   standardType: ONTOLOGY
+  releaseVersion: '4.9'
+  releaseDate: '2026-07-01'
   directDownloadAccess: true
   downloadApiAccess: false
   directDownloadUrls:
@@ -428,6 +475,8 @@ standards:
   license: CC-BY-4.0
   licenseUrl: https://creativecommons.org/licenses/by/4.0
   updateFrequency: Biannual July/December
+  selectionStatus: UNDER_CONSIDERATION
+  harmonizationTasks:
   alignedCategories:
   - PATIENT_HISTORY
   - FAMILY_HISTORY
@@ -437,6 +486,7 @@ standards:
   - RARE_AND_GENETIC_DISEASES
   - DIFFERENTIAL_DIAGNOSIS_CANDIDATES
   notes:
+  - Provides a structured ontology for representing rare diseases, their classifications, and associated relationships.
   - Multilingual
   - Release page lists versioned OWL files; an API for bulk ORDO release discovery was not verified.
 
@@ -444,11 +494,15 @@ standards:
   abbreviation: PJO
   name: Patient Journey Ontology
   standardType: ONTOLOGY
+  releaseVersion:
+  releaseDate:
   directDownloadAccess: false
   downloadApiAccess: false
   versionSelectionMethod: NOT_VERIFIED
   otherUrls:
   - https://arxiv.org/abs/2506.18772
+  selectionStatus: UNDER_CONSIDERATION
+  harmonizationTasks:
   alignedCategories:
   - SOCIAL_HABITS_RISK_FACTORS
   - INTAKE_FORMS
@@ -457,6 +511,7 @@ standards:
   - RISK_FACTORS_AND_EXPOSURES
   - CARE_PATHWAYS_AND_REFERRALS
   notes:
+  - Provides an ontology for representing patient journeys, care pathways, social determinants, and risk factors.
   - No Bioregistry entry. PJO is described in arXiv:2506.18772 (2025).
   - No verified machine-readable ontology release or download endpoint identified; do not automate downloads until the source
     is confirmed.
@@ -466,6 +521,8 @@ standards:
   name: RxNorm normalized drug nomenclature
   bioregistryPrefix: rxnorm
   standardType: CLINICAL_TERMINOLOGY
+  releaseVersion: '2026-11-02'
+  releaseDate: '2026-11-02'
   directDownloadAccess: true
   downloadApiAccess: true
   directDownloadUrls:
@@ -484,6 +541,8 @@ standards:
   - https://www.nlm.nih.gov/research/umls/rxnorm/index.html
   accessRequirements: UMLS License
   updateFrequency: Weekly/Monthly
+  selectionStatus: SELECTED
+  harmonizationTasks:
   alignedCategories:
   - ALLERGIES
   - MEDICATIONS
@@ -491,12 +550,15 @@ standards:
   - DRUG_AND_MEDICINAL_PRODUCT_NAMES
   - DRUG_INGREDIENTS_AND_FORMULATIONS
   notes:
+  - Standardizes clinical drug names, active ingredients, strengths, and dosage forms.
 
 - id: DRUGBANK
   abbreviation: DrugBank
   name: DrugBank drug knowledgebase
   bioregistryPrefix: drugbank
   standardType: DATABASE
+  releaseVersion: '5.1.22'
+  releaseDate: '2026-06-27'
   directDownloadAccess: true
   downloadApiAccess: false
   directDownloadUrls:
@@ -515,6 +577,8 @@ standards:
   license: CC-BY-NC-4.0
   licenseUrl: http://creativecommons.org/licenses/by-nc/4.0/legalcode
   updateFrequency: Irregular
+  selectionStatus: UNDER_CONSIDERATION
+  harmonizationTasks:
   alignedCategories:
   - MEDICATIONS
   coveredDomains:
@@ -523,7 +587,8 @@ standards:
   - DRUG_INGREDIENTS_AND_FORMULATIONS
   - DRUG_INDICATIONS_AND_INTERACTIONS
   notes:
-  - Authenticated bulk download is subscription/entitlement dependent; portal path is not a public API.
+  - Provides standardized drug identifiers and comprehensive information on drug targets, indications, mechanisms, and interactions.
+  - Authenticated bulk download is subscription/entitlement dependent; downloads are currently disabled.
 
 
 - id: CHEBI
@@ -531,6 +596,8 @@ standards:
   name: Chemical Entities of Biological Interest
   bioregistryPrefix: chebi
   standardType: ONTOLOGY
+  releaseVersion: '257'
+  releaseDate: '2026-11-05'
   directDownloadAccess: true
   downloadApiAccess: false
   directDownloadUrls:
@@ -552,6 +619,8 @@ standards:
   license: CC-BY-4.0
   licenseUrl: https://creativecommons.org/licenses/by/4.0/
   updateFrequency: Monthly
+  selectionStatus: UNDER_CONSIDERATION
+  harmonizationTasks:
   alignedCategories:
     - MEDICATIONS
   coveredDomains:
@@ -559,9 +628,8 @@ standards:
     - DRUG_AND_MEDICINAL_PRODUCT_NAMES
     - DRUG_INGREDIENTS_AND_FORMULATIONS
   notes:
-  - Named "ChEMBL Bioactivity Database" on the Ontology Sources sheet.
+  - Standardizes the identification and classification of biologically relevant chemical entities, including small molecules and drug ingredients.
   - Bioregistry prefix chembl is the database as a whole; compound identifiers (CHEMBL25 etc.) use chembl.compound.
-  comments:
   - For small molecules using CHEBI (an ontology) instead of ChEMBL (primarily a data store for assay data) is a better choice
 
 - id: SO
@@ -569,6 +637,8 @@ standards:
   name: Sequence Ontology
   bioregistryPrefix: so
   standardType: ONTOLOGY
+  releaseVersion: '2026-08-07'
+  releaseDate: '2026-08-07'
   directDownloadAccess: true
   downloadApiAccess: false
   directDownloadUrls:
@@ -587,12 +657,15 @@ standards:
   accessRequirements: CC BY 4.0 attribution required
   licenseUrl: https://github.com/The-Sequence-Ontology/SO-Ontologies/blob/master/LICENSE
   updateFrequency: Irregular
+  selectionStatus: SELECTED
+  harmonizationTasks:
   alignedCategories:
   - GENETIC_TESTING
   coveredDomains:
   - SEQUENCE_VARIANTS_AND_VARIANT_NOTATION
   - SEQUENCE_FEATURE_TYPES
   notes:
+  - Standardizes the terminology used to describe biological sequence features and genetic variant types.
   - Some GitHub releases may not track the newest ontology changes; inspect ontology version IRI.
 
 - id: HGVS
@@ -600,6 +673,8 @@ standards:
   name: Human Genome Variation Society variant nomenclature
   bioregistryPrefix: hgvs
   standardType: NOMENCLATURE
+  releaseVersion: '21.1.5'
+  releaseDate: '2026-10-02'
   directDownloadAccess: false
   downloadApiAccess: false
   directDownloadUrls:
@@ -614,11 +689,14 @@ standards:
   accessRequirements: Public Domain
   licenseUrl: https://github.com/HGVSnomenclature/hgvs-nomenclature/blob/main/LICENSE.txt
   updateFrequency: Irregular
+  selectionStatus: SELECTED
+  harmonizationTasks:
   alignedCategories:
   - GENETIC_TESTING
   coveredDomains:
   - SEQUENCE_VARIANTS_AND_VARIANT_NOTATION
   notes:
+  - Provides standardized nomenclature for describing genomic, transcript, and protein sequence variants.
   - Versioned nomenclature documentation/source; no canonical terminology dataset download verified.
 
 - id: UCUM
@@ -626,6 +704,8 @@ standards:
   name: Unified Code for Units of Measure
   bioregistryPrefix: ucum
   standardType: UNIT_STANDARD
+  releaseVersion: '2.2'
+  releaseDate: '2024-06-17'
   directDownloadAccess: true
   downloadApiAccess: false
   directDownloadUrls:
@@ -641,11 +721,14 @@ standards:
   - https://ucum.org/
   - https://ucum.org/docs/artifacts
   licenseUrl: https://ucum.org/license
+  selectionStatus: SELECTED
+  harmonizationTasks:
   alignedCategories:
   - VITALS_MEASUREMENTS
   coveredDomains:
   - UNITS_OF_MEASUREMENT
   notes:
+  - Standardizes the representation of units of measurement to enable consistent and computationally interpretable quantitative data.
   - Access Requirements recorded as "???" in the workbook.
 
 - id: OMOP
@@ -653,6 +736,8 @@ standards:
   name: Observational Medical Outcomes Partnership Common Data Model
   bioregistryPrefix: omop
   standardType: COMMON_DATA_MODEL
+  releaseVersion: 'v5.4.3'
+  releaseDate: '2026-08-04'
   directDownloadAccess: false
   downloadApiAccess: false
   authenticationRequired: false
@@ -662,15 +747,127 @@ standards:
   otherUrls:
   - https://ohdsi.github.io/CommonDataModel/download.html
   - https://github.com/OHDSI/CommonDataModel/releases
+  - https://github.com/OHDSI/CommonDataModel/releases/tag/v5.4.3
+  selectionStatus: SELECTED
+  harmonizationTasks:
   conformsToUrls:
   - https://ohdsi.github.io/CommonDataModel/cdm54.html
   notes:
+  - Provides a common relational data model for harmonizing observational healthcare data and supporting standardized analyses.
+  - Pinned CDM v5.4 rather than latest major or minor release
+
+- id: FHIR
+  abbreviation: FHIR
+  name: HL7 Fast Healthcare Interoperability Resources
+  standardType: EXCHANGE_SCHEMA
+  releaseVersion: '4.0.1'
+  releaseDate: '2019-10-30'
+  directDownloadAccess: true
+  downloadApiAccess: false
+  authenticationRequired: false
+  directDownloadUrls:
+  - https://hl7.org/fhir/R4/downloads.html
+  - https://hl7.org/fhir/R4/definitions.json.zip
+  - https://hl7.org/fhir/R4/definitions.xml.zip
+  - https://hl7.org/fhir/R4/fhir.schema.json.zip
+  versionSelectionMethod: RELEASE_WEBPAGE
+  dataFormats:
+  - JSON
+  - XML
+  - RDF Turtle
+  - NDJSON
+  otherUrls:
+  - https://hl7.org/fhir/
+  - https://hl7.org/fhir/R4/
+  - https://hl7.org/fhir/directory.html
+  - https://hl7.org/fhir/R4/resourcelist.html
+  accessRequirements: Open access; no registration or authentication
+    required to download the specification.
+  license: CC0-1.0
+  licenseUrl: https://hl7.org/fhir/R4/license.html
+  updateFrequency: Irregular, versioned releases
+  selectionStatus:
+  harmonizationTasks:
+  conformsToUrls:
+  - http://hl7.org/fhir/R4
+  alignedCategories:
+  - PATIENT_PROFILE
+  - PATIENT_HISTORY
+  - ASSESSMENTS
+  - EHR_DATA
+  - ALLERGIES
+  - SOCIAL_HABITS_RISK_FACTORS
+  - FAMILY_HISTORY
+  - GENETIC_TESTING
+  - ICD_SNOMED_CODES
+  - INTAKE_FORMS
+  - MEDICATIONS
+  - PATIENT_REPORTED_OUTCOMES
+  - STRUCTURED_PATIENT_REPORTS
+  - PHENOTYPIC_DATA
+  - REFERRAL_NOTES
+  - SPECIALIST_FINDINGS
+  - SYMPTOMS
+  - VISIT_NOTES
+  - VITALS_MEASUREMENTS
+  - FACIAL_IMAGES
+  - DIFFERENTIAL_DIAGNOSIS_REPORT
+  - DATA_USE_RESTRICTIONS
+  coveredDomains:
+  - PATIENT_IDENTITY_AND_IDENTIFIERS
+  - DEMOGRAPHICS_AND_AGE
+  - FAMILY_RELATIONSHIPS_AND_PEDIGREE
+  - MEDICAL_HISTORY_AND_ENCOUNTERS
+  - SOCIAL_DETERMINANTS_AND_LIFESTYLE
+  - RISK_FACTORS_AND_EXPOSURES
+  - PATIENT_REPORTED_OUTCOMES
+  - CARE_PATHWAYS_AND_REFERRALS
+  - SIGNS_AND_SYMPTOMS
+  - ABNORMAL_PHENOTYPIC_FEATURES
+  - PHENOTYPE_ONSET_AND_SEVERITY
+  - CONGENITAL_AND_DEVELOPMENTAL_ANOMALIES
+  - DISEASE_DIAGNOSES
+  - RARE_AND_GENETIC_DISEASES
+  - INFECTIOUS_DISEASES
+  - CANCER_AND_NEOPLASMS
+  - DIFFERENTIAL_DIAGNOSIS_CANDIDATES
+  - PHYSICAL_EXAMINATION_FINDINGS
+  - CLINICAL_ASSESSMENTS_AND_SCREENING
+  - CLINICAL_PROCEDURES_AND_INTERVENTIONS
+  - TREATMENT_ACTIONS_AND_MANAGEMENT
+  - CLINICAL_DOCUMENTS_AND_NOTES
+  - ALLERGIES_AND_ADVERSE_REACTIONS
+  - VITAL_SIGNS
+  - LABORATORY_TEST_IDENTITIES
+  - LABORATORY_RESULTS_AND_VALUES
+  - UNITS_OF_MEASUREMENT
+  - DIAGNOSTIC_IMAGING_OBSERVATIONS
+  - IMAGING_FILES_MEDIA_REFERENCES
+  - HISTOPATHOLOGY_AND_TISSUE_FINDINGS
+  - BIOSAMPLES_AND_SPECIMEN_METADATA
+  - GENETIC_TEST_IDENTITY_RESULTS
+  - SEQUENCE_VARIANTS_AND_VARIANT_NOTATION
+  - GENOMIC_INTERPRETATION
+  - GENES_AND_MOLECULAR_TARGETS
+  - DRUG_AND_MEDICINAL_PRODUCT_NAMES
+  - DRUG_INGREDIENTS_AND_FORMULATIONS
+  - DOSES_ROUTES_AND_SCHEDULES
+  - DRUG_INDICATIONS_AND_INTERACTIONS
+  - PROVIDER_AND_ORGANIZATION_IDENTITY
+  - RECORD_LINKAGE_AND_PROVENANCE
+  - STRUCTURED_RESOURCE_EXCHANGE
+  - CLINICAL_CODING_BILLING
+  notes:
+  - Provides standardized resource structures for representing and exchanging electronic healthcare information.
+  - Registry entry is pinned to FHIR R4.
 
 - id: DUO
   abbreviation: DUO
   name: Data Use Ontology
   bioregistryPrefix: duo
   standardType: ONTOLOGY
+  releaseVersion: 'v2021-02-23'
+  releaseDate: '2021-02-23'
   directDownloadAccess: true
   downloadApiAccess: true
   directDownloadUrls:
@@ -683,13 +880,18 @@ standards:
   versionSelectionMethod: GITHUB_RELEASES
   otherUrls:
   - https://github.com/EBISPOT/DUO
+  selectionStatus: UNDER_CONSIDERATION
+  harmonizationTasks:
   notes:
+  - Standardizes the representation of data use permissions and restrictions for research datasets.
 
 - id: ODRL
   abbreviation: ODRL
   name: Open Digital Rights Language
   bioregistryPrefix: odrl
   standardType: ONTOLOGY
+  releaseVersion: '2.2'
+  releaseDate: '2018-02-15'
   directDownloadAccess: true
   downloadApiAccess: false
   directDownloadUrls:
@@ -698,7 +900,10 @@ standards:
   versionSelectionMethod: W3C_SPEC_VERSION
   otherUrls:
   - https://www.w3.org/TR/odrl-vocab/
+  selectionStatus: UNDER_CONSIDERATION
+  harmonizationTasks:
   notes:
+  - Provides a machine-readable framework for expressing permissions, prohibitions, and obligations associated with data use.
   - W3C recommendation publishes versioned specification; no rolling release API.
 
 - id: DPV
@@ -706,6 +911,8 @@ standards:
   name: Data Privacy Vocabulary
   bioregistryPrefix: dpvocab
   standardType: ONTOLOGY
+  releaseVersion: '2.3'
+  releaseDate: '2026-02-28'
   directDownloadAccess: true
   downloadApiAccess: true
   directDownloadUrls:
@@ -719,4 +926,186 @@ standards:
   otherUrls:
   - https://github.com/w3c-cg/dpv
   - https://w3id.org/dpv
+  selectionStatus: UNDER_CONSIDERATION
+  harmonizationTasks:
   notes:
+  - Standardizes the representation of privacy-related information, including personal data processing, consent, and legal requirements.
+
+- id: OMIM
+  abbreviation: OMIM
+  name: Online Mendelian Inheritance in Man
+  bioregistryPrefix: omim
+  standardType: DATABASE
+  releaseVersion: 
+  releaseDate: '2026-11-30'
+  directDownloadAccess: true
+  downloadApiAccess: true
+  directDownloadUrls:
+  - https://omim.org/static/omim/data/mim2gene.txt
+  authenticationRequired: true
+  authenticationType: API_KEY
+  downloadApiUrls:
+  - https://data.omim.org/downloads/
+  versionSelectionMethod: CONTINUOUS_UPDATE
+  dataFormats:
+  - TSV
+  - TXT
+  otherUrls:
+  - https://omim.org/
+  - https://omim.org/downloads/
+  - https://omim.org/statistics/update
+  accessRequirements: Registration and an API key are required for bulk data downloads, except for mim2gene.txt. 
+  licenseUrl: https://omim.org/help/agreement
+  updateFrequency: Daily
+  selectionStatus: SELECTED
+  harmonizationTasks:
+  conformsToUrls: 
+  alignedCategories:
+  - PATIENT_HISTORY
+  - FAMILY_HISTORY
+  - GENETIC_TESTING
+  - PHENOTYPIC_DATA
+  - SPECIALIST_FINDINGS
+  - SYMPTOMS
+  - DIFFERENTIAL_DIAGNOSIS_REPORT
+  coveredDomains:
+  - SIGNS_AND_SYMPTOMS
+  - ABNORMAL_PHENOTYPIC_FEATURES
+  - PHENOTYPE_ONSET_AND_SEVERITY
+  - CONGENITAL_AND_DEVELOPMENTAL_ANOMALIES
+  - DISEASE_DIAGNOSES
+  - RARE_AND_GENETIC_DISEASES
+  - CANCER_AND_NEOPLASMS
+  - DIFFERENTIAL_DIAGNOSIS_CANDIDATES
+  - SEQUENCE_VARIANTS_AND_VARIANT_NOTATION
+  - GENOMIC_INTERPRETATION
+  - GENES_AND_MOLECULAR_TARGETS
+  notes:
+  - Provides curated information on human genes, genetic disorders, and genotype–phenotype relationships.
+
+- id: VRS
+  abbreviation: VRS
+  name: GA4GH Variation Representation Specification
+  standardType: EXCHANGE_SCHEMA
+  releaseVersion: '2.1.0'
+  releaseDate: '2026-09-01'
+  directDownloadAccess: true
+  downloadApiAccess: false
+  authenticationRequired: false
+  directDownloadUrls:
+  - https://github.com/ga4gh/vrs/releases
+  releaseApiUrls:
+  - https://api.github.com/repos/ga4gh/vrs/releases
+  versionSelectionMethod: GITHUB_RELEASES
+  dataFormats:
+  - JSON
+  - JSON Schema
+  - YAML
+  otherUrls:
+  - https://vrs.ga4gh.org/
+  - https://github.com/ga4gh/vrs
+  - https://www.ga4gh.org/product/variation-representation-specification-vrs/
+  accessRequirements: Open access; no registration or authentication required.
+  license: Apache-2.0
+  licenseUrl: https://github.com/ga4gh/vrs/blob/2.1.0/LICENSE
+  updateFrequency: Irregular, versioned releases
+  selectionStatus: SELECTED
+  harmonizationTasks:
+  conformsToUrls:
+  - https://vrs.ga4gh.org/en/2.1/
+  alignedCategories:
+  - GENETIC_TESTING
+  - SPECIALIST_FINDINGS
+  coveredDomains:
+  - SEQUENCE_VARIANTS_AND_VARIANT_NOTATION
+  - STRUCTURED_RESOURCE_EXCHANGE
+  notes:
+  - Provides standardized, computationally precise representations and identifiers for biological sequence variation.
+  - Release selection should exclude ballot and snapshot pre-releases.
+
+- id: HGNC
+  abbreviation: HGNC
+  name: HUGO Gene Nomenclature Committee
+  bioregistryPrefix: hgnc
+  standardType: NOMENCLATURE
+  releaseVersion: '2026-11-23'
+  releaseDate: '2026-11-23'
+  directDownloadAccess: true
+  downloadApiAccess: false
+  authenticationRequired: false
+  directDownloadUrls:
+  - https://www.genenames.org/download/statistics-and-files/
+  - https://storage.googleapis.com/public-download-files/hgnc/tsv/tsv/hgnc_complete_set.txt
+  - https://www.genenames.org/download/archive/
+  - https://www.genenames.org/download/archive/monthly/json/
+  versionSelectionMethod: DIRECTORY_LISTING
+  dataFormats:
+  - TSV
+  - JSON
+  - CSV
+  - OWL
+  otherUrls:
+  - https://www.genenames.org/
+  - https://www.genenames.org/download/
+  - https://www.genenames.org/about/guidelines/
+  accessRequirements: Open access; no registration or authentication required.
+  license: CC0-1.0
+  licenseUrl: https://www.genenames.org/about/license/
+  updateFrequency: Twice weekly (Tuesday and Friday), with monthly and quarterly archived snapshots.
+  selectionStatus: SELECTED
+  harmonizationTasks:
+  conformsToUrls: 
+  alignedCategories:
+  - GENETIC_TESTING
+  - SPECIALIST_FINDINGS
+  coveredDomains:
+  - GENES_AND_MOLECULAR_TARGETS
+  notes:
+  - Standardizes human gene names, approved gene symbols, and stable gene identifiers.
+
+- id: ORPHANET
+  abbreviation: ORPHAcodes
+  name: Orphanet Nomenclature of Rare Diseases
+  bioregistryPrefix: orpha
+  standardType: CLINICAL_TERMINOLOGY
+  releaseVersion: 'V6'
+  releaseDate: '2026-07-06'
+  directDownloadAccess: true
+  downloadApiAccess: false
+  authenticationRequired: false
+  directDownloadUrls:
+  - https://www.orphacode.org/pack-nomenclature/
+  - https://github.com/orphanet-rare-diseases-issues/RD-CODE
+  versionSelectionMethod: RELEASE_WEBPAGE
+  dataFormats:
+  - XML
+  - XLSX
+  otherUrls:
+  - https://www.orpha.net/
+  - https://www.orphacode.org/
+  - https://www.orphadata.com/
+  - https://classifications.orphacode.org/
+  - https://mappings.orphacode.org/
+  accessRequirements: Open access; External terminology mappings may be subject to additional licensing requirements.
+  license: CC-BY-4.0
+  licenseUrl: https://creativecommons.org/licenses/by/4.0/
+  updateFrequency: Annually in July
+  selectionStatus: UNDER_CONSIDERATION
+  conformsToUrls: 
+  alignedCategories:
+  - PATIENT_HISTORY
+  - FAMILY_HISTORY
+  - GENETIC_TESTING
+  - PHENOTYPIC_DATA
+  - SPECIALIST_FINDINGS
+  - DIFFERENTIAL_DIAGNOSIS_REPORT
+  coveredDomains:
+  - CONGENITAL_AND_DEVELOPMENTAL_ANOMALIES
+  - DISEASE_DIAGNOSES
+  - RARE_AND_GENETIC_DISEASES
+  - INFECTIOUS_DISEASES
+  - CANCER_AND_NEOPLASMS
+  - DIFFERENTIAL_DIAGNOSIS_CANDIDATES
+  - CLINICAL_CODING_BILLING
+  notes:
+  - Provides standardized rare disease names, identifiers, and classifications to support clinical coding and reporting.
